@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
+semantic_fingerprint: 44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -22,9 +22,11 @@ generator: scripts/docs/parity/generate_parity.py
 | Security | accepted-limitation | Raw scanner output and sensitive paths are intentionally excluded. |
 | Security | unsupported | The browser never runs Lynis, Trivy, shell, PM2, or NATS commands. |
 | Identity | accepted-limitation | Credential values are never observable parity fields. |
+| Identity | accepted-limitation | Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented. |
 | Identity | unsupported | Identity mismatch repair/rejoin must remain explicit and fail closed. |
 | Rules | accepted-limitation | The current product contract is a protection-mode policy surface, not a general arbitrary rule engine. |
 | Rules | unsupported | Planned trigger/condition/action automation is not marked verified. |
 | Backup & Restore | accepted-limitation | Status labels intentionally use Lite-friendly wording instead of raw backend enums. |
 | Backup & Restore | accepted-limitation | App restore apply remains explicitly unsupported where the repository reports it unavailable. |
+| Backup & Restore | accepted-limitation | Historical restore previews are evidence only and never authorize a new restore. |
 | Backup & Restore | unsupported | Unsafe writes remain disabled while the recovery projection is stale. |

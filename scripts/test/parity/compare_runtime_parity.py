@@ -96,22 +96,78 @@ def coverage_status(statuses: list[str]) -> str:
     return "unvalidated"
 
 
-def semantic_status(results: list[dict[str, Any]], capture_statuses: list[str]) -> tuple[str, str]:
+def is_planned_optional(item: dict[str, Any]) -> bool:
+    return (
+        item.get("result") == "not-observed"
+        and item.get("required") is False
+        and item.get("implementation_status") == "planned"
+    )
+
+
+def blocking_not_observed(item: dict[str, Any]) -> bool:
+    if item.get("result") != "not-observed":
+        return False
+    if item.get("accepted_limitation") is True:
+        return False
+    return not is_planned_optional(item)
+
+
+def semantic_status(
+    results: list[dict[str, Any]],
+    capture_statuses: list[str],
+    implementation_status: str = "implemented",
+) -> tuple[str, str]:
     if "runtime-unavailable" in capture_statuses:
         return "runtime-unavailable", "partial"
     if "capture-failed" in capture_statuses:
         return "capture-failed", "partial"
     if "stale-evidence" in capture_statuses:
         return "stale-evidence", "partial"
-    values = {item["result"] for item in results}
+
     mismatches = [item for item in results if item.get("result") == "mismatch"]
     if mismatches:
         if all(item.get("accepted_limitation") is True for item in mismatches):
             return "accepted-limitation", "verified"
         return "drift-detected", "needs-review"
-    semantic_values = {item["result"] for item in results if item.get("boundary") != "desktop-mobile"}
-    if "not-observed" in semantic_values:
+
+    corrupted = [
+        item
+        for item in results
+        if item.get("result") == "capture-corrupted"
+    ]
+    if corrupted:
+        return "capture-corrupted", "partial"
+
+    contract_gaps = [
+        item
+        for item in results
+        if (
+            item.get("result") == "unsupported"
+            and item.get("required") is True
+            and item.get("implementation_status")
+            == "implemented"
+        )
+    ]
+    if contract_gaps:
+        return "contract-gap", "partial"
+
+    required_missing = [
+        item
+        for item in results
+        if blocking_not_observed(item)
+    ]
+    if required_missing:
         return "partial", "partial"
+
+    planned_missing = [item for item in results if is_planned_optional(item)]
+    if planned_missing or implementation_status in {"partial", "planned"}:
+        return "partial", "partial"
+
+    semantic_values = {
+        item["result"]
+        for item in results
+        if item.get("boundary") != "desktop-mobile"
+    }
     if "mapped" in semantic_values:
         return "verified-with-mapped-presentation", "verified"
     if semantic_values and semantic_values <= {"match", "unsupported"} and "match" in semantic_values:
@@ -132,13 +188,28 @@ def termux_agreement(domain: dict[str, Any], backend: dict[str, Any], termux: di
         field_id = str(field["id"])
         operator = str(field.get("authority_operator") or "exact")
         result = semantic_compare.compare_values(operator, left.get(field_id), right.get(field_id), field)
+        if (
+            result.get("result") == "not-observed"
+            and field.get("required") is False
+            and field.get("implementation_status") == "implemented"
+        ):
+            result["result"] = "not-applicable"
+            result["explanation"] = (
+                "optional implemented field is not applicable "
+                "in the current runtime state"
+            )
+
         result.update({
             "id": f"{domain['id']}-termux-{field_id}",
             "boundary": "live-api-live-termux",
             "severity": str(field.get("authority_severity") or "high"),
             "operator": operator,
             "project": "termux",
-            "accepted_limitation": False,
+            "accepted_limitation": bool(field.get("accepted_limitation", False)),
+            "required": bool(field.get("required", True)),
+            "implementation_status": str(
+                field.get("implementation_status") or "implemented"
+            ),
         })
         results.append(result)
     return results
@@ -163,6 +234,8 @@ def viewport_agreement(desktop: dict[str, Any], mobile: dict[str, Any]) -> dict[
         ),
         "project": "cross-viewport",
         "accepted_limitation": False,
+        "required": True,
+        "implementation_status": "implemented",
     })
     return result
 
@@ -200,11 +273,19 @@ def main() -> int:
             comparisons.append(viewport_agreement(browsers["live-desktop"], browsers["live-mobile"]))
 
         statuses = [backend["status"], termux["status"], *(item["status"] for item in browsers.values())]
-        runtime_parity, status = semantic_status(comparisons, statuses)
+        implementation_status = str(
+            domain.get("implementation_status") or "implemented"
+        )
+        runtime_parity, status = semantic_status(
+            comparisons,
+            statuses,
+            implementation_status,
+        )
         counts = Counter(item["result"] for item in comparisons)
         domains_out.append({
             "id": domain_id,
             "label": domain["label"],
+            "implementation_status": implementation_status,
             "live_api_coverage": "observed" if backend["status"] == "observed" else backend["status"],
             "live_ui_coverage": coverage_status([item["status"] for item in browsers.values()]),
             "live_termux_coverage": "observed" if termux["status"] == "observed" else termux["status"],
@@ -216,6 +297,7 @@ def main() -> int:
                 "mismatch": counts["mismatch"],
                 "unsupported": counts["unsupported"],
                 "not_observed": counts["not-observed"],
+                "not_applicable": counts["not-applicable"],
             },
             "comparisons": sorted(comparisons, key=lambda item: (item["id"], item.get("project", ""))),
             "observation_fingerprints": {

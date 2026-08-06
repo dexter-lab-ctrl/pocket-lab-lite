@@ -153,6 +153,10 @@ export default function RecoveryScreen() {
   const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
   const databaseMaintenance = databaseProtection?.maintenance || data?.maintenance || {};
   const databaseRestore = databaseProtection?.last_restore || null;
+  const databaseRestoreHistory = databaseProtection?.restore_history || {};
+  const databaseProjectionReconciliation = databaseProtection?.projection_reconciliation || {};
+  const databaseRestoreCompleted = String(databaseRestore?.status || databaseRestore?.state || '').toLowerCase() === 'completed';
+  const databaseHistoricalPreview = latestDatabasePreview?.status === 'historical';
   const databaseRestoreGuard = databaseProtection?.restore_guard || {};
   const activeDatabaseRestore = databaseProtection?.active_restore || null;
   const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
@@ -601,6 +605,26 @@ export default function RecoveryScreen() {
             <div><span>Backup</span><strong>{latestBackupVerified ? 'Verified' : latestBackup ? 'Needs verification' : 'Not created'}</strong></div>
             <div><span>Restore</span><strong>{latestPreviewReady ? 'Ready for confirmation' : 'Preview required'}</strong></div>
             <div><span>Pocket Lab data</span><strong>{databaseWriteBlocked ? 'Protected for safety' : databaseBackupVerified ? 'Backed up' : 'Backup recommended'}</strong></div>
+            <div data-testid="parity-last-restore" data-restore-id={databaseRestore?.restore_id || ''}>
+              <span>Last database recovery</span>
+              <strong data-testid="parity-last-restore-status">
+                {databaseRestoreCompleted ? 'Restored' : databaseRestore ? 'Needs review' : 'No recovery recorded'}
+              </strong>
+            </div>
+            <div data-testid="parity-restore-history" data-restore-count={Number(databaseRestoreHistory?.completed || 0)}>
+              <span>Recovery history</span>
+              <strong>{Number(databaseRestoreHistory?.completed || 0)} completed</strong>
+            </div>
+            <div data-testid="parity-historical-preview" data-fresh-preview-required={databaseHistoricalPreview ? 'true' : 'false'}>
+              <span>Restore preview</span>
+              <strong>{databaseHistoricalPreview ? 'Fresh preview required' : latestDatabasePreview ? 'Preview available' : 'Preview required'}</strong>
+            </div>
+            {databaseProjectionReconciliation?.status ? (
+              <div>
+                <span>History sync</span>
+                <strong>{databaseProjectionReconciliation.status === 'reconciled' ? 'Up to date' : 'Reconciling'}</strong>
+              </div>
+            ) : null}
           </div>
           <LiteButton tone="secondary" onClick={() => openRecoveryManage('protection')}>View protection</LiteButton>
         </GlassCard>

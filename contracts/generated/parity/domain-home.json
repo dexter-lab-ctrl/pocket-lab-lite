@@ -5,7 +5,7 @@
         "/api/lite/status",
         "/api/lite/release"
       ],
-      "fingerprint": "796e660d7e5d72e3640f2e9fa115713b0780017e7121fc20a19f39ca7e47ad37",
+      "fingerprint": "18d39631f116d541a04fefbab5b0dce80431aadac6bd765210d19aaaadcb05e5",
       "id": "home",
       "selectors": [
         "buildLiteHomeOverview"
@@ -20,7 +20,7 @@
   ],
   "kind": "domain-fingerprint",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "semantic_fingerprint": "44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c",
   "source_revision": "repository-source",
   "status": "generated"
 }

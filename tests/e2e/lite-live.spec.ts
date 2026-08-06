@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { mkdir, rename, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { sanitizeRuntimeEvidenceText } from '../../scripts/test/parity/runtime-evidence-sanitizer.mjs';
 import {
   LITE_TABS,
   openTab,
@@ -23,6 +24,11 @@ type SafeObservation = {
   recovery_status: string;
   recovery_summary: string;
   latest_backup_id: string;
+  last_restore_id: string;
+  last_restore_status_label: string;
+  restore_history_count: number;
+  historical_preview_visible: boolean;
+  fresh_preview_required_visible: boolean;
   stale_warning_visible: boolean;
   backup_action_disabled: boolean;
   status_label: string;
@@ -45,30 +51,8 @@ function sourceCommit() {
   return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 }
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function sanitizeRuntimeText(value: string, sensitiveValues: string[] = []) {
-  let sanitized = value;
-  for (const item of sensitiveValues) {
-    const candidate = String(item || '').trim();
-    if (!candidate) continue;
-    sanitized = sanitized.replace(new RegExp(escapeRegExp(candidate), 'gi'), '[private-identity]');
-  }
-  return sanitized
-    .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----/gi, '[redacted-key]')
-    .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}/gi, 'Bearer [redacted]')
-    .replace(/\b(password|passwd|token|api[_-]?key|secret)\s*[:=]\s*[^\s,]+/gi, '$1=[redacted]')
-    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[private-identity]')
-    .replace(/\b(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168|100)\.(?:\d{1,3}\.){2}\d{1,3}\b/g, '[private-address]')
-    .replace(/[A-Za-z0-9.-]+\.ts\.net\b/gi, '[tailnet-host]')
-    .replace(/\/data\/data\/com\.termux\/files\/(?:home|usr)(?:\/[^\s]*)?/gi, '[private-path]')
-    .replace(/\/home\/[^/\s]+\/[^\s]*/g, '[private-path]')
-    .replace(/((?:nats|https?):\/\/)[^\s/@]+:[^\s@]+@/gi, '$1[redacted]@')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 12_000);
+  return sanitizeRuntimeEvidenceText(value, sensitiveValues);
 }
 
 type RuntimePrivacyContext = {
@@ -222,6 +206,10 @@ async function collectSafeObservation(page: Page, screenId: string): Promise<Saf
     const recoveryStatus = element.querySelector('[data-testid="parity-recovery-status"]');
     const recoverySummary = element.querySelector('[data-testid="parity-recovery-summary"]');
     const backup = element.querySelector('[data-testid="parity-latest-backup-id"]');
+    const lastRestore = element.querySelector('[data-testid="parity-last-restore"]');
+    const lastRestoreStatus = element.querySelector('[data-testid="parity-last-restore-status"]');
+    const restoreHistory = element.querySelector('[data-testid="parity-restore-history"]');
+    const historicalPreview = element.querySelector('[data-testid="parity-historical-preview"]');
     const toggle = element.querySelector('[aria-pressed]');
     const backupAction = [...element.querySelectorAll('button')].find((button) => /Back Up Now|Refresh to continue/i.test(text(button)));
     return {
@@ -237,6 +225,11 @@ async function collectSafeObservation(page: Page, screenId: string): Promise<Saf
       recovery_status: text(recoveryStatus).slice(0, 120),
       recovery_summary: text(recoverySummary).slice(0, 240),
       latest_backup_id: backup?.getAttribute('data-backup-id') || '',
+      last_restore_id: lastRestore?.getAttribute('data-restore-id') || '',
+      last_restore_status_label: text(lastRestoreStatus).slice(0, 120),
+      restore_history_count: Number(restoreHistory?.getAttribute('data-restore-count') || 0),
+      historical_preview_visible: Boolean(historicalPreview),
+      fresh_preview_required_visible: historicalPreview?.getAttribute('data-fresh-preview-required') === 'true',
       stale_warning_visible: Boolean(element.querySelector('[data-testid="recovery-projection-stale"]')),
       backup_action_disabled: Boolean(backupAction?.hasAttribute('disabled') || backupAction?.getAttribute('aria-disabled') === 'true'),
       status_label: text(recoveryStatus).slice(0, 120),
@@ -293,7 +286,7 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
       const browserOutputRoot = resolve('.pocketlab-dev', 'validation', 'parity', 'browser');
       await mkdir(browserOutputRoot, { recursive: true });
       for (const domain of Object.values(PARITY_DOMAIN_BY_SCREEN)) {
-        await unlink(resolve(browserOutputRoot, `${domain}-${testInfo.project.name}.json`), { force: true });
+        await rm(resolve(browserOutputRoot, `${domain}-${testInfo.project.name}.json`), { force: true });
       }
 
       for (const [label, screenId] of LITE_TABS) {
@@ -315,6 +308,11 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
           recovery_status: sanitizeRuntimeText(raw.recovery_status, privacy.sensitive_values),
           recovery_summary: sanitizeRuntimeText(raw.recovery_summary, privacy.sensitive_values),
           latest_backup_id: sanitizeRuntimeText(raw.latest_backup_id, privacy.sensitive_values).slice(0, 160),
+          last_restore_id: sanitizeRuntimeText(raw.last_restore_id, privacy.sensitive_values).slice(0, 160),
+          last_restore_status_label: sanitizeRuntimeText(raw.last_restore_status_label, privacy.sensitive_values),
+          restore_history_count: raw.restore_history_count,
+          historical_preview_visible: raw.historical_preview_visible,
+          fresh_preview_required_visible: raw.fresh_preview_required_visible,
           status_label: sanitizeRuntimeText(raw.status_label, privacy.sensitive_values),
           summary_label: sanitizeRuntimeText(raw.summary_label, privacy.sensitive_values),
         };

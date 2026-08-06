@@ -1,34 +1,2588 @@
 {
+  "browser_projects": [
+    "live-desktop",
+    "live-mobile"
+  ],
   "domains": [
     {
-      "evidence": {
-        "playwright": {
-          "projects": [
-            "live-desktop",
-            "live-mobile"
-          ],
-          "status": "verified",
-          "tests_per_project": 2
-        },
-        "playwright_sha256": "f2e288bd84a2cd8c68ea3c86f41f07b031efb97cb889984ec5d4c5973453c94e",
-        "termux": {
-          "latest_backup_present": true,
-          "read_degraded": true,
-          "recovery_status": "healthy",
-          "status": "verified"
-        },
-        "termux_sha256": "036f332850c51d97362424c1119df92b966431fa3cc624662f1d7b94c628a96c"
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 12,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
       },
-      "id": "recovery",
-      "live_api_coverage": "verified",
-      "live_termux_coverage": "verified",
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "af7b1962f5637607",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "af7b1962f5637607",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 0.0,
+          "boundary": "live-api-live-ui",
+          "explanation": "percentage formatting is equivalent",
+          "frontend_value": {
+            "fingerprint": "124bd5cc96c734df",
+            "length": 13,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-cpu-format",
+          "implementation_status": "implemented",
+          "operator": "percentage-format",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 0.0,
+          "boundary": "live-api-live-ui",
+          "explanation": "percentage formatting is equivalent",
+          "frontend_value": {
+            "fingerprint": "124bd5cc96c734df",
+            "length": 13,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-cpu-format",
+          "implementation_status": "implemented",
+          "operator": "percentage-format",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "dbe3ab456b7a103a",
+            "length": 1839,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-overall-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "dbe3ab456b7a103a",
+            "length": 1839,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-overall-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 7,
+            "fingerprint": "9405b0569c808fa8",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "dbe3ab456b7a103a",
+            "length": 1839,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 7,
+            "fingerprint": "9405b0569c808fa8",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "dbe3ab456b7a103a",
+            "length": 1839,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "home-server-identity",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "home-server-identity",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 0.0,
+          "boundary": "live-api-live-termux",
+          "explanation": "numeric delta is within 25.0",
+          "frontend_value": 0.0,
+          "id": "home-termux-cpu_percent",
+          "implementation_status": "implemented",
+          "operator": "numeric-tolerance",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 4822,
+          "boundary": "live-api-live-termux",
+          "explanation": "numeric delta is within 256.0",
+          "frontend_value": 4822,
+          "id": "home-termux-memory_usage_mb",
+          "implementation_status": "implemented",
+          "operator": "numeric-tolerance",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "id": "home-termux-overall_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "home-termux-read_degraded",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "home-termux-server_identity_expected",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 10,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 10,
+          "id": "home-termux-service_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 135761,
+          "boundary": "live-api-live-termux",
+          "explanation": "numeric delta is within 64.0",
+          "frontend_value": 135761,
+          "id": "home-termux-storage_free_mb",
+          "implementation_status": "implemented",
+          "operator": "numeric-tolerance",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        }
+      ],
+      "id": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "9405b0569c808fa8893f6be99304158f6e982d54d134358d7e2bb6c73ecfc13c",
+        "live_desktop": "132958a595a61adf0b2e65fad8e037f07f5ccb4bb9747dd4526e1050cc36c825",
+        "live_mobile": "132958a595a61adf0b2e65fad8e037f07f5ccb4bb9747dd4526e1050cc36c825",
+        "termux": "9405b0569c808fa8893f6be99304158f6e982d54d134358d7e2bb6c73ecfc13c"
+      },
+      "runtime_parity": "verified-with-mapped-presentation",
       "status": "verified"
+    },
+    {
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 14,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "326297b2fa19dc8f",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend contains the backend meaning",
+          "frontend_value": {
+            "fingerprint": "c4bc33ae2468c1a0",
+            "length": 495,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-canonical-name",
+          "implementation_status": "implemented",
+          "operator": "text-contains",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "326297b2fa19dc8f",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend contains the backend meaning",
+          "frontend_value": {
+            "fingerprint": "c4bc33ae2468c1a0",
+            "length": 495,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-canonical-name",
+          "implementation_status": "implemented",
+          "operator": "text-contains",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "8f8d9446d865dd0d",
+            "type": "list"
+          },
+          "id": "apps-installed-manage",
+          "implementation_status": "implemented",
+          "operator": "capability-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "8f8d9446d865dd0d",
+            "type": "list"
+          },
+          "id": "apps-installed-manage",
+          "implementation_status": "implemented",
+          "operator": "capability-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "apps-open-capability",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "apps-open-capability",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "40ec7f71ea684c8b",
+            "length": 5,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "c4bc33ae2468c1a0",
+            "length": 495,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-runtime-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "40ec7f71ea684c8b",
+            "length": 5,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "c4bc33ae2468c1a0",
+            "length": 495,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-runtime-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 7,
+            "fingerprint": "3e5efbd03159faa6",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "c4bc33ae2468c1a0",
+            "length": 495,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 7,
+            "fingerprint": "3e5efbd03159faa6",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "c4bc33ae2468c1a0",
+            "length": 495,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-termux-action_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "0f891e4a2ec32dc6",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "0f891e4a2ec32dc6",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-termux-app_id",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "326297b2fa19dc8f",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "326297b2fa19dc8f",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-termux-app_name",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "apps-termux-installed",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "apps-termux-open_enabled",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "apps-termux-route_ready",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "40ec7f71ea684c8b",
+            "length": 5,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "40ec7f71ea684c8b",
+            "length": 5,
+            "present": true,
+            "type": "string"
+          },
+          "id": "apps-termux-runtime_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "e9de3077070f86d0",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "e9de3077070f86d0",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        }
+      ],
+      "id": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f",
+        "live_desktop": "3b1693b98bcba56d83b422ab147a93b5bfa85d282bbe98949fabe2c12bf42d6e",
+        "live_mobile": "3b1693b98bcba56d83b422ab147a93b5bfa85d282bbe98949fabe2c12bf42d6e",
+        "termux": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f"
+      },
+      "runtime_parity": "verified-with-mapped-presentation",
+      "status": "verified"
+    },
+    {
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 14,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "764f83167a16b010",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "764f83167a16b010",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "ee0875b31f234d02",
+            "length": 3657,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-remote-access",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "ee0875b31f234d02",
+            "length": 3657,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-remote-access",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 7,
+            "fingerprint": "ed02b30cbea674ec",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "ee0875b31f234d02",
+            "length": 3657,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 7,
+            "fingerprint": "ed02b30cbea674ec",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "ee0875b31f234d02",
+            "length": 3657,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "devices-server-identity",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "devices-server-identity",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "f14019cbbb017ed3",
+            "length": 21,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "ee0875b31f234d02",
+            "length": 3657,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-server-state",
+          "implementation_status": "implemented",
+          "operator": "state-machine-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "f14019cbbb017ed3",
+            "length": 21,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "ee0875b31f234d02",
+            "length": 3657,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-server-state",
+          "implementation_status": "implemented",
+          "operator": "state-machine-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": false,
+          "id": "devices-tailscale-exposure",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": false,
+          "id": "devices-tailscale-exposure",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 7,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 7,
+          "id": "devices-termux-device_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 0,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 0,
+          "id": "devices-termux-online_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "devices-termux-remote_access_ready",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "40ec7f71ea684c8b",
+            "length": 5,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "40ec7f71ea684c8b",
+            "length": 5,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-termux-remote_access_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "devices-termux-server_identity_expected",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "f14019cbbb017ed3",
+            "length": 21,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "f14019cbbb017ed3",
+            "length": 21,
+            "present": true,
+            "type": "string"
+          },
+          "id": "devices-termux-server_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": false,
+          "id": "devices-termux-tailscale_ip_present",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        }
+      ],
+      "id": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59",
+        "live_desktop": "f5a477a3814219cf1bdbc1891345c8941c195217be3d755ada73906769ca447f",
+        "live_mobile": "f5a477a3814219cf1bdbc1891345c8941c195217be3d755ada73906769ca447f",
+        "termux": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59"
+      },
+      "runtime_parity": "verified-with-mapped-presentation",
+      "status": "verified"
+    },
+    {
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 11,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "311a73afbca81fcb",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "311a73afbca81fcb",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 6,
+            "fingerprint": "3b2cae7b3fcde01b",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend value is present",
+          "frontend_value": {
+            "count": 8,
+            "fingerprint": "640a94c9ff87c57a",
+            "type": "list"
+          },
+          "id": "security-primary-action",
+          "implementation_status": "implemented",
+          "operator": "presence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 6,
+            "fingerprint": "3b2cae7b3fcde01b",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend value is present",
+          "frontend_value": {
+            "count": 8,
+            "fingerprint": "640a94c9ff87c57a",
+            "type": "list"
+          },
+          "id": "security-primary-action",
+          "implementation_status": "implemented",
+          "operator": "presence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "4e5ef144c51cd252",
+            "length": 3,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "6065d792b78456cf",
+            "length": 687,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-profile-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "4e5ef144c51cd252",
+            "length": 3,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "6065d792b78456cf",
+            "length": 687,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-profile-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 6,
+            "fingerprint": "3b2cae7b3fcde01b",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "6065d792b78456cf",
+            "length": 687,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 6,
+            "fingerprint": "3b2cae7b3fcde01b",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "6065d792b78456cf",
+            "length": 687,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "6065d792b78456cf",
+            "length": 687,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-summary-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "6065d792b78456cf",
+            "length": 687,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-summary-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": false,
+          "id": "security-termux-active_scan",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 0,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 0,
+          "id": "security-termux-finding_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "4e5ef144c51cd252",
+            "length": 3,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "4e5ef144c51cd252",
+            "length": 3,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-termux-profile",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 100,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 100,
+          "id": "security-termux-score",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-termux-status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "81c5194c3f167adb",
+            "length": 20,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "81c5194c3f167adb",
+            "length": 20,
+            "present": true,
+            "type": "string"
+          },
+          "id": "security-termux-summary",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        }
+      ],
+      "id": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b",
+        "live_desktop": "3cfcdbbe5c0f707338e3bc7216b00624092248534b7e96322ef4a2b3b2f30ca5",
+        "live_mobile": "3cfcdbbe5c0f707338e3bc7216b00624092248534b7e96322ef4a2b3b2f30ca5",
+        "termux": "3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b"
+      },
+      "runtime_parity": "verified-with-mapped-presentation",
+      "status": "verified"
+    },
+    {
+      "comparison_summary": {
+        "mapped": 2,
+        "match": 8,
+        "mismatch": 0,
+        "not_observed": 2,
+        "unsupported": 0
+      },
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "9eddf4db8ea557f0",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "9eddf4db8ea557f0",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 5,
+            "fingerprint": "d481f5125f8cab43",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "3ca24ca52d07dc94",
+            "length": 866,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-password-redaction",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 5,
+            "fingerprint": "d481f5125f8cab43",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "3ca24ca52d07dc94",
+            "length": 866,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-password-redaction",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "eb8bf0d80db32399",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "3ca24ca52d07dc94",
+            "length": 866,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-status-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "eb8bf0d80db32399",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "3ca24ca52d07dc94",
+            "length": 866,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-status-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "6c6d04b7d6e9e5a0",
+            "length": 73,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend contains the backend meaning",
+          "frontend_value": {
+            "fingerprint": "3ca24ca52d07dc94",
+            "length": 866,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-summary",
+          "implementation_status": "implemented",
+          "operator": "text-contains",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "6c6d04b7d6e9e5a0",
+            "length": 73,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend contains the backend meaning",
+          "frontend_value": {
+            "fingerprint": "3ca24ca52d07dc94",
+            "length": 866,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-summary",
+          "implementation_status": "implemented",
+          "operator": "text-contains",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": null,
+          "boundary": "live-api-live-termux",
+          "explanation": "one side was not observed",
+          "frontend_value": null,
+          "id": "identity-termux-identity_guard",
+          "implementation_status": "planned",
+          "operator": "exact",
+          "project": "termux",
+          "required": false,
+          "result": "not-observed",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": null,
+          "boundary": "live-api-live-termux",
+          "explanation": "one side was not observed",
+          "frontend_value": null,
+          "id": "identity-termux-protected_host",
+          "implementation_status": "planned",
+          "operator": "exact",
+          "project": "termux",
+          "required": false,
+          "result": "not-observed",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "eb8bf0d80db32399",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "eb8bf0d80db32399",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-termux-status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "6c6d04b7d6e9e5a0",
+            "length": 73,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "6c6d04b7d6e9e5a0",
+            "length": 73,
+            "present": true,
+            "type": "string"
+          },
+          "id": "identity-termux-summary",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 0,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 0,
+          "id": "identity-termux-target_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        }
+      ],
+      "id": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "d481f5125f8cab4356d1d164c9a1518483b786097fee788764bc6dbaa0dae757",
+        "live_desktop": "8eb88b1ab5beb24d0382dba8eacc7fd1529ab4daaecc26c688a1b66b7efe7bc8",
+        "live_mobile": "8eb88b1ab5beb24d0382dba8eacc7fd1529ab4daaecc26c688a1b66b7efe7bc8",
+        "termux": "d481f5125f8cab4356d1d164c9a1518483b786097fee788764bc6dbaa0dae757"
+      },
+      "runtime_parity": "partial",
+      "status": "partial"
+    },
+    {
+      "comparison_summary": {
+        "mapped": 2,
+        "match": 12,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "ea3c5a980758635d",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "ea3c5a980758635d",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "c251c616e1790a5d",
+            "length": 635,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-protection-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "c251c616e1790a5d",
+            "length": 635,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-protection-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": false,
+          "id": "rules-protection-state",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": false,
+          "id": "rules-protection-state",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 5,
+            "fingerprint": "98c0b2e070d96d05",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "c251c616e1790a5d",
+            "length": 635,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 5,
+            "fingerprint": "98c0b2e070d96d05",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "c251c616e1790a5d",
+            "length": 635,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "791bf4005672e131",
+            "length": 47,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend contains the backend meaning",
+          "frontend_value": {
+            "fingerprint": "c251c616e1790a5d",
+            "length": 635,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-summary",
+          "implementation_status": "implemented",
+          "operator": "text-contains",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "791bf4005672e131",
+            "length": 47,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend contains the backend meaning",
+          "frontend_value": {
+            "fingerprint": "c251c616e1790a5d",
+            "length": 635,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-summary",
+          "implementation_status": "implemented",
+          "operator": "text-contains",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "medium"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 4,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 4,
+          "id": "rules-termux-allowed_action_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": false,
+          "id": "rules-termux-protection_enabled",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "rules-termux-requires_confirmation",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-termux-status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "791bf4005672e131",
+            "length": 47,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "791bf4005672e131",
+            "length": 47,
+            "present": true,
+            "type": "string"
+          },
+          "id": "rules-termux-summary",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        }
+      ],
+      "id": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "98c0b2e070d96d05f1f86fcf24a77f4b53d45561f6af6b89adc512d9ef50398e",
+        "live_desktop": "7e8f1961a6914e5076d88f28784e0943748ef5f6bb410201db65b2ca8c234363",
+        "live_mobile": "7e8f1961a6914e5076d88f28784e0943748ef5f6bb410201db65b2ca8c234363",
+        "termux": "98c0b2e070d96d05f1f86fcf24a77f4b53d45561f6af6b89adc512d9ef50398e"
+      },
+      "runtime_parity": "partial",
+      "status": "partial"
+    },
+    {
+      "comparison_summary": {
+        "mapped": 6,
+        "match": 17,
+        "mismatch": 0,
+        "not_observed": 1,
+        "unsupported": 0
+      },
+      "comparisons": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "74abd402b16e816b",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "74abd402b16e816b",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "normalized values match",
+          "frontend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-latest-backup-identity",
+          "implementation_status": "implemented",
+          "operator": "identity-match",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "normalized values match",
+          "frontend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-latest-backup-identity",
+          "implementation_status": "implemented",
+          "operator": "identity-match",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 14,
+            "fingerprint": "4b10f84137aaf168",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "578369527dbda52e",
+            "length": 867,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 14,
+            "fingerprint": "4b10f84137aaf168",
+            "type": "object"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend observation remains sanitized",
+          "frontend_value": {
+            "fingerprint": "578369527dbda52e",
+            "length": 867,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-sanitized-ui",
+          "implementation_status": "implemented",
+          "operator": "safe-redaction",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "974e2ef73ef3f876",
+            "length": 36,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-stale-semantics",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "974e2ef73ef3f876",
+            "length": 36,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-stale-semantics",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "ebce725f97848145",
+            "length": 16,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-status-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "ebce725f97848145",
+            "length": 16,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-status-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "974e2ef73ef3f876",
+            "length": 36,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-summary-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "974e2ef73ef3f876",
+            "length": 36,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-summary-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "ef3dfd7c289838e5",
+            "length": 15,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "ef3dfd7c289838e5",
+            "length": 15,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-data_source",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": null,
+          "boundary": "live-api-live-termux",
+          "explanation": "one side was not observed",
+          "frontend_value": null,
+          "id": "recovery-termux-database_protection_status",
+          "implementation_status": "planned",
+          "operator": "exact",
+          "project": "termux",
+          "required": false,
+          "result": "not-observed",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "addf5c2ec4883881",
+            "length": 18,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "addf5c2ec4883881",
+            "length": 18,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-degraded_reason",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": null,
+          "boundary": "live-api-live-termux",
+          "explanation": "optional implemented field is not applicable in the current runtime state",
+          "frontend_value": null,
+          "id": "recovery-termux-last_restore_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": false,
+          "result": "not-applicable",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-latest_backup_id",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "7d124c1a7f40100a",
+            "length": 4,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "7d124c1a7f40100a",
+            "length": 4,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-maintenance_state",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 2604833546,
+          "boundary": "live-api-live-termux",
+          "explanation": "numeric delta is within 15000.0",
+          "frontend_value": 2604837299,
+          "id": "recovery-termux-projection_age_ms",
+          "implementation_status": "implemented",
+          "operator": "numeric-tolerance",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "recovery-termux-read_degraded",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": false,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": false,
+          "id": "recovery-termux-refresh_pending",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": null,
+          "boundary": "live-api-live-termux",
+          "explanation": "optional implemented field is not applicable in the current runtime state",
+          "frontend_value": null,
+          "id": "recovery-termux-restore_allowed",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": false,
+          "result": "not-applicable",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": null,
+          "boundary": "live-api-live-termux",
+          "explanation": "optional implemented field is not applicable in the current runtime state",
+          "frontend_value": null,
+          "id": "recovery-termux-restore_preview_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": false,
+          "result": "not-applicable",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "72172bf2e4ccc369",
+            "length": 7,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "c37a71dffd296d42",
+            "length": 14,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "c37a71dffd296d42",
+            "length": 14,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-summary",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "3d50e8dfbd6e9d98",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "3d50e8dfbd6e9d98",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-verification_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "recovery-write-safety",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "recovery-write-safety",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        }
+      ],
+      "id": "recovery",
+      "implementation_status": "partial",
+      "label": "Backup & Restore",
+      "live_api_coverage": "observed",
+      "live_termux_coverage": "observed",
+      "live_ui_coverage": "observed",
+      "observation_fingerprints": {
+        "backend": "4b10f84137aaf168660f81b817114acdbf109597b390bfa2c98825cda906a1bd",
+        "live_desktop": "8ba7a2857bcb9afcd1706487d492474c96d8106eb6ab472d8bc36a87010493b1",
+        "live_mobile": "8ba7a2857bcb9afcd1706487d492474c96d8106eb6ab472d8bc36a87010493b1",
+        "termux": "ca15b36c04d03b22c83191afcb00a26d471a10e149617abdea159bda114dc59e"
+      },
+      "runtime_parity": "partial",
+      "status": "partial"
     }
   ],
-  "promoted_at": "2026-08-06T07:48:03Z",
-  "release_tag": "lite-2026.08.05.2",
+  "evidence_hashes": {
+    "backend-apps": "e44e837765fb89b79be9aed281c062bd5b8a005bd4c00d6fc8e729840927b69f",
+    "backend-devices": "83a2a2dfb393fd08ca1c8c36b76a93b4e4e9c40c92a42fb91fed07144f713721",
+    "backend-home": "e28748d78d640ce9cad36a12ab02be40e93d4d6be7021f69b09dcee8ed2195da",
+    "backend-identity": "542192ab2dc3a7d1038190ae2b34fdf8a54ff4f9d01ce2a5477841d439867897",
+    "backend-recovery": "b9dfa1eadef96a1935b3312c0c8d01dbf7533e56840711cb50cc1fd15b899fd3",
+    "backend-rules": "e7e7c54790d97cf8e7af9b24a4e47111431ae93ba79c8f41097106395e7e9a93",
+    "backend-security": "e867a89289f457f8fa68f71a06b929b0449b9618303c265f26c69235c34cb51e",
+    "browser-apps-live-desktop": "9de569b457094265b57ebb4399a94e223e578322acc518e2da1a48e75c834f7e",
+    "browser-apps-live-mobile": "80ce754b1330586c7fdce6f3debc1a01dc6633c6bd53a1d4f993033fbb298732",
+    "browser-devices-live-desktop": "17d9271916dbf4f8a87e189b8c769a2b4604ca01134f9d5c780828327a6923d6",
+    "browser-devices-live-mobile": "1f212cf05015f8fe7071cde0ccde1d2a8f26205a73f388279aaa5ee8247e4e8c",
+    "browser-home-live-desktop": "f5513ccc41bfc577d5e537e31177fc242371a94f7f5075e0eadba3ed27769cd1",
+    "browser-home-live-mobile": "478b578e0252e4fd03215fcc3ec35eb0518468c19e4b964fcbd4255d229a30fe",
+    "browser-identity-live-desktop": "5212a8d1e8a466e62c3277f95cb6d5a3bbfda499fd570d20a6542f8c979f6407",
+    "browser-identity-live-mobile": "4b4709048c92e921180b1ce755ce9066fb524d4f1222f1a9d20ad3498d2417e6",
+    "browser-recovery-live-desktop": "034bc452fc2af9bdcb5e81c945134156fd2dd6f694f6613ffcc5b72ced32d114",
+    "browser-recovery-live-mobile": "0857e0eb12e066d04ae603ae7e1659d0adddda5d2ec46b70859219878c5ce14d",
+    "browser-rules-live-desktop": "5981ca787d43e18c227276e4538922217ba77e7e5ffbaf16d805c55228d94867",
+    "browser-rules-live-mobile": "ee33e8019f8a508af2165d41789ed728d69459dd43a833fa52a72c6dca6ce254",
+    "browser-security-live-desktop": "6b3d0849871147e2bd43ff8b6c12c8dffafec449a1a8e8b765c66a7bc6a36e6f",
+    "browser-security-live-mobile": "76df3ef0b65d2f3021d0f7016b5cf77c3f48338e80743845df101d1e2123b2a0",
+    "playwright-report": "e5db3fbc6a27b2e50d0c8dfb61a66c49d4d3b1ac5fd900e481c30278860c4dc4",
+    "runtime-comparison": "c791b467b9c2b8c658ae5960329abd8615c1b62edb5ee3fe82d916a08728e0a6",
+    "termux-apps": "e5b994b30a093ebb40a2036be3f3d204ede243d42f8e1111139101927de7a50a",
+    "termux-devices": "2c0363642acf7d16d9f72171d0922076224d359fe45575afa87d932851080e55",
+    "termux-home": "f64a934f7432ed9d4ead8c87f084568def15e409bc635c5c2372d7383482125e",
+    "termux-identity": "c7c2595cdb3db7b2aac430484db1e847ad7f86f9fead467b1c3ddffabfa3f022",
+    "termux-recovery": "e6584ba303195a781499f2d5f78de79ae2a44f51ee04fc3b4320ca7c000071f2",
+    "termux-rules": "fe4ab3df136115d2a047701e3aa1d63876c0ae6a7a93b408c57cdb3716b3a9ed",
+    "termux-security": "5e06a5765e7688a26ec131557e0d34058a0134e6f14ba5b3c4eb6ec2e506305b"
+  },
+  "generated_at": "2026-08-06T18:07:55Z",
+  "promoted_at": "2026-08-06T18:14:18Z",
+  "release_tag": "lite-2026.08.06.2",
   "sanitized": true,
-  "schema_version": "1.0.0",
-  "source_commit": "3a81745fbd4c2fdeb17f2308a0d3fdbd5c2f3aa5",
-  "status": "verified"
+  "schema_version": "2.0.0",
+  "source_commit": "ae54d3adf6c544d040fb923a1894f66b2a92513c",
+  "status": "partial"
 }

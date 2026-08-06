@@ -31,15 +31,18 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_BASE_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/docs/lite/generate_docs.py |
 | `LITE_DOCS_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py |
 | `LITE_E2E_LIVE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh, scripts/docs/lite/generate_docs.py |
-| `LITE_E2E_MODE` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts, scripts/dev/lite/run-playwright-mocked.sh |
+| `LITE_E2E_MODE` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts, scripts/dev/lite/run-playwright-mocked.sh, scripts/test/parity/promote_runtime_verification.py |
 | `LITE_FRONTEND_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/docs/lite/generate_docs.py |
 | `LITE_INVITE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `LITE_MODE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py |
+| `LITE_PARITY_API_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/test/parity/capture_live_recovery_parity.py, scripts/test/parity/capture_runtime_parity.py |
 | `LITE_PARITY_ENVIRONMENT` | configuration | source-defined or empty | yes | component-dependent | scripts/test/parity/parity_evidence.py |
+| `LITE_PARITY_MAX_EVIDENCE_AGE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | scripts/test/parity/compare_runtime_parity.py, scripts/test/parity/promote_runtime_verification.py |
 | `LITE_PARITY_OPENAPI_BASELINE` | configuration | $ROOT/contracts/parity/openapi-baseline.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `LITE_PARITY_OPENAPI_CURRENT` | configuration | $ROOT/contracts/generated/lite-openapi.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `LITE_PARITY_OPENAPI_PROMOTION` | configuration | $ROOT/contracts/parity/openapi-baseline-promotion.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `LITE_PARITY_OPENAPI_URL` | configuration | $BASE_URL/openapi.json | yes | component-dependent | scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
+| `LITE_PARITY_RELEASE_TAG` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/parity/generate_parity.py, scripts/test/parity/capture_runtime_parity.py, scripts/test/parity/promote_runtime_verification.py |
 | `LITE_PARITY_SCHEMATHESIS_DISCOVERY_EXAMPLES` | configuration | 12 | yes | component-dependent | scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_PARITY_SCHEMATHESIS_DISCOVERY_MAX_FAILURES` | configuration | 100 | yes | component-dependent | scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_PARITY_SCHEMATHESIS_DISCOVERY_RATE_LIMIT` | configuration | 3/s | yes | component-dependent | scripts/test/parity/run_schemathesis_discovery.sh |
@@ -49,6 +52,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_PARITY_SCHEMATHESIS_RATE_LIMIT` | configuration | 4/s | yes | component-dependent | scripts/test/parity/run_schemathesis.sh |
 | `LITE_PARITY_SCHEMATHESIS_TIMEOUT` | configuration | 20 | yes | component-dependent | scripts/test/parity/run_schemathesis.sh |
 | `LITE_PARITY_SCHEMA_TIMEOUT` | configuration | 12 | yes | component-dependent | scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
+| `LITE_PARITY_TERMUX_EVIDENCE` | configuration | source-defined or empty | yes | component-dependent | scripts/test/parity/capture_live_recovery_parity.py |
 | `LITE_ROLES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `LITE_RUNTIME_CAPTURE_MAX_BYTES` | configuration | 524288 | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh |
 | `LITE_RUNTIME_CAPTURE_ROOT` | configuration | $ROOT/.pocketlab-dev/runtime-captures | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh |
@@ -67,6 +71,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `NATS_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, scripts/docs/lite/generate_docs.py |
 | `NATS_USER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh |
 | `PLAYWRIGHT_BROWSER_REPORT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/check-wsl-ubuntu-dev.sh |
+| `PLAYWRIGHT_REPORT` | configuration | source-defined or empty | no | component-dependent | scripts/test/parity/promote_runtime_verification.py |
 | `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/setup.sh |
 | `POCKETLAB_ACTIVE_CODE_SCAN_EXCLUDES` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-iac.sh |
 | `POCKETLAB_ADAPTIVE_EVENT_LOOP_CRITICAL_MS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/adaptive_runtime.py |
@@ -699,7 +704,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_TELEMETRY_PATH` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
 | `POCKETLAB_TELEMETRY_SAMPLE_SECONDS` | configuration | 30 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py |
 | `POCKETLAB_TERMUX_HOST_KEY_FINGERPRINT` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
-| `POCKETLAB_TERMUX_SSH_ALIAS` | configuration | pocketlab-termux | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh, scripts/docs/runtime/setup_termux_ssh.sh, scripts/test/parity/verify_termux_parity.sh |
+| `POCKETLAB_TERMUX_SSH_ALIAS` | configuration | pocketlab-termux | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh, scripts/docs/runtime/setup_termux_ssh.sh, scripts/test/parity/capture_runtime_parity.py, scripts/test/parity/verify_termux_parity.sh |
 | `POCKETLAB_TERMUX_SSH_HOST` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
 | `POCKETLAB_TERMUX_SSH_IDENTITY` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
 | `POCKETLAB_TERMUX_SSH_PORT` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |

@@ -451,7 +451,7 @@ def _canonical_runtime_values(domain: dict) -> tuple[dict, dict]:
     return backend, frontend
 
 
-def test_compare_command_end_to_end_verifies_all_seven_domains(tmp_path):
+def test_compare_command_end_to_end_reports_partial_domains_truthfully(tmp_path):
     payload = model()
     input_root = tmp_path / 'parity'
     source = 'a' * 40
@@ -485,13 +485,91 @@ def test_compare_command_end_to_end_verifies_all_seven_domains(tmp_path):
         text=True,
         env={**os.environ, 'TERM': 'xterm'},
     )
-    assert completed.returncode == 0, completed.stdout + completed.stderr
-    result = json.loads(output.read_text(encoding='utf-8'))
-    jsonschema.Draft202012Validator(json.loads(CMP_SCHEMA.read_text())).validate(result)
-    assert result['status'] == 'verified'
-    assert len(result['domains']) == 7
-    assert all(item['runtime_parity'] in {'verified', 'verified-with-mapped-presentation'} for item in result['domains'])
-    encoded = json.dumps(result, sort_keys=True)
+    assert completed.returncode == 2, completed.stdout + completed.stderr
+    assert (
+        "PASS runtime semantic comparison: "
+        "7 domains, status=partial"
+    ) in completed.stdout
+
+    comparison = json.loads(
+        output.read_text(encoding="utf-8")
+    )
+
+    assert comparison["status"] == "partial"
+    assert len(comparison["domains"]) == 7
+
+    domains = {
+        domain["id"]: domain
+        for domain in comparison["domains"]
+    }
+
+    assert set(domains) == {
+        "home",
+        "apps",
+        "devices",
+        "security",
+        "identity",
+        "rules",
+        "recovery",
+    }
+
+    assert (
+        domains["identity"]["implementation_status"]
+        == "partial"
+    )
+    assert domains["identity"]["status"] == "partial"
+    assert domains["identity"]["runtime_parity"] == "partial"
+
+    assert (
+        domains["rules"]["implementation_status"]
+        == "partial"
+    )
+    assert domains["rules"]["status"] == "partial"
+    assert domains["rules"]["runtime_parity"] == "partial"
+
+    for domain_id in {
+        "home",
+        "apps",
+        "devices",
+        "security",
+    }:
+        assert (
+            domains[domain_id]["implementation_status"]
+            == "implemented"
+        )
+        assert domains[domain_id]["status"] == "verified"
+
+    assert (
+        domains["recovery"]["implementation_status"]
+        == "partial"
+    )
+    assert domains["recovery"]["status"] == "partial"
+    assert domains["recovery"]["runtime_parity"] == "partial"
+    jsonschema.Draft202012Validator(
+        json.loads(CMP_SCHEMA.read_text())
+    ).validate(comparison)
+    assert len(comparison["domains"]) == 7
+    implemented_domains = {
+        "home",
+        "apps",
+        "devices",
+        "security",
+    }
+
+    for domain_id in implemented_domains:
+        assert domains[domain_id]["runtime_parity"] in {
+            "verified",
+            "verified-with-mapped-presentation",
+        }
+
+    for domain_id in {
+        "identity",
+        "rules",
+        "recovery",
+    }:
+        assert domains[domain_id]["runtime_parity"] == "partial"
+
+    encoded = json.dumps(comparison, sort_keys=True)
     assert 'Canonical summary' not in encoded
     assert 'Sanitized user-facing summary' not in encoded
 

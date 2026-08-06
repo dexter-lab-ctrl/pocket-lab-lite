@@ -1536,6 +1536,10 @@
             ],
             "waiting": [
               "Waiting"
+            ],
+            "protected server host": [
+              "Protected server host",
+              "Protected control device"
             ]
           },
           "operator": "state-machine-map",
@@ -1646,7 +1650,7 @@
               "authority_severity": "high",
               "extract": "path",
               "id": "active_scan",
-              "path": "active_scan",
+              "path": "scan_progress.active_scan",
               "route": "primary"
             },
             {
@@ -1654,7 +1658,7 @@
               "authority_severity": "high",
               "extract": "path",
               "id": "profile",
-              "path": "last_run.profile",
+              "path": "last_run.scan_profile",
               "route": "primary"
             },
             {
@@ -1662,15 +1666,7 @@
               "authority_severity": "high",
               "extract": "path",
               "id": "finding_count",
-              "path": "finding_count",
-              "route": "primary"
-            },
-            {
-              "authority_operator": "exact",
-              "authority_severity": "high",
-              "extract": "path",
-              "id": "read_degraded",
-              "path": "read_degraded",
+              "path": "findings_count",
               "route": "primary"
             }
           ],
@@ -1788,7 +1784,8 @@
     },
     {
       "accepted_limitations": [
-        "Credential values are never observable parity fields."
+        "Credential values are never observable parity fields.",
+        "Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented."
       ],
       "api_projections": [
         "identity"
@@ -1806,8 +1803,10 @@
       ],
       "frontend_surface": "src/lite/LiteIdentity.jsx",
       "id": "identity",
+      "implementation_status": "partial",
       "known_gaps": [
-        "The current tab is direct-rendered and has no dedicated selector layer."
+        "The current tab is direct-rendered and has no dedicated selector layer.",
+        "Identity guard and protected server-host projections are not fully implemented."
       ],
       "label": "Identity",
       "live_api_coverage": "unvalidated",
@@ -1843,7 +1842,9 @@
               "authority_severity": "high",
               "extract": "path",
               "id": "identity_guard",
+              "implementation_status": "planned",
               "path": "identity_guard.status",
+              "required": false,
               "route": "primary"
             },
             {
@@ -1851,7 +1852,9 @@
               "authority_severity": "high",
               "extract": "path",
               "id": "protected_host",
+              "implementation_status": "planned",
               "path": "protected_server_host",
+              "required": false,
               "route": "primary"
             }
           ],
@@ -1909,6 +1912,11 @@
             "ready": [
               "Access readiness",
               "Ready"
+            ],
+            "unknown": [
+              "Checking access",
+              "Checking access protection",
+              "Access readiness"
             ]
           },
           "operator": "intentional-presentation-map",
@@ -1960,6 +1968,7 @@
       ],
       "frontend_surface": "src/lite/LiteRules.jsx",
       "id": "rules",
+      "implementation_status": "partial",
       "known_gaps": [
         "Per-rule identity and execution history are planned, not present in the current API."
       ],
@@ -2097,7 +2106,8 @@
     {
       "accepted_limitations": [
         "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
-        "App restore apply remains explicitly unsupported where the repository reports it unavailable."
+        "App restore apply remains explicitly unsupported where the repository reports it unavailable.",
+        "Historical restore previews are evidence only and never authorize a new restore."
       ],
       "api_projections": [
         "recovery-summary",
@@ -2106,10 +2116,11 @@
         "recovery-backup-history"
       ],
       "api_routes": [
-        "/api/lite/recovery/summary",
+        "/api/lite/recovery/backups",
+        "/api/lite/recovery/database",
         "/api/lite/recovery/details",
         "/api/lite/recovery/operations",
-        "/api/lite/recovery/backups"
+        "/api/lite/recovery/summary"
       ],
       "backend_authorities": [
         "backup-state-file",
@@ -2215,47 +2226,119 @@
               "authority_operator": "exact",
               "authority_severity": "high",
               "extract": "path",
-              "id": "restore_preview_status",
-              "path": "latest_restore_preview.status",
-              "route": "primary"
-            },
-            {
-              "authority_operator": "exact",
-              "authority_severity": "high",
-              "extract": "path",
-              "id": "restore_allowed",
-              "path": "latest_restore_preview.restore_allowed",
-              "route": "primary"
-            },
-            {
-              "authority_operator": "exact",
-              "authority_severity": "high",
-              "extract": "path",
-              "id": "last_restore_status",
-              "path": "last_restore.status",
-              "route": "primary"
-            },
-            {
-              "authority_operator": "exact",
-              "authority_severity": "high",
-              "extract": "path",
               "id": "maintenance_state",
               "path": "maintenance.status",
               "route": "primary"
             },
             {
               "authority_operator": "exact",
+              "authority_severity": "critical",
+              "extract": "path",
+              "id": "last_restore_id",
+              "path": "last_restore.restore_id",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "critical",
+              "extract": "path",
+              "id": "last_restore_status",
+              "path": "last_restore.status",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
               "authority_severity": "high",
               "extract": "path",
-              "id": "database_protection_status",
-              "path": "database_protection.status",
-              "route": "primary"
+              "id": "last_restore_completed_at",
+              "path": "last_restore.completed_at",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "latest_preview_id",
+              "path": "latest_restore_preview.preview_id",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "critical",
+              "extract": "path",
+              "id": "restore_allowed",
+              "path": "latest_restore_preview.restore_allowed",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "critical",
+              "extract": "path",
+              "id": "fresh_preview_required",
+              "path": "latest_restore_preview.requires_confirmation",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "restore_history_total",
+              "path": "restore_history.total",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "completed_restore_count",
+              "path": "restore_history.completed",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "preview_reference_count",
+              "path": "restore_history.preview_references",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "projection_reconciliation_status",
+              "path": "projection_reconciliation.status",
+              "route": "database",
+              "required": true,
+              "implementation_status": "implemented"
             }
           ],
           "routes": [
             {
               "id": "primary",
               "path": "/api/lite/recovery/summary"
+            },
+            {
+              "id": "database",
+              "path": "/api/lite/recovery/database"
             }
           ]
         },
@@ -2296,9 +2379,19 @@
         {
           "backend_path": "read_degraded",
           "boundary": "live-api-live-ui",
-          "frontend_path": "stale_warning_visible",
+          "frontend_path": "summary_label",
           "id": "recovery-stale-semantics",
-          "operator": "boolean-equivalence",
+          "mapping": {
+            "false": [
+              "Recovery Ready",
+              "Recovery is ready"
+            ],
+            "true": [
+              "Recovery information needs a refresh",
+              "needs a refresh"
+            ]
+          },
+          "operator": "intentional-presentation-map",
           "severity": "critical"
         },
         {
@@ -2361,6 +2454,60 @@
           "id": "recovery-sanitized-ui",
           "operator": "safe-redaction",
           "severity": "critical"
+        },
+        {
+          "backend_path": "last_restore_id",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "last_restore_id",
+          "id": "recovery-last-restore-identity",
+          "operator": "identity-match",
+          "severity": "critical",
+          "required": true,
+          "implementation_status": "implemented"
+        },
+        {
+          "backend_path": "last_restore_status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "last_restore_status_label",
+          "id": "recovery-last-restore-status",
+          "operator": "intentional-presentation-map",
+          "mapping": {
+            "completed": [
+              "Restored",
+              "Completed"
+            ],
+            "failed": [
+              "Needs review",
+              "Failed"
+            ],
+            "rolled_back": [
+              "Rolled back safely",
+              "Rolled back"
+            ]
+          },
+          "severity": "critical",
+          "required": true,
+          "implementation_status": "implemented"
+        },
+        {
+          "backend_path": "completed_restore_count",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "restore_history_count",
+          "id": "recovery-history-count",
+          "operator": "exact",
+          "severity": "high",
+          "required": true,
+          "implementation_status": "implemented"
+        },
+        {
+          "backend_path": "fresh_preview_required",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "fresh_preview_required_visible",
+          "id": "recovery-historical-preview-safety",
+          "operator": "boolean-equivalence",
+          "severity": "critical",
+          "required": true,
+          "implementation_status": "implemented"
         }
       ],
       "status": "ready-with-accepted-limitations",
@@ -2371,7 +2518,8 @@
       "unsupported_operations": [
         "Unsafe writes remain disabled while the recovery projection is stale."
       ],
-      "vertical_slice": true
+      "vertical_slice": true,
+      "implementation_status": "implemented"
     }
   ],
   "environments": [

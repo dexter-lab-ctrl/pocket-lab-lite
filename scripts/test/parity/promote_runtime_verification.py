@@ -162,17 +162,53 @@ def validate_freshness(payload: dict[str, Any]) -> None:
 
 
 def validate_promotable_comparison(comparison: dict[str, Any]) -> None:
-    incomplete_runtime = {"partial", "capture-failed", "stale-evidence", "runtime-unavailable", "unvalidated"}
+    hard_incomplete_runtime = {
+        "capture-failed",
+        "stale-evidence",
+        "runtime-unavailable",
+        "capture-corrupted",
+        "contract-gap",
+        "unvalidated",
+    }
     for domain in comparison["domains"]:
         coverage = {
-            domain["live_api_coverage"], domain["live_ui_coverage"], domain["live_termux_coverage"]
+            domain["live_api_coverage"],
+            domain["live_ui_coverage"],
+            domain["live_termux_coverage"],
         }
         if coverage != {"observed"}:
-            raise SystemExit(f"runtime comparison is incomplete for {domain['id']}: coverage={sorted(coverage)}")
-        if domain["runtime_parity"] in incomplete_runtime:
-            raise SystemExit(f"runtime comparison is incomplete for {domain['id']}: parity={domain['runtime_parity']}")
-        if any(item["result"] == "not-observed" for item in domain["comparisons"]):
-            raise SystemExit(f"runtime comparison contains unobserved fields for {domain['id']}")
+            raise SystemExit(
+                f"runtime comparison is incomplete for {domain['id']}: "
+                f"coverage={sorted(coverage)}"
+            )
+
+        blocking = [
+            item
+            for item in domain["comparisons"]
+            if runtime_compare.blocking_not_observed(item)
+        ]
+        if blocking:
+            fields = sorted(str(item.get("id") or "unknown") for item in blocking)
+            raise SystemExit(
+                "runtime comparison contains required unobserved fields for "
+                f"{domain['id']}: {fields}"
+            )
+
+        runtime_parity = str(domain["runtime_parity"])
+        if runtime_parity in hard_incomplete_runtime:
+            raise SystemExit(
+                f"runtime comparison is incomplete for {domain['id']}: "
+                f"parity={runtime_parity}"
+            )
+
+        if (
+            runtime_parity == "partial"
+            and domain.get("implementation_status") not in {"partial", "planned"}
+        ):
+            raise SystemExit(
+                f"runtime comparison is incomplete for {domain['id']}: "
+                f"parity={runtime_parity}"
+            )
 
 
 def validate_observation(
@@ -247,16 +283,22 @@ def validate_evidence_bundle(comparison: dict[str, Any], source_commit: str, rel
         stored = comparison_by_domain[domain_id]
         if stored["comparisons"] != recomputed:
             raise SystemExit(f"runtime comparison results do not match captured evidence: {domain_id}")
-        counts = {name: 0 for name in ("match", "mapped", "mismatch", "unsupported", "not-observed")}
+        counts = {name: 0 for name in ("match", "mapped", "mismatch", "unsupported", "not-observed", "not-applicable")}
         for item in recomputed:
-            counts[item["result"]] += 1
+            result = str(item.get("result") or "unknown")
+            counts[result] = counts.get(result, 0) + 1
         summary = {
             "match": counts["match"], "mapped": counts["mapped"], "mismatch": counts["mismatch"],
             "unsupported": counts["unsupported"], "not_observed": counts["not-observed"],
+            "not_applicable": counts["not-applicable"],
         }
         if stored["comparison_summary"] != summary:
             raise SystemExit(f"runtime comparison summary does not match captured evidence: {domain_id}")
-        runtime_parity, status = runtime_compare.semantic_status(recomputed, ["observed"] * 4)
+        runtime_parity, status = runtime_compare.semantic_status(
+            recomputed,
+            ["observed"] * 4,
+            str(domain.get("implementation_status") or "implemented"),
+        )
         if stored["runtime_parity"] != runtime_parity or stored["status"] != status:
             raise SystemExit(f"runtime comparison status does not match captured evidence: {domain_id}")
         fingerprints = {

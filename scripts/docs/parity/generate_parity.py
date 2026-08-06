@@ -458,7 +458,7 @@ def render_domain_doc(domain: dict[str, Any], model: dict[str, Any], digest: str
         "\n\nMissing, failed, stale, or unavailable evidence is classified separately from drift.\n\n",
         "## 22. Last promoted runtime result\n\n",
         markdown_table(
-            ["Runtime parity", "Runtime status", "Match", "Mapped", "Mismatch", "Unsupported", "Not observed"],
+            ["Runtime parity", "Runtime status", "Match", "Mapped", "Mismatch", "Unsupported", "Not observed", "Not applicable"],
             [(
                 domain.get("runtime_parity", "unvalidated"),
                 domain.get("runtime_status", "unvalidated"),
@@ -467,6 +467,7 @@ def render_domain_doc(domain: dict[str, Any], model: dict[str, Any], digest: str
                 comparison_summary.get("mismatch", 0),
                 comparison_summary.get("unsupported", 0),
                 comparison_summary.get("not_observed", 0),
+                comparison_summary.get("not_applicable", 0),
             )],
         ),
         "\n",
@@ -750,6 +751,8 @@ def validate_links(model: dict[str, Any]) -> None:
         "server_identity_visible", "tailscale_ip_visible", "protection_toggle_pressed",
         "home_cpu_note", "recovery_status", "recovery_summary", "latest_backup_id",
         "stale_warning_visible", "backup_action_disabled", "status_label", "summary_label",
+        "last_restore_id", "last_restore_status_label", "restore_history_count",
+        "historical_preview_visible", "fresh_preview_required_visible",
     }
     mapping_ids: set[str] = set()
     runtime_by_domain = {domain: [] for domain in expected_domains}

@@ -41,9 +41,14 @@ def main() -> int:
     # available for later promotion.
     OUTPUT.unlink(missing_ok=True)
     payload = fetch_json(f"{API_URL}/api/lite/recovery/summary")
+    database = fetch_json(f"{API_URL}/api/lite/recovery/database")
     latest = payload.get("latest_backup") or payload.get("last_backup") or {}
     if not isinstance(latest, dict):
         latest = {}
+    last_restore = database.get("last_restore") or {}
+    latest_preview = database.get("latest_restore_preview") or {}
+    restore_history = database.get("restore_history") or {}
+    reconciliation = database.get("projection_reconciliation") or {}
 
     evidence = {
         "recovery_summary": {
@@ -61,9 +66,19 @@ def main() -> int:
                 "verification_status": safe_text(latest.get("verification_status")),
                 "created_at": safe_text(latest.get("created_at")),
             },
+            "last_restore_id": safe_text(last_restore.get("restore_id")),
+            "last_restore_status": safe_text(last_restore.get("status") or last_restore.get("state")),
+            "last_restore_completed_at": safe_text(last_restore.get("completed_at")),
+            "latest_preview_id": safe_text(latest_preview.get("preview_id")),
+            "restore_allowed": latest_preview.get("restore_allowed") is True,
+            "fresh_preview_required": latest_preview.get("restore_allowed") is not True,
+            "restore_history_total": int(restore_history.get("total") or 0),
+            "completed_restore_count": int(restore_history.get("completed") or 0),
+            "preview_reference_count": int(restore_history.get("preview_references") or 0),
+            "projection_reconciliation_status": safe_text(reconciliation.get("status")),
         },
         "sanitized": True,
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "status": "observed",
     }
 

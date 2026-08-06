@@ -2885,6 +2885,20 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
                 "security.progress", "security.summary", reason="security_runtime_started"
             )
             logger.info("pocketlab.startup.stage_ready stage=security_projection")
+            try:
+                reconciliation = await asyncio.to_thread(
+                    lite_database_recovery.reconcile_database_restore_projection
+                )
+                logger.info(
+                    "pocketlab.recovery_projection.reconciled status=%s changed=%s",
+                    reconciliation.get("status"),
+                    reconciliation.get("changed", False),
+                )
+            except Exception as exc:
+                logger.warning(
+                    "pocketlab.recovery_projection.reconcile_degraded error_type=%s",
+                    type(exc).__name__,
+                )
         except Exception as exc:
             logger.warning(
                 "pocketlab.startup.stage_degraded stage=security_projection error_type=%s",

@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
+semantic_fingerprint: 44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -15,7 +15,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Repository | Fixture | Mock browser | Live API | Live UI | Live Termux | Runtime parity | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified | partial | verified | unvalidated | unvalidated | unvalidated | unvalidated | partial |
+| verified | partial | verified | observed | observed | observed | verified-with-mapped-presentation | verified |
 
 ## 2. Repository-backed flow
 
@@ -73,27 +73,26 @@ FastAPI and repository authorities remain the source of truth. Frontend caches a
 
 ## 9. Live API observation
 
-Status: **unvalidated**
+Status: **observed**
 
 | Observation | Route adapter | Extractor | Path | API ↔ Termux comparator | Severity |
 | --- | --- | --- | --- | --- | --- |
 | status | primary | path | status | exact | high |
 | summary | primary | path | summary | exact | high |
 | score | primary | path | score | exact | high |
-| active_scan | primary | path | active_scan | exact | high |
-| profile | primary | path | last_run.profile | exact | high |
-| finding_count | primary | path | finding_count | exact | high |
-| read_degraded | primary | path | read_degraded | exact | high |
+| active_scan | primary | path | scan_progress.active_scan | exact | high |
+| profile | primary | path | last_run.scan_profile | exact | high |
+| finding_count | primary | path | findings_count | exact | high |
 
 ## 10. Live UI observation
 
-Status: **unvalidated**. Screen: `security`. Required projects: live-desktop, live-mobile.
+Status: **observed**. Screen: `security`. Required projects: live-desktop, live-mobile.
 
 Browser capture uses visible semantics, accessible controls, existing stable screen identifiers, bounded text, exact backend-derived identity checks, and privacy redaction.
 
 ## 11. Live Termux observation
 
-Status: **unvalidated**. The Termux lane uses the same allowlisted GET adapters through the managed read-only SSH alias and the phone loopback API, or an explicitly configured safe tunnel. It never reads databases, credentials, or environment secrets and never restarts services.
+Status: **observed**. The Termux lane uses the same allowlisted GET adapters through the managed read-only SSH alias and the phone loopback API, or an explicitly configured safe tunnel. It never reads databases, credentials, or environment secrets and never restarts services.
 
 ## 12. Field-level semantic comparisons
 
@@ -136,6 +135,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
+| backend-security | e867a89289f457f8fa68f71a06b929b0449b9618303c265f26c69235c34cb51e |
+| browser-security-live-desktop | 6b3d0849871147e2bd43ff8b6c12c8dffafec449a1a8e8b765c66a7bc6a36e6f |
+| browser-security-live-mobile | 76df3ef0b65d2f3021d0f7016b5cf77c3f48338e80743845df101d1e2123b2a0 |
+| observation-backend | 3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b |
+| observation-live_desktop | 3cfcdbbe5c0f707338e3bc7216b00624092248534b7e96322ef4a2b3b2f30ca5 |
+| observation-live_mobile | 3cfcdbbe5c0f707338e3bc7216b00624092248534b7e96322ef4a2b3b2f30ca5 |
+| observation-termux | 3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b |
+| playwright-report | e5db3fbc6a27b2e50d0c8dfb61a66c49d4d3b1ac5fd900e481c30278860c4dc4 |
+| runtime-comparison | c791b467b9c2b8c658ae5960329abd8615c1b62edb5ee3fe82d916a08728e0a6 |
+| termux-security | 5e06a5765e7688a26ec131557e0d34058a0134e6f14ba5b3c4eb6ec2e506305b |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -143,7 +152,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 1.0.0 | lite-2026.08.05.2 | 3a81745fbd4c2fdeb17f2308a0d3fdbd5c2f3aa5 | 2026-08-06T07:48:03Z |
+| 2.0.0 | lite-2026.08.06.2 | ae54d3adf6c544d040fb923a1894f66b2a92513c | 2026-08-06T18:14:18Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 
@@ -178,6 +187,6 @@ Missing, failed, stale, or unavailable evidence is classified separately from dr
 
 ## 22. Last promoted runtime result
 
-| Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed |
-| --- | --- | --- | --- | --- | --- | --- |
-| unvalidated | unvalidated | 0 | 0 | 0 | 0 | 0 |
+| Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed | Not applicable |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| verified-with-mapped-presentation | verified | 11 | 4 | 0 | 0 | 0 | 0 |

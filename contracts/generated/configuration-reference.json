@@ -152,7 +152,8 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "playwright.config.ts",
-        "scripts/dev/lite/run-playwright-mocked.sh"
+        "scripts/dev/lite/run-playwright-mocked.sh",
+        "scripts/test/parity/promote_runtime_verification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -223,12 +224,50 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "LITE_PARITY_API_URL",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/capture_live_recovery_parity.py",
+        "scripts/test/parity/capture_runtime_parity.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "LITE_PARITY_ENVIRONMENT",
       "production": true,
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/test/parity/parity_evidence.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_MAX_EVIDENCE_AGE_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/compare_runtime_parity.py",
+        "scripts/test/parity/promote_runtime_verification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -304,6 +343,26 @@
         "scripts/test/parity/run_schemathesis_discovery.sh"
       ],
       "safe_default": "$BASE_URL/openapi.json",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_RELEASE_TAG",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/parity/generate_parity.py",
+        "scripts/test/parity/capture_runtime_parity.py",
+        "scripts/test/parity/promote_runtime_verification.py"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -467,6 +526,24 @@
         "scripts/test/parity/run_schemathesis_discovery.sh"
       ],
       "safe_default": "12",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_TERMUX_EVIDENCE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/capture_live_recovery_parity.py"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -797,6 +874,24 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/check-wsl-ubuntu-dev.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "PLAYWRIGHT_REPORT",
+      "production": false,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/promote_runtime_verification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -12531,6 +12626,7 @@
       "runtime_readers": [
         "scripts/docs/runtime/capture_termux_runtime.sh",
         "scripts/docs/runtime/setup_termux_ssh.sh",
+        "scripts/test/parity/capture_runtime_parity.py",
         "scripts/test/parity/verify_termux_parity.sh"
       ],
       "safe_default": "pocketlab-termux",

@@ -64,7 +64,7 @@ React/Vite PWA
 
 **Architecture source fingerprint:** `20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee`
 
-**Repository source inventory fingerprint:** `01084f6ec2f4d7f271d88b55bd042f51ff44d6fac56e49a36ac67de45a7f44ef`
+**Repository source inventory fingerprint:** `ce1bbb0531c1d241bc25eff4741c1a127403f644d186569db560c0281ec1f05e`
 
 ## Operational guarantees
 

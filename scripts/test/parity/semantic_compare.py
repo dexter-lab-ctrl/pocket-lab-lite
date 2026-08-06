@@ -187,12 +187,62 @@ def _normalized_contains(haystack_value: Any, needle_value: Any) -> bool:
     needle = _normalized(needle_value)
     if not needle:
         return False
-    return f" {needle} " in f" {haystack} "
+
+    if f" {needle} " in f" {haystack} ":
+        return True
+
+    raw_needle = str(needle_value or "").strip()
+
+    # Browser innerText can concatenate adjacent DOM nodes without
+    # whitespace. Permit a compact comparison only for:
+    #
+    # - multi-word semantic phrases; or
+    # - camel-cased canonical names such as PhotoPrism.
+    #
+    # Ordinary single words retain token-boundary semantics, so
+    # "Safe" does not match "Safety".
+    allow_compact = (
+        any(character.isspace() for character in raw_needle)
+        or any(
+            raw_needle[index - 1].islower()
+            and raw_needle[index].isupper()
+            for index in range(1, len(raw_needle))
+        )
+    )
+
+    if not allow_compact:
+        return False
+
+    compact_haystack = haystack.replace(" ", "")
+    compact_needle = needle.replace(" ", "")
+
+    return (
+        bool(compact_needle)
+        and compact_needle in compact_haystack
+    )
 
 
 def _contains_expected(frontend: Any, expected: Any) -> bool:
     values = expected if isinstance(expected, list) else [expected]
-    return any(_normalized_contains(frontend, item) for item in values)
+    normalized_frontend = _normalized(frontend)
+    return any(
+        normalized_expected
+        and normalized_expected in normalized_frontend
+        for item in values
+        if (normalized_expected := _normalized(item))
+    )
+
+
+_PRIVATE_IDENTITY_MARKER = "[private-identity]"
+
+
+def _capture_corrupted(value: Any) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    count = value.count(_PRIVATE_IDENTITY_MARKER)
+    return count >= 8 and (
+        count * len(_PRIVATE_IDENTITY_MARKER)
+    ) / max(len(value), 1) >= 0.05
 
 
 def _evidence_value(value: Any) -> Any:
@@ -311,17 +361,42 @@ def compare_domain(domain: dict[str, Any], backend_observation: dict[str, Any], 
     backend = backend_observation.get("observations") or {}
     frontend = frontend_observation.get("observations") or {}
     for definition in domain.get("semantic_mappings", []):
+        backend_value = get_path(
+            backend,
+            str(definition.get("backend_path") or "$"),
+        )
+        frontend_path = str(definition.get("frontend_path") or "$")
+        frontend_value = get_path(frontend, frontend_path)
         result = compare_values(
             str(definition["operator"]),
-            get_path(backend, str(definition.get("backend_path") or "$")),
-            get_path(frontend, str(definition.get("frontend_path") or "$")),
+            backend_value,
+            frontend_value,
             definition,
         )
+        if (
+            frontend_path == "screen_text"
+            and str(definition["operator"]) != "safe-redaction"
+            and _capture_corrupted(frontend_value)
+        ):
+            result = _result(
+                str(definition["operator"]),
+                "capture-corrupted",
+                backend_value,
+                frontend_value,
+                (
+                    "frontend semantic text was over-redacted during "
+                    "evidence capture; drift is unvalidated"
+                ),
+            )
         result.update({
             "id": str(definition["id"]),
             "severity": str(definition.get("severity") or "medium"),
             "boundary": str(definition.get("boundary") or "live-api-live-ui"),
             "accepted_limitation": bool(definition.get("accepted_limitation", False)),
+            "required": bool(definition.get("required", True)),
+            "implementation_status": str(
+                definition.get("implementation_status") or "implemented"
+            ),
         })
         results.append(result)
     return results
