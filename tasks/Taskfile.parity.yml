@@ -156,12 +156,21 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/test/parity/parity_evidence.py check'
 
+  lite:evidence:runtime:preflight:
+    desc: Fail-closed release, Git, and live-evidence checks before runtime promotion
+    preconditions:
+      - sh: 'test -n "{{.LITE_PARITY_RELEASE_TAG}}"'
+        msg: Set LITE_PARITY_RELEASE_TAG to the installed Lite release tag before promotion
+    cmds:
+      - '{{.PYTHON}} scripts/test/parity/preflight_runtime_promotion.py --release-tag "{{.LITE_PARITY_RELEASE_TAG}}"'
+
   lite:evidence:runtime:promote:
     desc: Explicitly promote sanitized all-tab semantic evidence, including truthful drift, for a tagged release
     preconditions:
       - sh: 'test -n "{{.LITE_PARITY_RELEASE_TAG}}"'
         msg: Set LITE_PARITY_RELEASE_TAG to the installed Lite release tag before promotion
     cmds:
+      - task: lite:evidence:runtime:preflight
       - '{{.PYTHON}} scripts/test/parity/promote_runtime_verification.py promote --release-tag "{{.LITE_PARITY_RELEASE_TAG}}"'
       - '{{.PYTHON}} scripts/docs/parity/generate_parity.py generate'
 
