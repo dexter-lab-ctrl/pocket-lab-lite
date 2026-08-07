@@ -4,7 +4,7 @@
       "api_routes": [
         "/api/lite/fleet"
       ],
-      "fingerprint": "e8860ff8979fcd7771c7b177685b801f0af561db6740290f19cdf4fc79f36958",
+      "fingerprint": "f9d11a02eae7f808c42564772ede0f9ab4f6def6da5b42039f5488a6e522ec53",
       "id": "devices",
       "selectors": [
         "selectDevicesScreenView",

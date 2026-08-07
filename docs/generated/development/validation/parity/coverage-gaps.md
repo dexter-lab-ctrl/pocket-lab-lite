@@ -19,6 +19,6 @@ generator: scripts/docs/parity/generate_parity.py
 | Security | verified | verified-with-mapped-presentation | A missing scanner is runtime-unavailable, not semantic drift. |
 | Identity | partial | partial | The current tab is direct-rendered and has no dedicated selector layer.; Identity guard and protected server-host projections are not fully implemented. |
 | Rules | partial | partial | Per-rule identity and execution history are planned, not present in the current API. |
-| Backup & Restore | ready-with-accepted-limitations | partial | Live Termux and live browser semantic capture remain explicit; missing capture is not drift. |
+| Backup & Restore | verified | verified-with-mapped-presentation | Live Termux and live browser semantic capture remain explicit; missing capture is not drift. |
 
 Repository-derived contracts exist for all seven tabs. Successful, mapped, drifted, partial, failed, stale, unavailable, unsupported, and accepted-limitation outcomes remain distinct.

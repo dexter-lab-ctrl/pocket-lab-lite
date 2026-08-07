@@ -4,7 +4,7 @@
       "api_routes": [
         "/api/lite/identity"
       ],
-      "fingerprint": "d2a9d4d39c841a4f4b26cbfaca4adc631d6e20e45f9cca85d2e64e4f2d47342d",
+      "fingerprint": "683ad844e9b488ebec6c7d491f411bf94fbbc1c4ab702fdaeadeebac8170423f",
       "id": "identity",
       "selectors": [
         "direct-render"

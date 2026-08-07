@@ -8,7 +8,7 @@
         "/api/lite/recovery/operations",
         "/api/lite/recovery/summary"
       ],
-      "fingerprint": "f03cd393edd3609bfdf229517ce4f34d8aea52cdba1b50fda06bedd45b4ea42b",
+      "fingerprint": "a67b3103bee7ea6c29a1ccbaf13114598e2291da2a0b1a6accf581db51b158af",
       "id": "recovery",
       "selectors": [
         "selectRecoverySummaryView",

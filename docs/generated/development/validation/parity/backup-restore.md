@@ -15,7 +15,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Repository | Fixture | Mock browser | Live API | Live UI | Live Termux | Runtime parity | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified | verified | verified | observed | observed | observed | partial | ready-with-accepted-limitations |
+| verified | verified | verified | observed | observed | observed | verified-with-mapped-presentation | verified |
 
 ## 2. Repository-backed flow
 
@@ -170,16 +170,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
-| backend-recovery | b9dfa1eadef96a1935b3312c0c8d01dbf7533e56840711cb50cc1fd15b899fd3 |
-| browser-recovery-live-desktop | 034bc452fc2af9bdcb5e81c945134156fd2dd6f694f6613ffcc5b72ced32d114 |
-| browser-recovery-live-mobile | 0857e0eb12e066d04ae603ae7e1659d0adddda5d2ec46b70859219878c5ce14d |
-| observation-backend | 4b10f84137aaf168660f81b817114acdbf109597b390bfa2c98825cda906a1bd |
-| observation-live_desktop | 8ba7a2857bcb9afcd1706487d492474c96d8106eb6ab472d8bc36a87010493b1 |
-| observation-live_mobile | 8ba7a2857bcb9afcd1706487d492474c96d8106eb6ab472d8bc36a87010493b1 |
-| observation-termux | ca15b36c04d03b22c83191afcb00a26d471a10e149617abdea159bda114dc59e |
-| playwright-report | e5db3fbc6a27b2e50d0c8dfb61a66c49d4d3b1ac5fd900e481c30278860c4dc4 |
-| runtime-comparison | c791b467b9c2b8c658ae5960329abd8615c1b62edb5ee3fe82d916a08728e0a6 |
-| termux-recovery | e6584ba303195a781499f2d5f78de79ae2a44f51ee04fc3b4320ca7c000071f2 |
+| backend-recovery | 1a69d94a160127337c3ebafea911ecdef6129040d5703347a11ba94e409face4 |
+| browser-recovery-live-desktop | b131a60faff1d002e6493fbaa1e3cf2f3929acba94b1116ffddd84cd171213f4 |
+| browser-recovery-live-mobile | 51bf676f58fa705e3c366c8fe9223fcb6ba72428fd52e50c8efed946fbe8c5ec |
+| observation-backend | fcb7a60ce157d4dff304bba70c61d9cf1520639fa4ca23dc308ec1393ccb4beb |
+| observation-live_desktop | e61562cfb90c90c4df666c65556614da8f019203f620f05a607d3502a3d07ce9 |
+| observation-live_mobile | e61562cfb90c90c4df666c65556614da8f019203f620f05a607d3502a3d07ce9 |
+| observation-termux | 1d1b8f4240656db4d7d5f85369ec78041fb3468cba5079b5a11681b02f027234 |
+| playwright-report | 5d578784ed5d4ca4c79556b65c6e065fa0c782a022736487aa5bb118a7fb926d |
+| runtime-comparison | 75e2ce0ba27765b03d32f62fc29d6280bc7679b56a6e64f675fefff76b62e6ca |
+| termux-recovery | fd84a71c42640484fec201fa4f28bd9c81db066529d7e540428be850e1282cb8 |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -187,7 +187,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 2.0.0 | lite-2026.08.06.2 | ae54d3adf6c544d040fb923a1894f66b2a92513c | 2026-08-06T18:14:18Z |
+| 2.0.0 | lite-2026.08.07.1 | c44493ede19f45299277d4da3af215dfe4ea8db3 | 2026-08-07T07:16:22Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 
@@ -224,4 +224,4 @@ Missing, failed, stale, or unavailable evidence is classified separately from dr
 
 | Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed | Not applicable |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| partial | partial | 17 | 6 | 0 | 0 | 1 | 0 |
+| verified-with-mapped-presentation | verified | 33 | 8 | 0 | 0 | 0 | 0 |

@@ -80,9 +80,9 @@
       "live_termux_coverage": "observed",
       "live_ui_coverage": "observed",
       "mocked_playwright_coverage": "verified",
-      "runtime_parity": "partial",
+      "runtime_parity": "verified-with-mapped-presentation",
       "source_coverage": "verified",
-      "status": "ready-with-accepted-limitations",
+      "status": "verified",
       "storybook_coverage": "verified",
       "vertical_slice": true
     },
