@@ -179,7 +179,9 @@ nav:
           - Threat models: generated/development/knowledge/threat-models.md
           - Releases and changes:
               - Overview: generated/development/knowledge/releases.md
-              - lite-2026.08.07.1: generated/development/knowledge/releases/lite-2026-08-07-1.md
+              # BEGIN GENERATED KNOWLEDGE RELEASE NAV: development
+              - lite-2026.08.07.3: generated/development/knowledge/releases/lite-2026-08-07-3.md
+              # END GENERATED KNOWLEDGE RELEASE NAV: development
           - Limitations and incidents: generated/development/knowledge/limitations-incidents.md
           - Troubleshooting: generated/development/knowledge/troubleshooting.md
           - Platforms and capabilities: generated/development/knowledge/capabilities.md
@@ -287,7 +289,9 @@ nav:
           - Known issues: generated/production/knowledge/known-issues.md
           - Releases:
               - Overview: generated/production/knowledge/releases.md
-              - lite-2026.08.07.1: generated/production/knowledge/releases/lite-2026-08-07-1.md
+              # BEGIN GENERATED KNOWLEDGE RELEASE NAV: production
+              - lite-2026.08.07.3: generated/production/knowledge/releases/lite-2026-08-07-3.md
+              # END GENERATED KNOWLEDGE RELEASE NAV: production
           - Supported platforms: generated/production/knowledge/supported-platforms.md
           - Security model: generated/production/knowledge/security.md
           - Vocabulary: generated/production/knowledge/vocabulary.md

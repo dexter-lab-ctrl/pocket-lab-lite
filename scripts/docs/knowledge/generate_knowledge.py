@@ -18,7 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = "scripts/docs/knowledge/generate_knowledge.py"
-GENERATOR_VERSION = 1
+GENERATOR_VERSION = 2
 SCHEMA_VERSION = "1.0.0"
 META = ROOT / "contracts/metadata/knowledge-base.json"
 ARCH = ROOT / "architecture/metadata/pocket-lab-architecture.json"
@@ -43,6 +43,20 @@ OUT = ROOT / "contracts/generated/knowledge"
 DEV = ROOT / "docs/generated/development/knowledge"
 PROD = ROOT / "docs/generated/production/knowledge"
 SCHEMA_ROOT = ROOT / "schemas/knowledge"
+MKDOCS = ROOT / "mkdocs.yml"
+
+NAV_MARKERS = {
+    "development": (
+        "# BEGIN GENERATED KNOWLEDGE RELEASE NAV: development",
+        "# END GENERATED KNOWLEDGE RELEASE NAV: development",
+        DEV,
+    ),
+    "production": (
+        "# BEGIN GENERATED KNOWLEDGE RELEASE NAV: production",
+        "# END GENERATED KNOWLEDGE RELEASE NAV: production",
+        PROD,
+    ),
+}
 SOURCE_COMMIT = os.environ.get("SOURCE_COMMIT", "").strip() or "uncommitted"
 SOURCE_GENERATED_AT = os.environ.get("SOURCE_GENERATED_AT", "").strip() or "uncommitted"
 
@@ -1033,6 +1047,69 @@ def build_outputs() -> tuple[dict[Path, str], dict[str, Any]]:
     return outputs, report
 
 
+
+
+def _release_title(text: str, path: Path) -> str:
+    match = re.search(r'^title: "([^"]+)"$', text, re.MULTILINE)
+    if not match:
+        raise ValueError(f"generated release page lacks a frontmatter title: {path.relative_to(ROOT)}")
+    return match.group(1)
+
+
+def expected_release_nav_lines(outputs: dict[Path, str], audience_root: Path, indent: str) -> list[str]:
+    release_root = audience_root / "releases"
+    entries = []
+    for path, text in outputs.items():
+        if path.parent != release_root or path.suffix != ".md":
+            continue
+        title = _release_title(text, path)
+        rel = path.relative_to(ROOT / "docs").as_posix()
+        entries.append((title, f"{indent}- {title}: {rel}"))
+    return [line for _, line in sorted(entries)]
+
+
+def render_mkdocs_release_nav(outputs: dict[Path, str], current: str) -> str:
+    rendered = current
+    for audience, (begin_marker, end_marker, audience_root) in NAV_MARKERS.items():
+        begin_matches = list(re.finditer(rf"^(?P<indent>\s*){re.escape(begin_marker)}\s*$", rendered, re.MULTILINE))
+        end_matches = list(re.finditer(rf"^(?P<indent>\s*){re.escape(end_marker)}\s*$", rendered, re.MULTILINE))
+        if len(begin_matches) != 1 or len(end_matches) != 1:
+            raise ValueError(
+                f"mkdocs release-nav markers for {audience} must exist exactly once "
+                f"(begin={len(begin_matches)}, end={len(end_matches)})"
+            )
+        begin = begin_matches[0]
+        end = end_matches[0]
+        if end.start() <= begin.end():
+            raise ValueError(f"mkdocs release-nav markers are out of order for {audience}")
+        if begin.group("indent") != end.group("indent"):
+            raise ValueError(f"mkdocs release-nav marker indentation differs for {audience}")
+        indent = begin.group("indent")
+        lines = expected_release_nav_lines(outputs, audience_root, indent)
+        replacement = begin.group(0) + "\n" + ("\n".join(lines) + "\n" if lines else "") + end.group(0)
+        rendered = rendered[:begin.start()] + replacement + rendered[end.end():]
+    return rendered
+
+
+def sync_mkdocs_release_nav(outputs: dict[Path, str]) -> bool:
+    current = MKDOCS.read_text(encoding="utf-8")
+    expected = render_mkdocs_release_nav(outputs, current)
+    if current == expected:
+        return False
+    tmp = MKDOCS.with_name(MKDOCS.name + ".tmp")
+    tmp.write_text(expected, encoding="utf-8")
+    os.replace(tmp, MKDOCS)
+    return True
+
+
+def check_mkdocs_release_nav(outputs: dict[Path, str]) -> list[str]:
+    current = MKDOCS.read_text(encoding="utf-8")
+    expected = render_mkdocs_release_nav(outputs, current)
+    return [] if current == expected else [
+        "mkdocs.yml knowledge release navigation drift (run task lite:docs:sync)"
+    ]
+
+
 def write_outputs(outputs: dict[Path, str]) -> int:
     changed = 0
     expected = set(outputs)
@@ -1095,7 +1172,12 @@ def main() -> int:
         return 1
     if args.command == "generate":
         changed = write_outputs(outputs)
-        print(f"PASS knowledge generation: {report['entities']} entities, {report['relations']} relations, {report['pages']} pages, {report['machine_artifacts']} machine artifacts, {changed} files changed, {report['duration_seconds']:.3f}s")
+        nav_changed = sync_mkdocs_release_nav(outputs)
+        print(
+            f"PASS knowledge generation: {report['entities']} entities, {report['relations']} relations, "
+            f"{report['pages']} pages, {report['machine_artifacts']} machine artifacts, {changed} files changed, "
+            f"release_nav={'updated' if nav_changed else 'current'}, {report['duration_seconds']:.3f}s"
+        )
         return 0
     if args.command in {"graph", "health", "traceability", "releases", "ai-export"}:
         # Subcommands are bounded views over one cached generator run; generation remains centralized to avoid repeated scanning.
@@ -1107,7 +1189,7 @@ def main() -> int:
             return 1
         print(f"PASS knowledge {args.command}: {path.relative_to(ROOT)}")
         return 0
-    drift = check_outputs(outputs)
+    drift = check_outputs(outputs) + check_mkdocs_release_nav(outputs)
     if drift:
         print("Knowledgebase drift:", file=sys.stderr)
         for item in drift:

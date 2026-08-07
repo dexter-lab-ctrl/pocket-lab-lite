@@ -7,7 +7,7 @@ confidence: generated
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/knowledge/generate_knowledge.py
-generator_version: 1
+generator_version: 2
 ---
 
 # Freshness dashboard
@@ -15,7 +15,7 @@ generator_version: 1
 | Signal | Value |
 | --- | --- |
 | adr_count | 6 |
-| ai_knowledge_export_freshness | 2de81f1ef488645017f4168beac4fa5713bceacc886be1ed62c90e114a0fef42 |
+| ai_knowledge_export_freshness | bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4 |
 | api_drift | owned-by-existing-openapi-gates |
 | architecture_source | architecture/metadata/pocket-lab-architecture.json |
 | current_repository_commit | uncommitted |
@@ -23,16 +23,16 @@ generator_version: 1
 | knowledge_generation_time | uncommitted |
 | limitations_count | 18 |
 | openapi_source | contracts/generated/lite-openapi.json |
-| operational_degradation | home, recovery |
+| operational_degradation | recovery |
 | partial_parity_domains | identity, rules |
-| promoted_at | 2026-08-07T07:16:22Z |
-| promoted_release | lite-2026.08.07.1 |
-| promoted_source_commit | c44493ede19f45299277d4da3af215dfe4ea8db3 |
-| release_metadata_freshness | 2026-08-07T07:16:22Z |
+| promoted_at | 2026-08-07T18:04:28Z |
+| promoted_release | lite-2026.08.07.3 |
+| promoted_source_commit | ee0038e92d2c2ce2658cd3832d858425aeb399e7 |
+| release_metadata_freshness | 2026-08-07T18:04:28Z |
 | runtime_baseline_status | partial |
 | runtime_evidence_sanitized | yes |
-| runtime_topology_freshness | 2026-08-07T07:16:22Z |
+| runtime_topology_freshness | 2026-08-07T18:04:28Z |
 | schema_drift | checked-by-knowledge-schema-validation |
-| source_fingerprint | 2de81f1ef488645017f4168beac4fa5713bceacc886be1ed62c90e114a0fef42 |
+| source_fingerprint | bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4 |
 | sqlite_source | contracts/generated/lite-sqlite-schema.json |
 | unresolved_incidents_count | 0 |

@@ -7,11 +7,11 @@ confidence: release-promoted
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/knowledge/generate_knowledge.py
-generator_version: 1
+generator_version: 2
 ---
 
 # Releases
 
 | Release | Source | Runtime parity | Manifest status |
 | --- | --- | --- | --- |
-| lite-2026.08.07.1 | c44493ede19f45299277d4da3af215dfe4ea8db3 | partial | unvalidated |
+| lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | partial | unvalidated |

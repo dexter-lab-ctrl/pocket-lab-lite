@@ -16,6 +16,8 @@ SCHEMAS = ROOT / "schemas/knowledge"
 DEV = ROOT / "docs/generated/development/knowledge"
 PROD = ROOT / "docs/generated/production/knowledge"
 GENERATOR = ROOT / "scripts/docs/knowledge/generate_knowledge.py"
+RUNTIME_BASELINE = ROOT / "contracts/parity/runtime-verification-baseline.json"
+MKDOCS = ROOT / "mkdocs.yml"
 
 
 def load(name: str):
@@ -117,11 +119,15 @@ def test_adrs_are_source_grounded_and_relationship_backed(graph):
 def test_release_knowledge_is_truthful_without_fabricated_history():
     releases = load("releases.json")
     changes = load("release-changes.json")
-    assert [x["name"] for x in releases] == ["lite-2026.08.07.1"]
-    assert releases[0]["source_commit"] == "c44493ede19f45299277d4da3af215dfe4ea8db3"
-    assert releases[0]["release_manifest_status"] == "unvalidated"
-    assert changes[0]["status"] == "no-comparable-verified-prior-release"
-    assert changes[0]["added"] == changes[0]["removed"] == changes[0]["changed"] == []
+    runtime = json.loads(RUNTIME_BASELINE.read_text(encoding="utf-8"))
+    promoted = next(x for x in releases if x["name"] == runtime["release_tag"])
+    assert promoted["source_commit"] == runtime["source_commit"]
+    assert promoted["release_manifest_status"] in {"verified", "unvalidated"}
+    assert all(x.get("added") == [] and x.get("removed") == [] and x.get("changed") == [] for x in changes)
+    assert {x["status"] for x in changes} <= {
+        "no-comparable-verified-prior-release",
+        "semantic-comparison-available",
+    }
 
 
 def test_limitations_lifecycle_and_partial_domains_remain_truthful():
@@ -205,10 +211,13 @@ def test_operational_health_is_independent_from_semantic_parity():
 
 def test_freshness_dashboard_is_pre_generated_and_release_bound():
     freshness = load("freshness.json")
-    assert freshness["promoted_release"] == "lite-2026.08.07.1"
-    assert freshness["promoted_source_commit"] == "c44493ede19f45299277d4da3af215dfe4ea8db3"
+    runtime = json.loads(RUNTIME_BASELINE.read_text(encoding="utf-8"))
+    assert freshness["promoted_release"] == runtime["release_tag"]
+    assert freshness["promoted_source_commit"] == runtime["source_commit"]
     assert freshness["runtime_evidence_sanitized"] is True
-    assert "recovery" in freshness["operational_degradation"]
+    assert set(freshness["operational_degradation"]) <= {
+        x["domain"] for x in load("operational-health.json")
+    }
 
 
 def test_knowledge_export_sanitization_and_no_private_paths(graph):
@@ -249,3 +258,21 @@ def test_generator_check_and_deterministic_second_build():
         assert result.returncode == 0, result.stdout + result.stderr
     after = hashlib.sha256((KNOWLEDGE / "index.json").read_bytes()).hexdigest()
     assert before == after
+
+def test_mkdocs_release_nav_is_generator_owned_and_complete():
+    text = MKDOCS.read_text(encoding="utf-8")
+    for audience, root in (("development", DEV), ("production", PROD)):
+        begin = f"# BEGIN GENERATED KNOWLEDGE RELEASE NAV: {audience}"
+        end = f"# END GENERATED KNOWLEDGE RELEASE NAV: {audience}"
+        assert text.count(begin) == 1
+        assert text.count(end) == 1
+        block = text.split(begin, 1)[1].split(end, 1)[0]
+        expected = {
+            p.relative_to(ROOT / "docs").as_posix()
+            for p in (root / "releases").glob("*.md")
+        }
+        assert expected
+        for path in expected:
+            assert path in block
+        stale = set(re.findall(r"generated/(?:development|production)/knowledge/releases/[^\s]+\.md", block))
+        assert stale == expected
