@@ -569,7 +569,7 @@ export default function RecoveryScreen() {
         <div className="lite-recovery-r1-hero-copy">
           <div className="lite-home-pill" data-testid="parity-recovery-status">
             <span className="lite-ready-dot" />
-            {backendLabel(data?.status, {
+            {backendLabel(recoveryStatus, {
               ready: 'Protection ready',
               review: 'Review recommended',
               danger: 'Needs attention',
