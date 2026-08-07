@@ -1,0 +1,467 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "recovery-status",
+      "sensitivity": "public-summary",
+      "source_field": "recovery current status",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "status",
+      "test_id": "parity-recovery-status",
+      "transformation": "normalize status enum"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "recovery-summary",
+      "sensitivity": "public-summary",
+      "source_field": "recovery summary",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "summary",
+      "test_id": "parity-recovery-summary",
+      "transformation": "allowlisted text"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "latest-backup-id",
+      "sensitivity": "evidence-identifier",
+      "source_field": "manifest.backup_id",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "last_backup.backup_id",
+      "test_id": "parity-latest-backup-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "verification-status",
+      "sensitivity": "public-summary",
+      "source_field": "manifest.verification_status",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "last_backup.verification_status",
+      "test_id": "parity-verification-status",
+      "transformation": "normalized enum"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "preview-id",
+      "sensitivity": "evidence-identifier",
+      "source_field": "restore preview.preview_id",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "latest_restore_preview.preview_id",
+      "test_id": "parity-preview-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "restore-allowed",
+      "sensitivity": "public-summary",
+      "source_field": "restore preview.restore_allowed",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "latest_restore_preview.restore_allowed",
+      "test_id": "parity-restore-allowed",
+      "transformation": "derived guard boolean"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "checkpoint-id",
+      "sensitivity": "evidence-identifier",
+      "source_field": "checkpoint.checkpoint_id",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "pre_restore_checkpoint.checkpoint_id",
+      "test_id": "parity-checkpoint-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "backend-api",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "restore-id",
+      "sensitivity": "evidence-identifier",
+      "source_field": "restore run.restore_id",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "last_restore.restore_id",
+      "test_id": "parity-restore-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "api-selector",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "api-status-selector",
+      "sensitivity": "public-summary",
+      "source_field": "status",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "status",
+      "test_id": "parity-selector-status",
+      "transformation": "normalizeRecoveryStatus"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "api-selector",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "api-backup-selector",
+      "sensitivity": "public-summary",
+      "source_field": "last_backup",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "latest_backup",
+      "test_id": "parity-selector-backup",
+      "transformation": "normalizeRecoveryBackup allowlist"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "api-selector",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "api-preview-selector",
+      "sensitivity": "public-summary",
+      "source_field": "latest_restore_preview",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "restore_preview",
+      "test_id": "parity-selector-preview",
+      "transformation": "normalizeRecoveryPreview allowlist"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "selector-render",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "selector-render-protection",
+      "sensitivity": "public-summary",
+      "source_field": "latest_backup.verification_status",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "Latest protected backup card",
+      "test_id": "parity-render-backup",
+      "transformation": "verified -> Verified; other -> Needs verification"
+    },
+    {
+      "api_routes": [
+        "GET /api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/database",
+        "GET /api/lite/recovery/details",
+        "GET /api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+        "GET /api/lite/recovery/receipts/{backup_id}",
+        "GET /api/lite/recovery/summary"
+      ],
+      "boundary": "selector-render",
+      "confidence": "contract-derived",
+      "domain": "recovery",
+      "frontend_consumers": [
+        "LiteRecovery",
+        "liteApi.databaseRecovery",
+        "liteApi.recoveryDetails",
+        "liteApi.recoveryHistory",
+        "liteApi.recoveryOperations",
+        "liteApi.recoveryReceipt",
+        "liteApi.recoverySummary",
+        "liteQueryKeys.recoveryOperations",
+        "selectRecoveryHistorySnapshotView",
+        "selectRecoveryScreenView",
+        "selectRecoverySummaryView"
+      ],
+      "id": "selector-render-preview",
+      "sensitivity": "public-summary",
+      "source_field": "restore_preview.status",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "target_field": "Recovery status strip",
+      "test_id": "parity-render-preview",
+      "transformation": "ready -> Restore preview ready; otherwise Restore preview needed"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

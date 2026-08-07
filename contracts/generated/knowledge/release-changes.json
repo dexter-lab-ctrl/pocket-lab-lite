@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "added": [],
+      "changed": [],
+      "from": null,
+      "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
+      "removed": [],
+      "status": "no-comparable-verified-prior-release",
+      "to": "release:lite-2026.08.07.1"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

@@ -1,0 +1,268 @@
+---
+title: "Tests and traceability"
+description: "Requirement/implementation/test traceability without equating tests to runtime verification."
+generated: true
+audience: knowledgebase
+confidence: generated
+source_commit: uncommitted
+generated_at: uncommitted
+generator: scripts/docs/knowledge/generate_knowledge.py
+generator_version: 1
+---
+
+# Tests and traceability
+
+| Entity | Type | Tests | Status |
+| --- | --- | --- | --- |
+| DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/lifecycle | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/lifecycle/{app_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/photoprism/storage-mappings | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/photoprism/storage-preview | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/action-history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/actions | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/backup | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/backups | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/evidence | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/restore/previews/{preview_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/update | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/apps/{app_id}/update/receipts/{operation_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/catalog | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/commands/history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/devices/{device_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/devices/{device_id}/health | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/devices/{device_id}/health/history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/devices/{device_id}/history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/devices/{device_id}/removal-assessment | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/diagnostics/frontend-lifecycle/challenge | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/diagnostics/runtime | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/diagnostics/runtime/full | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/events | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet/agent/bootstrap.sh | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet/devices/{device_id}/recovery-history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet/devices/{node_id}/restart-agent/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet/health-summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet/invites/latest | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/identity | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/policy | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/apps | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/apps/{app_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/apps/{app_id}/backup-targets | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/backup-targets | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/backups | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/backups/{backup_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/database | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/database/backups | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/database/backups/{backup_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/database/restore/previews/{preview_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/database/restore/{restore_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/details | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/maintenance | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/operations | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/receipts/{backup_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/restore/checkpoints/{checkpoint_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/restore/previews/{preview_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/restore/runs/{restore_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/recovery/summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/release | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/remote-access/readiness | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/revisions | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/apps | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/apps/{app_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/details/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/events | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/evidence/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/evidence/{run_id}/summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/freshness | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/profiles/{profile} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/progress | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/runs/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/activity-summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/agent | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/health | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/nats-readiness | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/processes | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/sqlite-health | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/storage-pressure | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/supervisor | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/system/telemetry-thresholds | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /health | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /ready | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/apps/photoprism/storage-mappings | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/apps/{app_id}/actions/{action_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/apps/{app_id}/backup | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/apps/{app_id}/backup/storage-device | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/apps/{app_id}/restore/preview | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/apps/{app_id}/update/apply | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/catalog/install | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/catalog/remove | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/diagnostics/frontend-lifecycle | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/fleet/add-device | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/fleet/agent/bootstrap-blocked | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/fleet/agent/bootstrap.env | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/fleet/devices/{node_id}/restart-agent | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/fleet/invites/{invite_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/fleet/remove-device | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/identity/rotate | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/policy/apply | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/apps/{app_id}/backup | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/apps/{app_id}/backup-to-target | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/apps/{app_id}/restore | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/apps/{app_id}/restore/preview | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/backup | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/backups/{backup_id}/verify | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/database/backup | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/database/backups/{backup_id}/preview | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/database/backups/{backup_id}/restore | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/database/backups/{backup_id}/verify | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/maintenance/checkpoint | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/maintenance/retention | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/restore | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/recovery/restore/preview | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/release/apply | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/release/check | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/security/apps/{app_id}/check | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/security/check | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/security/scan | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| PUT /api/lite/fleet/devices/{device_id}/display-model | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| Device command executor | component | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Reconnect watchdog and supervisor recovery | component | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Heartbeat, telemetry, and health publishers | component | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Lite agent supervisor | component | test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Fleet, Apps, Security, Recovery, and Release APIs | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Identity, authentication, and invite guards | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Prepared read, health, readiness, diagnostics, and evidence APIs | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| App Catalog | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_app_runtime_reconciliation.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-test-helpers.ts | test-linked |
+| App lifecycle worker | component | test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_projection_semantic_hardening.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/backend/test_lite_worker_recovery.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| App backup, restore preview, and update lifecycle | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| App, command, and workflow state | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Atomic PWA promotion | component | test:tests/backend/test_lite_native_release.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Backup and verification engine | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Bounded queues and reconciliation | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_health_d4.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Browser | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_n6b_install_surface.py, test:tests/backend/test_lite_native_release.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/backend/test_release_process_isolation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Caddy same-origin proxy | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Checkpoints and retention policy | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Command admission and lifecycle | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Completion and audit evidence | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Enrollment and device lifecycle state | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Frontend state ownership | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_health_d4.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py, test:tests/backend/test_lite_fastapi_runtime_diagnostics.py, test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py, test:tests/backend/test_lite_phase3c_system_aggregates.py, test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_revision_sync_n4_n5.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f12_f14_stability_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_s7_saved_state_history.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| GitHub Release | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| GitHub repository | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Invite and identity lifecycle | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Local LAN | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Last-known-good state and rollback | component | test:tests/backend/test_lite_native_release.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| FastAPI /api/lite/* | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_health_d4.py, test:tests/backend/test_lite_long_gate_submission_recovery.py, test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py, test:tests/backend/test_lite_phase3c_system_aggregates.py, test:tests/backend/test_lite_revision_sync_n4_n5.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_p2b_reboot_generation.py, test:tests/backend/test_lite_security_s6_retention.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Media readiness and app health probes | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| NATS / JetStream | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Primary and secondary NATS listeners | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Lite node agent | component | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| PhotoPrism | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_app_catalog_runtime_truth.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_health_d4.py, test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py, test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py, test:tests/backend/test_lite_security_s7_saved_state_history.py, test:tests/backend/test_lite_sqlite_performance.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py, test:tests/parity/test_planned_runtime_parity_policy.py, test:tests/parity/test_runtime_drift_reporting.py | test-linked |
+| PM2 process manager | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Post-switch health validation | component | test:tests/backend/test_lite_native_release.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Audit index, projection refresh, prepared projections, and domain revisions | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Projection subprocesses | component | test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| PROot Ubuntu application container | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| React / Vite PWA | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py, test:tests/backend/test_lite_fastapi_runtime_diagnostics.py, test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py, test:tests/backend/test_lite_phase3c_system_aggregates.py, test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/backend/test_lite_workload_admission.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Backup, restore, and checkpoint state | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Date-based Lite tag, dist.zip, checksums, and release manifest | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Download staging and release verification | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Installed release and runtime state | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Release subprocess | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Remote-access readiness checks | component | test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Restore preview and confirmed restore | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Explicit retirement and database recovery | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Lynis and Trivy scanner adapters | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Security scan coordinator | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/backend/test_lite_workload_admission.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Quick, Full, and App safety checks | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Security findings and run state | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| SQLite control-plane store | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_health_d4.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Tailscale remote access | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| tailscaled daemon | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| User | component | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Worker process | component | test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_projection_semantic_hardening.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/backend/test_lite_worker_recovery.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Workflow execution | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Api | domain | — | unvalidated |
+| Apps | domain | — | unvalidated |
+| Architecture | domain | — | unvalidated |
+| Audit | domain | — | unvalidated |
+| Command | domain | — | unvalidated |
+| Commands | domain | — | unvalidated |
+| Control Plane | domain | — | unvalidated |
+| Database | domain | — | unvalidated |
+| Devices | domain | — | unvalidated |
+| Diagnostics | domain | — | unvalidated |
+| Disaster Recovery | domain | — | unvalidated |
+| Documentation | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Drift | domain | — | unvalidated |
+| Drift Management | domain | — | unvalidated |
+| Events | domain | — | unvalidated |
+| Health | domain | — | unvalidated |
+| Home | domain | — | unvalidated |
+| Identity | domain | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Lite | domain | — | unvalidated |
+| Live Status | domain | — | unvalidated |
+| Manual | domain | — | unvalidated |
+| Node | domain | — | unvalidated |
+| Operation | domain | — | unvalidated |
+| Operations | domain | — | unvalidated |
+| Parity | domain | — | unvalidated |
+| Platform | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Prepared State | domain | — | unvalidated |
+| Projections | domain | — | unvalidated |
+| Backup & Restore | domain | test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Release | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Release Management | domain | — | unvalidated |
+| Remote Access | domain | — | unvalidated |
+| Rules | domain | — | unvalidated |
+| Runbook | domain | — | unvalidated |
+| Runtime | domain | — | unvalidated |
+| Security | domain | test:src/__tests__/liteLifecycleDiagnostics.test.js, test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_long_gate_group2_reporting.py, test:tests/backend/test_lite_long_gate_group4_reporting.py, test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f12_f14_stability_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_p2b_reboot_generation.py, test:tests/backend/test_lite_security_progress_projection_cutover.py, test:tests/backend/test_lite_security_projection_drift_prevention.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_security_s6_replay.py, test:tests/backend/test_lite_security_s6_retention.py, test:tests/backend/test_lite_security_s7_saved_state_history.py, test:tests/backend/test_lite_security_s8_cross_process_generation.py, test:tests/backend/test_lite_security_s8_fault_checkpoint_identity.py, test:tests/backend/test_lite_security_s8_gate_submission_recovery.py, test:tests/backend/test_lite_security_s8_idle_reconciliation.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_security_sqlite_s3_s5.py, test:tests/backend/test_lite_security_store.py, test:tests/backend/test_lite_security_store_concurrency.py, test:tests/backend/test_lite_security_store_migration.py, test:tests/backend/test_lite_security_worker_sqlite_commit.py, test:tests/backend/test_lite_sqlite_performance.py, test:tests/backend/test_lite_startup_workload_isolation.py, test:tests/backend/test_lite_worker_recovery.py, test:tests/backend/test_lite_workload_admission.py, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| System | domain | — | unvalidated |
+| Telemetry | domain | — | unvalidated |
+| Testing | domain | — | unvalidated |
+| Unknown | domain | — | unvalidated |
+| Validation | domain | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Vault | domain | — | unvalidated |
+| Vocabulary | domain | — | unvalidated |
+| Websocket | domain | — | unvalidated |
+| Worker | domain | — | unvalidated |
+| Workflow | domain | — | unvalidated |
+| Add Device | journey | test:src/__tests__/enterpriseLabels.test.js, test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_devices_durable_enrollment.py | test-linked |
+| App installation | journey | test:tests/backend/test_lite_api.py | test-linked |
+| Backup creation and verification | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_database_restore_reconciliation.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_s8_recovery.py | test-linked |
+| Change Password / identity rotation | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| Device bootstrap and enrollment | journey | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_devices_production_readiness.py | test-linked |
+| Device offline and reconnect recovery | journey | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Documentation generation | journey | test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_production_architecture_platform.py, test:tests/backend/test_lite_termux_runtime_documentation.py | test-linked |
+| Backend-to-Frontend parity capture and verification | journey | — | unvalidated |
+| PhotoPrism operation | journey | test:tests/backend/test_lite_api.py | test-linked |
+| Recovery reconciliation | journey | — | unvalidated |
+| Release and update flow | journey | — | unvalidated |
+| Tailscale and remote access readiness | journey | — | unvalidated |
+| Remove Old Device | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_devices_durable_enrollment.py | test-linked |
+| Restart Agent | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Confirmed restore | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_database_restore_reconciliation.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_s8_recovery.py | test-linked |
+| Restore preview | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_database_restore_reconciliation.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/parity/test_backup_recovery_parity.py | test-linked |
+| Rollback | journey | — | unvalidated |
+| Sanitized Termux runtime capture | journey | — | unvalidated |
+| Runtime evidence promotion | journey | test:tests/parity/test_runtime_promotion_preflight.py | test-linked |
+| Security finding review | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f12_f14_stability_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_security_s7_saved_state_history.py | test-linked |
+| Security scan | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f12_f14_stability_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_security_s7_saved_state_history.py, test:tests/backend/test_lite_security_s8_gate_submission_recovery.py, test:tests/backend/test_lite_security_s8_idle_reconciliation.py, test:tests/backend/test_lite_workload_admission.py | test-linked |
+| Pocket Lab Lite startup | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Frontend never talks directly to NATS. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Frontend never executes shell commands. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| FastAPI remains the control API. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Agents and supervisors own execution and recovery. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Bootstrap scripts are backend-generated. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Secrets are not exposed. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Offline enrolled devices remain represented. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Lifecycle changes produce audit evidence. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Read APIs remain side-effect-free. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Startup scripts own safe startup side effects. | requirement | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |

@@ -1,0 +1,3846 @@
+{
+  "items": [
+    {
+      "confidence": "verified",
+      "data_owner": "Command lifecycle in server SQLite",
+      "description": "Executes approved device commands in the node agent and publishes truthful results.",
+      "documentation_links": [
+        "docs/generated/production/devices.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "command_lifecycle"
+      ],
+      "evidence": [
+        "device command result"
+      ],
+      "execution_owner": "node agent",
+      "failure_modes": [
+        "undeliverable",
+        "agent disconnected"
+      ],
+      "health_signals": [
+        "command progress"
+      ],
+      "icon": "semantic-agent",
+      "id": "component:agent-command-executor",
+      "inputs": [
+        "Validated NATS command"
+      ],
+      "name": "Device command executor",
+      "outputs": [
+        "command result",
+        "fresh heartbeat"
+      ],
+      "owner": "Device execution",
+      "protocols": [
+        "NATS",
+        "Local process control"
+      ],
+      "recovery_behavior": [
+        "do not fake delivery",
+        "retry after reconnect"
+      ],
+      "recovery_owner": "Command reconciliation",
+      "runtime_owner": "node agent",
+      "runtime_platform": "Node agent",
+      "runtime_process": "node agent",
+      "security_boundary": "managed-device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Server lifecycle state",
+      "description": "Separates running-but-disconnected recovery from stopped-agent recovery and exposes truthful guidance when no supervisor is available.",
+      "documentation_links": [
+        "docs/generated/production/troubleshooting.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "device_recovery_history"
+      ],
+      "evidence": [
+        "recovery transitions"
+      ],
+      "execution_owner": "separate processes",
+      "failure_modes": [
+        "disconnected",
+        "stopped"
+      ],
+      "health_signals": [
+        "agent connection",
+        "supervisor status"
+      ],
+      "icon": "semantic-recovery",
+      "id": "component:agent-recovery",
+      "inputs": [
+        "connection state",
+        "PM2 state"
+      ],
+      "name": "Reconnect watchdog and supervisor recovery",
+      "outputs": [
+        "reconnect",
+        "restart",
+        "recovery evidence"
+      ],
+      "owner": "Device recovery",
+      "protocols": [
+        "NATS",
+        "Local process control"
+      ],
+      "recovery_behavior": [
+        "reconnect watchdog",
+        "supervisor restart",
+        "guidance"
+      ],
+      "recovery_owner": "agent/supervisor",
+      "runtime_owner": "agent and supervisor",
+      "runtime_platform": "Joined device",
+      "runtime_process": "separate processes",
+      "security_boundary": "managed-device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Server SQLite projections",
+      "description": "Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopped, and Remote access not ready states.",
+      "documentation_links": [
+        "docs/generated/production/devices.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "device_heartbeats",
+        "device_health_current"
+      ],
+      "evidence": [
+        "device health events"
+      ],
+      "execution_owner": "node agent",
+      "failure_modes": [
+        "signal stale"
+      ],
+      "health_signals": [
+        "signal freshness"
+      ],
+      "icon": "semantic-event",
+      "id": "component:agent-signals",
+      "inputs": [
+        "Local runtime samples"
+      ],
+      "name": "Heartbeat, telemetry, and health publishers",
+      "outputs": [
+        "heartbeat",
+        "telemetry",
+        "health"
+      ],
+      "owner": "Device runtime",
+      "protocols": [
+        "NATS"
+      ],
+      "recovery_behavior": [
+        "fresh publish after reconnect"
+      ],
+      "recovery_owner": "Reconnect watchdog",
+      "runtime_owner": "node agent",
+      "runtime_platform": "Node agent",
+      "runtime_process": "node agent",
+      "security_boundary": "managed-device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "No canonical state",
+      "description": "Runs separately from the agent, reads the protected agent environment, and starts or restarts failed agents without overwriting identity.",
+      "documentation_links": [
+        "docs/generated/production/devices.md",
+        "docs/generated/production/troubleshooting.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [
+        "supervisor recovery"
+      ],
+      "execution_owner": "pocketlab-agent-supervisor-<node_id>",
+      "failure_modes": [
+        "supervisor absent"
+      ],
+      "health_signals": [
+        "supervisor status"
+      ],
+      "icon": "semantic-supervisor",
+      "id": "component:agent-supervisor",
+      "inputs": [
+        "PM2 agent status",
+        "protected environment"
+      ],
+      "name": "Lite agent supervisor",
+      "outputs": [
+        "agent restart",
+        "sanitized recovery evidence"
+      ],
+      "owner": "Device recovery",
+      "protocols": [
+        "Local process control",
+        "NATS when reachable"
+      ],
+      "recovery_behavior": [
+        "UI recovery guidance",
+        "explicit repair"
+      ],
+      "recovery_owner": "Self / PM2",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Joined device",
+      "runtime_process": "pocketlab-agent-supervisor-<node_id>",
+      "security_boundary": "managed-device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Domain SQLite state",
+      "description": "Exposes domain-specific read and command endpoints while preserving backend-owned lifecycle execution.",
+      "documentation_links": [
+        "docs/generated/production/devices.md",
+        "docs/generated/production/apps.md",
+        "docs/generated/production/security.md",
+        "docs/generated/production/recovery.md",
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "domain current-state tables"
+      ],
+      "evidence": [
+        "domain lifecycle evidence"
+      ],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "command undeliverable",
+        "domain stale"
+      ],
+      "health_signals": [
+        "domain revisions",
+        "projection freshness"
+      ],
+      "icon": "semantic-api-surface",
+      "id": "component:api-domain-surfaces",
+      "inputs": [
+        "User intent",
+        "domain state"
+      ],
+      "name": "Fleet, Apps, Security, Recovery, and Release APIs",
+      "outputs": [
+        "Domain summaries",
+        "accepted commands"
+      ],
+      "owner": "Lite API domains",
+      "protocols": [
+        "HTTP JSON",
+        "NATS"
+      ],
+      "recovery_behavior": [
+        "explicit retry",
+        "reconciliation"
+      ],
+      "recovery_owner": "Domain worker / supervisor",
+      "runtime_owner": "pocket-api",
+      "runtime_platform": "FastAPI process",
+      "runtime_process": "FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite identity and invite state",
+      "description": "Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.",
+      "documentation_links": [
+        "docs/generated/production/devices.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "device_identity_guards",
+        "device_invite_lifecycle"
+      ],
+      "evidence": [
+        "invite lifecycle",
+        "bootstrap blocked"
+      ],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "identity mismatch",
+        "duplicate device"
+      ],
+      "health_signals": [
+        "invite status"
+      ],
+      "icon": "semantic-api-guard",
+      "id": "component:api-guards",
+      "inputs": [
+        "Device invite request",
+        "identity claim"
+      ],
+      "name": "Identity, authentication, and invite guards",
+      "outputs": [
+        "Accepted bootstrap artifact",
+        "blocked evidence"
+      ],
+      "owner": "Lite API",
+      "protocols": [
+        "HTTP JSON"
+      ],
+      "recovery_behavior": [
+        "fail closed",
+        "explicit repair/rejoin"
+      ],
+      "recovery_owner": "Explicit repair/rejoin",
+      "runtime_owner": "pocket-api",
+      "runtime_platform": "FastAPI process",
+      "runtime_process": "FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Prepared SQLite projections",
+      "description": "Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.",
+      "documentation_links": [
+        "docs/generated/production/health-diagnostics.md",
+        "docs/generated/development/projection-catalog.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "prepared projections",
+        "audit_evidence_index"
+      ],
+      "evidence": [],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "stale projection"
+      ],
+      "health_signals": [
+        "revision",
+        "freshness",
+        "ETag"
+      ],
+      "icon": "semantic-api-surface",
+      "id": "component:api-read-surfaces",
+      "inputs": [
+        "Prepared projections",
+        "compact evidence indexes"
+      ],
+      "name": "Prepared read, health, readiness, diagnostics, and evidence APIs",
+      "outputs": [
+        "Safe GET responses"
+      ],
+      "owner": "Lite API",
+      "protocols": [
+        "HTTP JSON"
+      ],
+      "recovery_behavior": [
+        "serve last committed generation",
+        "focused invalidation"
+      ],
+      "recovery_owner": "Projection scheduler and owning workers",
+      "runtime_owner": "pocket-api",
+      "runtime_platform": "FastAPI process",
+      "runtime_process": "FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite app state",
+      "description": "Presents backend-owned app lifecycle and safe action readiness, including same-origin Open routes and Manage details.",
+      "documentation_links": [
+        "docs/generated/production/apps.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "app_current_state",
+        "app_action_lifecycle"
+      ],
+      "evidence": [
+        "action details/troubleshooting"
+      ],
+      "execution_owner": "React / FastAPI",
+      "failure_modes": [
+        "route unavailable",
+        "action blocked"
+      ],
+      "health_signals": [
+        "route_ready",
+        "lifecycle status"
+      ],
+      "icon": "semantic-app-catalog",
+      "id": "component:app-catalog",
+      "inputs": [
+        "App catalog projection"
+      ],
+      "name": "App Catalog",
+      "outputs": [
+        "Open route",
+        "validated action requests"
+      ],
+      "owner": "Apps domain",
+      "protocols": [
+        "HTTPS JSON"
+      ],
+      "recovery_behavior": [
+        "repair/check",
+        "safe disabled reason"
+      ],
+      "recovery_owner": "App worker",
+      "runtime_owner": "Lite UI / Lite API",
+      "runtime_platform": "PWA plus FastAPI prepared reads",
+      "runtime_process": "React / FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "src/lite/LiteCatalog.jsx"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "App lifecycle SQLite state",
+      "description": "Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.",
+      "documentation_links": [
+        "docs/generated/production/apps.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "app_current_state",
+        "app_action_lifecycle"
+      ],
+      "evidence": [
+        "app action lifecycle"
+      ],
+      "execution_owner": "pocket-worker",
+      "failure_modes": [
+        "operation failed"
+      ],
+      "health_signals": [
+        "action progress",
+        "route health"
+      ],
+      "icon": "semantic-worker",
+      "id": "component:app-lifecycle-worker",
+      "inputs": [
+        "App command"
+      ],
+      "name": "App lifecycle worker",
+      "outputs": [
+        "App lifecycle state",
+        "sanitized details"
+      ],
+      "owner": "Apps execution",
+      "protocols": [
+        "NATS",
+        "SQLite",
+        "local process"
+      ],
+      "recovery_behavior": [
+        "non-destructive repair",
+        "explicit retry"
+      ],
+      "recovery_owner": "Worker retry / repair",
+      "runtime_owner": "PM2",
+      "runtime_platform": "pocket-worker",
+      "runtime_process": "pocket-worker",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite and backup manifests",
+      "description": "Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.",
+      "documentation_links": [
+        "docs/generated/production/apps.md",
+        "docs/generated/production/recovery.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "backup_manifest_index",
+        "app_action_lifecycle"
+      ],
+      "evidence": [
+        "app backup/update receipts"
+      ],
+      "execution_owner": "app/recovery services",
+      "failure_modes": [
+        "verification blocked"
+      ],
+      "health_signals": [
+        "backup verified",
+        "rollback ready"
+      ],
+      "icon": "semantic-recovery",
+      "id": "component:app-recovery-update",
+      "inputs": [
+        "Confirmed action"
+      ],
+      "name": "App backup, restore preview, and update lifecycle",
+      "outputs": [
+        "backup",
+        "preview",
+        "verified update result"
+      ],
+      "owner": "Apps and Recovery",
+      "protocols": [
+        "NATS",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "preview first",
+        "rollback"
+      ],
+      "recovery_owner": "Checkpoint / rollback",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Worker / release subprocess",
+      "runtime_process": "app/recovery services",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Stores canonical app current/action lifecycle and workflow command/current/event state.",
+      "documentation_links": [
+        "docs/generated/production/apps.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "app_current_state",
+        "app_action_lifecycle",
+        "workflow_current_state"
+      ],
+      "evidence": [
+        "action lifecycle"
+      ],
+      "execution_owner": "app/workflow services",
+      "failure_modes": [
+        "stale action",
+        "orphan command"
+      ],
+      "health_signals": [
+        "state revision"
+      ],
+      "icon": "semantic-durable-state",
+      "id": "component:app-workflow-state",
+      "inputs": [
+        "app lifecycle and workflow events"
+      ],
+      "name": "App, command, and workflow state",
+      "outputs": [
+        "app and workflow projections"
+      ],
+      "owner": "Apps and workflows",
+      "protocols": [
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "reconcile independently"
+      ],
+      "recovery_owner": "Reconciliation",
+      "runtime_owner": "workers",
+      "runtime_platform": "SQLite",
+      "runtime_process": "app/workflow services",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Active and staged PWA directories",
+      "description": "Promotes a verified staged PWA atomically and keeps the previous release available for rollback.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "lite_installed_release_identity"
+      ],
+      "evidence": [
+        "promotion result"
+      ],
+      "execution_owner": "release apply stage",
+      "failure_modes": [
+        "promotion failure"
+      ],
+      "health_signals": [
+        "active release identity"
+      ],
+      "icon": "semantic-release",
+      "id": "component:atomic-promotion",
+      "inputs": [
+        "Verified stage"
+      ],
+      "name": "Atomic PWA promotion",
+      "outputs": [
+        "New active PWA"
+      ],
+      "owner": "Release runtime",
+      "protocols": [
+        "Filesystem atomic rename"
+      ],
+      "recovery_behavior": [
+        "retain previous active release"
+      ],
+      "recovery_owner": "Rollback",
+      "runtime_owner": "release subprocess",
+      "runtime_platform": "Server host",
+      "runtime_process": "release apply stage",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Backup repository and manifest index",
+      "description": "Creates and verifies local encrypted backups through backend/worker-owned operations.",
+      "documentation_links": [
+        "docs/generated/production/recovery.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "backup_manifest_index"
+      ],
+      "evidence": [
+        "backup receipt"
+      ],
+      "execution_owner": "backup services",
+      "failure_modes": [
+        "repository unavailable",
+        "verification failed"
+      ],
+      "health_signals": [
+        "repository readiness",
+        "verification status"
+      ],
+      "icon": "semantic-backup",
+      "id": "component:backup-engine",
+      "inputs": [
+        "Backup command"
+      ],
+      "name": "Backup and verification engine",
+      "outputs": [
+        "verified backup manifest"
+      ],
+      "owner": "Recovery execution",
+      "protocols": [
+        "NATS",
+        "restic",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "retry",
+        "repair repository"
+      ],
+      "recovery_owner": "Recovery worker",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Recovery worker",
+      "runtime_process": "backup services",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite lifecycle state",
+      "description": "Bounds admission, coalesces low-value work, reconciles queue depth, and prevents unrelated lifecycle deletion.",
+      "documentation_links": [
+        "docs/generated/development/projection-catalog.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "projection_dirty_signals"
+      ],
+      "evidence": [
+        "drop/coalesce/queue metrics"
+      ],
+      "execution_owner": "queue owners",
+      "failure_modes": [
+        "queue pressure",
+        "orphan state"
+      ],
+      "health_signals": [
+        "queue capacity",
+        "deadline counters"
+      ],
+      "icon": "semantic-decision",
+      "id": "component:bounded-reconciliation",
+      "inputs": [
+        "Events",
+        "dirty signals"
+      ],
+      "name": "Bounded queues and reconciliation",
+      "outputs": [
+        "Bounded work batches"
+      ],
+      "owner": "Schedulers and stores",
+      "protocols": [
+        "In-process queue",
+        "IPC queue",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "coalesce",
+        "transactional reconciliation"
+      ],
+      "recovery_owner": "Reconciliation loops",
+      "runtime_owner": "pocket-api / pocket-worker",
+      "runtime_platform": "FastAPI and worker processes",
+      "runtime_process": "queue owners",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "None",
+      "description": "Hosts the installed or web PWA and enforces browser-origin boundaries.",
+      "documentation_links": [
+        "docs/generated/production/caddy-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "Browser",
+      "failure_modes": [],
+      "health_signals": [
+        "page load",
+        "service worker readiness"
+      ],
+      "icon": "semantic-browser",
+      "id": "component:browser",
+      "inputs": [
+        "HTML, CSS, JavaScript, SVG"
+      ],
+      "name": "Browser",
+      "outputs": [
+        "Same-origin HTTP requests"
+      ],
+      "owner": "Browser",
+      "protocols": [
+        "HTTPS"
+      ],
+      "recovery_behavior": [],
+      "recovery_owner": "Browser reload / service-worker update",
+      "runtime_owner": "Browser",
+      "runtime_platform": "User device",
+      "runtime_process": "Browser",
+      "security_boundary": "browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "index.html",
+        "vite.config.js"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Browser",
+        "Android",
+        "Desktop"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "None",
+      "description": "Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.",
+      "documentation_links": [
+        "docs/generated/production/caddy-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "caddy-proxy",
+      "failure_modes": [
+        "route unavailable",
+        "certificate unavailable"
+      ],
+      "health_signals": [
+        "Caddy validation",
+        "route probes"
+      ],
+      "icon": "brand-caddy",
+      "id": "component:caddy",
+      "inputs": [
+        "HTTPS requests"
+      ],
+      "name": "Caddy same-origin proxy",
+      "outputs": [
+        "Static PWA",
+        "FastAPI requests",
+        "managed app routes"
+      ],
+      "owner": "Same-origin access",
+      "protocols": [
+        "HTTPS",
+        "HTTP reverse proxy"
+      ],
+      "recovery_behavior": [
+        "regenerate validated config",
+        "bounded PM2 restart"
+      ],
+      "recovery_owner": "Startup scripts / PM2",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host",
+      "runtime_process": "caddy-proxy",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/restart-caddy-proxy.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Recovery state",
+      "description": "Creates pre-change checkpoints and applies explicit bounded retention without silently deleting current state.",
+      "documentation_links": [
+        "docs/generated/production/recovery.md",
+        "docs/generated/production/data-retention.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "recovery_operations"
+      ],
+      "evidence": [
+        "maintenance receipt"
+      ],
+      "execution_owner": "maintenance services",
+      "failure_modes": [
+        "checkpoint failure"
+      ],
+      "health_signals": [
+        "retention status"
+      ],
+      "icon": "semantic-backup",
+      "id": "component:checkpoints-retention",
+      "inputs": [
+        "Maintenance command"
+      ],
+      "name": "Checkpoints and retention policy",
+      "outputs": [
+        "checkpoint",
+        "retention receipt"
+      ],
+      "owner": "Recovery maintenance",
+      "protocols": [
+        "NATS",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "abort destructive operation"
+      ],
+      "recovery_owner": "Recovery worker",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Recovery worker",
+      "runtime_process": "maintenance services",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite command_lifecycle",
+      "description": "Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, and dead-letter behavior independently from device lifecycle.",
+      "documentation_links": [
+        "docs/generated/development/lite-events.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "command_lifecycle"
+      ],
+      "evidence": [
+        "queued/claimed/running/terminal"
+      ],
+      "execution_owner": "FastAPI and worker",
+      "failure_modes": [
+        "orphaned command",
+        "redelivery"
+      ],
+      "health_signals": [
+        "queue depth",
+        "stale command count"
+      ],
+      "icon": "semantic-workflow",
+      "id": "component:command-lifecycle",
+      "inputs": [
+        "Accepted command",
+        "worker status"
+      ],
+      "name": "Command admission and lifecycle",
+      "outputs": [
+        "Lifecycle events",
+        "terminal state"
+      ],
+      "owner": "Command lifecycle",
+      "protocols": [
+        "NATS",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "reconcile without deleting device",
+        "terminal redelivery protection"
+      ],
+      "recovery_owner": "Reconciliation",
+      "runtime_owner": "pocket-api / pocket-worker",
+      "runtime_platform": "FastAPI and worker",
+      "runtime_process": "FastAPI and worker",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite evidence index and sanitized files",
+      "description": "Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.",
+      "documentation_links": [
+        "docs/generated/development/redaction-coverage.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "audit_evidence_index"
+      ],
+      "evidence": [
+        "self-describing evidence"
+      ],
+      "execution_owner": "domain owners",
+      "failure_modes": [
+        "evidence write failure"
+      ],
+      "health_signals": [
+        "evidence index consistency"
+      ],
+      "icon": "semantic-evidence",
+      "id": "component:completion-evidence",
+      "inputs": [
+        "Lifecycle results"
+      ],
+      "name": "Completion and audit evidence",
+      "outputs": [
+        "Sanitized evidence summaries"
+      ],
+      "owner": "Evidence services",
+      "protocols": [
+        "SQLite",
+        "JSON files",
+        "NATS events"
+      ],
+      "recovery_behavior": [
+        "fail action truthfully",
+        "retry bounded write"
+      ],
+      "recovery_owner": "Owning domain",
+      "runtime_owner": "worker / FastAPI",
+      "runtime_platform": "Worker and FastAPI",
+      "runtime_process": "domain owners",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_evidence_receipts.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Retains enrolled devices across connectivity loss and separates durable enrollment, current state, health, supervisor state, and recovery history.",
+      "documentation_links": [
+        "docs/generated/production/devices.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "device_enrollment_registry",
+        "device_current_state",
+        "device_health_current"
+      ],
+      "evidence": [
+        "device lifecycle events"
+      ],
+      "execution_owner": "FastAPI / worker",
+      "failure_modes": [
+        "offline",
+        "stale"
+      ],
+      "health_signals": [
+        "last seen",
+        "health attention"
+      ],
+      "icon": "semantic-durable-state",
+      "id": "component:device-state",
+      "inputs": [
+        "invite acceptance",
+        "heartbeats",
+        "health"
+      ],
+      "name": "Enrollment and device lifecycle state",
+      "outputs": [
+        "fleet projection"
+      ],
+      "owner": "Fleet domain",
+      "protocols": [
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "preserve enrollment",
+        "rejoin/repair"
+      ],
+      "recovery_owner": "Explicit retirement / repair",
+      "runtime_owner": "lite_control_plane_store",
+      "runtime_platform": "SQLite",
+      "runtime_process": "FastAPI / worker",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "FastAPI; Dexie is safe read-only fallback",
+      "description": "Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state, XState guided flows, API client, error boundaries, and generated fixtures without owning backend truth.",
+      "documentation_links": [
+        "docs/generated/development/ui-state-catalog.md",
+        "docs/generated/development/fixtures-schemas.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "safe Dexie snapshots"
+      ],
+      "evidence": [],
+      "execution_owner": "React",
+      "failure_modes": [
+        "offline",
+        "stale snapshot"
+      ],
+      "health_signals": [
+        "query freshness",
+        "saved-state metadata"
+      ],
+      "icon": "semantic-frontend-state",
+      "id": "component:frontend-state",
+      "inputs": [
+        "Safe GET responses",
+        "saved snapshots"
+      ],
+      "name": "Frontend state ownership",
+      "outputs": [
+        "Rendered view models",
+        "write requests"
+      ],
+      "owner": "Lite UI",
+      "protocols": [
+        "IndexedDB",
+        "Fetch API"
+      ],
+      "recovery_behavior": [
+        "refetch on reconnect",
+        "write actions stay disabled"
+      ],
+      "recovery_owner": "TanStack revalidation and UI workflows",
+      "runtime_owner": "Browser",
+      "runtime_platform": "Browser / installed PWA",
+      "runtime_process": "React",
+      "security_boundary": "browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "src/hooks/useLiteQuery.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/machines/liteSecurityCheckMachine.js",
+        "src/stores/liteUiStore.js"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Release assets",
+      "description": "Publishes the verified Lite release manifest, checksums, and dist.zip assets for the release subprocess.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "release-dist workflow",
+      "failure_modes": [
+        "missing asset"
+      ],
+      "health_signals": [
+        "asset manifest validation"
+      ],
+      "icon": "brand-github",
+      "id": "component:github-release",
+      "inputs": [
+        "Annotated Lite tag"
+      ],
+      "name": "GitHub Release",
+      "outputs": [
+        "Release assets"
+      ],
+      "owner": "Release workflow",
+      "protocols": [
+        "HTTPS"
+      ],
+      "recovery_behavior": [
+        "do not apply; publish corrected release"
+      ],
+      "recovery_owner": "Release workflow rerun/fix",
+      "runtime_owner": "GitHub Actions",
+      "runtime_platform": "GitHub",
+      "runtime_process": "release-dist workflow",
+      "security_boundary": "external-release",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "External service"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Git repository",
+      "description": "Hosts source and release workflow definitions; it is not a Lite runtime apply owner.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "GitHub Actions",
+      "failure_modes": [
+        "workflow failure"
+      ],
+      "health_signals": [
+        "workflow status"
+      ],
+      "icon": "brand-github",
+      "id": "component:github-repository",
+      "inputs": [
+        "Merged source"
+      ],
+      "name": "GitHub repository",
+      "outputs": [
+        "Tagged workflow"
+      ],
+      "owner": "Repository maintainers",
+      "protocols": [
+        "Git/HTTPS"
+      ],
+      "recovery_behavior": [
+        "fix via PR"
+      ],
+      "recovery_owner": "Repository maintainers",
+      "runtime_owner": "GitHub",
+      "runtime_platform": "External source hosting",
+      "runtime_process": "GitHub Actions",
+      "security_boundary": "external-release",
+      "source_refs": [
+        ".github/workflows/release-dist.yml",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "External service"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.",
+      "documentation_links": [
+        "docs/generated/production/devices.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "device_invite_lifecycle",
+        "device_identity_guards"
+      ],
+      "evidence": [
+        "blocked consumption",
+        "invite state"
+      ],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "duplicate",
+        "mismatch"
+      ],
+      "health_signals": [
+        "pending invite age"
+      ],
+      "icon": "semantic-durable-state",
+      "id": "component:invite-state",
+      "inputs": [
+        "invite creation",
+        "bootstrap acceptance"
+      ],
+      "name": "Invite and identity lifecycle",
+      "outputs": [
+        "safe onboarding state"
+      ],
+      "owner": "Fleet onboarding",
+      "protocols": [
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "revoke",
+        "explicit repair"
+      ],
+      "recovery_owner": "Explicit repair/rejoin",
+      "runtime_owner": "Lite API",
+      "runtime_platform": "SQLite",
+      "runtime_process": "FastAPI",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "None",
+      "description": "Provides local-device access to the same-origin Caddy endpoint without hardcoded addresses.",
+      "documentation_links": [
+        "docs/generated/production/caddy-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "Network stack",
+      "failure_modes": [],
+      "health_signals": [
+        "route reachability"
+      ],
+      "icon": "semantic-network",
+      "id": "component:lan",
+      "inputs": [
+        "Browser traffic"
+      ],
+      "name": "Local LAN",
+      "outputs": [
+        "Caddy connectivity"
+      ],
+      "owner": "Private network",
+      "protocols": [
+        "TCP/IP",
+        "HTTPS"
+      ],
+      "recovery_behavior": [],
+      "recovery_owner": "Network owner",
+      "runtime_owner": "Network",
+      "runtime_platform": "Private local network",
+      "runtime_process": "Network stack",
+      "security_boundary": "tailnet",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "docs/generated/production/caddy-access.md"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Private LAN"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Release SQLite state and prior PWA",
+      "description": "Records the verified prior release and restores it atomically when post-switch validation fails.",
+      "documentation_links": [
+        "docs/generated/production/rollback.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "lite_installed_release_identity",
+        "release_runtime_projection"
+      ],
+      "evidence": [
+        "rollback status"
+      ],
+      "execution_owner": "rollback stage",
+      "failure_modes": [
+        "rollback failure"
+      ],
+      "health_signals": [
+        "last_known_good"
+      ],
+      "icon": "semantic-recovery",
+      "id": "component:last-known-good",
+      "inputs": [
+        "Rollback trigger"
+      ],
+      "name": "Last-known-good state and rollback",
+      "outputs": [
+        "Restored prior release"
+      ],
+      "owner": "Release recovery",
+      "protocols": [
+        "Filesystem atomic switch",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "manual recovery guidance"
+      ],
+      "recovery_owner": "Self",
+      "runtime_owner": "release subprocess",
+      "runtime_platform": "Server host / release subprocess",
+      "runtime_process": "rollback stage",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite prepared reads",
+      "description": "Validates requests, owns safe read APIs, admits commands, and never delegates browser execution directly to NATS or shell.",
+      "documentation_links": [
+        "docs/reference/api/lite-api.md",
+        "docs/generated/development/api-contract.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "SQLite"
+      ],
+      "evidence": [
+        "request lifecycle",
+        "command acceptance"
+      ],
+      "execution_owner": "pocket-api",
+      "failure_modes": [
+        "NATS unavailable",
+        "SQLite unavailable"
+      ],
+      "health_signals": [
+        "GET /health",
+        "GET /ready"
+      ],
+      "icon": "brand-fastapi",
+      "id": "component:lite-api",
+      "inputs": [
+        "Same-origin requests"
+      ],
+      "name": "FastAPI /api/lite/*",
+      "outputs": [
+        "Prepared reads",
+        "validated commands"
+      ],
+      "owner": "Lite API",
+      "protocols": [
+        "HTTP JSON",
+        "NATS"
+      ],
+      "recovery_behavior": [
+        "fail writes closed",
+        "serve safe last committed reads"
+      ],
+      "recovery_owner": "PM2 after NATS/SQLite verification",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host",
+      "runtime_process": "pocket-api",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Sanitized app projection",
+      "description": "Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.",
+      "documentation_links": [
+        "docs/generated/production/apps.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "app services",
+      "failure_modes": [
+        "media not connected",
+        "route not ready"
+      ],
+      "health_signals": [
+        "operational status"
+      ],
+      "icon": "semantic-health",
+      "id": "component:media-app-health",
+      "inputs": [
+        "Route/runtime/storage posture"
+      ],
+      "name": "Media readiness and app health probes",
+      "outputs": [
+        "route_ready",
+        "media readiness"
+      ],
+      "owner": "Apps domain",
+      "protocols": [
+        "HTTP probes",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "connect media safely",
+        "repair"
+      ],
+      "recovery_owner": "App repair",
+      "runtime_owner": "Lite API / worker",
+      "runtime_platform": "FastAPI / worker",
+      "runtime_process": "app services",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "JetStream storage",
+      "description": "Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.",
+      "documentation_links": [
+        "docs/generated/development/lite-events.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "JetStream streams and consumers"
+      ],
+      "evidence": [
+        "consumer health"
+      ],
+      "execution_owner": "pocket-nats",
+      "failure_modes": [
+        "listener unavailable",
+        "consumer stalled"
+      ],
+      "health_signals": [
+        "NATS monitor",
+        "JetStream status"
+      ],
+      "icon": "brand-nats",
+      "id": "component:nats-jetstream",
+      "inputs": [
+        "Validated commands",
+        "events"
+      ],
+      "name": "NATS / JetStream",
+      "outputs": [
+        "Durable command delivery",
+        "event fan-out"
+      ],
+      "owner": "Messaging backbone",
+      "protocols": [
+        "NATS",
+        "JetStream"
+      ],
+      "recovery_behavior": [
+        "reconnect",
+        "durable consumer re-enrollment"
+      ],
+      "recovery_owner": "Startup scripts / PM2",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host",
+      "runtime_process": "pocket-nats",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "NATS configuration",
+      "description": "Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.",
+      "documentation_links": [
+        "docs/generated/production/remote-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "NATS server",
+      "failure_modes": [
+        "listener bound incorrectly"
+      ],
+      "health_signals": [
+        "local listener",
+        "Tailnet listener reachability"
+      ],
+      "icon": "semantic-network",
+      "id": "component:nats-listeners",
+      "inputs": [
+        "Generated listener config"
+      ],
+      "name": "Primary and secondary NATS listeners",
+      "outputs": [
+        "Primary and secondary agent connectivity"
+      ],
+      "owner": "NATS runtime",
+      "protocols": [
+        "NATS/TCP"
+      ],
+      "recovery_behavior": [
+        "regenerate config",
+        "verify connectivity"
+      ],
+      "recovery_owner": "startup scripts",
+      "runtime_owner": "pocket-nats",
+      "runtime_platform": "Server host",
+      "runtime_process": "NATS server",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Local identity environment; server SQLite is canonical",
+      "description": "Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.",
+      "documentation_links": [
+        "docs/generated/production/devices.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "~/.pocketlab-lite-agent.env (not documented with values)"
+      ],
+      "evidence": [
+        "device lifecycle events"
+      ],
+      "execution_owner": "pocketlab-agent-<node_id>",
+      "failure_modes": [
+        "disconnected",
+        "stopped",
+        "identity mismatch"
+      ],
+      "health_signals": [
+        "fresh heartbeat",
+        "connection state"
+      ],
+      "icon": "semantic-agent",
+      "id": "component:node-agent",
+      "inputs": [
+        "NATS commands",
+        "agent environment"
+      ],
+      "name": "Lite node agent",
+      "outputs": [
+        "heartbeat",
+        "telemetry",
+        "health",
+        "command result"
+      ],
+      "owner": "Device runtime",
+      "protocols": [
+        "NATS"
+      ],
+      "recovery_behavior": [
+        "reconnect",
+        "supervisor restart",
+        "explicit repair/rejoin"
+      ],
+      "recovery_owner": "Reconnect watchdog and supervisor",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host or joined device",
+      "runtime_process": "pocketlab-agent-<node_id>",
+      "security_boundary": "managed-device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "PhotoPrism application data",
+      "description": "Provides the verified managed photo application under a same-origin Caddy path.",
+      "documentation_links": [
+        "docs/generated/production/apps.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "pocketlab-app-photoprism",
+      "failure_modes": [
+        "route 404",
+        "process stopped"
+      ],
+      "health_signals": [
+        "base-path status probe"
+      ],
+      "icon": "brand-photoprism",
+      "id": "component:photoprism",
+      "inputs": [
+        "Same-origin app route",
+        "approved media mapping"
+      ],
+      "name": "PhotoPrism",
+      "outputs": [
+        "PhotoPrism UI and health"
+      ],
+      "owner": "Managed application",
+      "protocols": [
+        "HTTP behind Caddy"
+      ],
+      "recovery_behavior": [
+        "route-aware repair",
+        "process recovery"
+      ],
+      "recovery_owner": "App lifecycle worker",
+      "runtime_owner": "PM2 / PROot Ubuntu",
+      "runtime_platform": "PROot Ubuntu on server host",
+      "runtime_process": "pocketlab-app-photoprism",
+      "security_boundary": "application-container",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "None",
+      "description": "Starts and supervises approved server-host and joined-device processes with bounded restart policies.",
+      "documentation_links": [
+        "docs/generated/production/services-pm2.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [
+        "process status/restart count"
+      ],
+      "execution_owner": "PM2 daemon",
+      "failure_modes": [
+        "process stopped"
+      ],
+      "health_signals": [
+        "pm2 status"
+      ],
+      "icon": "brand-pm2",
+      "id": "component:pm2",
+      "inputs": [
+        "Generated process definitions"
+      ],
+      "name": "PM2 process manager",
+      "outputs": [
+        "Managed processes",
+        "status"
+      ],
+      "owner": "Runtime process management",
+      "protocols": [
+        "Local process control"
+      ],
+      "recovery_behavior": [
+        "bounded restart",
+        "separate supervisor"
+      ],
+      "recovery_owner": "PM2 plus supervisors",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host and joined devices",
+      "runtime_process": "PM2 daemon",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Release runtime state",
+      "description": "Validates Caddy/FastAPI/PWA health after promotion before declaring the release current.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "release_runtime_projection"
+      ],
+      "evidence": [
+        "post-switch health"
+      ],
+      "execution_owner": "release validation stage",
+      "failure_modes": [
+        "health gate fails"
+      ],
+      "health_signals": [
+        "/health",
+        "/ready"
+      ],
+      "icon": "semantic-health",
+      "id": "component:post-switch-health",
+      "inputs": [
+        "Promoted release"
+      ],
+      "name": "Post-switch health validation",
+      "outputs": [
+        "healthy/current or rollback trigger"
+      ],
+      "owner": "Release validation",
+      "protocols": [
+        "HTTP"
+      ],
+      "recovery_behavior": [
+        "rollback immediately"
+      ],
+      "recovery_owner": "Rollback",
+      "runtime_owner": "release subprocess",
+      "runtime_platform": "Release subprocess against local services",
+      "runtime_process": "release validation stage",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Indexes audit evidence and tracks dirty signals, generations, committed projections, current-state summaries, and semantic revisions.",
+      "documentation_links": [
+        "docs/generated/development/projection-catalog.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "projection_refresh_state",
+        "domain_revisions"
+      ],
+      "evidence": [
+        "generation diagnostics"
+      ],
+      "execution_owner": "projection services",
+      "failure_modes": [
+        "stale generation"
+      ],
+      "health_signals": [
+        "dirty",
+        "committed_generation"
+      ],
+      "icon": "semantic-projection",
+      "id": "component:prepared-state",
+      "inputs": [
+        "domain revisions",
+        "evidence"
+      ],
+      "name": "Audit index, projection refresh, prepared projections, and domain revisions",
+      "outputs": [
+        "prepared API reads"
+      ],
+      "owner": "Projection subsystem",
+      "protocols": [
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "rebuild affected domain",
+        "serve last valid"
+      ],
+      "recovery_owner": "Projection reconciliation",
+      "runtime_owner": "scheduler / subprocesses",
+      "runtime_platform": "SQLite",
+      "runtime_process": "projection services",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite prepared projections",
+      "description": "Own CPU-heavy projection reconstruction and serialization outside the API process.",
+      "documentation_links": [
+        "docs/generated/development/projection-catalog.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "projection_refresh_state",
+        "projection_dirty_signals"
+      ],
+      "evidence": [
+        "projection generation diagnostics"
+      ],
+      "execution_owner": "projection scheduler",
+      "failure_modes": [
+        "pressure deferral",
+        "subprocess exit"
+      ],
+      "health_signals": [
+        "generation/committed_generation",
+        "queue depth"
+      ],
+      "icon": "semantic-projection",
+      "id": "component:projection-subprocesses",
+      "inputs": [
+        "Compact domain events"
+      ],
+      "name": "Projection subprocesses",
+      "outputs": [
+        "Prepared projections",
+        "revision updates"
+      ],
+      "owner": "Prepared projections",
+      "protocols": [
+        "IPC queue",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "serve last committed",
+        "restart and reconcile"
+      ],
+      "recovery_owner": "Projection scheduler",
+      "runtime_owner": "pocket-api and subprocesses",
+      "runtime_platform": "Dedicated subprocesses / scheduler",
+      "runtime_process": "projection scheduler",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Application-owned state",
+      "description": "Hosts verified applications such as PhotoPrism without making documentation tooling or the browser a runtime dependency.",
+      "documentation_links": [
+        "docs/generated/production/android-termux.md",
+        "docs/generated/production/apps.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "PM2-launched PROot process",
+      "failure_modes": [
+        "guest unavailable"
+      ],
+      "health_signals": [
+        "process status"
+      ],
+      "icon": "brand-ubuntu",
+      "id": "component:proot-ubuntu",
+      "inputs": [
+        "Generated app environment"
+      ],
+      "name": "PROot Ubuntu application container",
+      "outputs": [
+        "App process"
+      ],
+      "owner": "Application runtime",
+      "protocols": [
+        "Local process / HTTP"
+      ],
+      "recovery_behavior": [
+        "explicit install/repair"
+      ],
+      "recovery_owner": "App lifecycle worker",
+      "runtime_owner": "proot-distro",
+      "runtime_platform": "Android/Termux server host",
+      "runtime_process": "PM2-launched PROot process",
+      "security_boundary": "application-container",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "FastAPI source of truth",
+      "description": "Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.",
+      "documentation_links": [
+        "docs/generated/production/tabs.md",
+        "docs/generated/production/architecture.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [
+        "frontend lifecycle diagnostics"
+      ],
+      "execution_owner": "React",
+      "failure_modes": [
+        "backend unavailable",
+        "saved state stale"
+      ],
+      "health_signals": [
+        "error boundary",
+        "frontend lifecycle challenge"
+      ],
+      "icon": "brand-react",
+      "id": "component:pwa",
+      "inputs": [
+        "Prepared API responses"
+      ],
+      "name": "React / Vite PWA",
+      "outputs": [
+        "Validated user requests"
+      ],
+      "owner": "Lite UI",
+      "protocols": [
+        "HTTPS JSON"
+      ],
+      "recovery_behavior": [
+        "read-only saved state",
+        "quiet revalidation"
+      ],
+      "recovery_owner": "Error boundaries and browser reload",
+      "runtime_owner": "Browser",
+      "runtime_platform": "Browser / installed PWA",
+      "runtime_process": "React",
+      "security_boundary": "browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "src/lib/liteApi.js",
+        "src/lite/LiteApp.jsx"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite / backup repository",
+      "description": "Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.",
+      "documentation_links": [
+        "docs/generated/production/recovery.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "backup_manifest_index",
+        "recovery_operations"
+      ],
+      "evidence": [
+        "backup and restore receipts"
+      ],
+      "execution_owner": "recovery services",
+      "failure_modes": [
+        "verification failed",
+        "restore blocked"
+      ],
+      "health_signals": [
+        "repository readiness",
+        "verification state"
+      ],
+      "icon": "semantic-durable-state",
+      "id": "component:recovery-state",
+      "inputs": [
+        "backup/verify/preview/restore lifecycle"
+      ],
+      "name": "Backup, restore, and checkpoint state",
+      "outputs": [
+        "recovery projection"
+      ],
+      "owner": "Recovery domain",
+      "protocols": [
+        "SQLite",
+        "restic metadata"
+      ],
+      "recovery_behavior": [
+        "checkpoint",
+        "preview",
+        "explicit confirmation"
+      ],
+      "recovery_owner": "Recovery worker",
+      "runtime_owner": "Recovery worker",
+      "runtime_platform": "SQLite and repository-owned manifests",
+      "runtime_process": "recovery services",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Release assets",
+      "description": "Defines immutable release identity and the exact assets required for a Lite installation.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [
+        "release manifest"
+      ],
+      "execution_owner": "GitHub Actions",
+      "failure_modes": [
+        "tag or manifest mismatch"
+      ],
+      "health_signals": [
+        "checksums match"
+      ],
+      "icon": "semantic-artifact",
+      "id": "component:release-artifacts",
+      "inputs": [
+        "Source commit"
+      ],
+      "name": "Date-based Lite tag, dist.zip, checksums, and release manifest",
+      "outputs": [
+        "verified release identity"
+      ],
+      "owner": "Release engineering",
+      "protocols": [
+        "ZIP",
+        "JSON",
+        "SHA256"
+      ],
+      "recovery_behavior": [
+        "reject release"
+      ],
+      "recovery_owner": "Release workflow",
+      "runtime_owner": "Release workflow",
+      "runtime_platform": "GitHub Release / staging",
+      "runtime_process": "GitHub Actions",
+      "security_boundary": "external-release",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Staging directory and release SQLite state",
+      "description": "Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/assets/checksums, and stages without touching the active PWA.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "release_runtime_projection"
+      ],
+      "evidence": [
+        "download/verification stages"
+      ],
+      "execution_owner": "release subprocess",
+      "failure_modes": [
+        "network/checksum/identity failure"
+      ],
+      "health_signals": [
+        "artifact_verified"
+      ],
+      "icon": "semantic-release",
+      "id": "component:release-staging",
+      "inputs": [
+        "GitHub release metadata"
+      ],
+      "name": "Download staging and release verification",
+      "outputs": [
+        "verified staged release"
+      ],
+      "owner": "Release runtime",
+      "protocols": [
+        "HTTPS",
+        "SHA256"
+      ],
+      "recovery_behavior": [
+        "preserve active release",
+        "bounded backoff"
+      ],
+      "recovery_owner": "Discard staging / backoff",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Release subprocess",
+      "runtime_process": "release subprocess",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_contract.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Stores installed-release identity and release-runtime projection for truthful comparison, staging, apply, rollback, and last-known-good state.",
+      "documentation_links": [
+        "docs/generated/production/release.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "lite_installed_release_identity",
+        "release_runtime_projection"
+      ],
+      "evidence": [
+        "release stage evidence"
+      ],
+      "execution_owner": "release services",
+      "failure_modes": [
+        "identity mismatch",
+        "health validation failure"
+      ],
+      "health_signals": [
+        "comparison",
+        "artifact verification"
+      ],
+      "icon": "semantic-durable-state",
+      "id": "component:release-state",
+      "inputs": [
+        "verified release lifecycle"
+      ],
+      "name": "Installed release and runtime state",
+      "outputs": [
+        "release summary"
+      ],
+      "owner": "Release system",
+      "protocols": [
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "last-known-good rollback"
+      ],
+      "recovery_owner": "Rollback",
+      "runtime_owner": "Release subprocess",
+      "runtime_platform": "SQLite",
+      "runtime_process": "release services",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite release state and staging area",
+      "description": "Owns network, download, verification, staging, apply, and rollback work outside the FastAPI event loop.",
+      "documentation_links": [
+        "docs/generated/production/release.md",
+        "docs/generated/production/rollback.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "release_runtime_projection"
+      ],
+      "evidence": [
+        "release stage results"
+      ],
+      "execution_owner": "release subprocess",
+      "failure_modes": [
+        "download failure",
+        "verification failure",
+        "post-switch health failure"
+      ],
+      "health_signals": [
+        "subprocess generation",
+        "deadline counters"
+      ],
+      "icon": "semantic-release",
+      "id": "component:release-subprocess",
+      "inputs": [
+        "Release check/apply command"
+      ],
+      "name": "Release subprocess",
+      "outputs": [
+        "Verified staged release",
+        "release evidence"
+      ],
+      "owner": "Release runtime",
+      "protocols": [
+        "IPC queue",
+        "HTTPS"
+      ],
+      "recovery_behavior": [
+        "bounded backoff",
+        "atomic rollback"
+      ],
+      "recovery_owner": "Last-known-good rollback",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Dedicated subprocess",
+      "runtime_process": "release subprocess",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Prepared status",
+      "description": "Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor status, and safe guidance.",
+      "documentation_links": [
+        "docs/generated/production/remote-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "remote unavailable"
+      ],
+      "health_signals": [
+        "readiness reasons"
+      ],
+      "icon": "semantic-health",
+      "id": "component:remote-readiness",
+      "inputs": [
+        "Tailscale and NATS posture"
+      ],
+      "name": "Remote-access readiness checks",
+      "outputs": [
+        "Ready or Remote access not ready"
+      ],
+      "owner": "Lite API",
+      "protocols": [
+        "HTTP JSON"
+      ],
+      "recovery_behavior": [
+        "truthful guidance",
+        "safe startup side effects outside reads"
+      ],
+      "recovery_owner": "startup scripts / user guidance",
+      "runtime_owner": "pocket-api",
+      "runtime_platform": "FastAPI read surface",
+      "runtime_process": "FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Recovery operations and backup repository",
+      "description": "Builds a non-destructive preview, requires explicit confirmation, creates a checkpoint, applies restore, and validates health.",
+      "documentation_links": [
+        "docs/generated/production/recovery.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "recovery_operations"
+      ],
+      "evidence": [
+        "preview and restore receipt"
+      ],
+      "execution_owner": "restore services",
+      "failure_modes": [
+        "preview unsafe",
+        "health failed"
+      ],
+      "health_signals": [
+        "post-restore API health"
+      ],
+      "icon": "semantic-recovery",
+      "id": "component:restore-preview",
+      "inputs": [
+        "Backup selection",
+        "confirmation"
+      ],
+      "name": "Restore preview and confirmed restore",
+      "outputs": [
+        "preview",
+        "restore result"
+      ],
+      "owner": "Recovery execution",
+      "protocols": [
+        "NATS",
+        "SQLite",
+        "filesystem"
+      ],
+      "recovery_behavior": [
+        "checkpoint rollback"
+      ],
+      "recovery_owner": "Checkpoint rollback",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Recovery worker",
+      "runtime_process": "restore services",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Requires assessment and confirmation for device retirement and provides verified database backup/preview/restore without coupling command cleanup to device deletion.",
+      "documentation_links": [
+        "docs/generated/production/devices.md",
+        "docs/generated/production/recovery.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "device_removal_receipts",
+        "security_database_backups"
+      ],
+      "evidence": [
+        "retirement/restore evidence"
+      ],
+      "execution_owner": "domain services",
+      "failure_modes": [
+        "healthy device removal blocked",
+        "restore verification failed"
+      ],
+      "health_signals": [
+        "dependency assessment",
+        "database verification"
+      ],
+      "icon": "semantic-recovery",
+      "id": "component:retirement-database-recovery",
+      "inputs": [
+        "Confirmed retirement/restore"
+      ],
+      "name": "Explicit retirement and database recovery",
+      "outputs": [
+        "retirement receipt",
+        "database restore"
+      ],
+      "owner": "Fleet and Recovery",
+      "protocols": [
+        "HTTP JSON",
+        "NATS",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "cancel",
+        "use verified backup"
+      ],
+      "recovery_owner": "Explicit repair/rejoin or database restore",
+      "runtime_owner": "pocket-api / pocket-worker",
+      "runtime_platform": "FastAPI / worker",
+      "runtime_process": "domain services",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Sanitized Security evidence",
+      "description": "Run bounded backend-owned scanners with target-aware exclusions and sanitized evidence; the browser never executes scanners.",
+      "documentation_links": [
+        "docs/generated/development/security-profiles.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "security_scan_tool_runs",
+        "security_scan_evidence_refs"
+      ],
+      "evidence": [
+        "sanitized scanner evidence"
+      ],
+      "execution_owner": "scanner subprocess group",
+      "failure_modes": [
+        "tool unavailable",
+        "timeout"
+      ],
+      "health_signals": [
+        "tool status",
+        "timeout status"
+      ],
+      "icon": "semantic-scanner",
+      "id": "component:scanner-adapters",
+      "inputs": [
+        "Verified scan plan"
+      ],
+      "name": "Lynis and Trivy scanner adapters",
+      "outputs": [
+        "normalized findings",
+        "coverage summary"
+      ],
+      "owner": "Security execution",
+      "protocols": [
+        "Local subprocess"
+      ],
+      "recovery_behavior": [
+        "kill process group",
+        "record partial state"
+      ],
+      "recovery_owner": "Worker cleanup / retry",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Security worker subprocesses",
+      "runtime_process": "scanner subprocess group",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_evidence.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite Security state",
+      "description": "Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.",
+      "documentation_links": [
+        "docs/generated/production/security.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "security_scan_runs"
+      ],
+      "evidence": [
+        "scan lifecycle"
+      ],
+      "execution_owner": "security services",
+      "failure_modes": [
+        "worker start timeout",
+        "scanner timeout"
+      ],
+      "health_signals": [
+        "progress",
+        "freshness"
+      ],
+      "icon": "semantic-security",
+      "id": "component:security-coordinator",
+      "inputs": [
+        "Scan request"
+      ],
+      "name": "Security scan coordinator",
+      "outputs": [
+        "run state",
+        "compact summary"
+      ],
+      "owner": "Security domain",
+      "protocols": [
+        "HTTP JSON",
+        "NATS",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "consumer recovery",
+        "terminal recovery"
+      ],
+      "recovery_owner": "Security maintenance / worker recovery",
+      "runtime_owner": "pocket-api / pocket-worker",
+      "runtime_platform": "FastAPI and worker",
+      "runtime_process": "security services",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Security state",
+      "description": "Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, and truthful partial/failed states.",
+      "documentation_links": [
+        "docs/generated/production/security.md",
+        "docs/generated/development/security-profiles.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "security_profile_snapshots"
+      ],
+      "evidence": [
+        "coverage_summary"
+      ],
+      "execution_owner": "Security coordinator",
+      "failure_modes": [
+        "partial/missing target"
+      ],
+      "health_signals": [
+        "profile freshness"
+      ],
+      "icon": "semantic-security",
+      "id": "component:security-profiles",
+      "inputs": [
+        "Profile and optional app id"
+      ],
+      "name": "Quick, Full, and App safety checks",
+      "outputs": [
+        "Coverage and findings"
+      ],
+      "owner": "Security policy",
+      "protocols": [
+        "NATS",
+        "Local scanners"
+      ],
+      "recovery_behavior": [
+        "truthful partial state",
+        "explicit retry"
+      ],
+      "recovery_owner": "Explicit retry",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Security worker",
+      "runtime_process": "Security coordinator",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite",
+      "description": "Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidence references.",
+      "documentation_links": [
+        "docs/generated/production/security.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "security_scan_runs",
+        "security_scan_findings"
+      ],
+      "evidence": [
+        "sanitized evidence refs"
+      ],
+      "execution_owner": "security services",
+      "failure_modes": [
+        "stale accepted run",
+        "scanner timeout"
+      ],
+      "health_signals": [
+        "active key",
+        "progress freshness"
+      ],
+      "icon": "semantic-durable-state",
+      "id": "component:security-state",
+      "inputs": [
+        "scanner results"
+      ],
+      "name": "Security findings and run state",
+      "outputs": [
+        "compact Security reads"
+      ],
+      "owner": "Security domain",
+      "protocols": [
+        "SQLite",
+        "JSON"
+      ],
+      "recovery_behavior": [
+        "terminal recovery",
+        "maintenance"
+      ],
+      "recovery_owner": "Security maintenance / retry",
+      "runtime_owner": "Security worker",
+      "runtime_platform": "SQLite and compact sanitized files",
+      "runtime_process": "security services",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Pocket Lab Lite",
+      "description": "Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.",
+      "documentation_links": [
+        "docs/generated/development/lite-sqlite-schema.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "all Lite tables"
+      ],
+      "evidence": [
+        "schema migrations",
+        "quick_check"
+      ],
+      "execution_owner": "SQLite clients",
+      "failure_modes": [
+        "corruption",
+        "write contention"
+      ],
+      "health_signals": [
+        "PRAGMA quick_check",
+        "WAL pressure"
+      ],
+      "icon": "brand-sqlite",
+      "id": "component:sqlite",
+      "inputs": [
+        "Transactional lifecycle writes"
+      ],
+      "name": "SQLite control-plane store",
+      "outputs": [
+        "Canonical state",
+        "prepared reads"
+      ],
+      "owner": "Lite control plane store",
+      "protocols": [
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "checkpoint",
+        "verified database restore"
+      ],
+      "recovery_owner": "Database backup/restore",
+      "runtime_owner": "FastAPI and workers",
+      "runtime_platform": "Server host",
+      "runtime_process": "SQLite clients",
+      "security_boundary": "durable-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Tailscale local state",
+      "description": "Provides private Tailnet connectivity and HTTPS identity without becoming a browser-held secret or control owner.",
+      "documentation_links": [
+        "docs/generated/production/remote-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "tailscaled",
+      "failure_modes": [
+        "tailscaled stopped",
+        "no Tailnet IP"
+      ],
+      "health_signals": [
+        "Tailnet IPv4",
+        "peer reachability"
+      ],
+      "icon": "brand-tailscale",
+      "id": "component:tailscale",
+      "inputs": [
+        "Tailnet identity"
+      ],
+      "name": "Tailscale remote access",
+      "outputs": [
+        "Tailnet IPv4",
+        "private reachability"
+      ],
+      "owner": "Remote access",
+      "protocols": [
+        "WireGuard/Tailscale"
+      ],
+      "recovery_behavior": [
+        "safe startup",
+        "readiness guidance"
+      ],
+      "recovery_owner": "Startup scripts",
+      "runtime_owner": "tailscaled",
+      "runtime_platform": "Server host and joined devices",
+      "runtime_process": "tailscaled",
+      "security_boundary": "tailnet",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Local Tailscale state",
+      "description": "Owns Tailscale networking; startup scripts may detect/start it safely while read APIs remain side-effect-free.",
+      "documentation_links": [
+        "docs/generated/production/remote-access.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "tailscaled",
+      "failure_modes": [
+        "daemon unavailable"
+      ],
+      "health_signals": [
+        "daemon state"
+      ],
+      "icon": "brand-tailscale",
+      "id": "component:tailscaled",
+      "inputs": [
+        "Tailscale configuration"
+      ],
+      "name": "tailscaled daemon",
+      "outputs": [
+        "Tailnet interface/IP"
+      ],
+      "owner": "Remote access runtime",
+      "protocols": [
+        "Tailscale"
+      ],
+      "recovery_behavior": [
+        "start when safe"
+      ],
+      "recovery_owner": "startup scripts",
+      "runtime_owner": "startup scripts",
+      "runtime_platform": "Android/Termux server host",
+      "runtime_process": "tailscaled",
+      "security_boundary": "server-host",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "None",
+      "description": "Uses Pocket Lab Lite through the browser.",
+      "documentation_links": [
+        "docs/generated/production/index.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [],
+      "evidence": [],
+      "execution_owner": "Browser",
+      "failure_modes": [],
+      "health_signals": [],
+      "icon": "semantic-user",
+      "id": "component:user",
+      "inputs": [
+        "Pocket Lab Lite status and actions"
+      ],
+      "name": "User",
+      "outputs": [
+        "Intent and confirmation"
+      ],
+      "owner": "User",
+      "protocols": [
+        "HTTPS"
+      ],
+      "recovery_behavior": [],
+      "recovery_owner": "User",
+      "runtime_owner": "Browser",
+      "runtime_platform": "Human user device",
+      "runtime_process": "Browser",
+      "security_boundary": "browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "src/lite/LiteApp.jsx"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Browser"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "Domain state via services",
+      "description": "Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.",
+      "documentation_links": [
+        "docs/generated/production/services-pm2.md",
+        "docs/generated/development/service-catalog.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "command_lifecycle",
+        "domain tables"
+      ],
+      "evidence": [
+        "command received/running/terminal"
+      ],
+      "execution_owner": "pocket-worker",
+      "failure_modes": [
+        "consumer stale",
+        "subprocess timeout"
+      ],
+      "health_signals": [
+        "worker heartbeat",
+        "durable consumer health"
+      ],
+      "icon": "semantic-worker",
+      "id": "component:worker",
+      "inputs": [
+        "JetStream commands"
+      ],
+      "name": "Worker process",
+      "outputs": [
+        "Domain state",
+        "events",
+        "evidence"
+      ],
+      "owner": "Execution plane",
+      "protocols": [
+        "NATS",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "consumer re-enrollment",
+        "bounded retry"
+      ],
+      "recovery_owner": "Durable-consumer watchdog / PM2",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host",
+      "runtime_process": "pocket-worker",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
+      "data_owner": "SQLite workflow tables",
+      "description": "Coordinates multi-step workflow state through bounded event admission and process-isolated projection work.",
+      "documentation_links": [
+        "docs/generated/development/architecture.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "workflow_current_state",
+        "workflow_event_index"
+      ],
+      "evidence": [
+        "workflow state transitions"
+      ],
+      "execution_owner": "worker and workflow projection subprocess",
+      "failure_modes": [
+        "projection lag",
+        "subprocess exit"
+      ],
+      "health_signals": [
+        "projection subprocess health"
+      ],
+      "icon": "semantic-workflow",
+      "id": "component:workflow-execution",
+      "inputs": [
+        "Workflow events"
+      ],
+      "name": "Workflow execution",
+      "outputs": [
+        "Workflow current state"
+      ],
+      "owner": "Workflow engine",
+      "protocols": [
+        "IPC queue",
+        "SQLite"
+      ],
+      "recovery_behavior": [
+        "restart projection subprocess",
+        "rebuild from journal"
+      ],
+      "recovery_owner": "Workflow reconciliation",
+      "runtime_owner": "pocket-worker",
+      "runtime_platform": "Worker / projection subprocess",
+      "runtime_process": "worker and workflow projection subprocess",
+      "security_boundary": "messaging-execution",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

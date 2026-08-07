@@ -1,0 +1,473 @@
+{
+  "items": [
+    {
+      "assets": [
+        "PhotoPrism",
+        "PROot Ubuntu application container"
+      ],
+      "confidence": "inferred",
+      "description": "PROot Ubuntu and managed application runtime.",
+      "domain": "security",
+      "entry_points": [
+        "HTTP behind Caddy",
+        "Local process / HTTP"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:application-container",
+      "mitigations": [
+        "explicit install/repair",
+        "process recovery",
+        "route-aware repair"
+      ],
+      "name": "Application-container boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "guest unavailable",
+        "process stopped",
+        "route 404"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "Browser",
+        "Frontend state ownership",
+        "React / Vite PWA",
+        "User"
+      ],
+      "confidence": "inferred",
+      "description": "User device, browser, PWA, and safe local frontend state.",
+      "domain": "security",
+      "entry_points": [
+        "Fetch API",
+        "HTTPS",
+        "HTTPS JSON",
+        "IndexedDB"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:browser",
+      "mitigations": [
+        "quiet revalidation",
+        "read-only saved state",
+        "refetch on reconnect",
+        "write actions stay disabled"
+      ],
+      "name": "Browser trust boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "backend unavailable",
+        "offline",
+        "saved state stale",
+        "stale snapshot"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "Fleet, Apps, Security, Recovery, and Release APIs",
+        "Identity, authentication, and invite guards",
+        "Prepared read, health, readiness, diagnostics, and evidence APIs",
+        "App Catalog",
+        "FastAPI /api/lite/*",
+        "Media readiness and app health probes",
+        "Remote-access readiness checks",
+        "Security scan coordinator"
+      ],
+      "confidence": "inferred",
+      "description": "FastAPI validation, side-effect-free reads, and command admission.",
+      "domain": "security",
+      "entry_points": [
+        "HTTP JSON",
+        "HTTP probes",
+        "HTTPS JSON",
+        "NATS",
+        "SQLite"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:control-api",
+      "mitigations": [
+        "connect media safely",
+        "consumer recovery",
+        "explicit repair/rejoin",
+        "explicit retry",
+        "fail closed",
+        "fail writes closed",
+        "focused invalidation",
+        "reconciliation",
+        "repair",
+        "repair/check",
+        "safe disabled reason",
+        "safe startup side effects outside reads",
+        "serve last committed generation",
+        "serve safe last committed reads",
+        "terminal recovery",
+        "truthful guidance"
+      ],
+      "name": "Control API boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "NATS unavailable",
+        "SQLite unavailable",
+        "action blocked",
+        "command undeliverable",
+        "domain stale",
+        "duplicate device",
+        "identity mismatch",
+        "media not connected",
+        "remote unavailable",
+        "route not ready",
+        "route unavailable",
+        "scanner timeout",
+        "stale projection",
+        "worker start timeout"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "App, command, and workflow state",
+        "Enrollment and device lifecycle state",
+        "Invite and identity lifecycle",
+        "Audit index, projection refresh, prepared projections, and domain revisions",
+        "Backup, restore, and checkpoint state",
+        "Installed release and runtime state",
+        "Security findings and run state",
+        "SQLite control-plane store"
+      ],
+      "confidence": "inferred",
+      "description": "SQLite canonical state, indexes, revisions, and prepared projections.",
+      "domain": "security",
+      "entry_points": [
+        "JSON",
+        "SQLite",
+        "restic metadata"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:durable-state",
+      "mitigations": [
+        "checkpoint",
+        "explicit confirmation",
+        "explicit repair",
+        "last-known-good rollback",
+        "maintenance",
+        "preserve enrollment",
+        "preview",
+        "rebuild affected domain",
+        "reconcile independently",
+        "rejoin/repair",
+        "revoke",
+        "serve last valid",
+        "terminal recovery",
+        "verified database restore"
+      ],
+      "name": "Durable-state boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "corruption",
+        "duplicate",
+        "health validation failure",
+        "identity mismatch",
+        "mismatch",
+        "offline",
+        "orphan command",
+        "restore blocked",
+        "scanner timeout",
+        "stale",
+        "stale accepted run",
+        "stale action",
+        "stale generation",
+        "verification failed",
+        "write contention"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "GitHub Release",
+        "GitHub repository",
+        "Date-based Lite tag, dist.zip, checksums, and release manifest"
+      ],
+      "confidence": "inferred",
+      "description": "GitHub source and immutable release assets.",
+      "domain": "security",
+      "entry_points": [
+        "Git/HTTPS",
+        "HTTPS",
+        "JSON",
+        "SHA256",
+        "ZIP"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:external-release",
+      "mitigations": [
+        "do not apply; publish corrected release",
+        "fix via PR",
+        "reject release"
+      ],
+      "name": "External release boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "missing asset",
+        "tag or manifest mismatch",
+        "workflow failure"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "Device command executor",
+        "Reconnect watchdog and supervisor recovery",
+        "Heartbeat, telemetry, and health publishers",
+        "Lite agent supervisor",
+        "Lite node agent"
+      ],
+      "confidence": "inferred",
+      "description": "Joined-device PM2 agent/supervisor runtime.",
+      "domain": "security",
+      "entry_points": [
+        "Local process control",
+        "NATS",
+        "NATS when reachable"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:managed-device",
+      "mitigations": [
+        "UI recovery guidance",
+        "do not fake delivery",
+        "explicit repair",
+        "explicit repair/rejoin",
+        "fresh publish after reconnect",
+        "guidance",
+        "reconnect",
+        "reconnect watchdog",
+        "retry after reconnect",
+        "supervisor restart"
+      ],
+      "name": "Managed-device boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "agent disconnected",
+        "disconnected",
+        "identity mismatch",
+        "signal stale",
+        "stopped",
+        "supervisor absent",
+        "undeliverable"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "App lifecycle worker",
+        "App backup, restore preview, and update lifecycle",
+        "Backup and verification engine",
+        "Bounded queues and reconciliation",
+        "Checkpoints and retention policy",
+        "Command admission and lifecycle",
+        "Completion and audit evidence",
+        "NATS / JetStream",
+        "Projection subprocesses",
+        "Download staging and release verification",
+        "Release subprocess",
+        "Restore preview and confirmed restore",
+        "Explicit retirement and database recovery",
+        "Lynis and Trivy scanner adapters",
+        "Quick, Full, and App safety checks",
+        "Worker process",
+        "Workflow execution"
+      ],
+      "confidence": "inferred",
+      "description": "NATS/JetStream, workers, subprocesses, queues, and lifecycle execution.",
+      "domain": "security",
+      "entry_points": [
+        "HTTP JSON",
+        "HTTPS",
+        "IPC queue",
+        "In-process queue",
+        "JSON files",
+        "JetStream",
+        "Local scanners",
+        "Local subprocess",
+        "NATS",
+        "NATS events",
+        "SHA256",
+        "SQLite",
+        "filesystem",
+        "local process",
+        "restic"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:messaging-execution",
+      "mitigations": [
+        "abort destructive operation",
+        "atomic rollback",
+        "bounded backoff",
+        "bounded retry",
+        "cancel",
+        "checkpoint rollback",
+        "coalesce",
+        "consumer re-enrollment",
+        "durable consumer re-enrollment",
+        "explicit retry",
+        "fail action truthfully",
+        "kill process group",
+        "non-destructive repair",
+        "preserve active release",
+        "preview first",
+        "rebuild from journal",
+        "reconcile without deleting device",
+        "reconnect",
+        "record partial state",
+        "repair repository",
+        "restart and reconcile",
+        "restart projection subprocess",
+        "retry",
+        "retry bounded write",
+        "rollback",
+        "serve last committed",
+        "terminal redelivery protection",
+        "transactional reconciliation",
+        "truthful partial state",
+        "use verified backup"
+      ],
+      "name": "Messaging and execution boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "checkpoint failure",
+        "consumer stale",
+        "consumer stalled",
+        "download failure",
+        "evidence write failure",
+        "health failed",
+        "healthy device removal blocked",
+        "listener unavailable",
+        "network/checksum/identity failure",
+        "operation failed",
+        "orphan state",
+        "orphaned command",
+        "partial/missing target",
+        "post-switch health failure",
+        "pressure deferral",
+        "preview unsafe",
+        "projection lag",
+        "queue pressure",
+        "redelivery",
+        "repository unavailable",
+        "restore verification failed",
+        "subprocess exit",
+        "subprocess timeout",
+        "timeout",
+        "tool unavailable",
+        "verification blocked",
+        "verification failed",
+        "verification failure"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "Atomic PWA promotion",
+        "Caddy same-origin proxy",
+        "Last-known-good state and rollback",
+        "Primary and secondary NATS listeners",
+        "PM2 process manager",
+        "Post-switch health validation",
+        "tailscaled daemon"
+      ],
+      "confidence": "inferred",
+      "description": "Android/Termux or Ubuntu host processes and local networking.",
+      "domain": "security",
+      "entry_points": [
+        "Filesystem atomic rename",
+        "Filesystem atomic switch",
+        "HTTP",
+        "HTTP reverse proxy",
+        "HTTPS",
+        "Local process control",
+        "NATS/TCP",
+        "SQLite",
+        "Tailscale"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:server-host",
+      "mitigations": [
+        "bounded PM2 restart",
+        "bounded restart",
+        "manual recovery guidance",
+        "regenerate config",
+        "regenerate validated config",
+        "retain previous active release",
+        "rollback immediately",
+        "separate supervisor",
+        "start when safe",
+        "verify connectivity"
+      ],
+      "name": "Server-host boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "certificate unavailable",
+        "daemon unavailable",
+        "health gate fails",
+        "listener bound incorrectly",
+        "process stopped",
+        "promotion failure",
+        "rollback failure",
+        "route unavailable"
+      ],
+      "type": "threat-model"
+    },
+    {
+      "assets": [
+        "Local LAN",
+        "Tailscale remote access"
+      ],
+      "confidence": "inferred",
+      "description": "LAN and Tailscale private connectivity.",
+      "domain": "security",
+      "entry_points": [
+        "HTTPS",
+        "TCP/IP",
+        "WireGuard/Tailscale"
+      ],
+      "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
+      "id": "threat-model:tailnet",
+      "mitigations": [
+        "readiness guidance",
+        "safe startup"
+      ],
+      "name": "Private network and Tailnet boundary",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "threats_or_failure_modes": [
+        "no Tailnet IP",
+        "tailscaled stopped"
+      ],
+      "type": "threat-model"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

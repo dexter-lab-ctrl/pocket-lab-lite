@@ -1,0 +1,467 @@
+{
+  "items": [
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Android/Termux ARM64",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "ARM64 Ubuntu/proot",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Ubuntu/WSL2 Dev",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "desktop browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "mobile browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "server phone",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:app-host",
+      "capability_name": "App Host",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "secondary device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Android/Termux ARM64",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "ARM64 Ubuntu/proot",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Ubuntu/WSL2 Dev",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "desktop browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "mobile browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "server phone",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:backup-target",
+      "capability_name": "Backup Target",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "secondary device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Android/Termux ARM64",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "ARM64 Ubuntu/proot",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Ubuntu/WSL2 Dev",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "desktop browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "mobile browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "server phone",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:compute",
+      "capability_name": "Compute",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "secondary device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Android/Termux ARM64",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "ARM64 Ubuntu/proot",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Ubuntu/WSL2 Dev",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "desktop browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "mobile browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "server phone",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:media-storage",
+      "capability_name": "Storage Node",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "secondary device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Android/Termux ARM64",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "ARM64 Ubuntu/proot",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "Ubuntu/WSL2 Dev",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "desktop browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "mobile browser",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "server phone",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "capability:security-scanner",
+      "capability_name": "Security Scanner",
+      "components": [],
+      "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
+      "platform": "secondary device",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/generated/device-capabilities.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "unvalidated"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

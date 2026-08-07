@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 8d0decd2778c55c8a5cf35a3dcf9660b1810178d0e7a5a49442010b0b8c0d9b8
+source_fingerprint: c7268582426fffa7f6d69f2ba87b21107f52e2f84e5369e432b9d3066f441b95
 schema_revision: 1
 validation_status: generated
 ---
@@ -59,6 +59,13 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:events`
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
+- `lite:docs:knowledge:ai-export`
+- `lite:docs:knowledge:check`
+- `lite:docs:knowledge:generate`
+- `lite:docs:knowledge:graph`
+- `lite:docs:knowledge:health`
+- `lite:docs:knowledge:releases`
+- `lite:docs:knowledge:traceability`
 - `lite:docs:openapi`
 - `lite:docs:parity:check`
 - `lite:docs:parity:generate`
@@ -80,6 +87,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:services`
 - `lite:docs:sqlite`
 - `lite:docs:sqlite:check`
+- `lite:docs:sync`
 - `lite:docs:tools:check`
 - `lite:docs:ui`
 - `lite:docs:ui:screenshots`
@@ -87,6 +95,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:evidence:parity:check`
 - `lite:evidence:parity:generate`
 - `lite:evidence:runtime:check`
+- `lite:evidence:runtime:preflight`
 - `lite:evidence:runtime:promote`
 - `lite:har:inspect`
 - `lite:har:sanitize`
@@ -158,6 +167,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:architecture:check`
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
+- `lite:docs:check` → `lite:docs:knowledge:check`
 - `lite:docs:check` → `lite:docs:parity:check`
 - `lite:docs:check` → `lite:docs:platform:check`
 - `lite:docs:check` → `lite:docs:production:check`
@@ -167,13 +177,17 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:architecture:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
+- `lite:docs:generate` → `lite:docs:knowledge:generate`
 - `lite:docs:generate` → `lite:docs:parity:generate`
 - `lite:docs:generate` → `lite:docs:platform:generate`
 - `lite:docs:generate` → `lite:docs:production:generate`
 - `lite:docs:generate` → `lite:docs:runtime:generate`
 - `lite:docs:generate` → `lite:docs:tools:check`
 - `lite:docs:openapi` → `lite:contracts:generate`
+- `lite:docs:sync` → `lite:docs:check`
+- `lite:docs:sync` → `lite:docs:generate`
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`
+- `lite:evidence:runtime:promote` → `lite:evidence:runtime:preflight`
 - `lite:parity:check` → `lite:a11y:check`
 - `lite:parity:check` → `lite:docs:parity:check`
 - `lite:parity:check` → `lite:evidence:parity:check`

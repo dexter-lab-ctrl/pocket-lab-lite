@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "confidence": "source-derived",
+      "domain": "platform",
+      "id": "ui:liteapp",
+      "name": "LiteApp",
+      "source_refs": [
+        "src/lite/LiteApp.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "ui:litedevices",
+      "name": "LiteDevices",
+      "source_refs": [
+        "src/lite/LiteDevices.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "identity",
+      "id": "ui:liteidentity",
+      "name": "LiteIdentity",
+      "source_refs": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "id": "ui:literecovery",
+      "name": "LiteRecovery",
+      "source_refs": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "platform",
+      "id": "ui:litereleaseupdatecard",
+      "name": "LiteReleaseUpdateCard",
+      "source_refs": [
+        "src/lite/LiteReleaseUpdateCard.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "platform",
+      "id": "ui:literevisionsyncbridge",
+      "name": "LiteRevisionSyncBridge",
+      "source_refs": [
+        "src/lite/LiteRevisionSyncBridge.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "rules",
+      "id": "ui:literules",
+      "name": "LiteRules",
+      "source_refs": [
+        "src/lite/LiteRules.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "security",
+      "id": "ui:litesecurity",
+      "name": "LiteSecurity",
+      "source_refs": [
+        "src/lite/LiteSecurity.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

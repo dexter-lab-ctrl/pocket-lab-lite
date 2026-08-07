@@ -1,0 +1,138 @@
+{
+  "items": [
+    {
+      "degraded_reason": null,
+      "domain": "apps",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "unvalidated",
+      "readiness": "ready-with-guardrails",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": null,
+      "domain": "devices",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "unvalidated",
+      "readiness": "ready-with-guardrails",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": null,
+      "domain": "home",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "readiness": "ready-with-guardrails",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": null,
+      "domain": "identity",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "readiness": "partial",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "partial",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": "projection_too_old",
+      "domain": "recovery",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "readiness": "ready-with-guardrails",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": null,
+      "domain": "rules",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "readiness": "partial",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "partial",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": null,
+      "domain": "security",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "unvalidated",
+      "readiness": "ready-with-guardrails",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

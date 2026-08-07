@@ -1,0 +1,509 @@
+{
+  "items": [
+    {
+      "checks": [
+        "GET /api/lite/fleet",
+        "Inspect supervisor state before manual intervention"
+      ],
+      "components": [
+        "node-agent",
+        "agent-supervisor",
+        "agent-recovery"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:agent-stopped",
+      "name": "Node agent stopped",
+      "recovery": [
+        "Allow supervisor recovery when present",
+        "Use explicit repair guidance when the supervisor is unavailable"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/status",
+        "Inspect pocket-api in the PM2 runtime view"
+      ],
+      "components": [
+        "lite-api",
+        "caddy"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:api-unavailable",
+      "name": "FastAPI unavailable",
+      "recovery": [
+        "Recover the API process through the documented server-host process manager"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check App Catalog action state, worker result, and sanitized troubleshooting summary.",
+        "Check same-origin route readiness only after install execution reaches a terminal state."
+      ],
+      "components": [
+        "app-catalog",
+        "app-lifecycle-worker",
+        "app-workflow-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:app-install-failure",
+      "name": "App installation failure",
+      "recovery": [
+        "Retry only through the FastAPI-owned app action after the backend reports it safe; do not run install commands from the UI."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/recovery/summary"
+      ],
+      "components": [
+        "backup-engine",
+        "recovery-state",
+        "worker"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:backup-failure",
+      "name": "Backup failure",
+      "recovery": [
+        "Verify repository readiness and backup state before retrying"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check the Caddy process state through the approved service status path.",
+        "Validate the tracked Caddy configuration before any restart."
+      ],
+      "components": [
+        "caddy",
+        "pwa",
+        "lite-api"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:caddy-unavailable",
+      "name": "Caddy unavailable",
+      "recovery": [
+        "Use the existing Caddy restart helper only after configuration validation; keep same-origin routing intact."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check invite lifecycle, last heartbeat, command progress, and supervisor status.",
+        "Distinguish joining/waiting from an enrolled offline device."
+      ],
+      "components": [
+        "device-state",
+        "invite-state",
+        "agent-recovery"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:device-joining-waiting",
+      "name": "Device joining, waiting, or repairing",
+      "recovery": [
+        "Allow guarded enrollment/recovery to converge; use explicit repair/rejoin only for verified identity or enrollment failure."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/fleet",
+        "Check Tailnet and NATS reachability through documented diagnostics"
+      ],
+      "components": [
+        "agent-signals",
+        "agent-recovery",
+        "tailscale",
+        "nats-jetstream"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:device-offline",
+      "name": "Device offline or reconnecting",
+      "recovery": [
+        "Distinguish disconnected from stopped before restarting anything"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Run the deterministic documentation check tasks",
+        "Run strict MkDocs build"
+      ],
+      "components": [],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:documentation-drift",
+      "name": "Documentation drift",
+      "recovery": [
+        "Regenerate from canonical sources; do not hand-edit generated truth"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Compare the promoted release binding with local Git tag availability.",
+        "Confirm the tag exists in verified remote/session metadata before fetching it."
+      ],
+      "components": [
+        "release-state",
+        "github-repository",
+        "release-staging"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:missing-release-tag",
+      "name": "Release tag missing locally",
+      "recovery": [
+        "Use the existing promotion preflight safe remediation to fetch only the verified missing tag; do not fabricate a tag."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Inspect NATS readiness through backend diagnostics",
+        "Confirm the worker reports messaging connectivity"
+      ],
+      "components": [
+        "nats-jetstream",
+        "nats-listeners",
+        "worker"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:nats-unavailable",
+      "name": "NATS or JetStream unavailable",
+      "recovery": [
+        "Restore NATS reachability before retrying backend-owned commands"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Run parity evidence checks and inspect the failing evidence lane"
+      ],
+      "components": [],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:parity-capture-failure",
+      "name": "Parity or browser capture failure",
+      "recovery": [
+        "Recapture only the failed bounded lane; do not promote incomplete evidence"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/catalog",
+        "Inspect same-origin app route readiness"
+      ],
+      "components": [
+        "photoprism",
+        "proot-ubuntu",
+        "caddy",
+        "media-app-health"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:photoprism-unavailable",
+      "name": "PhotoPrism unavailable",
+      "recovery": [
+        "Use backend-owned Check app or Repair actions; do not run app process control in the browser"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check Recovery freshness and the authoritative database recovery projection.",
+        "Confirm whether the degradation reason is projection_too_old."
+      ],
+      "components": [
+        "prepared-state",
+        "recovery-state",
+        "restore-preview"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:recovery-projection-stale",
+      "name": "Recovery projection stale",
+      "recovery": [
+        "Refresh/reconcile through the existing backend projection path; require a fresh restore preview before destructive restore."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/release",
+        "Verify release binding and post-switch health"
+      ],
+      "components": [
+        "release-state",
+        "release-staging",
+        "post-switch-health",
+        "last-known-good"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:release-failure",
+      "name": "Release or rollback issue",
+      "recovery": [
+        "Use the last-known-good rollback path only after release verification fails"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/fleet",
+        "Inspect sanitized remote-access readiness"
+      ],
+      "components": [
+        "tailscale",
+        "tailscaled",
+        "remote-readiness",
+        "nats-listeners"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:remote-access-not-ready",
+      "name": "Remote access not ready",
+      "recovery": [
+        "Restore tailscaled, Tailnet address, and NATS reachability in that order"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/recovery/summary"
+      ],
+      "components": [
+        "restore-preview",
+        "recovery-state",
+        "prepared-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:restore-blocked",
+      "name": "Restore blocked or preview stale",
+      "recovery": [
+        "Refresh Recovery state and create a fresh preview before destructive restore"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Run lite:evidence:runtime:preflight with the explicit release tag"
+      ],
+      "components": [
+        "runtime-evidence",
+        "release-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:runtime-evidence-mismatch",
+      "name": "Runtime evidence or release binding mismatch",
+      "recovery": [
+        "Resolve the real source/release/evidence mismatch; do not rewrite tags or hide semantic drift"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/security/summary",
+        "GET /api/lite/security/progress"
+      ],
+      "components": [
+        "security-coordinator",
+        "scanner-adapters",
+        "worker",
+        "security-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:security-scan-failure",
+      "name": "Security scan failure",
+      "recovery": [
+        "Use the saved backend troubleshooting state and explicit retry after terminal failure"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check promoted evidence timestamp, source commit, and release binding.",
+        "Check whether semantic parity and operational health are being reported independently."
+      ],
+      "components": [
+        "prepared-state",
+        "completion-evidence"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:stale-evidence",
+      "name": "Stale runtime evidence",
+      "recovery": [
+        "Capture a new sanitized runtime projection and explicitly promote it only after validation; never track transient raw capture."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check supervisor and node-agent PM2 status separately.",
+        "Confirm the device is not merely disconnected while the agent process is running."
+      ],
+      "components": [
+        "agent-supervisor",
+        "node-agent",
+        "pm2"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:supervisor-stopped",
+      "name": "Supervisor stopped",
+      "recovery": [
+        "Restore the supervisor through the approved PM2/runtime startup path, then verify a fresh heartbeat."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check tailscaled status and whether a Tailnet IPv4 is available.",
+        "Check NATS reachability over the configured secondary/Tailnet URL."
+      ],
+      "components": [
+        "tailscale",
+        "tailscaled",
+        "remote-readiness"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:tailscale-unavailable",
+      "name": "Tailscale unavailable",
+      "recovery": [
+        "Start tailscaled only through the existing safe startup helper and re-check remote-access readiness."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "GET /api/lite/status through the configured Pocket Lab origin",
+        "Inspect Caddy service state through the documented runtime topology"
+      ],
+      "components": [
+        "browser",
+        "pwa",
+        "caddy"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:ui-unavailable",
+      "name": "Pocket Lab UI unavailable",
+      "recovery": [
+        "Restore Caddy/PWA serving before attempting write actions"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Check PM2 worker status and sanitized worker/NATS health.",
+        "Confirm the durable command consumer is healthy before retrying a write."
+      ],
+      "components": [
+        "worker",
+        "nats-jetstream",
+        "pm2"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:worker-stopped",
+      "name": "Worker stopped",
+      "recovery": [
+        "Use the existing supervisor/PM2 recovery path; do not queue commands from the browser."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

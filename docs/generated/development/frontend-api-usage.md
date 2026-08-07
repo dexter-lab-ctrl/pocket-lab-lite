@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 85d75c45c419a7fc79be2c40e1f632c48a3f3b3b6652c5b6b29bda204168fd23
+source_fingerprint: b19630a772c575ed716d4cba746319aed699177848ea0984dd94870dfdeb74e1
 schema_revision: 1
 validation_status: generated
 ---
@@ -139,6 +139,7 @@ validation_status: generated
 | src/lite/LiteRecovery.jsx | liteApi.previewAppRestore | POST | `/api/lite/apps/{param}/restore/preview` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.verifyBackup | POST | `/api/lite/recovery/backups/{param}/verify` | mutation | no | dynamic |
+| src/lite/LiteRecovery.jsx | liteApi.databaseRecovery | GET | `/api/lite/recovery/database` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupDatabase | POST | `/api/lite/recovery/database/backup` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.previewDatabaseRestore | POST | `/api/lite/recovery/database/backups/{param}/preview` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.restoreDatabase | POST | `/api/lite/recovery/database/backups/{param}/restore` | mutation | no | dynamic |
@@ -215,6 +216,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/backups` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/backups/:backupId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/backups/:backupId/verify` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/database` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/receipts/:backupId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/restore` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/restore/preview` | mock | yes | static |

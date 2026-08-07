@@ -1,0 +1,4239 @@
+{
+  "items": [
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "unknown telemetry subject",
+      "domain": "unknown",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands",
+      "name": "pocketlab.commands",
+      "publishers": [
+        "workflow_engine.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:540",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:643",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:695",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1174",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:251",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:302",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1279",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:42",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:564"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "catalog command subject",
+      "domain": "apps",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.catalog.refresh",
+      "name": "pocketlab.commands.catalog.refresh",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py:29",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1363"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.apply",
+      "name": "pocketlab.commands.drift.apply",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1370"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.approve",
+      "name": "pocketlab.commands.drift.approve",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1367"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.ignore",
+      "name": "pocketlab.commands.drift.ignore",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1373"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.preview",
+      "name": "pocketlab.commands.drift.preview",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:92",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1366"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.rescan",
+      "name": "pocketlab.commands.drift.rescan",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1365"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.scan",
+      "name": "pocketlab.commands.drift.scan",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:81",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1364"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift command subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.drift.{action}",
+      "name": "pocketlab.commands.drift.{action}",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:85",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:99"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet command subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.fleet.join",
+      "name": "pocketlab.commands.fleet.join",
+      "publishers": [
+        "lite_invites.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:661",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1376",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet command subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.fleet.save_tailscale_key",
+      "name": "pocketlab.commands.fleet.save_tailscale_key",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1377"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "health command subject",
+      "domain": "health",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.health.check",
+      "name": "pocketlab.commands.health.check",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py:74",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1380"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.backup.create",
+      "name": "pocketlab.commands.lite.app.backup.create",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1387",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:18"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.backup.transfer",
+      "name": "pocketlab.commands.lite.app.backup.transfer",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup_targets.py:12"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.media",
+      "name": "pocketlab.commands.lite.app.media",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1390",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py:22"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.repair",
+      "name": "pocketlab.commands.lite.app.repair",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1392",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:24"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.restore.preview",
+      "name": "pocketlab.commands.lite.app.restore.preview",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1388",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:19"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.safety",
+      "name": "pocketlab.commands.lite.app.safety",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1391",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:23"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.app.update.check",
+      "name": "pocketlab.commands.lite.app.update.check",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1389",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py:19"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.backup.create",
+      "name": "pocketlab.commands.lite.backup.create",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3370",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1386"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.backup.verify",
+      "name": "pocketlab.commands.lite.backup.verify",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3442",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1393"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.catalog.install",
+      "name": "pocketlab.commands.lite.catalog.install",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1362",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py:16"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.database.backup",
+      "name": "pocketlab.commands.lite.database.backup",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3075",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1396"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.database.backup.verify",
+      "name": "pocketlab.commands.lite.database.backup.verify",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3118",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1397"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.database.restore",
+      "name": "pocketlab.commands.lite.database.restore",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3176",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1399"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.database.restore.preview",
+      "name": "pocketlab.commands.lite.database.restore.preview",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3136",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1398"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "restricted metadata",
+      "confidence": "contract-derived",
+      "delivery": "JetStream durable command",
+      "description": "devices command subject",
+      "domain": "devices",
+      "durability": null,
+      "id": "subject:pocketlab.commands.lite.device.restart",
+      "name": "pocketlab.commands.lite.device.restart",
+      "publishers": [
+        "FastAPI"
+      ],
+      "retry": "bounded command lifecycle",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "stream": null,
+      "subscribers": [
+        "node agent"
+      ],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.maintenance.checkpoint",
+      "name": "pocketlab.commands.lite.maintenance.checkpoint",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3244",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1401"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.maintenance.retention",
+      "name": "pocketlab.commands.lite.maintenance.retention",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3218",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1400"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.restore.apply",
+      "name": "pocketlab.commands.lite.restore.apply",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3556",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1395"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.restore.preview",
+      "name": "pocketlab.commands.lite.restore.preview",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3462",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1394"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.security.app_scan",
+      "name": "pocketlab.commands.lite.security.app_scan",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_profiles.py:13"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "restricted metadata",
+      "confidence": "contract-derived",
+      "delivery": "JetStream durable pull",
+      "description": "security command subject",
+      "domain": "security",
+      "durability": "pocketlab_command_worker_v1",
+      "id": "subject:pocketlab.commands.lite.security.scan",
+      "name": "pocketlab.commands.lite.security.scan",
+      "publishers": [
+        "FastAPI"
+      ],
+      "retry": "bounded max-deliver and stale-run recovery",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1382",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:473"
+      ],
+      "stream": "POCKETLAB_COMMANDS",
+      "subscribers": [
+        "pocket-worker"
+      ],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node",
+      "name": "pocketlab.commands.node",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1256",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:507"
+      ],
+      "stream": "incomplete",
+      "subscribers": [
+        "pocketlab_worker.py"
+      ],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.all",
+      "name": "pocketlab.commands.node.all",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:515",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137"
+      ],
+      "stream": "incomplete",
+      "subscribers": [
+        "pocketlab_node_agent.py"
+      ],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.all.{command.replace",
+      "name": "pocketlab.commands.node.all.{command.replace",
+      "publishers": [
+        "fleet.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:473"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.{node_id}",
+      "name": "pocketlab.commands.node.{node_id}",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1591"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.{node_id}.{command.replace",
+      "name": "pocketlab.commands.node.{node_id}.{command.replace",
+      "publishers": [
+        "fleet.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:288"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.{normalized_node_id}.agent.restart",
+      "name": "pocketlab.commands.node.{normalized_node_id}.agent.restart",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:364"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.{self.node_id}",
+      "name": "pocketlab.commands.node.{self.node_id}",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:515"
+      ],
+      "stream": "incomplete",
+      "subscribers": [
+        "pocketlab_node_agent.py"
+      ],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation command subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.operation.execute",
+      "name": "pocketlab.commands.operation.execute",
+      "publishers": [
+        "action_queue.py",
+        "pocketlab_worker.py",
+        "reliability.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:213",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:223",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:162",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:231",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1193",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1201",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1255",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1277",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:535",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release command subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.release.apply",
+      "name": "pocketlab.commands.release.apply",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:53",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1379"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release command subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.release.check",
+      "name": "pocketlab.commands.release.check",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:42",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1378"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook command subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.runbook.approve",
+      "name": "pocketlab.commands.runbook.approve",
+      "publishers": [
+        "action_queue.py",
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:541",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:552",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1269",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:533",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:554"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook command subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.runbook.execute",
+      "name": "pocketlab.commands.runbook.execute",
+      "publishers": [
+        "action_queue.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:482",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:493",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1265",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:532",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:550"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook command subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.runbook.reject",
+      "name": "pocketlab.commands.runbook.reject",
+      "publishers": [
+        "action_queue.py",
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:571",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:582",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1273",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:534",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:558"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security command subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.security.configure_opa",
+      "name": "pocketlab.commands.security.configure_opa",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:2776",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1383"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security command subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.security.scan",
+      "name": "pocketlab.commands.security.scan",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:68",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1381"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "unknown command subject",
+      "domain": "unknown",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.unknown",
+      "name": "pocketlab.commands.unknown",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:906",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:381"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "vault command subject",
+      "domain": "vault",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.vault.dynamic_secret",
+      "name": "pocketlab.commands.vault.dynamic_secret",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1385"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "vault command subject",
+      "domain": "vault",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.vault.rotate",
+      "name": "pocketlab.commands.vault.rotate",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:1773",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1384"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "unknown telemetry subject",
+      "domain": "unknown",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events",
+      "name": "pocketlab.events",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:30",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:461"
+      ],
+      "stream": "incomplete",
+      "subscribers": [
+        "nats_bus.py"
+      ],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "api event subject",
+      "domain": "api",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.api.started",
+      "name": "pocketlab.events.api.started",
+      "publishers": [
+        "main.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:97"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "api event subject",
+      "domain": "api",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.api.stopped",
+      "name": "pocketlab.events.api.stopped",
+      "publishers": [
+        "main.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:169"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "catalog event subject",
+      "domain": "apps",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.catalog.refresh_started",
+      "name": "pocketlab.events.catalog.refresh_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:100"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "catalog event subject",
+      "domain": "apps",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.catalog.refreshed",
+      "name": "pocketlab.events.catalog.refreshed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:115"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.dead_lettered",
+      "name": "pocketlab.events.command.dead_lettered",
+      "publishers": [
+        "nats_bus.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1084"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.deferred",
+      "name": "pocketlab.events.command.deferred",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:376"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.failed",
+      "name": "pocketlab.events.command.failed",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:357",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:404",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:600"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.queued",
+      "name": "pocketlab.events.command.queued",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:251",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:412"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.received",
+      "name": "pocketlab.events.command.received",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:526"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.retry_scheduled",
+      "name": "pocketlab.events.command.retry_scheduled",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.running",
+      "name": "pocketlab.events.command.running",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:347",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.succeeded",
+      "name": "pocketlab.events.command.succeeded",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:392",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:575"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "command event subject",
+      "domain": "command",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.command.worker_claimed",
+      "name": "pocketlab.events.command.worker_claimed",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:341",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:539"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift event subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.drift.detected",
+      "name": "pocketlab.events.drift.detected",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:162"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift event subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.drift.previewed",
+      "name": "pocketlab.events.drift.previewed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:197"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift event subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.drift.scan_completed",
+      "name": "pocketlab.events.drift.scan_completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:168"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift event subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.drift.scan_started",
+      "name": "pocketlab.events.drift.scan_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:130"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift event subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.drift.{action}",
+      "name": "pocketlab.events.drift.{action}",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:216"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "drift event subject",
+      "domain": "drift",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.drift.{action}_started",
+      "name": "pocketlab.events.drift.{action}_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:208"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.bootstrap_blocked",
+      "name": "pocketlab.events.fleet.bootstrap_blocked",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.config_updated",
+      "name": "pocketlab.events.fleet.config_updated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:279"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.device_health_sampled",
+      "name": "pocketlab.events.fleet.device_health_sampled",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:627"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.device_removed",
+      "name": "pocketlab.events.fleet.device_removed",
+      "publishers": [
+        "fleet_registry.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1562"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.health_changed",
+      "name": "pocketlab.events.fleet.health_changed",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:598"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.health_sampled",
+      "name": "pocketlab.events.fleet.health_sampled",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:594"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.invite_accepted",
+      "name": "pocketlab.events.fleet.invite_accepted",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.invite_created",
+      "name": "pocketlab.events.fleet.invite_created",
+      "publishers": [
+        "domain_commands.py",
+        "lite_invites.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.invite_revoked",
+      "name": "pocketlab.events.fleet.invite_revoked",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:600"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.invite_started",
+      "name": "pocketlab.events.fleet.invite_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:229"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_",
+      "name": "pocketlab.events.fleet.node_",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:732"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_capabilities",
+      "name": "pocketlab.events.fleet.node_capabilities",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:448"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_command_queued",
+      "name": "pocketlab.events.fleet.node_command_queued",
+      "publishers": [
+        "fleet.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:381",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:481"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_command_result",
+      "name": "pocketlab.events.fleet.node_command_result",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:644",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:658"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_health",
+      "name": "pocketlab.events.fleet.node_health",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:589"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_heartbeat",
+      "name": "pocketlab.events.fleet.node_heartbeat",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:470",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:554"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_left",
+      "name": "pocketlab.events.fleet.node_left",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:687"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_profile",
+      "name": "pocketlab.events.fleet.node_profile",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:440"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_seen",
+      "name": "pocketlab.events.fleet.node_seen",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:425"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_supervisor",
+      "name": "pocketlab.events.fleet.node_supervisor",
+      "publishers": [
+        "pocketlab_agent_supervisor.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.node_telemetry",
+      "name": "pocketlab.events.fleet.node_telemetry",
+      "publishers": [
+        "pocketlab_node_agent.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:580"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "health event subject",
+      "domain": "health",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.health.changed",
+      "name": "pocketlab.events.health.changed",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:547"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "health event subject",
+      "domain": "health",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.health.check_completed",
+      "name": "pocketlab.events.health.check_completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:313"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "health event subject",
+      "domain": "health",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.health.checked",
+      "name": "pocketlab.events.health.checked",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:543"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "health event subject",
+      "domain": "health",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.health.service_changed",
+      "name": "pocketlab.events.health.service_changed",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:552"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.backup.completed",
+      "name": "pocketlab.events.lite.app.backup.completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:546",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:332"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.backup.failed",
+      "name": "pocketlab.events.lite.app.backup.failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:532"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.backup.started",
+      "name": "pocketlab.events.lite.app.backup.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:521",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:331"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.media.completed",
+      "name": "pocketlab.events.lite.app.media.completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1136"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.media.failed",
+      "name": "pocketlab.events.lite.app.media.failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1110"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.media.started",
+      "name": "pocketlab.events.lite.app.media.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1098"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.media.updated",
+      "name": "pocketlab.events.lite.app.media.updated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1136"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.restore.preview_created",
+      "name": "pocketlab.events.lite.app.restore.preview_created",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:597"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.restore.preview_failed",
+      "name": "pocketlab.events.lite.app.restore.preview_failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:583"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.restore.preview_started",
+      "name": "pocketlab.events.lite.app.restore.preview_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:572"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.update.check_completed",
+      "name": "pocketlab.events.lite.app.update.check_completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:648"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.update.check_failed",
+      "name": "pocketlab.events.lite.app.update.check_failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:634"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.update.check_started",
+      "name": "pocketlab.events.lite.app.update.check_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:623"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.{event_prefix}.completed",
+      "name": "pocketlab.events.lite.app.{event_prefix}.completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1077"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.{event_prefix}.failed",
+      "name": "pocketlab.events.lite.app.{event_prefix}.failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1057"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.{event_prefix}.started",
+      "name": "pocketlab.events.lite.app.{event_prefix}.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1045"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.app.{event_prefix}.updated",
+      "name": "pocketlab.events.lite.app.{event_prefix}.updated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1077"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.backup.failed",
+      "name": "pocketlab.events.lite.backup.failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:692"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.backup.snapshot_created",
+      "name": "pocketlab.events.lite.backup.snapshot_created",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:705",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1271"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.backup.started",
+      "name": "pocketlab.events.lite.backup.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:681",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1270"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.backup.verified",
+      "name": "pocketlab.events.lite.backup.verified",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:755"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.backup.verify_failed",
+      "name": "pocketlab.events.lite.backup.verify_failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:748"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.backup.verify_started",
+      "name": "pocketlab.events.lite.backup.verify_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:733"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.catalog.install_completed",
+      "name": "pocketlab.events.lite.catalog.install_completed",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:494"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.catalog.install_failed",
+      "name": "pocketlab.events.lite.catalog.install_failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:480",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:494"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.catalog.install_started",
+      "name": "pocketlab.events.lite.catalog.install_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:469"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.database.backup.started",
+      "name": "pocketlab.events.lite.database.backup.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1155"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.database.backup.verified",
+      "name": "pocketlab.events.lite.database.backup.verified",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1164",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1197"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.database.restore.preview_ready",
+      "name": "pocketlab.events.lite.database.restore.preview_ready",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1214"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.database.restore.started",
+      "name": "pocketlab.events.lite.database.restore.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1232"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.database.restore.{event_suffix}",
+      "name": "pocketlab.events.lite.database.restore.{event_suffix}",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1242"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+      "name": "pocketlab.events.lite.database.restore.{rollback_status}",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1257"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.checkpoint_created",
+      "name": "pocketlab.events.lite.restore.checkpoint_created",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:850",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1100"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.completed",
+      "name": "pocketlab.events.lite.restore.completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:884",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1103"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.failed",
+      "name": "pocketlab.events.lite.restore.failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:836"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.health_validated",
+      "name": "pocketlab.events.lite.restore.health_validated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:873",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1102"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.preview_created",
+      "name": "pocketlab.events.lite.restore.preview_created",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:800"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.preview_failed",
+      "name": "pocketlab.events.lite.restore.preview_failed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:793"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.preview_started",
+      "name": "pocketlab.events.lite.restore.preview_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:778"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.service_restart_checked",
+      "name": "pocketlab.events.lite.restore.service_restart_checked",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:862",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1101"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.restore.started",
+      "name": "pocketlab.events.lite.restore.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:825",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1099"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.security.critical_found",
+      "name": "pocketlab.events.lite.security.critical_found",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:992"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.security.scan.completed",
+      "name": "pocketlab.events.lite.security.scan.completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1017"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.security.scan.started",
+      "name": "pocketlab.events.lite.security.scan.started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:918"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.security.tool_missing",
+      "name": "pocketlab.events.lite.security.tool_missing",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:970"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.security.{tool}.completed",
+      "name": "pocketlab.events.lite.security.{tool}.completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:977"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "live_status event subject",
+      "domain": "live_status",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.live_status.started",
+      "name": "pocketlab.events.live_status.started",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:297"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "live_status event subject",
+      "domain": "live_status",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.live_status.stopped",
+      "name": "pocketlab.events.live_status.stopped",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:314"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "live_status event subject",
+      "domain": "live_status",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.live_status.{name}_error",
+      "name": "pocketlab.events.live_status.{name}_error",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:431"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "manual event subject",
+      "domain": "manual",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.manual",
+      "name": "pocketlab.events.manual",
+      "publishers": [
+        "events.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/schemas/events.py:18"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.created",
+      "name": "pocketlab.events.operation.created",
+      "publishers": [
+        "action_queue.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:207"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.failed",
+      "name": "pocketlab.events.operation.failed",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:300",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:320"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.log",
+      "name": "pocketlab.events.operation.log",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py:36",
+        "pocket-lab-final-structure/runtime/core/operations/service.py:57"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.log.error",
+      "name": "pocketlab.events.operation.log.error",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py:33"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.log.warning",
+      "name": "pocketlab.events.operation.log.warning",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py:35"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.previewed",
+      "name": "pocketlab.events.operation.previewed",
+      "publishers": [
+        "operations.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:120"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.snapshot",
+      "name": "pocketlab.events.operation.snapshot",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py:64"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.status",
+      "name": "pocketlab.events.operation.status",
+      "publishers": [
+        "websocket.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py:74"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.succeeded",
+      "name": "pocketlab.events.operation.succeeded",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:298"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "operation event subject",
+      "domain": "operation",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.operation.worker_claimed",
+      "name": "pocketlab.events.operation.worker_claimed",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:286"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.applied",
+      "name": "pocketlab.events.release.applied",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:554"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.available",
+      "name": "pocketlab.events.release.available",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:294",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:771"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.check_degraded",
+      "name": "pocketlab.events.release.check_degraded",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:752"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.current",
+      "name": "pocketlab.events.release.current",
+      "publishers": [
+        "pocketlab_worker.py",
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:296",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:773"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.stage.completed",
+      "name": "pocketlab.events.release.stage.completed",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:145"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.stage.failed",
+      "name": "pocketlab.events.release.stage.failed",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:169"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.stage.started",
+      "name": "pocketlab.events.release.stage.started",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:109"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.workflow.completed",
+      "name": "pocketlab.events.release.workflow.completed",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:322"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.workflow.failed",
+      "name": "pocketlab.events.release.workflow.failed",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:263",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:622"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "release event subject",
+      "domain": "release",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.release.workflow.started",
+      "name": "pocketlab.events.release.workflow.started",
+      "publishers": [
+        "release_orchestrator.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:193",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:357"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.approval_queued",
+      "name": "pocketlab.events.runbook.approval_queued",
+      "publishers": [
+        "action_queue.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:534"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.approval_required",
+      "name": "pocketlab.events.runbook.approval_required",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:110"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.approved",
+      "name": "pocketlab.events.runbook.approved",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:176"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.auto_approved",
+      "name": "pocketlab.events.runbook.auto_approved",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:47"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.failed",
+      "name": "pocketlab.events.runbook.failed",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:141",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:274",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:134",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:169",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:249",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:293"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.queued",
+      "name": "pocketlab.events.runbook.queued",
+      "publishers": [
+        "action_queue.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:476"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.rejected",
+      "name": "pocketlab.events.runbook.rejected",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:250"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.rejection_queued",
+      "name": "pocketlab.events.runbook.rejection_queued",
+      "publishers": [
+        "action_queue.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:564"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.resumed",
+      "name": "pocketlab.events.runbook.resumed",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:217"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.started",
+      "name": "pocketlab.events.runbook.started",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:89"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.step_failed",
+      "name": "pocketlab.events.runbook.step_failed",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:381"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.step_started",
+      "name": "pocketlab.events.runbook.step_started",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:343"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.step_succeeded",
+      "name": "pocketlab.events.runbook.step_succeeded",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:372"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "runbook event subject",
+      "domain": "runbook",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.runbook.succeeded",
+      "name": "pocketlab.events.runbook.succeeded",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:148",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:264"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security event subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.security.evaluated",
+      "name": "pocketlab.events.security.evaluated",
+      "publishers": [
+        "security.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:17"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security event subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.security.finding",
+      "name": "pocketlab.events.security.finding",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:355"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security event subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.security.log_query",
+      "name": "pocketlab.events.security.log_query",
+      "publishers": [
+        "security.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:47"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security event subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.security.policy_updated",
+      "name": "pocketlab.events.security.policy_updated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:388"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security event subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.security.scan_completed",
+      "name": "pocketlab.events.security.scan_completed",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:361"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "security event subject",
+      "domain": "security",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.security.scan_started",
+      "name": "pocketlab.events.security.scan_started",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:329"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "telemetry event subject",
+      "domain": "telemetry",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.telemetry",
+      "name": "pocketlab.events.telemetry",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:32"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "telemetry event subject",
+      "domain": "telemetry",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.telemetry.changed",
+      "name": "pocketlab.events.telemetry.changed",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:495"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "telemetry event subject",
+      "domain": "telemetry",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.telemetry.sampled",
+      "name": "pocketlab.events.telemetry.sampled",
+      "publishers": [
+        "live_status.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:491"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "vault event subject",
+      "domain": "vault",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.vault.lease_created",
+      "name": "pocketlab.events.vault.lease_created",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:457"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "vault event subject",
+      "domain": "vault",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.vault.secret_rotated",
+      "name": "pocketlab.events.vault.secret_rotated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:425"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "websocket event subject",
+      "domain": "websocket",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.websocket.heartbeat",
+      "name": "pocketlab.events.websocket.heartbeat",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py:38"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "worker event subject",
+      "domain": "worker",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.worker.error",
+      "name": "pocketlab.events.worker.error",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:110",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "worker event subject",
+      "domain": "worker",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.worker.heartbeat",
+      "name": "pocketlab.events.worker.heartbeat",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:107",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:852"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "worker event subject",
+      "domain": "worker",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.worker.ignored",
+      "name": "pocketlab.events.worker.ignored",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1258",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:488",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:512"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "worker event subject",
+      "domain": "worker",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.worker.maintenance_deferred",
+      "name": "pocketlab.events.worker.maintenance_deferred",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:455"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "worker event subject",
+      "domain": "worker",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.worker.started",
+      "name": "pocketlab.events.worker.started",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:109",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:139"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "worker event subject",
+      "domain": "worker",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.worker.stopped",
+      "name": "pocketlab.events.worker.stopped",
+      "publishers": [
+        "pocketlab_worker.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1338"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "workflow event subject",
+      "domain": "workflow",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.workflow.dead_letter_replayed",
+      "name": "pocketlab.events.workflow.dead_letter_replayed",
+      "publishers": [
+        "reliability.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:187"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "workflow event subject",
+      "domain": "workflow",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.workflow.recovery_completed",
+      "name": "pocketlab.events.workflow.recovery_completed",
+      "publishers": [
+        "reliability.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:247"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "workflow event subject",
+      "domain": "workflow",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.workflow.replay_requested",
+      "name": "pocketlab.events.workflow.replay_requested",
+      "publishers": [
+        "workflow_engine.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1218"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

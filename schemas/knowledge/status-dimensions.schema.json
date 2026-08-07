@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.local/schemas/knowledge/status-dimensions.schema.json",
+  "title": "Independent Pocket Lab Lite documentation status dimensions",
+  "type": "object",
+  "properties": {
+    "implementation_status": {"type": ["string", "null"]},
+    "runtime_status": {"type": ["string", "null"]},
+    "operational_health": {"type": ["string", "null"]},
+    "runtime_parity": {"type": ["string", "null"]},
+    "evidence_status": {"type": ["string", "null"]},
+    "confidence": {"type": ["string", "null"]},
+    "freshness": {"type": ["string", "null"]},
+    "readiness": {"type": ["string", "null"]},
+    "capability_status": {"type": ["string", "null"]},
+    "degraded_reason": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}
