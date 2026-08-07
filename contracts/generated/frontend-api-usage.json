@@ -1645,6 +1645,20 @@
           "src/lite/LiteRecovery.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.databaseRecovery",
+        "resolved": true,
+        "route": "/api/lite/recovery/database",
+        "source_module": "src/lite/LiteRecovery.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRecovery.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "POST",
         "mocked": false,
         "owner": "liteApi.backupDatabase",
@@ -2677,6 +2691,19 @@
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
+        "route": "/api/lite/recovery/database",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
         "route": "/api/lite/recovery/receipts/:backupId",
         "source_module": "src/mocks/handlers.js",
         "usage": "mock"
@@ -2910,7 +2937,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "ed8e83a14b78f558ae3126c35805a8a8652dec9e7188661c8d1c3a5ea4b04b6d",
+    "aggregate_fingerprint": "30b2c0714101b2950932daaeafce6ff6577469d3d92fa7b5c4f1d8cc6f7a49a1",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2937,7 +2964,7 @@
       "src/lite/LiteMotion.jsx": "8dc0089c7a175701b33e96afac566efbde31c6eda1202ef5ed0f00ff968e72ba",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
-      "src/lite/LiteRecovery.jsx": "c6474f7b97a626415a7696ac2cca951c0c586bf498faf6fcfcead1eb63d59e00",
+      "src/lite/LiteRecovery.jsx": "fecf19d7aaef37492e3712cf1c908eaf569839bb90a301e853054dbc5640bc37",
       "src/lite/LiteRecovery.stories.jsx": "0019e8e6110fda92080db12232466d6f633116caaa95efa2a534002b29e5506b",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
@@ -2950,7 +2977,7 @@
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "e68c96ecbf88fdbb4d407792fd5fd879ab5d775bbbb576b5940001f1e817b2aa",
       "src/lite/LiteToastHost.jsx": "d3aa3121467bf99ebf130d551f17dc14e36a05d0b48b202f919f7eb0036fde5b",
       "src/lite/LiteUi.jsx": "b8f627a61a6e1cb92892861dd52249c22a9027b272a7637d8c933474e441ad0c",
-      "src/mocks/handlers.js": "42ed1bef2a584e7e32adcd59243e8876c89903b75498d7c86517e877a8bd0173"
+      "src/mocks/handlers.js": "ceaff206ce6158d499fff9e95640c3ff3a1fde73b4d2f4a934bd8678b0e82bc3"
     },
     "validation_state": "generated"
   }

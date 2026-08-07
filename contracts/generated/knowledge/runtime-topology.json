@@ -1,0 +1,850 @@
+{
+  "items": [
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:agent-supervisor",
+      "name": "Agent Supervisor",
+      "projection": {
+        "agent": {
+          "execution_owner": "PM2",
+          "expected_source_match": "matched",
+          "id": "node-agent",
+          "logical_role": "server-host node agent",
+          "memory_bucket": "under-64-mib",
+          "presence": "present",
+          "restart_bucket": "none",
+          "runtime_type": "python",
+          "status": "online"
+        },
+        "classification": "verified",
+        "core_supervisor": {
+          "execution_owner": "PM2",
+          "expected_source_match": "matched",
+          "id": "core-supervisor",
+          "logical_role": "server-host recovery supervisor",
+          "memory_bucket": "under-64-mib",
+          "presence": "present",
+          "restart_bucket": "none",
+          "runtime_type": "python",
+          "status": "online"
+        },
+        "nats": {
+          "execution_owner": "PM2",
+          "expected_source_match": "matched",
+          "id": "nats",
+          "logical_role": "NATS/JetStream service",
+          "memory_bucket": "not-applicable",
+          "presence": "present",
+          "restart_bucket": "not-applicable",
+          "runtime_type": "native",
+          "status": "ready"
+        },
+        "relationships": [
+          {
+            "agent_presence": "present",
+            "agent_version_major": "1",
+            "expected_pm2_ownership": true,
+            "id": "agent-supervisor-command-path",
+            "joined_supervisor_presence": "missing",
+            "last_evidence_freshness_bucket": "unknown",
+            "nats_connectivity": "ready",
+            "recovery_capability": "supervised",
+            "supervisor_presence": "present",
+            "supervisor_version_major": "1",
+            "worker_command_owner_presence": "present"
+          }
+        ]
+      },
+      "source_refs": [
+        "contracts/generated/runtime/agent-supervisor.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:architecture-runtime-verification",
+      "name": "Architecture Runtime Verification",
+      "projection": {
+        "baseline": "architecture/runtime-baselines/server-phone.json",
+        "baseline_state": "verified",
+        "canonical_component_count": 56,
+        "components": [
+          {
+            "classification": "source-verified",
+            "component_id": "agent-command-executor",
+            "component_name": "Device command executor",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "agent-recovery",
+            "component_name": "Reconnect watchdog and supervisor recovery",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "agent-signals",
+            "component_name": "Heartbeat, telemetry, and health publishers",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "agent-supervisor",
+            "component_name": "Lite agent supervisor",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.core-supervisor"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "api-domain-surfaces",
+            "component_name": "Fleet, Apps, Security, Recovery, and Release APIs",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "api-guards",
+            "component_name": "Identity, authentication, and invite guards",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "api-read-surfaces",
+            "component_name": "Prepared read, health, readiness, diagnostics, and evidence APIs",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "app-catalog",
+            "component_name": "App Catalog",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "app-lifecycle-worker",
+            "component_name": "App lifecycle worker",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "app-recovery-update",
+            "component_name": "App backup, restore preview, and update lifecycle",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "app-workflow-state",
+            "component_name": "App, command, and workflow state",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "atomic-promotion",
+            "component_name": "Atomic PWA promotion",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "backup-engine",
+            "component_name": "Backup and verification engine",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "bounded-reconciliation",
+            "component_name": "Bounded queues and reconciliation",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "browser",
+            "component_name": "Browser",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "caddy",
+            "component_name": "Caddy same-origin proxy",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.caddy"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "checkpoints-retention",
+            "component_name": "Checkpoints and retention policy",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "command-lifecycle",
+            "component_name": "Command admission and lifecycle",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "completion-evidence",
+            "component_name": "Completion and audit evidence",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "device-state",
+            "component_name": "Enrollment and device lifecycle state",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "frontend-state",
+            "component_name": "Frontend state ownership",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "github-release",
+            "component_name": "GitHub Release",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "github-repository",
+            "component_name": "GitHub repository",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "invite-state",
+            "component_name": "Invite and identity lifecycle",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "lan",
+            "component_name": "Local LAN",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "last-known-good",
+            "component_name": "Last-known-good state and rollback",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "lite-api",
+            "component_name": "FastAPI /api/lite/*",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.lite-api"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "media-app-health",
+            "component_name": "Media readiness and app health probes",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "nats-jetstream",
+            "component_name": "NATS / JetStream",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.nats"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "nats-listeners",
+            "component_name": "Primary and secondary NATS listeners",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "node-agent",
+            "component_name": "Lite node agent",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.node-agent"
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "photoprism",
+            "component_name": "PhotoPrism",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "runtime_apps.photoprism"
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "pm2",
+            "component_name": "PM2 process manager",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.pm2"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "post-switch-health",
+            "component_name": "Post-switch health validation",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "prepared-state",
+            "component_name": "Audit index, projection refresh, prepared projections, and domain revisions",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "projection-subprocesses",
+            "component_name": "Projection subprocesses",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "runtime-unavailable",
+            "component_id": "proot-ubuntu",
+            "component_name": "PROot Ubuntu application container",
+            "runtime_evidence_state": "unavailable",
+            "runtime_selector": "services.proot-ubuntu"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "pwa",
+            "component_name": "React / Vite PWA",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "recovery-state",
+            "component_name": "Backup, restore, and checkpoint state",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "release-artifacts",
+            "component_name": "Date-based Lite tag, dist.zip, checksums, and release manifest",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "release-staging",
+            "component_name": "Download staging and release verification",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "release-state",
+            "component_name": "Installed release and runtime state",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "release-subprocess",
+            "component_name": "Release subprocess",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "remote-readiness",
+            "component_name": "Remote-access readiness checks",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "restore-preview",
+            "component_name": "Restore preview and confirmed restore",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "retirement-database-recovery",
+            "component_name": "Explicit retirement and database recovery",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "scanner-adapters",
+            "component_name": "Lynis and Trivy scanner adapters",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "security-coordinator",
+            "component_name": "Security scan coordinator",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "security-profiles",
+            "component_name": "Quick, Full, and App safety checks",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "security-state",
+            "component_name": "Security findings and run state",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "sqlite",
+            "component_name": "SQLite control-plane store",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.sqlite"
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "tailscale",
+            "component_name": "Tailscale remote access",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "routes.remote-access"
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "tailscaled",
+            "component_name": "tailscaled daemon",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.tailscaled"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "user",
+            "component_name": "User",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          },
+          {
+            "classification": "source-and-runtime-verified",
+            "component_id": "worker",
+            "component_name": "Worker process",
+            "runtime_evidence_state": "verified",
+            "runtime_selector": "services.worker"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "workflow-execution",
+            "component_name": "Workflow execution",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
+          }
+        ],
+        "runtime_selected_component_count": 12
+      },
+      "source_refs": [
+        "contracts/generated/runtime/architecture-runtime-verification.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:caddy-routing",
+      "name": "Caddy Routing",
+      "projection": {
+        "classification": "verified",
+        "proxy": {
+          "execution_owner": "PM2",
+          "expected_source_match": "matched",
+          "id": "caddy",
+          "logical_role": "same-origin proxy",
+          "memory_bucket": "not-applicable",
+          "presence": "present",
+          "restart_bucket": "not-applicable",
+          "runtime_type": "native",
+          "status": "healthy"
+        },
+        "routes": [
+          {
+            "https_mode": "explicit-files",
+            "https_owner": "caddy",
+            "id": "api-lite",
+            "peer_reachability": "not-applicable",
+            "presence": "present",
+            "route_kind": "api-lite",
+            "route_order": "api-before-pwa",
+            "upstream_kind": "loopback-fastapi"
+          },
+          {
+            "https_mode": "explicit-files",
+            "https_owner": "caddy",
+            "id": "photoprism",
+            "peer_reachability": "not-applicable",
+            "presence": "present",
+            "route_kind": "managed-app",
+            "route_order": "api-before-pwa",
+            "upstream_kind": "loopback-app"
+          },
+          {
+            "https_mode": "explicit-files",
+            "https_owner": "caddy",
+            "id": "pwa",
+            "peer_reachability": "not-applicable",
+            "presence": "present",
+            "route_kind": "pwa",
+            "route_order": "api-before-pwa",
+            "upstream_kind": "static-assets"
+          },
+          {
+            "https_mode": "explicit-files",
+            "https_owner": "caddy",
+            "id": "remote-access",
+            "peer_reachability": "ready",
+            "presence": "present",
+            "route_kind": "remote-access",
+            "route_order": "not-applicable",
+            "upstream_kind": "private-network"
+          }
+        ]
+      },
+      "source_refs": [
+        "contracts/generated/runtime/caddy-routing.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:nats-topology",
+      "name": "Nats Topology",
+      "projection": {
+        "classification": "verified",
+        "listeners": [
+          {
+            "bind_scope": "private-or-all",
+            "id": "nats-client",
+            "port_kind": "nats-client",
+            "presence": "present",
+            "service": "nats"
+          }
+        ],
+        "messaging": {
+          "bind_scope": "private-or-all",
+          "client_listener_presence": "present",
+          "expected_client_port_present": true,
+          "jetstream_state": "enabled",
+          "process_owner": "pm2",
+          "service_id": "nats"
+        },
+        "service": {
+          "execution_owner": "PM2",
+          "expected_source_match": "matched",
+          "id": "nats",
+          "logical_role": "NATS/JetStream service",
+          "memory_bucket": "not-applicable",
+          "presence": "present",
+          "restart_bucket": "not-applicable",
+          "runtime_type": "native",
+          "status": "ready"
+        }
+      },
+      "source_refs": [
+        "contracts/generated/runtime/nats-topology.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:pm2-topology",
+      "name": "Pm2 Topology",
+      "projection": {
+        "classification": "verified",
+        "services": [
+          {
+            "execution_owner": "PM2",
+            "expected_source_match": "matched",
+            "id": "caddy",
+            "logical_role": "same-origin proxy",
+            "memory_bucket": "not-applicable",
+            "presence": "present",
+            "restart_bucket": "not-applicable",
+            "runtime_type": "native",
+            "status": "healthy"
+          },
+          {
+            "execution_owner": "PM2",
+            "expected_source_match": "matched",
+            "id": "core-supervisor",
+            "logical_role": "server-host recovery supervisor",
+            "memory_bucket": "under-64-mib",
+            "presence": "present",
+            "restart_bucket": "none",
+            "runtime_type": "python",
+            "status": "online"
+          },
+          {
+            "execution_owner": "PM2",
+            "expected_source_match": "matched",
+            "id": "lite-api",
+            "logical_role": "FastAPI control API",
+            "memory_bucket": "64-191-mib",
+            "presence": "present",
+            "restart_bucket": "none",
+            "runtime_type": "python",
+            "status": "online"
+          },
+          {
+            "execution_owner": "PM2",
+            "expected_source_match": "matched",
+            "id": "nats",
+            "logical_role": "NATS/JetStream service",
+            "memory_bucket": "not-applicable",
+            "presence": "present",
+            "restart_bucket": "not-applicable",
+            "runtime_type": "native",
+            "status": "ready"
+          },
+          {
+            "execution_owner": "PM2",
+            "expected_source_match": "matched",
+            "id": "node-agent",
+            "logical_role": "server-host node agent",
+            "memory_bucket": "under-64-mib",
+            "presence": "present",
+            "restart_bucket": "none",
+            "runtime_type": "python",
+            "status": "online"
+          },
+          {
+            "execution_owner": "PM2 / PROot Ubuntu",
+            "expected_source_match": "matched",
+            "id": "photoprism",
+            "logical_role": "managed PhotoPrism application",
+            "memory_bucket": "under-64-mib",
+            "presence": "present",
+            "restart_bucket": "none",
+            "runtime_type": "proot",
+            "status": "online"
+          },
+          {
+            "execution_owner": "PM2",
+            "expected_source_match": "matched",
+            "id": "worker",
+            "logical_role": "worker execution plane",
+            "memory_bucket": "64-191-mib",
+            "presence": "present",
+            "restart_bucket": "none",
+            "runtime_type": "python",
+            "status": "online"
+          }
+        ]
+      },
+      "source_refs": [
+        "contracts/generated/runtime/pm2-topology.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:proot-apps",
+      "name": "Proot Apps",
+      "projection": {
+        "applications": [
+          {
+            "container": "unknown",
+            "id": "photoprism",
+            "pm2_owned": true,
+            "presence": "present",
+            "route_present": true,
+            "runtime": "unknown"
+          }
+        ],
+        "classification": "verified",
+        "container": {
+          "execution_owner": "proot-distro",
+          "expected_source_match": "not-evaluated",
+          "id": "proot-ubuntu",
+          "logical_role": "PROot Ubuntu application runtime",
+          "memory_bucket": "not-applicable",
+          "presence": "missing",
+          "restart_bucket": "not-applicable",
+          "runtime_type": "proot",
+          "status": "unavailable"
+        },
+        "routes": [
+          {
+            "https_mode": "explicit-files",
+            "https_owner": "caddy",
+            "id": "photoprism",
+            "peer_reachability": "not-applicable",
+            "presence": "present",
+            "route_kind": "managed-app",
+            "route_order": "api-before-pwa",
+            "upstream_kind": "loopback-app"
+          }
+        ]
+      },
+      "source_refs": [
+        "contracts/generated/runtime/proot-apps.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:remote-access",
+      "name": "Remote Access",
+      "projection": {
+        "classification": "verified",
+        "daemon": {
+          "execution_owner": "startup scripts",
+          "expected_source_match": "matched",
+          "id": "tailscaled",
+          "logical_role": "private remote-access daemon",
+          "memory_bucket": "not-applicable",
+          "presence": "present",
+          "restart_bucket": "not-applicable",
+          "runtime_type": "native",
+          "status": "ready"
+        },
+        "readiness": {
+          "address_redacted": true,
+          "command_variant": "tailscale-cli",
+          "daemon_running": true,
+          "hostname_redacted": true,
+          "ipv4_ready": true,
+          "peer_reachability": "ready",
+          "private_connectivity_ready": true,
+          "service_id": "tailscaled"
+        },
+        "route": {
+          "https_mode": "explicit-files",
+          "https_owner": "caddy",
+          "id": "remote-access",
+          "peer_reachability": "ready",
+          "presence": "present",
+          "route_kind": "remote-access",
+          "route_order": "not-applicable",
+          "upstream_kind": "private-network"
+        }
+      },
+      "source_refs": [
+        "contracts/generated/runtime/remote-access.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:sqlite-runtime",
+      "name": "Sqlite Runtime",
+      "projection": {
+        "classification": "verified",
+        "datastores": [
+          {
+            "expected_tables_present": true,
+            "id": "sqlite-control-plane",
+            "integrity": "ok",
+            "journal_mode": "wal",
+            "presence": "present",
+            "role": "control-plane-state",
+            "schema_revision": 23,
+            "service_id": "sqlite"
+          }
+        ],
+        "service": {
+          "execution_owner": "FastAPI and workers",
+          "expected_source_match": "matched",
+          "id": "sqlite",
+          "logical_role": "SQLite control-plane store",
+          "memory_bucket": "not-applicable",
+          "presence": "present",
+          "restart_bucket": "not-applicable",
+          "runtime_type": "sqlite",
+          "status": "healthy"
+        }
+      },
+      "source_refs": [
+        "contracts/generated/runtime/sqlite-runtime.json"
+      ],
+      "type": "runtime-topology"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "Sanitized promoted runtime topology projection.",
+      "domain": "runtime",
+      "id": "runtime:termux-platform",
+      "name": "Termux Platform",
+      "projection": {
+        "host_role": "server-phone",
+        "platform": {
+          "abi_family": "other",
+          "android_release_major": "16",
+          "architecture_family": "arm64",
+          "platform": "android-termux",
+          "runtime_verification_state": "verified",
+          "termux_prefix_type": "termux"
+        },
+        "verification": {
+          "certificate_material_removed": true,
+          "forbidden_fields_found": false,
+          "media_paths_removed": true,
+          "network_identity_removed": true,
+          "private_key_material_removed": true,
+          "raw_paths_removed": true,
+          "runtime_verification_state": "verified",
+          "secrets_removed": true,
+          "source_expectations_compared": true,
+          "unresolved_mismatches": []
+        }
+      },
+      "source_refs": [
+        "contracts/generated/runtime/termux-platform.json"
+      ],
+      "type": "runtime-topology"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

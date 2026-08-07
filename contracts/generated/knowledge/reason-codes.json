@@ -1,0 +1,692 @@
+{
+  "items": [
+    {
+      "confidence": "source-derived",
+      "description": "No additional tuning was required.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:already_tuned",
+      "name": "already_tuned",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "No additional tuning was required."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Cold-start validation is in progress.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:cold_start_validation",
+      "name": "cold_start_validation",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Cold-start validation is in progress."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The target agent cannot currently receive the command.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:command_undeliverable",
+      "name": "command_undeliverable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The target agent cannot currently receive the command."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Diagnostics are not active.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:diagnostics_not_active",
+      "name": "diagnostics_not_active",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Diagnostics are not active."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested capability is disabled.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:disabled",
+      "name": "disabled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested capability is disabled."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A matching device or invite already exists.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:duplicate_device",
+      "name": "duplicate_device",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "A matching device or invite already exists."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The source generation changed during work.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:generation_changed",
+      "name": "generation_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The source generation changed during work."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The local identity does not match the requested enrollment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:identity_mismatch",
+      "name": "identity_mismatch",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The local identity does not match the requested enrollment."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "There is not enough safe storage for the operation.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:insufficient_storage",
+      "name": "insufficient_storage",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "There is not enough safe storage for the operation."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The operation was interrupted.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:interrupted",
+      "name": "interrupted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The operation was interrupted."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested projection domain is invalid.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 400,
+      "id": "reason:invalid_domain",
+      "name": "invalid_domain",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested projection domain is invalid."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device invite is no longer valid.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:invite_expired",
+      "name": "invite_expired",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The device invite is no longer valid."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The invite identity does not match the enrolled device.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:invite_identity_mismatch",
+      "name": "invite_identity_mismatch",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The invite identity does not match the enrolled device."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Another bounded owner currently holds the lease.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:lease_active",
+      "name": "lease_active",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Another bounded owner currently holds the lease."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Legacy state contains multiple active runs.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:legacy_multiple_active_runs",
+      "name": "legacy_multiple_active_runs",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Legacy state contains multiple active runs."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Only metadata was evaluated.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:metadata_only",
+      "name": "metadata_only",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Only metadata was evaluated."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "There is no active generation.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:no_active_generation",
+      "name": "no_active_generation",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "There is no active generation."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The record is not present in the restored snapshot.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:not_found_in_restored_snapshot",
+      "name": "not_found_in_restored_snapshot",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The record is not present in the restored snapshot."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The bounded payload limit was exceeded.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:payload_too_large",
+      "name": "payload_too_large",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The bounded payload limit was exceeded."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The last committed projection is too old for a safe write.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:projection_too_old",
+      "name": "projection_too_old",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The last committed projection is too old for a safe write."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The prepared projection is unavailable.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:projection_unavailable",
+      "name": "projection_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The prepared projection is unavailable."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The protected server host cannot use this destructive action.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:protected_server_host",
+      "name": "protected_server_host",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The protected server host cannot use this destructive action."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The bounded queue cannot accept more work.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:queue_full",
+      "name": "queue_full",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The bounded queue cannot accept more work."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A safe last-known read is shown while refresh is unavailable.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:read_degraded",
+      "name": "read_degraded",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "A safe last-known read is shown while refresh is unavailable."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The release prepared projection is unavailable.",
+      "domain": "release",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:release_projection_unavailable",
+      "name": "release_projection_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The release prepared projection is unavailable."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Private remote access is not ready.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:remote_access_not_ready",
+      "name": "remote_access_not_ready",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Private remote access is not ready."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A required backend service is unavailable.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:service_unavailable",
+      "name": "service_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "A required backend service is unavailable."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The process is shutting down.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:shutdown",
+      "name": "shutdown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The process is shutting down."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Shutdown occurred while the bounded mailbox was under pressure.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:shutdown_during_mailbox_backpressure",
+      "name": "shutdown_during_mailbox_backpressure",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Shutdown occurred while the bounded mailbox was under pressure."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The work request could not be admitted.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:submit_failed",
+      "name": "submit_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The work request could not be admitted."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested target is outside the approved scope.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 400,
+      "id": "reason:target_not_allowed",
+      "name": "target_not_allowed",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested target is outside the approved scope."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested domain is not registered.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:unregistered_domain",
+      "name": "unregistered_domain",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested domain is not registered."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The worker reported a terminal failure.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:worker_failed",
+      "name": "worker_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The worker reported a terminal failure."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The worker did not start the accepted work within the recovery window.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:worker_start_timeout",
+      "name": "worker_start_timeout",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The worker did not start the accepted work within the recovery window."
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

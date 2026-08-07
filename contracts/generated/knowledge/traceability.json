@@ -1,0 +1,2849 @@
+{
+  "items": [
+    {
+      "entity": "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+      "name": "DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/lifecycle",
+      "name": "GET /api/lite/apps/lifecycle",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/lifecycle/{app_id}",
+      "name": "GET /api/lite/apps/lifecycle/{app_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/photoprism/storage-mappings",
+      "name": "GET /api/lite/apps/photoprism/storage-mappings",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/photoprism/storage-preview",
+      "name": "GET /api/lite/apps/photoprism/storage-preview",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/action-history",
+      "name": "GET /api/lite/apps/{app_id}/action-history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/actions",
+      "name": "GET /api/lite/apps/{app_id}/actions",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/backup",
+      "name": "GET /api/lite/apps/{app_id}/backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/backups",
+      "name": "GET /api/lite/apps/{app_id}/backups",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+      "name": "GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/evidence",
+      "name": "GET /api/lite/apps/{app_id}/evidence",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/restore/previews/{preview_id}",
+      "name": "GET /api/lite/apps/{app_id}/restore/previews/{preview_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/update",
+      "name": "GET /api/lite/apps/{app_id}/update",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/update/receipts/{operation_id}",
+      "name": "GET /api/lite/apps/{app_id}/update/receipts/{operation_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/catalog",
+      "name": "GET /api/lite/catalog",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/commands/history",
+      "name": "GET /api/lite/commands/history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/devices/{device_id}",
+      "name": "GET /api/lite/devices/{device_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/devices/{device_id}/health",
+      "name": "GET /api/lite/devices/{device_id}/health",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/devices/{device_id}/health/history",
+      "name": "GET /api/lite/devices/{device_id}/health/history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/devices/{device_id}/history",
+      "name": "GET /api/lite/devices/{device_id}/history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/devices/{device_id}/removal-assessment",
+      "name": "GET /api/lite/devices/{device_id}/removal-assessment",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
+      "name": "GET /api/lite/diagnostics/frontend-lifecycle/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/diagnostics/runtime",
+      "name": "GET /api/lite/diagnostics/runtime",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/diagnostics/runtime/full",
+      "name": "GET /api/lite/diagnostics/runtime/full",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/events",
+      "name": "GET /api/lite/events",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/fleet",
+      "name": "GET /api/lite/fleet",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/fleet/agent/bootstrap.sh",
+      "name": "GET /api/lite/fleet/agent/bootstrap.sh",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
+      "name": "GET /api/lite/fleet/devices/{device_id}/recovery-history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
+      "name": "GET /api/lite/fleet/devices/{node_id}/restart-agent/status",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/fleet/health-summary",
+      "name": "GET /api/lite/fleet/health-summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/fleet/invites/latest",
+      "name": "GET /api/lite/fleet/invites/latest",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/identity",
+      "name": "GET /api/lite/identity",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/policy",
+      "name": "GET /api/lite/policy",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery",
+      "name": "GET /api/lite/recovery",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/apps",
+      "name": "GET /api/lite/recovery/apps",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/apps/{app_id}",
+      "name": "GET /api/lite/recovery/apps/{app_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/apps/{app_id}/backup-targets",
+      "name": "GET /api/lite/recovery/apps/{app_id}/backup-targets",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/backup-targets",
+      "name": "GET /api/lite/recovery/backup-targets",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/backups",
+      "name": "GET /api/lite/recovery/backups",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/backups/{backup_id}",
+      "name": "GET /api/lite/recovery/backups/{backup_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/database",
+      "name": "GET /api/lite/recovery/database",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/database/backups",
+      "name": "GET /api/lite/recovery/database/backups",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/database/backups/{backup_id}",
+      "name": "GET /api/lite/recovery/database/backups/{backup_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/database/restore/previews/{preview_id}",
+      "name": "GET /api/lite/recovery/database/restore/previews/{preview_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/database/restore/{restore_id}",
+      "name": "GET /api/lite/recovery/database/restore/{restore_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/details",
+      "name": "GET /api/lite/recovery/details",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/maintenance",
+      "name": "GET /api/lite/recovery/maintenance",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/operations",
+      "name": "GET /api/lite/recovery/operations",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/receipts/{backup_id}",
+      "name": "GET /api/lite/recovery/receipts/{backup_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/restore/checkpoints/{checkpoint_id}",
+      "name": "GET /api/lite/recovery/restore/checkpoints/{checkpoint_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/restore/previews/{preview_id}",
+      "name": "GET /api/lite/recovery/restore/previews/{preview_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/restore/runs/{restore_id}",
+      "name": "GET /api/lite/recovery/restore/runs/{restore_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/recovery/summary",
+      "name": "GET /api/lite/recovery/summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/release",
+      "name": "GET /api/lite/release",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/remote-access/readiness",
+      "name": "GET /api/lite/remote-access/readiness",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/revisions",
+      "name": "GET /api/lite/revisions",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security",
+      "name": "GET /api/lite/security",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/apps",
+      "name": "GET /api/lite/security/apps",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/apps/{app_id}",
+      "name": "GET /api/lite/security/apps/{app_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/details/{run_id}",
+      "name": "GET /api/lite/security/details/{run_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/events",
+      "name": "GET /api/lite/security/events",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/evidence/{run_id}",
+      "name": "GET /api/lite/security/evidence/{run_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/evidence/{run_id}/summary",
+      "name": "GET /api/lite/security/evidence/{run_id}/summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/freshness",
+      "name": "GET /api/lite/security/freshness",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/history",
+      "name": "GET /api/lite/security/history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/profiles/{profile}",
+      "name": "GET /api/lite/security/profiles/{profile}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/progress",
+      "name": "GET /api/lite/security/progress",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/runs/{run_id}",
+      "name": "GET /api/lite/security/runs/{run_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/security/summary",
+      "name": "GET /api/lite/security/summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/status",
+      "name": "GET /api/lite/status",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/activity-summary",
+      "name": "GET /api/lite/system/activity-summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/agent",
+      "name": "GET /api/lite/system/agent",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/health",
+      "name": "GET /api/lite/system/health",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/nats-readiness",
+      "name": "GET /api/lite/system/nats-readiness",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/processes",
+      "name": "GET /api/lite/system/processes",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/sqlite-health",
+      "name": "GET /api/lite/system/sqlite-health",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/storage-pressure",
+      "name": "GET /api/lite/system/storage-pressure",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/supervisor",
+      "name": "GET /api/lite/system/supervisor",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system/telemetry-thresholds",
+      "name": "GET /api/lite/system/telemetry-thresholds",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/health",
+      "name": "GET /health",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/ready",
+      "name": "GET /ready",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/photoprism/storage-mappings",
+      "name": "POST /api/lite/apps/photoprism/storage-mappings",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/{app_id}/actions/{action_id}",
+      "name": "POST /api/lite/apps/{app_id}/actions/{action_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/{app_id}/backup",
+      "name": "POST /api/lite/apps/{app_id}/backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+      "name": "POST /api/lite/apps/{app_id}/backup/storage-device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/{app_id}/restore/preview",
+      "name": "POST /api/lite/apps/{app_id}/restore/preview",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/{app_id}/update/apply",
+      "name": "POST /api/lite/apps/{app_id}/update/apply",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/catalog/install",
+      "name": "POST /api/lite/catalog/install",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/catalog/remove",
+      "name": "POST /api/lite/catalog/remove",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/diagnostics/frontend-lifecycle",
+      "name": "POST /api/lite/diagnostics/frontend-lifecycle",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/fleet/add-device",
+      "name": "POST /api/lite/fleet/add-device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/fleet/agent/bootstrap-blocked",
+      "name": "POST /api/lite/fleet/agent/bootstrap-blocked",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/fleet/agent/bootstrap.env",
+      "name": "POST /api/lite/fleet/agent/bootstrap.env",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
+      "name": "POST /api/lite/fleet/devices/{node_id}/restart-agent",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
+      "name": "POST /api/lite/fleet/invites/{invite_id}/revoke",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/fleet/remove-device",
+      "name": "POST /api/lite/fleet/remove-device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/rotate",
+      "name": "POST /api/lite/identity/rotate",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/policy/apply",
+      "name": "POST /api/lite/policy/apply",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/apps/{app_id}/backup",
+      "name": "POST /api/lite/recovery/apps/{app_id}/backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/apps/{app_id}/backup-to-target",
+      "name": "POST /api/lite/recovery/apps/{app_id}/backup-to-target",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/apps/{app_id}/restore",
+      "name": "POST /api/lite/recovery/apps/{app_id}/restore",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/apps/{app_id}/restore/preview",
+      "name": "POST /api/lite/recovery/apps/{app_id}/restore/preview",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/backup",
+      "name": "POST /api/lite/recovery/backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/backups/{backup_id}/verify",
+      "name": "POST /api/lite/recovery/backups/{backup_id}/verify",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/database/backup",
+      "name": "POST /api/lite/recovery/database/backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
+      "name": "POST /api/lite/recovery/database/backups/{backup_id}/preview",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/database/backups/{backup_id}/restore",
+      "name": "POST /api/lite/recovery/database/backups/{backup_id}/restore",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+      "name": "POST /api/lite/recovery/database/backups/{backup_id}/verify",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/maintenance/checkpoint",
+      "name": "POST /api/lite/recovery/maintenance/checkpoint",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/maintenance/retention",
+      "name": "POST /api/lite/recovery/maintenance/retention",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/restore",
+      "name": "POST /api/lite/recovery/restore",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/restore/preview",
+      "name": "POST /api/lite/recovery/restore/preview",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/release/apply",
+      "name": "POST /api/lite/release/apply",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/release/check",
+      "name": "POST /api/lite/release/check",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/security/apps/{app_id}/check",
+      "name": "POST /api/lite/security/apps/{app_id}/check",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/security/check",
+      "name": "POST /api/lite/security/check",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/security/scan",
+      "name": "POST /api/lite/security/scan",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+      "name": "PUT /api/lite/fleet/devices/{device_id}/display-model",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:agent-command-executor",
+      "name": "Device command executor",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_production_readiness.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:agent-recovery",
+      "name": "Reconnect watchdog and supervisor recovery",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_devices_production_readiness.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:agent-signals",
+      "name": "Heartbeat, telemetry, and health publishers",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_production_readiness.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:agent-supervisor",
+      "name": "Lite agent supervisor",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_devices_production_readiness.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:api-domain-surfaces",
+      "name": "Fleet, Apps, Security, Recovery, and Release APIs",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:api-guards",
+      "name": "Identity, authentication, and invite guards",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:api-read-surfaces",
+      "name": "Prepared read, health, readiness, diagnostics, and evidence APIs",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:app-catalog",
+      "name": "App Catalog",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_runtime_reconciliation.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-test-helpers.ts"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:app-lifecycle-worker",
+      "name": "App lifecycle worker",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_projection_semantic_hardening.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_worker_recovery.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:app-recovery-update",
+      "name": "App backup, restore preview, and update lifecycle",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:app-workflow-state",
+      "name": "App, command, and workflow state",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:atomic-promotion",
+      "name": "Atomic PWA promotion",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_native_release.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:backup-engine",
+      "name": "Backup and verification engine",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:bounded-reconciliation",
+      "name": "Bounded queues and reconciliation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:browser",
+      "name": "Browser",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/backend/test_lite_n6b_install_surface.py",
+        "test:tests/backend/test_lite_native_release.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_release_process_isolation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:caddy",
+      "name": "Caddy same-origin proxy",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:checkpoints-retention",
+      "name": "Checkpoints and retention policy",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:command-lifecycle",
+      "name": "Command admission and lifecycle",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:completion-evidence",
+      "name": "Completion and audit evidence",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:device-state",
+      "name": "Enrollment and device lifecycle state",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:frontend-state",
+      "name": "Frontend state ownership",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_devices_d2_d3.py",
+        "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+        "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+        "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:github-release",
+      "name": "GitHub Release",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:github-repository",
+      "name": "GitHub repository",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:invite-state",
+      "name": "Invite and identity lifecycle",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:lan",
+      "name": "Local LAN",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:last-known-good",
+      "name": "Last-known-good state and rollback",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_native_release.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:lite-api",
+      "name": "FastAPI /api/lite/*",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_long_gate_submission_recovery.py",
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+        "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+        "test:tests/backend/test_lite_security_s6_retention.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:media-app-health",
+      "name": "Media readiness and app health probes",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:nats-jetstream",
+      "name": "NATS / JetStream",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:nats-listeners",
+      "name": "Primary and secondary NATS listeners",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:node-agent",
+      "name": "Lite node agent",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_production_readiness.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:photoprism",
+      "name": "PhotoPrism",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+        "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+        "test:tests/backend/test_lite_sqlite_performance.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/parity/test_planned_runtime_parity_policy.py",
+        "test:tests/parity/test_runtime_drift_reporting.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:pm2",
+      "name": "PM2 process manager",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:post-switch-health",
+      "name": "Post-switch health validation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_native_release.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:prepared-state",
+      "name": "Audit index, projection refresh, prepared projections, and domain revisions",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:projection-subprocesses",
+      "name": "Projection subprocesses",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:proot-ubuntu",
+      "name": "PROot Ubuntu application container",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:pwa",
+      "name": "React / Vite PWA",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_d2_d3.py",
+        "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+        "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+        "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:recovery-state",
+      "name": "Backup, restore, and checkpoint state",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:release-artifacts",
+      "name": "Date-based Lite tag, dist.zip, checksums, and release manifest",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:release-staging",
+      "name": "Download staging and release verification",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:release-state",
+      "name": "Installed release and runtime state",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:release-subprocess",
+      "name": "Release subprocess",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:remote-readiness",
+      "name": "Remote-access readiness checks",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:restore-preview",
+      "name": "Restore preview and confirmed restore",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:retirement-database-recovery",
+      "name": "Explicit retirement and database recovery",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:scanner-adapters",
+      "name": "Lynis and Trivy scanner adapters",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:security-coordinator",
+      "name": "Security scan coordinator",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:security-profiles",
+      "name": "Quick, Full, and App safety checks",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:security-state",
+      "name": "Security findings and run state",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:sqlite",
+      "name": "SQLite control-plane store",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:tailscale",
+      "name": "Tailscale remote access",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:tailscaled",
+      "name": "tailscaled daemon",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:user",
+      "name": "User",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:worker",
+      "name": "Worker process",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_projection_semantic_hardening.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_worker_recovery.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:workflow-execution",
+      "name": "Workflow execution",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:api",
+      "name": "Api",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:apps",
+      "name": "Apps",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:architecture",
+      "name": "Architecture",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:audit",
+      "name": "Audit",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:command",
+      "name": "Command",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:commands",
+      "name": "Commands",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:control_plane",
+      "name": "Control Plane",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:database",
+      "name": "Database",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:devices",
+      "name": "Devices",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:diagnostics",
+      "name": "Diagnostics",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:disaster-recovery",
+      "name": "Disaster Recovery",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:documentation",
+      "name": "Documentation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:drift",
+      "name": "Drift",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:drift-management",
+      "name": "Drift Management",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:events",
+      "name": "Events",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:health",
+      "name": "Health",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:home",
+      "name": "Home",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:identity",
+      "name": "Identity",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/e2e/lite-test-helpers.ts",
+        "test:tests/parity/test_intelligent_runtime_parity.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:lite",
+      "name": "Lite",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:live_status",
+      "name": "Live Status",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:manual",
+      "name": "Manual",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:node",
+      "name": "Node",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:operation",
+      "name": "Operation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:operations",
+      "name": "Operations",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:parity",
+      "name": "Parity",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:platform",
+      "name": "Platform",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:prepared_state",
+      "name": "Prepared State",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:projections",
+      "name": "Projections",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:recovery",
+      "name": "Backup & Restore",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/parity/test_intelligent_runtime_parity.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:release",
+      "name": "Release",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:release-management",
+      "name": "Release Management",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:remote-access",
+      "name": "Remote Access",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:rules",
+      "name": "Rules",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:runbook",
+      "name": "Runbook",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:runtime",
+      "name": "Runtime",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:security",
+      "name": "Security",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:src/__tests__/liteLifecycleDiagnostics.test.js",
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_complete_documentation_platform.py",
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_long_gate_group2_reporting.py",
+        "test:tests/backend/test_lite_long_gate_group4_reporting.py",
+        "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+        "test:tests/backend/test_lite_security_progress_projection_cutover.py",
+        "test:tests/backend/test_lite_security_projection_drift_prevention.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_security_s6_replay.py",
+        "test:tests/backend/test_lite_security_s6_retention.py",
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+        "test:tests/backend/test_lite_security_s8_cross_process_generation.py",
+        "test:tests/backend/test_lite_security_s8_fault_checkpoint_identity.py",
+        "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
+        "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_security_sqlite_s3_s5.py",
+        "test:tests/backend/test_lite_security_store.py",
+        "test:tests/backend/test_lite_security_store_concurrency.py",
+        "test:tests/backend/test_lite_security_store_migration.py",
+        "test:tests/backend/test_lite_security_worker_sqlite_commit.py",
+        "test:tests/backend/test_lite_sqlite_performance.py",
+        "test:tests/backend/test_lite_startup_workload_isolation.py",
+        "test:tests/backend/test_lite_worker_recovery.py",
+        "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/e2e/lite-mocked.spec.ts",
+        "test:tests/e2e/lite-test-helpers.ts",
+        "test:tests/parity/test_intelligent_runtime_parity.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:system",
+      "name": "System",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:telemetry",
+      "name": "Telemetry",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:testing",
+      "name": "Testing",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:unknown",
+      "name": "Unknown",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:validation",
+      "name": "Validation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/parity/test_intelligent_runtime_parity.py"
+      ],
+      "type": "domain",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "domain:vault",
+      "name": "Vault",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:vocabulary",
+      "name": "Vocabulary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:websocket",
+      "name": "Websocket",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:worker",
+      "name": "Worker",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:workflow",
+      "name": "Workflow",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:add-device",
+      "name": "Add Device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:src/__tests__/enterpriseLabels.test.js",
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_d2_d3.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:app-installation",
+      "name": "App installation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:backup-create",
+      "name": "Backup creation and verification",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_database_restore_reconciliation.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:change-password",
+      "name": "Change Password / identity rotation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:device-enrollment",
+      "name": "Device bootstrap and enrollment",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_devices_production_readiness.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:device-reconnect",
+      "name": "Device offline and reconnect recovery",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:documentation-generation",
+      "name": "Documentation generation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_complete_documentation_platform.py",
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/backend/test_lite_production_architecture_platform.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:parity-capture",
+      "name": "Backend-to-Frontend parity capture and verification",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "journey",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:photoprism-operation",
+      "name": "PhotoPrism operation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:recovery-reconciliation",
+      "name": "Recovery reconciliation",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "journey",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:release-update",
+      "name": "Release and update flow",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "journey",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:remote-access-readiness",
+      "name": "Tailscale and remote access readiness",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "journey",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:remove-old-device",
+      "name": "Remove Old Device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_d2_d3.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:restart-agent",
+      "name": "Restart Agent",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_devices_d2_d3.py",
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:restore-execution",
+      "name": "Confirmed restore",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_database_restore_reconciliation.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:restore-preview",
+      "name": "Restore preview",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_database_restore_reconciliation.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/parity/test_backup_recovery_parity.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:rollback",
+      "name": "Rollback",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "journey",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:runtime-capture",
+      "name": "Sanitized Termux runtime capture",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "journey",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "journey:runtime-promotion",
+      "name": "Runtime evidence promotion",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/parity/test_runtime_promotion_preflight.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:security-review",
+      "name": "Security finding review",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_complete_documentation_platform.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:security-scan",
+      "name": "Security scan",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_complete_documentation_platform.py",
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+        "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
+        "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+        "test:tests/backend/test_lite_workload_admission.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "journey:startup",
+      "name": "Pocket Lab Lite startup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-01",
+      "name": "Frontend never talks directly to NATS.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-02",
+      "name": "Frontend never executes shell commands.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-03",
+      "name": "FastAPI remains the control API.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-04",
+      "name": "Agents and supervisors own execution and recovery.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-05",
+      "name": "Bootstrap scripts are backend-generated.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-06",
+      "name": "Secrets are not exposed.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-07",
+      "name": "Offline enrolled devices remain represented.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-08",
+      "name": "Lifecycle changes produce audit evidence.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-09",
+      "name": "Read APIs remain side-effect-free.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "requirement:architecture-10",
+      "name": "Startup scripts own safe startup side effects.",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "requirement",
+      "verification_status": "test-linked"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

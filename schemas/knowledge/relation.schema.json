@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.local/schemas/knowledge/relation.schema.json",
+  "title": "Pocket Lab Lite knowledge relation",
+  "type": "object",
+  "required": ["id", "type", "source", "target"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^rel:[a-f0-9]{16}$"},
+    "type": {"type": "string", "enum": ["owns", "uses", "calls", "reads", "writes", "publishes", "subscribes", "depends_on", "rendered_by", "verified_by", "observed_by", "affected_by", "introduced_in", "resolved_in", "documented_by", "protected_by", "recovers_with", "related_to", "produced_by", "consumed_by", "changed_in"]},
+    "source": {"type": "string"},
+    "target": {"type": "string"},
+    "evidence": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "additionalProperties": false
+}

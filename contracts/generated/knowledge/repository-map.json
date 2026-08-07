@@ -1,0 +1,2796 @@
+{
+  "items": [
+    {
+      "entities": [
+        "adr:adr-agent-supervisor-execution",
+        "adr:adr-backend-generated-bootstrap",
+        "adr:adr-durable-sqlite-authority",
+        "adr:adr-fastapi-control-api",
+        "boundary:application-container",
+        "boundary:browser",
+        "boundary:control-api",
+        "boundary:durable-state",
+        "boundary:external-release",
+        "boundary:managed-device",
+        "boundary:messaging-execution",
+        "boundary:server-host",
+        "boundary:tailnet",
+        "component:agent-command-executor",
+        "component:agent-recovery",
+        "component:agent-signals",
+        "component:agent-supervisor",
+        "component:api-domain-surfaces",
+        "component:api-guards",
+        "component:api-read-surfaces",
+        "component:app-catalog",
+        "component:app-lifecycle-worker",
+        "component:app-recovery-update",
+        "component:app-workflow-state",
+        "component:atomic-promotion",
+        "component:backup-engine",
+        "component:bounded-reconciliation",
+        "component:browser",
+        "component:caddy",
+        "component:checkpoints-retention",
+        "component:command-lifecycle",
+        "component:completion-evidence",
+        "component:device-state",
+        "component:frontend-state",
+        "component:github-release",
+        "component:github-repository",
+        "component:invite-state",
+        "component:lan",
+        "component:last-known-good",
+        "component:lite-api",
+        "component:media-app-health",
+        "component:nats-jetstream",
+        "component:nats-listeners",
+        "component:node-agent",
+        "component:photoprism",
+        "component:pm2",
+        "component:post-switch-health",
+        "component:prepared-state",
+        "component:projection-subprocesses",
+        "component:proot-ubuntu",
+        "component:pwa",
+        "component:recovery-state",
+        "component:release-artifacts",
+        "component:release-staging",
+        "component:release-state",
+        "component:release-subprocess",
+        "component:remote-readiness",
+        "component:restore-preview",
+        "component:retirement-database-recovery",
+        "component:scanner-adapters",
+        "component:security-coordinator",
+        "component:security-profiles",
+        "component:security-state",
+        "component:sqlite",
+        "component:tailscale",
+        "component:tailscaled",
+        "component:user",
+        "component:worker",
+        "component:workflow-execution",
+        "domain:documentation",
+        "domain:platform",
+        "domain:release",
+        "domain:validation",
+        "journey:device-reconnect",
+        "journey:startup",
+        "requirement:architecture-01",
+        "requirement:architecture-02",
+        "requirement:architecture-03",
+        "requirement:architecture-04",
+        "requirement:architecture-05",
+        "requirement:architecture-06",
+        "requirement:architecture-07",
+        "requirement:architecture-08",
+        "requirement:architecture-09",
+        "requirement:architecture-10",
+        "threat-model:application-container",
+        "threat-model:browser",
+        "threat-model:control-api",
+        "threat-model:durable-state",
+        "threat-model:external-release",
+        "threat-model:managed-device",
+        "threat-model:messaging-execution",
+        "threat-model:server-host",
+        "threat-model:tailnet"
+      ],
+      "source": "architecture/metadata/pocket-lab-architecture.json"
+    },
+    {
+      "entities": [
+        "capability:app-host",
+        "capability:backup-target",
+        "capability:compute",
+        "capability:media-storage",
+        "capability:security-scanner"
+      ],
+      "source": "contracts/generated/device-capabilities.json"
+    },
+    {
+      "entities": [
+        "domain:api",
+        "domain:architecture",
+        "domain:audit",
+        "domain:command",
+        "domain:commands",
+        "domain:control_plane",
+        "domain:database",
+        "domain:diagnostics",
+        "domain:disaster-recovery",
+        "domain:drift",
+        "domain:drift-management",
+        "domain:events",
+        "domain:health",
+        "domain:lite",
+        "domain:live_status",
+        "domain:manual",
+        "domain:node",
+        "domain:operation",
+        "domain:operations",
+        "domain:parity",
+        "domain:prepared_state",
+        "domain:projections",
+        "domain:release-management",
+        "domain:remote-access",
+        "domain:runbook",
+        "domain:runtime",
+        "domain:system",
+        "domain:telemetry",
+        "domain:testing",
+        "domain:unknown",
+        "domain:vault",
+        "domain:vocabulary",
+        "domain:websocket",
+        "domain:worker",
+        "domain:workflow",
+        "subject:pocketlab.commands",
+        "subject:pocketlab.commands.catalog.refresh",
+        "subject:pocketlab.commands.drift.apply",
+        "subject:pocketlab.commands.drift.approve",
+        "subject:pocketlab.commands.drift.ignore",
+        "subject:pocketlab.commands.drift.preview",
+        "subject:pocketlab.commands.drift.rescan",
+        "subject:pocketlab.commands.drift.scan",
+        "subject:pocketlab.commands.drift.{action}",
+        "subject:pocketlab.commands.fleet.join",
+        "subject:pocketlab.commands.fleet.save_tailscale_key",
+        "subject:pocketlab.commands.health.check",
+        "subject:pocketlab.commands.lite.app.backup.create",
+        "subject:pocketlab.commands.lite.app.backup.transfer",
+        "subject:pocketlab.commands.lite.app.media",
+        "subject:pocketlab.commands.lite.app.repair",
+        "subject:pocketlab.commands.lite.app.restore.preview",
+        "subject:pocketlab.commands.lite.app.safety",
+        "subject:pocketlab.commands.lite.app.update.check",
+        "subject:pocketlab.commands.lite.backup.create",
+        "subject:pocketlab.commands.lite.backup.verify",
+        "subject:pocketlab.commands.lite.catalog.install",
+        "subject:pocketlab.commands.lite.database.backup",
+        "subject:pocketlab.commands.lite.database.backup.verify",
+        "subject:pocketlab.commands.lite.database.restore",
+        "subject:pocketlab.commands.lite.database.restore.preview",
+        "subject:pocketlab.commands.lite.device.restart",
+        "subject:pocketlab.commands.lite.maintenance.checkpoint",
+        "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.restore.apply",
+        "subject:pocketlab.commands.lite.restore.preview",
+        "subject:pocketlab.commands.lite.security.app_scan",
+        "subject:pocketlab.commands.lite.security.scan",
+        "subject:pocketlab.commands.node",
+        "subject:pocketlab.commands.node.all",
+        "subject:pocketlab.commands.node.all.{command.replace",
+        "subject:pocketlab.commands.node.{node_id}",
+        "subject:pocketlab.commands.node.{node_id}.{command.replace",
+        "subject:pocketlab.commands.node.{normalized_node_id}.agent.restart",
+        "subject:pocketlab.commands.node.{self.node_id}",
+        "subject:pocketlab.commands.operation.execute",
+        "subject:pocketlab.commands.release.apply",
+        "subject:pocketlab.commands.release.check",
+        "subject:pocketlab.commands.runbook.approve",
+        "subject:pocketlab.commands.runbook.execute",
+        "subject:pocketlab.commands.runbook.reject",
+        "subject:pocketlab.commands.security.configure_opa",
+        "subject:pocketlab.commands.security.scan",
+        "subject:pocketlab.commands.unknown",
+        "subject:pocketlab.commands.vault.dynamic_secret",
+        "subject:pocketlab.commands.vault.rotate",
+        "subject:pocketlab.events",
+        "subject:pocketlab.events.api.started",
+        "subject:pocketlab.events.api.stopped",
+        "subject:pocketlab.events.catalog.refresh_started",
+        "subject:pocketlab.events.catalog.refreshed",
+        "subject:pocketlab.events.command.dead_lettered",
+        "subject:pocketlab.events.command.deferred",
+        "subject:pocketlab.events.command.failed",
+        "subject:pocketlab.events.command.queued",
+        "subject:pocketlab.events.command.received",
+        "subject:pocketlab.events.command.retry_scheduled",
+        "subject:pocketlab.events.command.running",
+        "subject:pocketlab.events.command.succeeded",
+        "subject:pocketlab.events.command.worker_claimed",
+        "subject:pocketlab.events.drift.detected",
+        "subject:pocketlab.events.drift.previewed",
+        "subject:pocketlab.events.drift.scan_completed",
+        "subject:pocketlab.events.drift.scan_started",
+        "subject:pocketlab.events.drift.{action}",
+        "subject:pocketlab.events.drift.{action}_started",
+        "subject:pocketlab.events.fleet.bootstrap_blocked",
+        "subject:pocketlab.events.fleet.config_updated",
+        "subject:pocketlab.events.fleet.device_health_sampled",
+        "subject:pocketlab.events.fleet.device_removed",
+        "subject:pocketlab.events.fleet.health_changed",
+        "subject:pocketlab.events.fleet.health_sampled",
+        "subject:pocketlab.events.fleet.invite_accepted",
+        "subject:pocketlab.events.fleet.invite_created",
+        "subject:pocketlab.events.fleet.invite_revoked",
+        "subject:pocketlab.events.fleet.invite_started",
+        "subject:pocketlab.events.fleet.node_",
+        "subject:pocketlab.events.fleet.node_capabilities",
+        "subject:pocketlab.events.fleet.node_command_queued",
+        "subject:pocketlab.events.fleet.node_command_result",
+        "subject:pocketlab.events.fleet.node_health",
+        "subject:pocketlab.events.fleet.node_heartbeat",
+        "subject:pocketlab.events.fleet.node_left",
+        "subject:pocketlab.events.fleet.node_profile",
+        "subject:pocketlab.events.fleet.node_seen",
+        "subject:pocketlab.events.fleet.node_supervisor",
+        "subject:pocketlab.events.fleet.node_telemetry",
+        "subject:pocketlab.events.health.changed",
+        "subject:pocketlab.events.health.check_completed",
+        "subject:pocketlab.events.health.checked",
+        "subject:pocketlab.events.health.service_changed",
+        "subject:pocketlab.events.lite.app.backup.completed",
+        "subject:pocketlab.events.lite.app.backup.failed",
+        "subject:pocketlab.events.lite.app.backup.started",
+        "subject:pocketlab.events.lite.app.media.completed",
+        "subject:pocketlab.events.lite.app.media.failed",
+        "subject:pocketlab.events.lite.app.media.started",
+        "subject:pocketlab.events.lite.app.media.updated",
+        "subject:pocketlab.events.lite.app.restore.preview_created",
+        "subject:pocketlab.events.lite.app.restore.preview_failed",
+        "subject:pocketlab.events.lite.app.restore.preview_started",
+        "subject:pocketlab.events.lite.app.update.check_completed",
+        "subject:pocketlab.events.lite.app.update.check_failed",
+        "subject:pocketlab.events.lite.app.update.check_started",
+        "subject:pocketlab.events.lite.app.{event_prefix}.completed",
+        "subject:pocketlab.events.lite.app.{event_prefix}.failed",
+        "subject:pocketlab.events.lite.app.{event_prefix}.started",
+        "subject:pocketlab.events.lite.app.{event_prefix}.updated",
+        "subject:pocketlab.events.lite.backup.failed",
+        "subject:pocketlab.events.lite.backup.snapshot_created",
+        "subject:pocketlab.events.lite.backup.started",
+        "subject:pocketlab.events.lite.backup.verified",
+        "subject:pocketlab.events.lite.backup.verify_failed",
+        "subject:pocketlab.events.lite.backup.verify_started",
+        "subject:pocketlab.events.lite.catalog.install_completed",
+        "subject:pocketlab.events.lite.catalog.install_failed",
+        "subject:pocketlab.events.lite.catalog.install_started",
+        "subject:pocketlab.events.lite.database.backup.started",
+        "subject:pocketlab.events.lite.database.backup.verified",
+        "subject:pocketlab.events.lite.database.restore.preview_ready",
+        "subject:pocketlab.events.lite.database.restore.started",
+        "subject:pocketlab.events.lite.database.restore.{event_suffix}",
+        "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+        "subject:pocketlab.events.lite.restore.checkpoint_created",
+        "subject:pocketlab.events.lite.restore.completed",
+        "subject:pocketlab.events.lite.restore.failed",
+        "subject:pocketlab.events.lite.restore.health_validated",
+        "subject:pocketlab.events.lite.restore.preview_created",
+        "subject:pocketlab.events.lite.restore.preview_failed",
+        "subject:pocketlab.events.lite.restore.preview_started",
+        "subject:pocketlab.events.lite.restore.service_restart_checked",
+        "subject:pocketlab.events.lite.restore.started",
+        "subject:pocketlab.events.lite.security.critical_found",
+        "subject:pocketlab.events.lite.security.scan.completed",
+        "subject:pocketlab.events.lite.security.scan.started",
+        "subject:pocketlab.events.lite.security.tool_missing",
+        "subject:pocketlab.events.lite.security.{tool}.completed",
+        "subject:pocketlab.events.live_status.started",
+        "subject:pocketlab.events.live_status.stopped",
+        "subject:pocketlab.events.live_status.{name}_error",
+        "subject:pocketlab.events.manual",
+        "subject:pocketlab.events.operation.created",
+        "subject:pocketlab.events.operation.failed",
+        "subject:pocketlab.events.operation.log",
+        "subject:pocketlab.events.operation.log.error",
+        "subject:pocketlab.events.operation.log.warning",
+        "subject:pocketlab.events.operation.previewed",
+        "subject:pocketlab.events.operation.snapshot",
+        "subject:pocketlab.events.operation.status",
+        "subject:pocketlab.events.operation.succeeded",
+        "subject:pocketlab.events.operation.worker_claimed",
+        "subject:pocketlab.events.release.applied",
+        "subject:pocketlab.events.release.available",
+        "subject:pocketlab.events.release.check_degraded",
+        "subject:pocketlab.events.release.current",
+        "subject:pocketlab.events.release.stage.completed",
+        "subject:pocketlab.events.release.stage.failed",
+        "subject:pocketlab.events.release.stage.started",
+        "subject:pocketlab.events.release.workflow.completed",
+        "subject:pocketlab.events.release.workflow.failed",
+        "subject:pocketlab.events.release.workflow.started",
+        "subject:pocketlab.events.runbook.approval_queued",
+        "subject:pocketlab.events.runbook.approval_required",
+        "subject:pocketlab.events.runbook.approved",
+        "subject:pocketlab.events.runbook.auto_approved",
+        "subject:pocketlab.events.runbook.failed",
+        "subject:pocketlab.events.runbook.queued",
+        "subject:pocketlab.events.runbook.rejected",
+        "subject:pocketlab.events.runbook.rejection_queued",
+        "subject:pocketlab.events.runbook.resumed",
+        "subject:pocketlab.events.runbook.started",
+        "subject:pocketlab.events.runbook.step_failed",
+        "subject:pocketlab.events.runbook.step_started",
+        "subject:pocketlab.events.runbook.step_succeeded",
+        "subject:pocketlab.events.runbook.succeeded",
+        "subject:pocketlab.events.security.evaluated",
+        "subject:pocketlab.events.security.finding",
+        "subject:pocketlab.events.security.log_query",
+        "subject:pocketlab.events.security.policy_updated",
+        "subject:pocketlab.events.security.scan_completed",
+        "subject:pocketlab.events.security.scan_started",
+        "subject:pocketlab.events.telemetry",
+        "subject:pocketlab.events.telemetry.changed",
+        "subject:pocketlab.events.telemetry.sampled",
+        "subject:pocketlab.events.vault.lease_created",
+        "subject:pocketlab.events.vault.secret_rotated",
+        "subject:pocketlab.events.websocket.heartbeat",
+        "subject:pocketlab.events.worker.error",
+        "subject:pocketlab.events.worker.heartbeat",
+        "subject:pocketlab.events.worker.ignored",
+        "subject:pocketlab.events.worker.maintenance_deferred",
+        "subject:pocketlab.events.worker.started",
+        "subject:pocketlab.events.worker.stopped",
+        "subject:pocketlab.events.workflow.dead_letter_replayed",
+        "subject:pocketlab.events.workflow.recovery_completed",
+        "subject:pocketlab.events.workflow.replay_requested"
+      ],
+      "source": "contracts/generated/lite-asyncapi.json"
+    },
+    {
+      "entities": [
+        "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+        "api:get:/api/lite/apps/lifecycle",
+        "api:get:/api/lite/apps/lifecycle/{app_id}",
+        "api:get:/api/lite/apps/photoprism/storage-mappings",
+        "api:get:/api/lite/apps/photoprism/storage-preview",
+        "api:get:/api/lite/apps/{app_id}/action-history",
+        "api:get:/api/lite/apps/{app_id}/actions",
+        "api:get:/api/lite/apps/{app_id}/backup",
+        "api:get:/api/lite/apps/{app_id}/backups",
+        "api:get:/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+        "api:get:/api/lite/apps/{app_id}/evidence",
+        "api:get:/api/lite/apps/{app_id}/restore/previews/{preview_id}",
+        "api:get:/api/lite/apps/{app_id}/update",
+        "api:get:/api/lite/apps/{app_id}/update/receipts/{operation_id}",
+        "api:get:/api/lite/catalog",
+        "api:get:/api/lite/commands/history",
+        "api:get:/api/lite/devices/{device_id}",
+        "api:get:/api/lite/devices/{device_id}/health",
+        "api:get:/api/lite/devices/{device_id}/health/history",
+        "api:get:/api/lite/devices/{device_id}/history",
+        "api:get:/api/lite/devices/{device_id}/removal-assessment",
+        "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
+        "api:get:/api/lite/diagnostics/runtime",
+        "api:get:/api/lite/diagnostics/runtime/full",
+        "api:get:/api/lite/events",
+        "api:get:/api/lite/fleet",
+        "api:get:/api/lite/fleet/agent/bootstrap.sh",
+        "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
+        "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
+        "api:get:/api/lite/fleet/health-summary",
+        "api:get:/api/lite/fleet/invites/latest",
+        "api:get:/api/lite/identity",
+        "api:get:/api/lite/policy",
+        "api:get:/api/lite/recovery",
+        "api:get:/api/lite/recovery/apps",
+        "api:get:/api/lite/recovery/apps/{app_id}",
+        "api:get:/api/lite/recovery/apps/{app_id}/backup-targets",
+        "api:get:/api/lite/recovery/backup-targets",
+        "api:get:/api/lite/recovery/backups",
+        "api:get:/api/lite/recovery/backups/{backup_id}",
+        "api:get:/api/lite/recovery/database",
+        "api:get:/api/lite/recovery/database/backups",
+        "api:get:/api/lite/recovery/database/backups/{backup_id}",
+        "api:get:/api/lite/recovery/database/restore/previews/{preview_id}",
+        "api:get:/api/lite/recovery/database/restore/{restore_id}",
+        "api:get:/api/lite/recovery/details",
+        "api:get:/api/lite/recovery/maintenance",
+        "api:get:/api/lite/recovery/operations",
+        "api:get:/api/lite/recovery/receipts/{backup_id}",
+        "api:get:/api/lite/recovery/restore/checkpoints/{checkpoint_id}",
+        "api:get:/api/lite/recovery/restore/previews/{preview_id}",
+        "api:get:/api/lite/recovery/restore/runs/{restore_id}",
+        "api:get:/api/lite/recovery/summary",
+        "api:get:/api/lite/release",
+        "api:get:/api/lite/remote-access/readiness",
+        "api:get:/api/lite/revisions",
+        "api:get:/api/lite/security",
+        "api:get:/api/lite/security/apps",
+        "api:get:/api/lite/security/apps/{app_id}",
+        "api:get:/api/lite/security/details/{run_id}",
+        "api:get:/api/lite/security/events",
+        "api:get:/api/lite/security/evidence/{run_id}",
+        "api:get:/api/lite/security/evidence/{run_id}/summary",
+        "api:get:/api/lite/security/freshness",
+        "api:get:/api/lite/security/history",
+        "api:get:/api/lite/security/profiles/{profile}",
+        "api:get:/api/lite/security/progress",
+        "api:get:/api/lite/security/runs/{run_id}",
+        "api:get:/api/lite/security/summary",
+        "api:get:/api/lite/status",
+        "api:get:/api/lite/system/activity-summary",
+        "api:get:/api/lite/system/agent",
+        "api:get:/api/lite/system/health",
+        "api:get:/api/lite/system/nats-readiness",
+        "api:get:/api/lite/system/processes",
+        "api:get:/api/lite/system/sqlite-health",
+        "api:get:/api/lite/system/storage-pressure",
+        "api:get:/api/lite/system/supervisor",
+        "api:get:/api/lite/system/telemetry-thresholds",
+        "api:get:/health",
+        "api:get:/ready",
+        "api:post:/api/lite/apps/photoprism/storage-mappings",
+        "api:post:/api/lite/apps/{app_id}/actions/{action_id}",
+        "api:post:/api/lite/apps/{app_id}/backup",
+        "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+        "api:post:/api/lite/apps/{app_id}/restore/preview",
+        "api:post:/api/lite/apps/{app_id}/update/apply",
+        "api:post:/api/lite/catalog/install",
+        "api:post:/api/lite/catalog/remove",
+        "api:post:/api/lite/diagnostics/frontend-lifecycle",
+        "api:post:/api/lite/fleet/add-device",
+        "api:post:/api/lite/fleet/agent/bootstrap-blocked",
+        "api:post:/api/lite/fleet/agent/bootstrap.env",
+        "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
+        "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
+        "api:post:/api/lite/fleet/remove-device",
+        "api:post:/api/lite/identity/rotate",
+        "api:post:/api/lite/policy/apply",
+        "api:post:/api/lite/recovery/apps/{app_id}/backup",
+        "api:post:/api/lite/recovery/apps/{app_id}/backup-to-target",
+        "api:post:/api/lite/recovery/apps/{app_id}/restore",
+        "api:post:/api/lite/recovery/apps/{app_id}/restore/preview",
+        "api:post:/api/lite/recovery/backup",
+        "api:post:/api/lite/recovery/backups/{backup_id}/verify",
+        "api:post:/api/lite/recovery/database/backup",
+        "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
+        "api:post:/api/lite/recovery/database/backups/{backup_id}/restore",
+        "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+        "api:post:/api/lite/recovery/maintenance/checkpoint",
+        "api:post:/api/lite/recovery/maintenance/retention",
+        "api:post:/api/lite/recovery/restore",
+        "api:post:/api/lite/recovery/restore/preview",
+        "api:post:/api/lite/release/apply",
+        "api:post:/api/lite/release/check",
+        "api:post:/api/lite/security/apps/{app_id}/check",
+        "api:post:/api/lite/security/check",
+        "api:post:/api/lite/security/scan",
+        "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+        "domain:api",
+        "domain:architecture",
+        "domain:audit",
+        "domain:command",
+        "domain:commands",
+        "domain:control_plane",
+        "domain:database",
+        "domain:diagnostics",
+        "domain:disaster-recovery",
+        "domain:drift",
+        "domain:drift-management",
+        "domain:events",
+        "domain:health",
+        "domain:lite",
+        "domain:live_status",
+        "domain:manual",
+        "domain:node",
+        "domain:operation",
+        "domain:operations",
+        "domain:parity",
+        "domain:prepared_state",
+        "domain:projections",
+        "domain:release-management",
+        "domain:remote-access",
+        "domain:runbook",
+        "domain:runtime",
+        "domain:system",
+        "domain:telemetry",
+        "domain:testing",
+        "domain:unknown",
+        "domain:vault",
+        "domain:vocabulary",
+        "domain:websocket",
+        "domain:worker",
+        "domain:workflow",
+        "journey:change-password"
+      ],
+      "source": "contracts/generated/lite-openapi.json"
+    },
+    {
+      "entities": [
+        "adr:adr-durable-sqlite-authority",
+        "domain:api",
+        "domain:architecture",
+        "domain:audit",
+        "domain:command",
+        "domain:commands",
+        "domain:control_plane",
+        "domain:database",
+        "domain:diagnostics",
+        "domain:disaster-recovery",
+        "domain:drift",
+        "domain:drift-management",
+        "domain:events",
+        "domain:health",
+        "domain:lite",
+        "domain:live_status",
+        "domain:manual",
+        "domain:node",
+        "domain:operation",
+        "domain:operations",
+        "domain:parity",
+        "domain:prepared_state",
+        "domain:projections",
+        "domain:release-management",
+        "domain:remote-access",
+        "domain:runbook",
+        "domain:runtime",
+        "domain:system",
+        "domain:telemetry",
+        "domain:testing",
+        "domain:unknown",
+        "domain:vault",
+        "domain:vocabulary",
+        "domain:websocket",
+        "domain:worker",
+        "domain:workflow",
+        "table:app_action_lifecycle",
+        "table:app_current_state",
+        "table:audit_evidence_index",
+        "table:backup_manifest_index",
+        "table:command_lifecycle",
+        "table:device_awareness_state",
+        "table:device_current_state",
+        "table:device_enrollment_registry",
+        "table:device_health_attention",
+        "table:device_health_current",
+        "table:device_health_transitions",
+        "table:device_heartbeats",
+        "table:device_identity_guards",
+        "table:device_invite_lifecycle",
+        "table:device_lifecycle_events",
+        "table:device_lifecycle_transactions",
+        "table:device_recovery_history",
+        "table:device_removal_receipts",
+        "table:device_supervisor_state",
+        "table:device_system_profiles",
+        "table:domain_revisions",
+        "table:lite_installed_release_identity",
+        "table:lite_revision_events",
+        "table:phase3b_current_state",
+        "table:phase3b_revision_events",
+        "table:projection_dirty_signals",
+        "table:projection_refresh_state",
+        "table:recovery_current_state",
+        "table:recovery_operations",
+        "table:release_runtime_projection",
+        "table:schema_migrations",
+        "table:security_database_backups",
+        "table:security_database_restores",
+        "table:security_maintenance_runs",
+        "table:security_profile_snapshots",
+        "table:security_scan_evidence_refs",
+        "table:security_scan_findings",
+        "table:security_scan_progress_events",
+        "table:security_scan_runs",
+        "table:security_scan_tool_runs",
+        "table:security_store_metadata",
+        "table:workflow_command_state",
+        "table:workflow_current_state",
+        "table:workflow_event_index"
+      ],
+      "source": "contracts/generated/lite-sqlite-schema.json"
+    },
+    {
+      "entities": [
+        "limitation:apps:accepted-1",
+        "limitation:apps:gap-1",
+        "limitation:devices:accepted-1",
+        "limitation:devices:gap-1",
+        "limitation:home:accepted-1",
+        "limitation:home:gap-1",
+        "limitation:identity:accepted-1",
+        "limitation:identity:accepted-2",
+        "limitation:identity:gap-1",
+        "limitation:identity:gap-2",
+        "limitation:recovery:accepted-1",
+        "limitation:recovery:accepted-2",
+        "limitation:recovery:accepted-3",
+        "limitation:recovery:gap-1",
+        "limitation:rules:accepted-1",
+        "limitation:rules:gap-1",
+        "limitation:security:accepted-1",
+        "limitation:security:gap-1"
+      ],
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "entities": [
+        "reason:already_tuned",
+        "reason:cold_start_validation",
+        "reason:command_undeliverable",
+        "reason:diagnostics_not_active",
+        "reason:disabled",
+        "reason:duplicate_device",
+        "reason:generation_changed",
+        "reason:identity_mismatch",
+        "reason:insufficient_storage",
+        "reason:interrupted",
+        "reason:invalid_domain",
+        "reason:invite_expired",
+        "reason:invite_identity_mismatch",
+        "reason:lease_active",
+        "reason:legacy_multiple_active_runs",
+        "reason:metadata_only",
+        "reason:no_active_generation",
+        "reason:not_found_in_restored_snapshot",
+        "reason:payload_too_large",
+        "reason:projection_too_old",
+        "reason:projection_unavailable",
+        "reason:protected_server_host",
+        "reason:queue_full",
+        "reason:read_degraded",
+        "reason:release_projection_unavailable",
+        "reason:remote_access_not_ready",
+        "reason:service_unavailable",
+        "reason:shutdown",
+        "reason:shutdown_during_mailbox_backpressure",
+        "reason:submit_failed",
+        "reason:target_not_allowed",
+        "reason:unregistered_domain",
+        "reason:worker_failed",
+        "reason:worker_start_timeout"
+      ],
+      "source": "contracts/generated/reason-codes.json"
+    },
+    {
+      "entities": [
+        "runtime:agent-supervisor"
+      ],
+      "source": "contracts/generated/runtime/agent-supervisor.json"
+    },
+    {
+      "entities": [
+        "runtime:architecture-runtime-verification"
+      ],
+      "source": "contracts/generated/runtime/architecture-runtime-verification.json"
+    },
+    {
+      "entities": [
+        "runtime:caddy-routing"
+      ],
+      "source": "contracts/generated/runtime/caddy-routing.json"
+    },
+    {
+      "entities": [
+        "runtime:nats-topology"
+      ],
+      "source": "contracts/generated/runtime/nats-topology.json"
+    },
+    {
+      "entities": [
+        "runtime:pm2-topology"
+      ],
+      "source": "contracts/generated/runtime/pm2-topology.json"
+    },
+    {
+      "entities": [
+        "runtime:proot-apps"
+      ],
+      "source": "contracts/generated/runtime/proot-apps.json"
+    },
+    {
+      "entities": [
+        "runtime:remote-access"
+      ],
+      "source": "contracts/generated/runtime/remote-access.json"
+    },
+    {
+      "entities": [
+        "runtime:sqlite-runtime"
+      ],
+      "source": "contracts/generated/runtime/sqlite-runtime.json"
+    },
+    {
+      "entities": [
+        "runtime:termux-platform"
+      ],
+      "source": "contracts/generated/runtime/termux-platform.json"
+    },
+    {
+      "entities": [
+        "capability:app-host",
+        "capability:backup-target",
+        "capability:compute",
+        "capability:media-storage",
+        "capability:security-scanner",
+        "reason:already_tuned",
+        "reason:cold_start_validation",
+        "reason:command_undeliverable",
+        "reason:diagnostics_not_active",
+        "reason:disabled",
+        "reason:duplicate_device",
+        "reason:generation_changed",
+        "reason:identity_mismatch",
+        "reason:insufficient_storage",
+        "reason:interrupted",
+        "reason:invalid_domain",
+        "reason:invite_expired",
+        "reason:invite_identity_mismatch",
+        "reason:lease_active",
+        "reason:legacy_multiple_active_runs",
+        "reason:metadata_only",
+        "reason:no_active_generation",
+        "reason:not_found_in_restored_snapshot",
+        "reason:payload_too_large",
+        "reason:projection_too_old",
+        "reason:projection_unavailable",
+        "reason:protected_server_host",
+        "reason:queue_full",
+        "reason:read_degraded",
+        "reason:release_projection_unavailable",
+        "reason:remote_access_not_ready",
+        "reason:service_unavailable",
+        "reason:shutdown",
+        "reason:shutdown_during_mailbox_backpressure",
+        "reason:submit_failed",
+        "reason:target_not_allowed",
+        "reason:unregistered_domain",
+        "reason:worker_failed",
+        "reason:worker_start_timeout"
+      ],
+      "source": "contracts/metadata/documentation-platform.json"
+    },
+    {
+      "entities": [
+        "glossary:durable-authority",
+        "glossary:evidence-lane",
+        "glossary:fresh-preview",
+        "glossary:mapped-presentation",
+        "glossary:operational-health",
+        "glossary:prepared-projection",
+        "glossary:promoted-runtime-evidence",
+        "glossary:rejoin",
+        "glossary:release-binding",
+        "glossary:repair",
+        "glossary:semantic-parity",
+        "glossary:trust-boundary",
+        "troubleshooting:agent-stopped",
+        "troubleshooting:api-unavailable",
+        "troubleshooting:app-install-failure",
+        "troubleshooting:backup-failure",
+        "troubleshooting:caddy-unavailable",
+        "troubleshooting:device-joining-waiting",
+        "troubleshooting:device-offline",
+        "troubleshooting:documentation-drift",
+        "troubleshooting:missing-release-tag",
+        "troubleshooting:nats-unavailable",
+        "troubleshooting:parity-capture-failure",
+        "troubleshooting:photoprism-unavailable",
+        "troubleshooting:recovery-projection-stale",
+        "troubleshooting:release-failure",
+        "troubleshooting:remote-access-not-ready",
+        "troubleshooting:restore-blocked",
+        "troubleshooting:runtime-evidence-mismatch",
+        "troubleshooting:security-scan-failure",
+        "troubleshooting:stale-evidence",
+        "troubleshooting:supervisor-stopped",
+        "troubleshooting:tailscale-unavailable",
+        "troubleshooting:ui-unavailable",
+        "troubleshooting:worker-stopped",
+        "vocabulary:accepted-limitation",
+        "vocabulary:contract-derived",
+        "vocabulary:degraded",
+        "vocabulary:healthy",
+        "vocabulary:not-applicable",
+        "vocabulary:not-observed",
+        "vocabulary:observed",
+        "vocabulary:partial",
+        "vocabulary:planned",
+        "vocabulary:ready-with-accepted-limitations",
+        "vocabulary:release-promoted",
+        "vocabulary:runtime-observed",
+        "vocabulary:source-derived",
+        "vocabulary:unvalidated",
+        "vocabulary:verified",
+        "vocabulary:verified-with-mapped-presentation"
+      ],
+      "source": "contracts/metadata/knowledge-base.json"
+    },
+    {
+      "entities": [
+        "adr:adr-frontend-state-ownership",
+        "domain:apps",
+        "domain:devices",
+        "domain:home",
+        "domain:identity",
+        "domain:recovery",
+        "domain:rules",
+        "domain:security",
+        "journey:change-password",
+        "journey:parity-capture",
+        "journey:recovery-reconciliation",
+        "vocabulary:accepted-limitation",
+        "vocabulary:capture-failed",
+        "vocabulary:contract-derived",
+        "vocabulary:degraded",
+        "vocabulary:drift-detected",
+        "vocabulary:healthy",
+        "vocabulary:implemented",
+        "vocabulary:inferred",
+        "vocabulary:joining",
+        "vocabulary:mapped",
+        "vocabulary:match",
+        "vocabulary:mismatch",
+        "vocabulary:missing",
+        "vocabulary:needs-review",
+        "vocabulary:not-applicable",
+        "vocabulary:not-observed",
+        "vocabulary:observed",
+        "vocabulary:offline",
+        "vocabulary:online",
+        "vocabulary:partial",
+        "vocabulary:patch-provided",
+        "vocabulary:planned",
+        "vocabulary:protected-server-host",
+        "vocabulary:ready",
+        "vocabulary:ready-with-accepted-limitations",
+        "vocabulary:release-promoted",
+        "vocabulary:repairing",
+        "vocabulary:runtime-observed",
+        "vocabulary:runtime-unavailable",
+        "vocabulary:source-derived",
+        "vocabulary:stale",
+        "vocabulary:stale-evidence",
+        "vocabulary:unsupported",
+        "vocabulary:unvalidated",
+        "vocabulary:verified",
+        "vocabulary:verified-with-mapped-presentation",
+        "vocabulary:waiting"
+      ],
+      "source": "contracts/parity/parity-model.json"
+    },
+    {
+      "entities": [
+        "adr:adr-explicit-runtime-evidence-promotion",
+        "domain:apps",
+        "domain:devices",
+        "domain:home",
+        "domain:identity",
+        "domain:recovery",
+        "domain:rules",
+        "domain:security",
+        "release:lite-2026.08.07.1"
+      ],
+      "source": "contracts/parity/runtime-verification-baseline.json"
+    },
+    {
+      "entities": [
+        "component:lan"
+      ],
+      "source": "docs/generated/production/caddy-access.md"
+    },
+    {
+      "entities": [
+        "journey:release-update"
+      ],
+      "source": "docs/generated/production/release.md"
+    },
+    {
+      "entities": [
+        "journey:remote-access-readiness"
+      ],
+      "source": "docs/generated/production/remote-access.md"
+    },
+    {
+      "entities": [
+        "component:proot-ubuntu"
+      ],
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh"
+    },
+    {
+      "entities": [
+        "component:tailscale",
+        "component:tailscaled"
+      ],
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+    },
+    {
+      "entities": [
+        "component:photoprism",
+        "component:proot-ubuntu"
+      ],
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+    },
+    {
+      "entities": [
+        "component:caddy"
+      ],
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/restart-caddy-proxy.sh"
+    },
+    {
+      "entities": [
+        "component:caddy",
+        "component:nats-listeners",
+        "component:pm2",
+        "journey:startup"
+      ],
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+    },
+    {
+      "entities": [
+        "adr:adr-agent-supervisor-execution",
+        "component:agent-recovery",
+        "component:agent-supervisor",
+        "journey:device-enrollment",
+        "subject:pocketlab.events.fleet.node_supervisor"
+      ],
+      "source": "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
+    },
+    {
+      "entities": [
+        "adr:adr-agent-supervisor-execution",
+        "component:agent-command-executor",
+        "component:agent-recovery",
+        "component:agent-signals",
+        "component:node-agent",
+        "journey:device-enrollment",
+        "subject:pocketlab.commands.node.all",
+        "subject:pocketlab.commands.node.{self.node_id}",
+        "subject:pocketlab.events.fleet.node_capabilities",
+        "subject:pocketlab.events.fleet.node_command_result",
+        "subject:pocketlab.events.fleet.node_health",
+        "subject:pocketlab.events.fleet.node_heartbeat",
+        "subject:pocketlab.events.fleet.node_left",
+        "subject:pocketlab.events.fleet.node_profile",
+        "subject:pocketlab.events.fleet.node_seen",
+        "subject:pocketlab.events.fleet.node_telemetry"
+      ],
+      "source": "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+    },
+    {
+      "entities": [
+        "table:domain_revisions",
+        "table:schema_migrations",
+        "table:security_profile_snapshots",
+        "table:security_scan_evidence_refs",
+        "table:security_scan_findings",
+        "table:security_scan_progress_events",
+        "table:security_scan_runs",
+        "table:security_scan_tool_runs",
+        "table:security_store_metadata"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+    },
+    {
+      "entities": [
+        "table:security_scan_runs"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql"
+    },
+    {
+      "entities": [
+        "table:security_scan_runs"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql"
+    },
+    {
+      "entities": [
+        "table:security_database_backups",
+        "table:security_database_restores",
+        "table:security_maintenance_runs"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql"
+    },
+    {
+      "entities": [
+        "table:security_scan_runs"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0005_security_read_performance.sql"
+    },
+    {
+      "entities": [
+        "table:app_action_lifecycle",
+        "table:app_current_state",
+        "table:audit_evidence_index",
+        "table:backup_manifest_index",
+        "table:command_lifecycle",
+        "table:device_current_state",
+        "table:device_heartbeats",
+        "table:device_identity_guards",
+        "table:device_invite_lifecycle",
+        "table:device_recovery_history",
+        "table:domain_revisions",
+        "table:recovery_current_state",
+        "table:recovery_operations"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+    },
+    {
+      "entities": [
+        "table:app_current_state"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0007_app_current_subprojections.sql"
+    },
+    {
+      "entities": [
+        "table:app_current_state"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0008_app_current_hot_subprojections.sql"
+    },
+    {
+      "entities": [
+        "table:command_lifecycle",
+        "table:lite_revision_events"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql"
+    },
+    {
+      "entities": [
+        "table:device_current_state",
+        "table:device_system_profiles"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql"
+    },
+    {
+      "entities": [
+        "table:device_awareness_state",
+        "table:device_current_state",
+        "table:device_lifecycle_events"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql"
+    },
+    {
+      "entities": [
+        "table:device_current_state",
+        "table:device_health_attention",
+        "table:device_health_current",
+        "table:device_health_transitions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql"
+    },
+    {
+      "entities": [
+        "table:device_lifecycle_events"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0013_device_lifecycle_idempotency.sql"
+    },
+    {
+      "entities": [
+        "table:device_current_state",
+        "table:device_lifecycle_events",
+        "table:device_lifecycle_transactions",
+        "table:projection_refresh_state"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql"
+    },
+    {
+      "entities": [
+        "table:domain_revisions",
+        "table:phase3b_current_state",
+        "table:phase3b_revision_events"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql"
+    },
+    {
+      "entities": [
+        "table:app_action_lifecycle",
+        "table:audit_evidence_index",
+        "table:domain_revisions",
+        "table:recovery_operations",
+        "table:security_maintenance_runs"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+    },
+    {
+      "entities": [
+        "table:command_lifecycle"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0017_command_lifecycle_reconciliation.sql"
+    },
+    {
+      "entities": [
+        "table:domain_revisions",
+        "table:phase3b_current_state",
+        "table:phase3b_revision_events",
+        "table:projection_dirty_signals",
+        "table:projection_refresh_state"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+    },
+    {
+      "entities": [
+        "table:workflow_command_state",
+        "table:workflow_current_state",
+        "table:workflow_event_index"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+    },
+    {
+      "entities": [
+        "table:release_runtime_projection"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0020_release_runtime_process.sql"
+    },
+    {
+      "entities": [
+        "table:lite_installed_release_identity",
+        "table:release_runtime_projection"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql"
+    },
+    {
+      "entities": [
+        "table:device_awareness_state",
+        "table:device_current_state",
+        "table:device_enrollment_registry",
+        "table:device_removal_receipts"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+    },
+    {
+      "entities": [
+        "table:device_health_current",
+        "table:device_supervisor_state",
+        "table:device_system_profiles"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.api.started",
+        "subject:pocketlab.events.api.stopped"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/main.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.catalog.refresh"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.drift.preview",
+        "subject:pocketlab.commands.drift.{action}"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands",
+        "subject:pocketlab.commands.node",
+        "subject:pocketlab.commands.node.all",
+        "subject:pocketlab.events.worker.error",
+        "subject:pocketlab.events.worker.heartbeat",
+        "subject:pocketlab.events.worker.started"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.fleet.join",
+        "subject:pocketlab.commands.node.all.{command.replace",
+        "subject:pocketlab.commands.node.{node_id}.{command.replace",
+        "subject:pocketlab.commands.node.{normalized_node_id}.agent.restart",
+        "subject:pocketlab.events.fleet.node_command_queued"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.health.check"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "entities": [
+        "adr:adr-fastapi-control-api",
+        "component:lite-api",
+        "subject:pocketlab.commands.lite.backup.create",
+        "subject:pocketlab.commands.lite.backup.verify",
+        "subject:pocketlab.commands.lite.database.backup",
+        "subject:pocketlab.commands.lite.database.backup.verify",
+        "subject:pocketlab.commands.lite.database.restore",
+        "subject:pocketlab.commands.lite.database.restore.preview",
+        "subject:pocketlab.commands.lite.maintenance.checkpoint",
+        "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.restore.apply",
+        "subject:pocketlab.commands.lite.restore.preview",
+        "subject:pocketlab.commands.security.configure_opa",
+        "subject:pocketlab.commands.vault.rotate"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.drift.scan",
+        "subject:pocketlab.commands.fleet.join",
+        "subject:pocketlab.commands.vault.dynamic_secret",
+        "subject:pocketlab.commands.vault.rotate",
+        "subject:pocketlab.events.operation.previewed"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.release.apply",
+        "subject:pocketlab.commands.release.check"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.security.scan",
+        "subject:pocketlab.events.security.evaluated",
+        "subject:pocketlab.events.security.log_query"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.operation.snapshot",
+        "subject:pocketlab.events.operation.status",
+        "subject:pocketlab.events.websocket.heartbeat"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.manual"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/schemas/events.py"
+    },
+    {
+      "entities": [
+        "component:command-lifecycle",
+        "subject:pocketlab.commands.operation.execute",
+        "subject:pocketlab.commands.runbook.approve",
+        "subject:pocketlab.commands.runbook.execute",
+        "subject:pocketlab.commands.runbook.reject",
+        "subject:pocketlab.events.command.queued",
+        "subject:pocketlab.events.operation.created",
+        "subject:pocketlab.events.runbook.approval_queued",
+        "subject:pocketlab.events.runbook.queued",
+        "subject:pocketlab.events.runbook.rejection_queued"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.catalog.refresh",
+        "subject:pocketlab.commands.drift.apply",
+        "subject:pocketlab.commands.drift.approve",
+        "subject:pocketlab.commands.drift.ignore",
+        "subject:pocketlab.commands.drift.preview",
+        "subject:pocketlab.commands.drift.rescan",
+        "subject:pocketlab.commands.drift.scan",
+        "subject:pocketlab.commands.fleet.join",
+        "subject:pocketlab.commands.fleet.save_tailscale_key",
+        "subject:pocketlab.commands.health.check",
+        "subject:pocketlab.commands.lite.app.backup.create",
+        "subject:pocketlab.commands.lite.app.media",
+        "subject:pocketlab.commands.lite.app.repair",
+        "subject:pocketlab.commands.lite.app.restore.preview",
+        "subject:pocketlab.commands.lite.app.safety",
+        "subject:pocketlab.commands.lite.app.update.check",
+        "subject:pocketlab.commands.lite.backup.create",
+        "subject:pocketlab.commands.lite.backup.verify",
+        "subject:pocketlab.commands.lite.catalog.install",
+        "subject:pocketlab.commands.lite.database.backup",
+        "subject:pocketlab.commands.lite.database.backup.verify",
+        "subject:pocketlab.commands.lite.database.restore",
+        "subject:pocketlab.commands.lite.database.restore.preview",
+        "subject:pocketlab.commands.lite.maintenance.checkpoint",
+        "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.restore.apply",
+        "subject:pocketlab.commands.lite.restore.preview",
+        "subject:pocketlab.commands.lite.security.scan",
+        "subject:pocketlab.commands.release.apply",
+        "subject:pocketlab.commands.release.check",
+        "subject:pocketlab.commands.security.configure_opa",
+        "subject:pocketlab.commands.security.scan",
+        "subject:pocketlab.commands.vault.dynamic_secret",
+        "subject:pocketlab.commands.vault.rotate",
+        "subject:pocketlab.events.catalog.refresh_started",
+        "subject:pocketlab.events.catalog.refreshed",
+        "subject:pocketlab.events.drift.detected",
+        "subject:pocketlab.events.drift.previewed",
+        "subject:pocketlab.events.drift.scan_completed",
+        "subject:pocketlab.events.drift.scan_started",
+        "subject:pocketlab.events.drift.{action}",
+        "subject:pocketlab.events.drift.{action}_started",
+        "subject:pocketlab.events.fleet.config_updated",
+        "subject:pocketlab.events.fleet.invite_created",
+        "subject:pocketlab.events.fleet.invite_started",
+        "subject:pocketlab.events.health.check_completed",
+        "subject:pocketlab.events.lite.app.backup.completed",
+        "subject:pocketlab.events.lite.app.backup.failed",
+        "subject:pocketlab.events.lite.app.backup.started",
+        "subject:pocketlab.events.lite.app.media.completed",
+        "subject:pocketlab.events.lite.app.media.failed",
+        "subject:pocketlab.events.lite.app.media.started",
+        "subject:pocketlab.events.lite.app.media.updated",
+        "subject:pocketlab.events.lite.app.restore.preview_created",
+        "subject:pocketlab.events.lite.app.restore.preview_failed",
+        "subject:pocketlab.events.lite.app.restore.preview_started",
+        "subject:pocketlab.events.lite.app.update.check_completed",
+        "subject:pocketlab.events.lite.app.update.check_failed",
+        "subject:pocketlab.events.lite.app.update.check_started",
+        "subject:pocketlab.events.lite.app.{event_prefix}.completed",
+        "subject:pocketlab.events.lite.app.{event_prefix}.failed",
+        "subject:pocketlab.events.lite.app.{event_prefix}.started",
+        "subject:pocketlab.events.lite.app.{event_prefix}.updated",
+        "subject:pocketlab.events.lite.backup.failed",
+        "subject:pocketlab.events.lite.backup.snapshot_created",
+        "subject:pocketlab.events.lite.backup.started",
+        "subject:pocketlab.events.lite.backup.verified",
+        "subject:pocketlab.events.lite.backup.verify_failed",
+        "subject:pocketlab.events.lite.backup.verify_started",
+        "subject:pocketlab.events.lite.catalog.install_completed",
+        "subject:pocketlab.events.lite.catalog.install_failed",
+        "subject:pocketlab.events.lite.catalog.install_started",
+        "subject:pocketlab.events.lite.database.backup.started",
+        "subject:pocketlab.events.lite.database.backup.verified",
+        "subject:pocketlab.events.lite.database.restore.preview_ready",
+        "subject:pocketlab.events.lite.database.restore.started",
+        "subject:pocketlab.events.lite.database.restore.{event_suffix}",
+        "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+        "subject:pocketlab.events.lite.restore.checkpoint_created",
+        "subject:pocketlab.events.lite.restore.completed",
+        "subject:pocketlab.events.lite.restore.failed",
+        "subject:pocketlab.events.lite.restore.health_validated",
+        "subject:pocketlab.events.lite.restore.preview_created",
+        "subject:pocketlab.events.lite.restore.preview_failed",
+        "subject:pocketlab.events.lite.restore.preview_started",
+        "subject:pocketlab.events.lite.restore.service_restart_checked",
+        "subject:pocketlab.events.lite.restore.started",
+        "subject:pocketlab.events.lite.security.critical_found",
+        "subject:pocketlab.events.lite.security.scan.completed",
+        "subject:pocketlab.events.lite.security.scan.started",
+        "subject:pocketlab.events.lite.security.tool_missing",
+        "subject:pocketlab.events.lite.security.{tool}.completed",
+        "subject:pocketlab.events.security.finding",
+        "subject:pocketlab.events.security.policy_updated",
+        "subject:pocketlab.events.security.scan_completed",
+        "subject:pocketlab.events.security.scan_started",
+        "subject:pocketlab.events.vault.lease_created",
+        "subject:pocketlab.events.vault.secret_rotated"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.node.{node_id}",
+        "subject:pocketlab.events.fleet.device_removed",
+        "subject:pocketlab.events.fleet.node_"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.app.backup.create",
+        "subject:pocketlab.commands.lite.app.restore.preview",
+        "subject:pocketlab.events.lite.app.backup.completed",
+        "subject:pocketlab.events.lite.app.backup.started"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.app.backup.transfer"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup_targets.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.app.repair",
+        "subject:pocketlab.commands.lite.app.safety"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.security.app_scan"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_profiles.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.app.update.check"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py"
+    },
+    {
+      "entities": [
+        "component:backup-engine",
+        "subject:pocketlab.events.lite.backup.snapshot_created",
+        "subject:pocketlab.events.lite.backup.started",
+        "subject:pocketlab.events.lite.restore.checkpoint_created",
+        "subject:pocketlab.events.lite.restore.completed",
+        "subject:pocketlab.events.lite.restore.health_validated",
+        "subject:pocketlab.events.lite.restore.service_restart_checked",
+        "subject:pocketlab.events.lite.restore.started"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.catalog.install"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py"
+    },
+    {
+      "entities": [
+        "component:media-app-health"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py"
+    },
+    {
+      "entities": [
+        "component:bounded-reconciliation",
+        "component:sqlite"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py"
+    },
+    {
+      "entities": [
+        "component:api-guards",
+        "subject:pocketlab.events.fleet.bootstrap_blocked",
+        "subject:pocketlab.events.fleet.invite_accepted",
+        "subject:pocketlab.events.fleet.invite_created"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py"
+    },
+    {
+      "entities": [
+        "component:completion-evidence"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_evidence_receipts.py"
+    },
+    {
+      "entities": [
+        "adr:adr-backend-generated-bootstrap",
+        "journey:add-device",
+        "subject:pocketlab.commands.fleet.join",
+        "subject:pocketlab.events.fleet.bootstrap_blocked",
+        "subject:pocketlab.events.fleet.invite_accepted",
+        "subject:pocketlab.events.fleet.invite_created",
+        "subject:pocketlab.events.fleet.invite_revoked"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.app.media"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py"
+    },
+    {
+      "entities": [
+        "component:release-staging"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_contract.py"
+    },
+    {
+      "entities": [
+        "component:security-coordinator",
+        "journey:security-scan"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py"
+    },
+    {
+      "entities": [
+        "component:scanner-adapters"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_evidence.py"
+    },
+    {
+      "entities": [
+        "component:scanner-adapters",
+        "subject:pocketlab.commands.lite.security.scan"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py"
+    },
+    {
+      "entities": [
+        "component:remote-readiness"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.fleet.device_health_sampled",
+        "subject:pocketlab.events.fleet.health_changed",
+        "subject:pocketlab.events.fleet.health_sampled",
+        "subject:pocketlab.events.health.changed",
+        "subject:pocketlab.events.health.checked",
+        "subject:pocketlab.events.health.service_changed",
+        "subject:pocketlab.events.live_status.started",
+        "subject:pocketlab.events.live_status.stopped",
+        "subject:pocketlab.events.live_status.{name}_error",
+        "subject:pocketlab.events.telemetry.changed",
+        "subject:pocketlab.events.telemetry.sampled"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands",
+        "subject:pocketlab.events",
+        "subject:pocketlab.events.command.dead_lettered",
+        "subject:pocketlab.events.fleet.node_",
+        "subject:pocketlab.events.telemetry"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.operation.log",
+        "subject:pocketlab.events.operation.log.error",
+        "subject:pocketlab.events.operation.log.warning"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py"
+    },
+    {
+      "entities": [
+        "component:bounded-reconciliation",
+        "component:projection-subprocesses"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py"
+    },
+    {
+      "entities": [
+        "component:release-staging",
+        "subject:pocketlab.events.release.applied",
+        "subject:pocketlab.events.release.available",
+        "subject:pocketlab.events.release.current",
+        "subject:pocketlab.events.release.stage.completed",
+        "subject:pocketlab.events.release.stage.failed",
+        "subject:pocketlab.events.release.stage.started",
+        "subject:pocketlab.events.release.workflow.completed",
+        "subject:pocketlab.events.release.workflow.failed",
+        "subject:pocketlab.events.release.workflow.started"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py"
+    },
+    {
+      "entities": [
+        "component:atomic-promotion",
+        "component:last-known-good",
+        "component:post-switch-health"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+    },
+    {
+      "entities": [
+        "component:release-subprocess"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.operation.execute",
+        "subject:pocketlab.events.workflow.dead_letter_replayed",
+        "subject:pocketlab.events.workflow.recovery_completed"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.runbook.approved",
+        "subject:pocketlab.events.runbook.auto_approved",
+        "subject:pocketlab.events.runbook.failed",
+        "subject:pocketlab.events.runbook.rejected"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py"
+    },
+    {
+      "entities": [
+        "component:workflow-execution",
+        "subject:pocketlab.commands",
+        "subject:pocketlab.commands.operation.execute",
+        "subject:pocketlab.commands.unknown",
+        "subject:pocketlab.events.workflow.replay_requested"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py"
+    },
+    {
+      "entities": [
+        "component:projection-subprocesses",
+        "subject:pocketlab.commands",
+        "subject:pocketlab.commands.unknown"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.operation.log"
+      ],
+      "source": "pocket-lab-final-structure/runtime/core/operations/service.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.events.runbook.approval_required",
+        "subject:pocketlab.events.runbook.failed",
+        "subject:pocketlab.events.runbook.resumed",
+        "subject:pocketlab.events.runbook.started",
+        "subject:pocketlab.events.runbook.step_failed",
+        "subject:pocketlab.events.runbook.step_started",
+        "subject:pocketlab.events.runbook.step_succeeded",
+        "subject:pocketlab.events.runbook.succeeded"
+      ],
+      "source": "pocket-lab-final-structure/runtime/core/runbooks/engine.py"
+    },
+    {
+      "entities": [
+        "component:app-lifecycle-worker",
+        "component:worker",
+        "subject:pocketlab.commands",
+        "subject:pocketlab.commands.lite.security.scan",
+        "subject:pocketlab.commands.node",
+        "subject:pocketlab.commands.operation.execute",
+        "subject:pocketlab.commands.runbook.approve",
+        "subject:pocketlab.commands.runbook.execute",
+        "subject:pocketlab.commands.runbook.reject",
+        "subject:pocketlab.events.command.deferred",
+        "subject:pocketlab.events.command.failed",
+        "subject:pocketlab.events.command.received",
+        "subject:pocketlab.events.command.retry_scheduled",
+        "subject:pocketlab.events.command.running",
+        "subject:pocketlab.events.command.succeeded",
+        "subject:pocketlab.events.command.worker_claimed",
+        "subject:pocketlab.events.operation.failed",
+        "subject:pocketlab.events.operation.succeeded",
+        "subject:pocketlab.events.operation.worker_claimed",
+        "subject:pocketlab.events.release.available",
+        "subject:pocketlab.events.release.check_degraded",
+        "subject:pocketlab.events.release.current",
+        "subject:pocketlab.events.worker.error",
+        "subject:pocketlab.events.worker.heartbeat",
+        "subject:pocketlab.events.worker.ignored",
+        "subject:pocketlab.events.worker.maintenance_deferred",
+        "subject:pocketlab.events.worker.started",
+        "subject:pocketlab.events.worker.stopped"
+      ],
+      "source": "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+    },
+    {
+      "entities": [
+        "journey:restore-execution",
+        "runbook:backup_restore_verify"
+      ],
+      "source": "runbooks/backup_restore_verify.yaml"
+    },
+    {
+      "entities": [
+        "runbook:drift_detect_approve_apply"
+      ],
+      "source": "runbooks/drift_detect_approve_apply.yaml"
+    },
+    {
+      "entities": [
+        "runbook:recover_failed_install"
+      ],
+      "source": "runbooks/recover_failed_install.yaml"
+    },
+    {
+      "entities": [
+        "journey:rollback",
+        "runbook:release_rollback"
+      ],
+      "source": "runbooks/release_rollback.yaml"
+    },
+    {
+      "entities": [
+        "runbook:rotate_secret_with_audit"
+      ],
+      "source": "runbooks/rotate_secret_with_audit.yaml"
+    },
+    {
+      "entities": [
+        "journey:documentation-generation"
+      ],
+      "source": "scripts/docs/lite/generate_docs.py"
+    },
+    {
+      "entities": [
+        "journey:documentation-generation"
+      ],
+      "source": "scripts/docs/lite/generate_platform_catalogs.py"
+    },
+    {
+      "entities": [
+        "journey:parity-capture"
+      ],
+      "source": "scripts/docs/parity/generate_parity.py"
+    },
+    {
+      "entities": [
+        "journey:runtime-capture"
+      ],
+      "source": "scripts/docs/runtime/capture_termux_runtime.sh"
+    },
+    {
+      "entities": [
+        "journey:runtime-capture"
+      ],
+      "source": "scripts/docs/runtime/promote_termux_runtime.py"
+    },
+    {
+      "entities": [
+        "adr:adr-explicit-runtime-evidence-promotion",
+        "journey:runtime-promotion"
+      ],
+      "source": "scripts/test/parity/preflight_runtime_promotion.py"
+    },
+    {
+      "entities": [
+        "adr:adr-explicit-runtime-evidence-promotion",
+        "journey:runtime-promotion"
+      ],
+      "source": "scripts/test/parity/promote_runtime_verification.py"
+    },
+    {
+      "entities": [
+        "test:src/__tests__/enterpriseLabels.test.js"
+      ],
+      "source": "src/__tests__/enterpriseLabels.test.js"
+    },
+    {
+      "entities": [
+        "test:src/__tests__/liteLifecycleDiagnostics.test.js"
+      ],
+      "source": "src/__tests__/liteLifecycleDiagnostics.test.js"
+    },
+    {
+      "entities": [
+        "test:src/__tests__/simpleLabels.test.js"
+      ],
+      "source": "src/__tests__/simpleLabels.test.js"
+    },
+    {
+      "entities": [
+        "component:frontend-state"
+      ],
+      "source": "src/hooks/useLiteQuery.js"
+    },
+    {
+      "entities": [
+        "component:pwa"
+      ],
+      "source": "src/lib/liteApi.js"
+    },
+    {
+      "entities": [
+        "adr:adr-frontend-state-ownership"
+      ],
+      "source": "src/lib/liteOfflineDb.js"
+    },
+    {
+      "entities": [
+        "adr:adr-frontend-state-ownership"
+      ],
+      "source": "src/lib/liteQueryClient.js"
+    },
+    {
+      "entities": [
+        "component:frontend-state"
+      ],
+      "source": "src/lib/liteSafeSnapshots.js"
+    },
+    {
+      "entities": [
+        "component:pwa",
+        "component:user",
+        "ui:liteapp"
+      ],
+      "source": "src/lite/LiteApp.jsx"
+    },
+    {
+      "entities": [
+        "component:app-catalog",
+        "journey:app-installation",
+        "journey:photoprism-operation"
+      ],
+      "source": "src/lite/LiteCatalog.jsx"
+    },
+    {
+      "entities": [
+        "journey:add-device",
+        "journey:remove-old-device",
+        "journey:restart-agent",
+        "ui:litedevices"
+      ],
+      "source": "src/lite/LiteDevices.jsx"
+    },
+    {
+      "entities": [
+        "journey:change-password",
+        "ui:liteidentity"
+      ],
+      "source": "src/lite/LiteIdentity.jsx"
+    },
+    {
+      "entities": [
+        "journey:backup-create",
+        "journey:restore-execution",
+        "journey:restore-preview",
+        "ui:literecovery"
+      ],
+      "source": "src/lite/LiteRecovery.jsx"
+    },
+    {
+      "entities": [
+        "ui:litereleaseupdatecard"
+      ],
+      "source": "src/lite/LiteReleaseUpdateCard.jsx"
+    },
+    {
+      "entities": [
+        "ui:literevisionsyncbridge"
+      ],
+      "source": "src/lite/LiteRevisionSyncBridge.jsx"
+    },
+    {
+      "entities": [
+        "ui:literules"
+      ],
+      "source": "src/lite/LiteRules.jsx"
+    },
+    {
+      "entities": [
+        "journey:security-review",
+        "journey:security-scan",
+        "ui:litesecurity"
+      ],
+      "source": "src/lite/LiteSecurity.jsx"
+    },
+    {
+      "entities": [
+        "adr:adr-frontend-state-ownership"
+      ],
+      "source": "src/machines"
+    },
+    {
+      "entities": [
+        "component:frontend-state"
+      ],
+      "source": "src/machines/liteSecurityCheckMachine.js"
+    },
+    {
+      "entities": [
+        "adr:adr-frontend-state-ownership",
+        "component:frontend-state"
+      ],
+      "source": "src/stores/liteUiStore.js"
+    },
+    {
+      "entities": [
+        "journey:documentation-generation"
+      ],
+      "source": "tasks/Taskfile.docs.yml"
+    },
+    {
+      "entities": [
+        "test:tests/backend/__init__.py"
+      ],
+      "source": "tests/backend/__init__.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_architecture_contract.py"
+      ],
+      "source": "tests/backend/test_architecture_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_catalog.py"
+      ],
+      "source": "tests/backend/test_catalog.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_drift.py"
+      ],
+      "source": "tests/backend/test_drift.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_fault_degraded_mode.py"
+      ],
+      "source": "tests/backend/test_fault_degraded_mode.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_fixture_simulation.py"
+      ],
+      "source": "tests/backend/test_fixture_simulation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_fleet.py"
+      ],
+      "source": "tests/backend/test_fleet.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_health_engine.py"
+      ],
+      "source": "tests/backend/test_health_engine.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_import_app.py"
+      ],
+      "source": "tests/backend/test_import_app.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_install_pwa_ui_local_fallback.py"
+      ],
+      "source": "tests/backend/test_install_pwa_ui_local_fallback.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_journal_redaction.py"
+      ],
+      "source": "tests/backend/test_journal_redaction.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_activity_summary_audit_scope.py"
+      ],
+      "source": "tests/backend/test_lite_activity_summary_audit_scope.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_api.py"
+      ],
+      "source": "tests/backend/test_lite_api.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_catalog_runtime_truth.py"
+      ],
+      "source": "tests/backend/test_lite_app_catalog_runtime_truth.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_lifecycle_none_operation_regression.py"
+      ],
+      "source": "tests/backend/test_lite_app_lifecycle_none_operation_regression.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_projection_deadline.py"
+      ],
+      "source": "tests/backend/test_lite_app_projection_deadline.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_runtime_reconciliation.py"
+      ],
+      "source": "tests/backend/test_lite_app_runtime_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_command_attention_audit_idempotency.py"
+      ],
+      "source": "tests/backend/test_lite_command_attention_audit_idempotency.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_command_lifecycle_reconciliation.py"
+      ],
+      "source": "tests/backend/test_lite_command_lifecycle_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "source": "tests/backend/test_lite_complete_documentation_platform.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
+      ],
+      "source": "tests/backend/test_lite_control_plane_sqlite_p3.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_core_supervisor.py"
+      ],
+      "source": "tests/backend/test_lite_core_supervisor.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_database_restore_reconciliation.py"
+      ],
+      "source": "tests/backend/test_lite_database_restore_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "source": "tests/backend/test_lite_development_documentation_platform.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_health_d4.py"
+      ],
+      "source": "tests/backend/test_lite_device_health_d4.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_lifecycle_idempotency.py"
+      ],
+      "source": "tests/backend/test_lite_device_lifecycle_idempotency.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_system_profile.py"
+      ],
+      "source": "tests/backend/test_lite_device_system_profile.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_devices_d2_d3.py"
+      ],
+      "source": "tests/backend/test_lite_devices_d2_d3.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_devices_durable_enrollment.py"
+      ],
+      "source": "tests/backend/test_lite_devices_durable_enrollment.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_devices_production_readiness.py"
+      ],
+      "source": "tests/backend/test_lite_devices_production_readiness.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_dispatch_admission_logging.py"
+      ],
+      "source": "tests/backend/test_lite_dispatch_admission_logging.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
+      ],
+      "source": "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py"
+      ],
+      "source": "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_home_capacity_contract.py"
+      ],
+      "source": "tests/backend/test_lite_home_capacity_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_hot_path_profiler.py"
+      ],
+      "source": "tests/backend/test_lite_hot_path_profiler.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_idle_efficiency_runtime.py"
+      ],
+      "source": "tests/backend/test_lite_idle_efficiency_runtime.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_android_resume.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_android_resume.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_checkpointing.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_checkpointing.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_framework.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_framework.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_group2_reporting.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_group2_reporting.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_group4_reconciliation.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_group4_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_group4_reporting.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_group4_reporting.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_idle.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_idle.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_low_storage.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_low_storage.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_nats_restart.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_nats_restart.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_progress_soak.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_progress_soak.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_recovery_reporting.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_recovery_reporting.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_repeated_scans.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_repeated_scans.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_reporting.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_reporting.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_submission_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_submission_recovery.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_wal_pressure.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_wal_pressure.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_long_gate_worker_restart.py"
+      ],
+      "source": "tests/backend/test_lite_long_gate_worker_restart.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_n6b_install_surface.py"
+      ],
+      "source": "tests/backend/test_lite_n6b_install_surface.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_native_release.py"
+      ],
+      "source": "tests/backend/test_lite_native_release.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_phase2_eliminate_collection.py"
+      ],
+      "source": "tests/backend/test_lite_phase2_eliminate_collection.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
+      ],
+      "source": "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+      ],
+      "source": "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_phase3c_system_aggregates.py"
+      ],
+      "source": "tests/backend/test_lite_phase3c_system_aggregates.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+      ],
+      "source": "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_premium_tab_polish.py"
+      ],
+      "source": "tests/backend/test_lite_premium_tab_polish.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_production_architecture_platform.py"
+      ],
+      "source": "tests/backend/test_lite_production_architecture_platform.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_production_gate_reporting.py"
+      ],
+      "source": "tests/backend/test_lite_production_gate_reporting.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_projection_semantic_hardening.py"
+      ],
+      "source": "tests/backend/test_lite_projection_semantic_hardening.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_queue_attribution_part2.py"
+      ],
+      "source": "tests/backend/test_lite_queue_attribution_part2.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_queue_attribution_regression.py"
+      ],
+      "source": "tests/backend/test_lite_queue_attribution_regression.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_recovery.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_recovery_r3_api_split.py"
+      ],
+      "source": "tests/backend/test_lite_recovery_r3_api_split.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "source": "tests/backend/test_lite_revision_sync_n4_n5.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security.py"
+      ],
+      "source": "tests/backend/test_lite_security.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_f11_events_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_f11_events_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_f12_f14_stability_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_f12_f14_stability_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_f3_summary_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_f3_summary_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_f7_split_read_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_f9_etag_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_f9_etag_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_p2b_reboot_generation.py"
+      ],
+      "source": "tests/backend/test_lite_security_p2b_reboot_generation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_progress_projection_cutover.py"
+      ],
+      "source": "tests/backend/test_lite_security_progress_projection_cutover.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_projection_drift_prevention.py"
+      ],
+      "source": "tests/backend/test_lite_security_projection_drift_prevention.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s6_frontend_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_s6_frontend_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s6_replay.py"
+      ],
+      "source": "tests/backend/test_lite_security_s6_replay.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s6_retention.py"
+      ],
+      "source": "tests/backend/test_lite_security_s6_retention.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s6_server_phone_gate_contract.py"
+      ],
+      "source": "tests/backend/test_lite_security_s6_server_phone_gate_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py"
+      ],
+      "source": "tests/backend/test_lite_security_s7_saved_state_history.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_cross_environment_worker_restart.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_cross_environment_worker_restart.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_cross_process_generation.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_cross_process_generation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_fault_checkpoint_identity.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_fault_checkpoint_identity.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_gate_submission_recovery.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_get_transport_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_get_transport_recovery.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_idle_reconciliation.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_idle_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_post_restore_progress_fence.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_post_restore_progress_fence.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_post_restore_readiness.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_post_restore_readiness.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_recovery.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_restore_fault_hygiene.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_restore_fault_hygiene.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_restore_progress_reset.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_restore_progress_reset.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_worker_environment_preservation.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_worker_environment_preservation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_worker_loader_isolation.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_worker_loader_isolation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_s8_worker_subprocess_environment.py"
+      ],
+      "source": "tests/backend/test_lite_security_s8_worker_subprocess_environment.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_scanner_cleanup.py"
+      ],
+      "source": "tests/backend/test_lite_security_scanner_cleanup.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_sqlite_s3_s5.py"
+      ],
+      "source": "tests/backend/test_lite_security_sqlite_s3_s5.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_store.py"
+      ],
+      "source": "tests/backend/test_lite_security_store.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_store_concurrency.py"
+      ],
+      "source": "tests/backend/test_lite_security_store_concurrency.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_store_migration.py"
+      ],
+      "source": "tests/backend/test_lite_security_store_migration.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_security_worker_sqlite_commit.py"
+      ],
+      "source": "tests/backend/test_lite_security_worker_sqlite_commit.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_sqlite_connection.py"
+      ],
+      "source": "tests/backend/test_lite_sqlite_connection.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_sqlite_migrations.py"
+      ],
+      "source": "tests/backend/test_lite_sqlite_migrations.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_sqlite_performance.py"
+      ],
+      "source": "tests/backend/test_lite_sqlite_performance.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_startup_workload_isolation.py"
+      ],
+      "source": "tests/backend/test_lite_startup_workload_isolation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_storage_fault_injection.py"
+      ],
+      "source": "tests/backend/test_lite_storage_fault_injection.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_system_health_semantic_revision.py"
+      ],
+      "source": "tests/backend/test_lite_system_health_semantic_revision.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py"
+      ],
+      "source": "tests/backend/test_lite_termux_runtime_documentation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_worker_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_worker_recovery.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_workload_admission.py"
+      ],
+      "source": "tests/backend/test_lite_workload_admission.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_nats_required.py"
+      ],
+      "source": "tests/backend/test_nats_required.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_nats_status_semantics.py"
+      ],
+      "source": "tests/backend/test_nats_status_semantics.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_operation_contract.py"
+      ],
+      "source": "tests/backend/test_operation_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_operations.py"
+      ],
+      "source": "tests/backend/test_operations.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_ready.py"
+      ],
+      "source": "tests/backend/test_ready.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_release.py"
+      ],
+      "source": "tests/backend/test_release.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_release_process_isolation.py"
+      ],
+      "source": "tests/backend/test_release_process_isolation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_reliability.py"
+      ],
+      "source": "tests/backend/test_reliability.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_runbook_execution.py"
+      ],
+      "source": "tests/backend/test_runbook_execution.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_security.py"
+      ],
+      "source": "tests/backend/test_security.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_state_migration.py"
+      ],
+      "source": "tests/backend/test_state_migration.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_vault_operations.py"
+      ],
+      "source": "tests/backend/test_vault_operations.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_workflow_projection_process_isolation.py"
+      ],
+      "source": "tests/backend/test_workflow_projection_process_isolation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_workflows.py"
+      ],
+      "source": "tests/backend/test_workflows.py"
+    },
+    {
+      "entities": [
+        "test:tests/dev/browser-resolver.test.mjs"
+      ],
+      "source": "tests/dev/browser-resolver.test.mjs"
+    },
+    {
+      "entities": [
+        "test:tests/dev/runtime-evidence-sanitizer.test.mjs"
+      ],
+      "source": "tests/dev/runtime-evidence-sanitizer.test.mjs"
+    },
+    {
+      "entities": [
+        "test:tests/docs/mkdocs.spec.ts"
+      ],
+      "source": "tests/docs/mkdocs.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "source": "tests/docs/test_living_knowledgebase.py"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/global-setup.ts"
+      ],
+      "source": "tests/e2e/global-setup.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "source": "tests/e2e/lite-accessibility.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-live.spec.ts"
+      ],
+      "source": "tests/e2e/lite-live.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-mocked.spec.ts"
+      ],
+      "source": "tests/e2e/lite-mocked.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-parity.spec.ts"
+      ],
+      "source": "tests/e2e/lite-parity.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-test-helpers.ts"
+      ],
+      "source": "tests/e2e/lite-test-helpers.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-visual.spec.ts"
+      ],
+      "source": "tests/e2e/lite-visual.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/nats/test_subject_permissions.py"
+      ],
+      "source": "tests/nats/test_subject_permissions.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "source": "tests/parity/test_api_contract_fences.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_backup_recovery_parity.py"
+      ],
+      "source": "tests/parity/test_backup_recovery_parity.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_contract_generation.py"
+      ],
+      "source": "tests/parity/test_contract_generation.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_guardrails.py"
+      ],
+      "source": "tests/parity/test_guardrails.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_intelligent_runtime_parity.py"
+      ],
+      "source": "tests/parity/test_intelligent_runtime_parity.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_local_runtime_report.py"
+      ],
+      "source": "tests/parity/test_local_runtime_report.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_planned_runtime_parity_policy.py"
+      ],
+      "source": "tests/parity/test_planned_runtime_parity_policy.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_runtime_drift_reporting.py"
+      ],
+      "source": "tests/parity/test_runtime_drift_reporting.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_runtime_promotion_preflight.py"
+      ],
+      "source": "tests/parity/test_runtime_promotion_preflight.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_runtime_verification_promotion.py"
+      ],
+      "source": "tests/parity/test_runtime_verification_promotion.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_security_profile_openapi_contract.py"
+      ],
+      "source": "tests/parity/test_security_profile_openapi_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/parity/test_security_runtime_contract.py"
+      ],
+      "source": "tests/parity/test_security_runtime_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/pocket_lab_test_utils.py"
+      ],
+      "source": "tests/pocket_lab_test_utils.py"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

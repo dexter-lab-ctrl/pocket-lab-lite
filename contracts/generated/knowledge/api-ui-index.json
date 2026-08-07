@@ -1,0 +1,176 @@
+{
+  "items": {
+    "api_to_ui": {
+      "api:get:/api/lite/catalog": [
+        "ui:liteapp"
+      ],
+      "api:get:/api/lite/devices/{device_id}/removal-assessment": [
+        "ui:litedevices"
+      ],
+      "api:get:/api/lite/fleet": [
+        "ui:litedevices"
+      ],
+      "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status": [
+        "ui:litedevices"
+      ],
+      "api:get:/api/lite/identity": [
+        "ui:liteidentity"
+      ],
+      "api:get:/api/lite/policy": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/recovery/database": [
+        "ui:literecovery"
+      ],
+      "api:get:/api/lite/recovery/details": [
+        "ui:literecovery"
+      ],
+      "api:get:/api/lite/recovery/summary": [
+        "ui:literecovery"
+      ],
+      "api:get:/api/lite/release": [
+        "ui:litereleaseupdatecard"
+      ],
+      "api:get:/api/lite/revisions": [
+        "ui:literevisionsyncbridge"
+      ],
+      "api:get:/api/lite/security/evidence/{run_id}/summary": [
+        "ui:litesecurity"
+      ],
+      "api:get:/api/lite/security/freshness": [
+        "ui:litesecurity"
+      ],
+      "api:get:/api/lite/security/history": [
+        "ui:litesecurity"
+      ],
+      "api:get:/api/lite/security/profiles/{profile}": [
+        "ui:litesecurity"
+      ],
+      "api:get:/api/lite/security/progress": [
+        "ui:litesecurity"
+      ],
+      "api:get:/api/lite/security/summary": [
+        "ui:litesecurity"
+      ],
+      "api:post:/api/lite/apps/{app_id}/backup": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/apps/{app_id}/restore/preview": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/fleet/add-device": [
+        "ui:litedevices"
+      ],
+      "api:post:/api/lite/fleet/devices/{node_id}/restart-agent": [
+        "ui:litedevices"
+      ],
+      "api:post:/api/lite/fleet/remove-device": [
+        "ui:litedevices"
+      ],
+      "api:post:/api/lite/identity/rotate": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/policy/apply": [
+        "ui:literules"
+      ],
+      "api:post:/api/lite/recovery/backup": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/backups/{backup_id}/verify": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/database/backup": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/database/backups/{backup_id}/preview": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/database/backups/{backup_id}/restore": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/database/backups/{backup_id}/verify": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/restore": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/recovery/restore/preview": [
+        "ui:literecovery"
+      ],
+      "api:post:/api/lite/release/apply": [
+        "ui:litereleaseupdatecard"
+      ],
+      "api:post:/api/lite/release/check": [
+        "ui:litereleaseupdatecard"
+      ],
+      "api:post:/api/lite/security/apps/{app_id}/check": [
+        "ui:litesecurity"
+      ],
+      "api:post:/api/lite/security/check": [
+        "ui:litesecurity"
+      ]
+    },
+    "ui_to_api": {
+      "ui:liteapp": [
+        "api:get:/api/lite/catalog"
+      ],
+      "ui:litedevices": [
+        "api:get:/api/lite/devices/{device_id}/removal-assessment",
+        "api:get:/api/lite/fleet",
+        "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
+        "api:post:/api/lite/fleet/add-device",
+        "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
+        "api:post:/api/lite/fleet/remove-device"
+      ],
+      "ui:liteidentity": [
+        "api:get:/api/lite/identity",
+        "api:post:/api/lite/identity/rotate"
+      ],
+      "ui:literecovery": [
+        "api:get:/api/lite/recovery/database",
+        "api:get:/api/lite/recovery/details",
+        "api:get:/api/lite/recovery/summary",
+        "api:post:/api/lite/apps/{app_id}/backup",
+        "api:post:/api/lite/apps/{app_id}/restore/preview",
+        "api:post:/api/lite/recovery/backup",
+        "api:post:/api/lite/recovery/backups/{backup_id}/verify",
+        "api:post:/api/lite/recovery/database/backup",
+        "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
+        "api:post:/api/lite/recovery/database/backups/{backup_id}/restore",
+        "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+        "api:post:/api/lite/recovery/restore",
+        "api:post:/api/lite/recovery/restore/preview"
+      ],
+      "ui:litereleaseupdatecard": [
+        "api:get:/api/lite/release",
+        "api:post:/api/lite/release/apply",
+        "api:post:/api/lite/release/check"
+      ],
+      "ui:literevisionsyncbridge": [
+        "api:get:/api/lite/revisions"
+      ],
+      "ui:literules": [
+        "api:get:/api/lite/policy",
+        "api:post:/api/lite/policy/apply"
+      ],
+      "ui:litesecurity": [
+        "api:get:/api/lite/security/evidence/{run_id}/summary",
+        "api:get:/api/lite/security/freshness",
+        "api:get:/api/lite/security/history",
+        "api:get:/api/lite/security/profiles/{profile}",
+        "api:get:/api/lite/security/progress",
+        "api:get:/api/lite/security/summary",
+        "api:post:/api/lite/security/apps/{app_id}/check",
+        "api:post:/api/lite/security/check"
+      ]
+    }
+  },
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

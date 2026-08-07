@@ -116,32 +116,11 @@ export default function RecoveryScreen() {
 
   const {
     data: databaseProtectionData,
-    refresh: refreshDatabaseProtection,
   } = useLiteResource(liteApi.databaseRecovery, [], {
     pollingMode: 'slow',
     staleTime: 45_000,
   });
 
-  const refreshRecovery = useCallback(
-    async () => {
-      const refreshes = [
-        refreshSummary(),
-        refreshDatabaseProtection(),
-      ];
-
-      if (detailsNeeded) {
-        refreshes.push(refreshDetails());
-      }
-
-      await Promise.all(refreshes);
-    },
-    [
-      detailsNeeded,
-      refreshDatabaseProtection,
-      refreshDetails,
-      refreshSummary,
-    ],
-  );
 
   const data = summaryData || {};
   const details = detailsData || {};
@@ -579,7 +558,7 @@ export default function RecoveryScreen() {
         eyebrow="Recovery"
         title="Backup & Restore"
         description="Keep verified backups ready, review restore safety, and protect Pocket Lab data before anything changes."
-        actions={<LiteRefreshButton scope="recovery" refresh={refreshRecovery} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="recovery" refresh={refreshSummary} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">

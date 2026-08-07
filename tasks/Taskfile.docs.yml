@@ -227,6 +227,41 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all'
 
+  lite:docs:knowledge:generate:
+    desc: Generate the living Pocket Lab Lite knowledge graph, AI export, and Development/Production pages
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py generate'
+
+  lite:docs:knowledge:check:
+    desc: Check knowledge schemas, graph integrity, links, sanitization, and generated drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py check'
+
+  lite:docs:knowledge:graph:
+    desc: Validate the canonical knowledge graph and backlinks
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py graph'
+
+  lite:docs:knowledge:health:
+    desc: Validate the generated operational-health encyclopedia
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py health'
+
+  lite:docs:knowledge:traceability:
+    desc: Validate requirement, implementation, and test traceability
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py traceability'
+
+  lite:docs:knowledge:releases:
+    desc: Validate release knowledge and semantic change metadata
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py releases'
+
+  lite:docs:knowledge:ai-export:
+    desc: Validate the sanitized deterministic AI-ready knowledge export
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py ai-export'
+
   lite:docs:generate:
     desc: Generate contracts, catalogs, runtime evidence, architecture, Development/Production docs, SchemaSpy, and diagrams
     cmds:
@@ -235,11 +270,18 @@ tasks:
       - task: lite:docs:platform:generate
       - task: lite:docs:runtime:generate
       - task: lite:docs:parity:generate
+      - task: lite:docs:knowledge:generate
       - task: lite:docs:architecture:generate
       - task: lite:docs:development:generate
       - task: lite:docs:production:generate
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate'
       - task: lite:docs:diagrams:generate
+
+  lite:docs:sync:
+    desc: Regenerate the complete tracked Documentation Platform from canonical sources and the promoted runtime baseline, then run the strict drift/safety/MkDocs gate
+    cmds:
+      - task: lite:docs:generate
+      - task: lite:docs:check
 
   lite:docs:check:
     desc: Strict combined documentation, schema, runtime, diagram, contract, safety, and MkDocs gate
@@ -249,6 +291,7 @@ tasks:
       - task: lite:docs:platform:check
       - task: lite:docs:runtime:check
       - task: lite:docs:parity:check
+      - task: lite:docs:knowledge:check
       - task: lite:docs:architecture:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check

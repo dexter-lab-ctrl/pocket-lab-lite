@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.local/schemas/knowledge/entity.schema.json",
+  "title": "Pocket Lab Lite knowledge entity",
+  "type": "object",
+  "required": ["id", "type", "name", "confidence", "source_refs"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9:._/{}*<>-]*$"},
+    "type": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1},
+    "domain": {"type": ["string", "null"]},
+    "confidence": {"type": "string", "enum": ["source-derived", "contract-derived", "generated", "runtime-observed", "release-promoted", "verified", "inferred", "partial", "planned", "unvalidated", "stale", "historical", "deprecated", "not-applicable"]},
+    "source_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "status_dimensions": {"$ref": "status-dimensions.schema.json"}
+  },
+  "additionalProperties": true
+}

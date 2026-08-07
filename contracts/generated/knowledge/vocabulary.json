@@ -1,0 +1,739 @@
+{
+  "items": [
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "A known constraint is explicitly accepted for a bounded scope.",
+      "dimensions": [],
+      "does_not_prove": "Healthy runtime behavior.",
+      "domain": "vocabulary",
+      "example": "accepted-limitation",
+      "id": "vocabulary:accepted-limitation",
+      "name": "accepted-limitation",
+      "proves": "A known constraint is explicitly accepted for a bounded scope.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `capture-failed`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "capture-failed",
+      "id": "vocabulary:capture-failed",
+      "name": "capture-failed",
+      "proves": "Only the owning status dimension's repository-defined condition for `capture-failed`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "The fact is derived from a generated or canonical contract such as OpenAPI, AsyncAPI, or parity metadata.",
+      "dimensions": [],
+      "does_not_prove": "The contract was exercised successfully at runtime.",
+      "domain": "vocabulary",
+      "example": "contract-derived",
+      "id": "vocabulary:contract-derived",
+      "name": "contract-derived",
+      "proves": "The fact is derived from a generated or canonical contract such as OpenAPI, AsyncAPI, or parity metadata.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Operational runtime health is reduced or a safe read/write guard is active.",
+      "dimensions": [],
+      "does_not_prove": "Semantic mismatch.",
+      "domain": "vocabulary",
+      "example": "degraded",
+      "id": "vocabulary:degraded",
+      "name": "degraded",
+      "proves": "Operational runtime health is reduced or a safe read/write guard is active.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `drift-detected`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "drift-detected",
+      "id": "vocabulary:drift-detected",
+      "name": "drift-detected",
+      "proves": "Only the owning status dimension's repository-defined condition for `drift-detected`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Available runtime health signals satisfy the current health policy.",
+      "dimensions": [],
+      "does_not_prove": "Release readiness or complete semantic parity.",
+      "domain": "vocabulary",
+      "example": "healthy",
+      "id": "vocabulary:healthy",
+      "name": "healthy",
+      "proves": "Available runtime health signals satisfy the current health policy.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `implemented`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [
+        "implementation_status"
+      ],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "implemented",
+      "id": "vocabulary:implemented",
+      "name": "implemented",
+      "proves": "Only the owning status dimension's repository-defined condition for `implemented`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `inferred`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "inferred",
+      "id": "vocabulary:inferred",
+      "name": "inferred",
+      "proves": "Only the owning status dimension's repository-defined condition for `inferred`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `joining`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "joining",
+      "id": "vocabulary:joining",
+      "name": "joining",
+      "proves": "Only the owning status dimension's repository-defined condition for `joining`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `mapped`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "mapped",
+      "id": "vocabulary:mapped",
+      "name": "mapped",
+      "proves": "Only the owning status dimension's repository-defined condition for `mapped`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `match`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "match",
+      "id": "vocabulary:match",
+      "name": "match",
+      "proves": "Only the owning status dimension's repository-defined condition for `match`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `mismatch`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "mismatch",
+      "id": "vocabulary:mismatch",
+      "name": "mismatch",
+      "proves": "Only the owning status dimension's repository-defined condition for `mismatch`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `missing`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "missing",
+      "id": "vocabulary:missing",
+      "name": "missing",
+      "proves": "Only the owning status dimension's repository-defined condition for `missing`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `needs-review`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "needs-review",
+      "id": "vocabulary:needs-review",
+      "name": "needs-review",
+      "proves": "Only the owning status dimension's repository-defined condition for `needs-review`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "The field or condition has no applicable runtime object for the observed scenario.",
+      "dimensions": [],
+      "does_not_prove": "Missing implementation.",
+      "domain": "vocabulary",
+      "example": "not-applicable",
+      "id": "vocabulary:not-applicable",
+      "name": "not-applicable",
+      "proves": "The field or condition has no applicable runtime object for the observed scenario.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "The required or optional runtime fact was not captured in the evidence lane.",
+      "dimensions": [],
+      "does_not_prove": "The underlying feature is absent.",
+      "domain": "vocabulary",
+      "example": "not-observed",
+      "id": "vocabulary:not-observed",
+      "name": "not-observed",
+      "proves": "The required or optional runtime fact was not captured in the evidence lane.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "A runtime lane successfully captured the field or state.",
+      "dimensions": [],
+      "does_not_prove": "Semantic agreement with another lane or operational health.",
+      "domain": "vocabulary",
+      "example": "observed",
+      "id": "vocabulary:observed",
+      "name": "observed",
+      "proves": "A runtime lane successfully captured the field or state.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `offline`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "offline",
+      "id": "vocabulary:offline",
+      "name": "offline",
+      "proves": "Only the owning status dimension's repository-defined condition for `offline`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `online`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "online",
+      "id": "vocabulary:online",
+      "name": "online",
+      "proves": "Only the owning status dimension's repository-defined condition for `online`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "The capability or domain is not fully implemented or not fully verified.",
+      "dimensions": [
+        "implementation_status"
+      ],
+      "does_not_prove": "Failure of the portions that are implemented.",
+      "domain": "vocabulary",
+      "example": "partial",
+      "id": "vocabulary:partial",
+      "name": "partial",
+      "proves": "The capability or domain is not fully implemented or not fully verified.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `patch-provided`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "patch-provided",
+      "id": "vocabulary:patch-provided",
+      "name": "patch-provided",
+      "proves": "Only the owning status dimension's repository-defined condition for `patch-provided`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "The model intentionally reserves a future capability that is not implemented as current truth.",
+      "dimensions": [
+        "implementation_status"
+      ],
+      "does_not_prove": "Any current runtime capability.",
+      "domain": "vocabulary",
+      "example": "planned",
+      "id": "vocabulary:planned",
+      "name": "planned",
+      "proves": "The model intentionally reserves a future capability that is not implemented as current truth.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `protected server host`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "protected server host",
+      "id": "vocabulary:protected-server-host",
+      "name": "protected server host",
+      "proves": "Only the owning status dimension's repository-defined condition for `protected server host`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `ready`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "ready",
+      "id": "vocabulary:ready",
+      "name": "ready",
+      "proves": "Only the owning status dimension's repository-defined condition for `ready`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Readiness may proceed while explicitly tracked limitations remain accepted.",
+      "dimensions": [],
+      "does_not_prove": "Full runtime verification without constraints.",
+      "domain": "vocabulary",
+      "example": "ready-with-accepted-limitations",
+      "id": "vocabulary:ready-with-accepted-limitations",
+      "name": "ready-with-accepted-limitations",
+      "proves": "Readiness may proceed while explicitly tracked limitations remain accepted.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Evidence was explicitly promoted and bound to a release/source identity.",
+      "dimensions": [],
+      "does_not_prove": "All domains are verified or operationally healthy.",
+      "domain": "vocabulary",
+      "example": "release-promoted",
+      "id": "vocabulary:release-promoted",
+      "name": "release-promoted",
+      "proves": "Evidence was explicitly promoted and bound to a release/source identity.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `repairing`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "repairing",
+      "id": "vocabulary:repairing",
+      "name": "repairing",
+      "proves": "Only the owning status dimension's repository-defined condition for `repairing`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "A runtime observation contributed to the knowledge fact.",
+      "dimensions": [],
+      "does_not_prove": "Promotion or cross-lane verification.",
+      "domain": "vocabulary",
+      "example": "runtime-observed",
+      "id": "vocabulary:runtime-observed",
+      "name": "runtime-observed",
+      "proves": "A runtime observation contributed to the knowledge fact.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `runtime-unavailable`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "runtime-unavailable",
+      "id": "vocabulary:runtime-unavailable",
+      "name": "runtime-unavailable",
+      "proves": "Only the owning status dimension's repository-defined condition for `runtime-unavailable`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "The fact is deterministically derived from repository-owned source or canonical metadata.",
+      "dimensions": [],
+      "does_not_prove": "Live runtime state.",
+      "domain": "vocabulary",
+      "example": "source-derived",
+      "id": "vocabulary:source-derived",
+      "name": "source-derived",
+      "proves": "The fact is deterministically derived from repository-owned source or canonical metadata.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `stale`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "stale",
+      "id": "vocabulary:stale",
+      "name": "stale",
+      "proves": "Only the owning status dimension's repository-defined condition for `stale`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `stale-evidence`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "stale-evidence",
+      "id": "vocabulary:stale-evidence",
+      "name": "stale-evidence",
+      "proves": "Only the owning status dimension's repository-defined condition for `stale-evidence`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `unsupported`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "unsupported",
+      "id": "vocabulary:unsupported",
+      "name": "unsupported",
+      "proves": "Only the owning status dimension's repository-defined condition for `unsupported`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Implementation or metadata exists without the evidence required for validation.",
+      "dimensions": [
+        "implementation_status"
+      ],
+      "does_not_prove": "Broken behavior.",
+      "domain": "vocabulary",
+      "example": "unvalidated",
+      "id": "vocabulary:unvalidated",
+      "name": "unvalidated",
+      "proves": "Implementation or metadata exists without the evidence required for validation.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Appropriate contract or runtime evidence confirms the expected semantic condition.",
+      "dimensions": [],
+      "does_not_prove": "Every underlying subsystem is currently operationally healthy.",
+      "domain": "vocabulary",
+      "example": "verified",
+      "id": "vocabulary:verified",
+      "name": "verified",
+      "proves": "Appropriate contract or runtime evidence confirms the expected semantic condition.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Backend/runtime meaning is verified while the frontend uses an explicitly allowlisted user-facing representation.",
+      "dimensions": [],
+      "does_not_prove": "Literal string equality between backend and UI.",
+      "domain": "vocabulary",
+      "example": "verified-with-mapped-presentation",
+      "id": "vocabulary:verified-with-mapped-presentation",
+      "name": "verified-with-mapped-presentation",
+      "proves": "Backend/runtime meaning is verified while the frontend uses an explicitly allowlisted user-facing representation.",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `waiting`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "waiting",
+      "id": "vocabulary:waiting",
+      "name": "waiting",
+      "proves": "Only the owning status dimension's repository-defined condition for `waiting`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

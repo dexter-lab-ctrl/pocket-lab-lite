@@ -14,7 +14,7 @@
     "scenario": "devices-invite-expired",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "7d07c593e118dece1def5a554e687d59eb88d47ceeecec2b500d5c373a7b7033",
+    "source_fingerprint": "fc23d204e08d81b46ae47db4aa25cd9c1b499f08c0ca6b5800112ca205f4c182",
     "validation_status": "generated"
   }
 }

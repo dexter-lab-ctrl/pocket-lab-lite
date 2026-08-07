@@ -1,0 +1,282 @@
+{
+  "items": [
+    {
+      "confidence": "contract-derived",
+      "description": "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract.",
+      "domain": "apps",
+      "id": "limitation:apps:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Apps accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Application-owned media indexing is not a Pocket Lab parity authority.",
+      "domain": "apps",
+      "id": "limitation:apps:gap-1",
+      "lifecycle": "open",
+      "name": "Apps gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Heartbeat freshness can move during capture; comparison records the observed revision.",
+      "domain": "devices",
+      "id": "limitation:devices:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Devices accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Per-device profile fields remain partial when the agent has not published them.",
+      "domain": "devices",
+      "id": "limitation:devices:gap-1",
+      "lifecycle": "open",
+      "name": "Devices gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "CPU, memory, and storage presentation may be rounded or unit-formatted.",
+      "domain": "home",
+      "id": "limitation:home:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Home accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Live runtime semantic evidence remains explicit and release-bound.",
+      "domain": "home",
+      "id": "limitation:home:gap-1",
+      "lifecycle": "open",
+      "name": "Home gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Credential values are never observable parity fields.",
+      "domain": "identity",
+      "id": "limitation:identity:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Identity accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented.",
+      "domain": "identity",
+      "id": "limitation:identity:accepted-2",
+      "lifecycle": "accepted",
+      "name": "Identity accepted limitation 2",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "The current tab is direct-rendered and has no dedicated selector layer.",
+      "domain": "identity",
+      "id": "limitation:identity:gap-1",
+      "lifecycle": "open",
+      "name": "Identity gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Identity guard and protected server-host projections are not fully implemented.",
+      "domain": "identity",
+      "id": "limitation:identity:gap-2",
+      "lifecycle": "open",
+      "name": "Identity gap 2",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+      "domain": "recovery",
+      "id": "limitation:recovery:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Backup & Restore accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "App restore apply remains explicitly unsupported where the repository reports it unavailable.",
+      "domain": "recovery",
+      "id": "limitation:recovery:accepted-2",
+      "lifecycle": "accepted",
+      "name": "Backup & Restore accepted limitation 2",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Historical restore previews are evidence only and never authorize a new restore.",
+      "domain": "recovery",
+      "id": "limitation:recovery:accepted-3",
+      "lifecycle": "accepted",
+      "name": "Backup & Restore accepted limitation 3",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Live Termux and live browser semantic capture remain explicit; missing capture is not drift.",
+      "domain": "recovery",
+      "id": "limitation:recovery:gap-1",
+      "lifecycle": "open",
+      "name": "Backup & Restore gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine.",
+      "domain": "rules",
+      "id": "limitation:rules:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Rules accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Per-rule identity and execution history are planned, not present in the current API.",
+      "domain": "rules",
+      "id": "limitation:rules:gap-1",
+      "lifecycle": "open",
+      "name": "Rules gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Raw scanner output and sensitive paths are intentionally excluded.",
+      "domain": "security",
+      "id": "limitation:security:accepted-1",
+      "lifecycle": "accepted",
+      "name": "Security accepted limitation 1",
+      "risk": "accepted limitation",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "accepted",
+      "type": "limitation",
+      "workaround": null
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "A missing scanner is runtime-unavailable, not semantic drift.",
+      "domain": "security",
+      "id": "limitation:security:gap-1",
+      "lifecycle": "open",
+      "name": "Security gap 1",
+      "risk": "unvalidated",
+      "source_refs": [
+        "contracts/generated/parity/accepted-limitations.json"
+      ],
+      "status": "open",
+      "type": "limitation",
+      "workaround": null
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

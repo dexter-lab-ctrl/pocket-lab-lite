@@ -1,0 +1,1365 @@
+{
+  "items": [
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "apps",
+      "id": "table:app_action_lifecycle",
+      "indexes": [
+        "idx_phase3c_app_actions_status_latest",
+        "idx_app_actions_active",
+        "idx_app_actions_history",
+        "sqlite_autoindex_app_action_lifecycle_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "name": "app_action_lifecycle",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/catalog",
+        "/api/lite/apps/{app_id}/actions"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "type": "table",
+      "writer": "App Catalog lifecycle and action services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "apps",
+      "id": "table:app_current_state",
+      "indexes": [
+        "idx_app_current_updated",
+        "idx_app_current_order",
+        "sqlite_autoindex_app_current_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0007_app_current_subprojections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0008_app_current_hot_subprojections.sql"
+      ],
+      "name": "app_current_state",
+      "owner": "apps",
+      "readers": [
+        "/api/lite/catalog",
+        "/api/lite/apps/{app_id}/actions"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0007_app_current_subprojections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0008_app_current_hot_subprojections.sql"
+      ],
+      "type": "table",
+      "writer": "App Catalog lifecycle and action services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived audit persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "audit",
+      "id": "table:audit_evidence_index",
+      "indexes": [
+        "idx_phase3c_audit_latest",
+        "idx_audit_operation_created",
+        "idx_audit_entity_created",
+        "sqlite_autoindex_audit_evidence_index_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "name": "audit_evidence_index",
+      "owner": "audit",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_index_id",
+        "evidence_ref"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "type": "table",
+      "writer": "audit evidence indexing services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:backup_manifest_index",
+      "indexes": [
+        "idx_backup_manifest_created",
+        "sqlite_autoindex_backup_manifest_index_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "name": "backup_manifest_index",
+      "owner": "recovery",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:command_lifecycle",
+      "indexes": [
+        "idx_commands_nonterminal_age",
+        "idx_commands_attention_latest",
+        "idx_commands_lifecycle_stage",
+        "idx_commands_entity_history",
+        "idx_commands_status_updated",
+        "idx_commands_entity_active_latest",
+        "idx_commands_entity_active",
+        "sqlite_autoindex_command_lifecycle_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0017_command_lifecycle_reconciliation.sql"
+      ],
+      "name": "command_lifecycle",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0017_command_lifecycle_reconciliation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_awareness_state",
+      "indexes": [
+        "idx_device_awareness_identity",
+        "idx_device_awareness_removal",
+        "idx_device_awareness_staleness",
+        "sqlite_autoindex_device_awareness_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "name": "device_awareness_state",
+      "owner": "devices",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_delivery_status"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "source-derived",
+      "description": "Durable current enrolled-device projection",
+      "domain": "devices",
+      "id": "table:device_current_state",
+      "indexes": [
+        "idx_device_current_stale_order",
+        "idx_device_current_stale",
+        "idx_device_current_fleet_order",
+        "sqlite_autoindex_device_current_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "name": "device_current_state",
+      "owner": "fleet",
+      "readers": [
+        "GET /api/lite/fleet"
+      ],
+      "retention": "until explicit retirement",
+      "sensitive_fields": [
+        "device_id",
+        "identity metadata"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "type": "table",
+      "writer": "fleet/device projection writer"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_enrollment_registry",
+      "indexes": [
+        "idx_device_enrollment_last_seen",
+        "idx_device_enrollment_name",
+        "idx_device_enrollment_active_order",
+        "sqlite_autoindex_device_enrollment_registry_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "name": "device_enrollment_registry",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "canonical_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_health_attention",
+      "indexes": [
+        "idx_device_health_attention_active_time",
+        "idx_device_health_attention_device_status",
+        "idx_device_health_attention_active_reason",
+        "sqlite_autoindex_device_health_attention_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql"
+      ],
+      "name": "device_health_attention",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_health_current",
+      "indexes": [
+        "idx_device_health_attention",
+        "idx_device_health_status",
+        "sqlite_autoindex_device_health_current_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+      ],
+      "name": "device_health_current",
+      "owner": "devices",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_health_transitions",
+      "indexes": [
+        "idx_device_health_transitions_device_time",
+        "sqlite_autoindex_device_health_transitions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql"
+      ],
+      "name": "device_health_transitions",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_heartbeats",
+      "indexes": [
+        "idx_device_heartbeats_stale",
+        "idx_device_heartbeats_latest",
+        "sqlite_autoindex_device_heartbeats_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "name": "device_heartbeats",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_identity_guards",
+      "indexes": [
+        "sqlite_autoindex_device_identity_guards_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "name": "device_identity_guards",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_invite_lifecycle",
+      "indexes": [
+        "idx_device_invites_status",
+        "idx_device_invites_active_latest",
+        "idx_device_invites_identity",
+        "sqlite_autoindex_device_invite_lifecycle_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "name": "device_invite_lifecycle",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "invite_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_lifecycle_events",
+      "indexes": [
+        "idx_device_lifecycle_generation",
+        "idx_device_lifecycle_events_dedupe",
+        "idx_device_lifecycle_type_time",
+        "idx_device_lifecycle_device_time",
+        "sqlite_autoindex_device_lifecycle_events_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0013_device_lifecycle_idempotency.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql"
+      ],
+      "name": "device_lifecycle_events",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "payload_checksum"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0013_device_lifecycle_idempotency.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_lifecycle_transactions",
+      "indexes": [
+        "idx_device_lifecycle_transactions_export",
+        "idx_device_lifecycle_transactions_device",
+        "sqlite_autoindex_device_lifecycle_transactions_3",
+        "sqlite_autoindex_device_lifecycle_transactions_2",
+        "sqlite_autoindex_device_lifecycle_transactions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql"
+      ],
+      "name": "device_lifecycle_transactions",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_recovery_history",
+      "indexes": [
+        "idx_device_recovery_history",
+        "sqlite_autoindex_device_recovery_history_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "name": "device_recovery_history",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_removal_receipts",
+      "indexes": [
+        "idx_device_removal_receipts_device_time",
+        "sqlite_autoindex_device_removal_receipts_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "name": "device_removal_receipts",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_supervisor_state",
+      "indexes": [
+        "idx_device_supervisor_freshness",
+        "sqlite_autoindex_device_supervisor_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+      ],
+      "name": "device_supervisor_state",
+      "owner": "devices",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "canonical_hash",
+        "evidence_schema_version"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_system_profiles",
+      "indexes": [
+        "idx_device_system_profiles_updated",
+        "sqlite_autoindex_device_system_profiles_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+      ],
+      "name": "device_system_profiles",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived projections persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "projections",
+      "id": "table:domain_revisions",
+      "indexes": [
+        "sqlite_autoindex_domain_revisions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "name": "domain_revisions",
+      "owner": "projections",
+      "readers": [
+        "/api/lite/diagnostics/runtime",
+        "/api/lite/revisions"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "type": "table",
+      "writer": "prepared projection scheduler"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived release persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "release",
+      "id": "table:lite_installed_release_identity",
+      "indexes": [
+        "idx_lite_installed_release_identity_mode",
+        "sqlite_autoindex_lite_installed_release_identity_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql"
+      ],
+      "name": "lite_installed_release_identity",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/release"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "canonical_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql"
+      ],
+      "type": "table",
+      "writer": "release runtime and identity services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_revision_events",
+      "indexes": [
+        "idx_lite_revision_events_retention",
+        "idx_lite_revision_events_replay",
+        "idx_lite_revision_events_domain_revision"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql"
+      ],
+      "name": "lite_revision_events",
+      "owner": "control_plane",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived prepared state persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "prepared_state",
+      "id": "table:phase3b_current_state",
+      "indexes": [
+        "idx_phase3b_current_state_revision",
+        "idx_phase3b_current_state_status",
+        "sqlite_autoindex_phase3b_current_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "name": "phase3b_current_state",
+      "owner": "prepared_state",
+      "readers": [
+        "/api/lite/status"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "canonical_hash",
+        "payload_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "type": "table",
+      "writer": "prepared state projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived prepared state persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "prepared_state",
+      "id": "table:phase3b_revision_events",
+      "indexes": [
+        "idx_phase3b_revision_events_domain_recent",
+        "idx_phase3b_revision_events_retention",
+        "idx_phase3b_revision_events_replay",
+        "sqlite_autoindex_phase3b_revision_events_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "name": "phase3b_revision_events",
+      "owner": "prepared_state",
+      "readers": [
+        "/api/lite/status"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "changed_paths_json",
+        "new_semantic_hash",
+        "previous_semantic_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "type": "table",
+      "writer": "prepared state projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived projections persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "projections",
+      "id": "table:projection_dirty_signals",
+      "indexes": [
+        "idx_projection_dirty_signals_pending",
+        "sqlite_autoindex_projection_dirty_signals_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "name": "projection_dirty_signals",
+      "owner": "projections",
+      "readers": [
+        "/api/lite/diagnostics/runtime",
+        "/api/lite/revisions"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "type": "table",
+      "writer": "prepared projection scheduler"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "source-derived",
+      "description": "Bounded projection scheduler state",
+      "domain": "projections",
+      "id": "table:projection_refresh_state",
+      "indexes": [
+        "idx_projection_refresh_ready",
+        "sqlite_autoindex_projection_refresh_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "name": "projection_refresh_state",
+      "owner": "projection scheduler",
+      "readers": [
+        "diagnostics endpoints"
+      ],
+      "retention": "current state",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql"
+      ],
+      "type": "table",
+      "writer": "projection scheduler"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:recovery_current_state",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "name": "recovery_current_state",
+      "owner": "recovery",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:recovery_operations",
+      "indexes": [
+        "idx_phase3c_recovery_status_latest",
+        "idx_recovery_operations_updated",
+        "idx_recovery_operations_history",
+        "sqlite_autoindex_recovery_operations_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "name": "recovery_operations",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived release persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "release",
+      "id": "table:release_runtime_projection",
+      "indexes": [
+        "idx_release_runtime_active_lease",
+        "idx_release_runtime_status_updated",
+        "sqlite_autoindex_release_runtime_projection_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0020_release_runtime_process.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql"
+      ],
+      "name": "release_runtime_projection",
+      "owner": "release",
+      "readers": [
+        "/api/lite/release"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "active_command_id",
+        "canonical_hash",
+        "last_terminal_command_id",
+        "payload_bytes",
+        "payload_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0020_release_runtime_process.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql"
+      ],
+      "type": "table",
+      "writer": "release runtime and identity services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived database persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "database",
+      "id": "table:schema_migrations",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "schema_migrations",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "SQLite migration runner"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_database_backups",
+      "indexes": [
+        "idx_security_database_backups_created",
+        "sqlite_autoindex_security_database_backups_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql"
+      ],
+      "name": "security_database_backups",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_database_restores",
+      "indexes": [
+        "idx_security_database_restores_requested",
+        "sqlite_autoindex_security_database_restores_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql"
+      ],
+      "name": "security_database_restores",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_maintenance_runs",
+      "indexes": [
+        "idx_phase3c_maintenance_status_latest",
+        "idx_security_maintenance_kind_requested",
+        "sqlite_autoindex_security_maintenance_runs_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "name": "security_maintenance_runs",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_profile_snapshots",
+      "indexes": [
+        "sqlite_autoindex_security_profile_snapshots_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "security_profile_snapshots",
+      "owner": "security",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "latest_evidence_at"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_scan_evidence_refs",
+      "indexes": [
+        "idx_security_evidence_run_kind",
+        "sqlite_autoindex_security_scan_evidence_refs_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "security_scan_evidence_refs",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_ref_id",
+        "relative_path"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_scan_findings",
+      "indexes": [
+        "idx_security_findings_fingerprint",
+        "idx_security_findings_run_severity",
+        "sqlite_autoindex_security_scan_findings_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "security_scan_findings",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_scan_progress_events",
+      "indexes": [
+        "idx_security_progress_created",
+        "idx_security_progress_run_event",
+        "sqlite_autoindex_security_scan_progress_events_2",
+        "sqlite_autoindex_security_scan_progress_events_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "security_scan_progress_events",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "payload_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "sanitized operational metadata",
+      "confidence": "source-derived",
+      "description": "Canonical Security scan lifecycle",
+      "domain": "security",
+      "id": "table:security_scan_runs",
+      "indexes": [
+        "idx_security_runs_app_updated_latest",
+        "idx_security_runs_profile_updated_latest",
+        "idx_security_runs_profile_history_cursor",
+        "idx_security_runs_history_cursor",
+        "idx_security_runs_progress_latest",
+        "idx_security_runs_delivery_state",
+        "idx_security_runs_status_updated",
+        "idx_security_runs_profile_completed",
+        "sqlite_autoindex_security_scan_runs_2",
+        "sqlite_autoindex_security_scan_runs_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0005_security_read_performance.sql"
+      ],
+      "name": "security_scan_runs",
+      "owner": "security",
+      "readers": [
+        "Security summary/profile/progress endpoints"
+      ],
+      "retention": "bounded by Security retention policy",
+      "sensitive_fields": [
+        "summary_json",
+        "tool_results_json",
+        "coverage_summary_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0005_security_read_performance.sql"
+      ],
+      "type": "table",
+      "writer": "Security API/worker store"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_scan_tool_runs",
+      "indexes": [
+        "idx_security_tool_runs_run",
+        "sqlite_autoindex_security_scan_tool_runs_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "security_scan_tool_runs",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived security persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "security",
+      "id": "table:security_store_metadata",
+      "indexes": [
+        "sqlite_autoindex_security_store_metadata_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "name": "security_store_metadata",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/{profile}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql"
+      ],
+      "type": "table",
+      "writer": "Security store and scanner completion services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived workflow persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "workflow",
+      "id": "table:workflow_command_state",
+      "indexes": [
+        "idx_workflow_command_workflow",
+        "sqlite_autoindex_workflow_command_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+      ],
+      "name": "workflow_command_state",
+      "owner": "workflow",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id",
+        "command_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+      ],
+      "type": "table",
+      "writer": "workflow projection services"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived workflow persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "workflow",
+      "id": "table:workflow_current_state",
+      "indexes": [
+        "idx_workflow_current_terminal_updated",
+        "idx_workflow_current_status_updated",
+        "sqlite_autoindex_workflow_current_state_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+      ],
+      "name": "workflow_current_state",
+      "owner": "workflow",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "canonical_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+      ],
+      "type": "table",
+      "writer": "workflow projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived workflow persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "workflow",
+      "id": "table:workflow_event_index",
+      "indexes": [
+        "idx_workflow_event_workflow_time",
+        "sqlite_autoindex_workflow_event_index_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+      ],
+      "name": "workflow_event_index",
+      "owner": "workflow",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql"
+      ],
+      "type": "table",
+      "writer": "workflow projection services"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

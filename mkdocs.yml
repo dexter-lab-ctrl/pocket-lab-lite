@@ -104,6 +104,89 @@ nav:
   - Home: index.md
   - Development:
       - Overview: generated/development/index.md
+      - Living knowledgebase:
+          - Start here: generated/development/knowledge/index.md
+          - Operational health: generated/development/knowledge/operational-health.md
+          - How Pocket Lab works: generated/development/knowledge/journeys.md
+          - Component encyclopedia:
+              - Overview: generated/development/knowledge/components/index.md
+              - Device command executor: generated/development/knowledge/components/agent-command-executor.md
+              - Reconnect watchdog and supervisor recovery: generated/development/knowledge/components/agent-recovery.md
+              - Heartbeat, telemetry, and health publishers: generated/development/knowledge/components/agent-signals.md
+              - Lite agent supervisor: generated/development/knowledge/components/agent-supervisor.md
+              - Fleet, Apps, Security, Recovery, and Release APIs: generated/development/knowledge/components/api-domain-surfaces.md
+              - Identity, authentication, and invite guards: generated/development/knowledge/components/api-guards.md
+              - Prepared read, health, readiness, diagnostics, and evidence APIs: generated/development/knowledge/components/api-read-surfaces.md
+              - App Catalog: generated/development/knowledge/components/app-catalog.md
+              - App lifecycle worker: generated/development/knowledge/components/app-lifecycle-worker.md
+              - App backup, restore preview, and update lifecycle: generated/development/knowledge/components/app-recovery-update.md
+              - App, command, and workflow state: generated/development/knowledge/components/app-workflow-state.md
+              - Atomic PWA promotion: generated/development/knowledge/components/atomic-promotion.md
+              - Backup and verification engine: generated/development/knowledge/components/backup-engine.md
+              - Bounded queues and reconciliation: generated/development/knowledge/components/bounded-reconciliation.md
+              - Browser: generated/development/knowledge/components/browser.md
+              - Caddy same-origin proxy: generated/development/knowledge/components/caddy.md
+              - Checkpoints and retention policy: generated/development/knowledge/components/checkpoints-retention.md
+              - Command admission and lifecycle: generated/development/knowledge/components/command-lifecycle.md
+              - Completion and audit evidence: generated/development/knowledge/components/completion-evidence.md
+              - Enrollment and device lifecycle state: generated/development/knowledge/components/device-state.md
+              - Frontend state ownership: generated/development/knowledge/components/frontend-state.md
+              - GitHub Release: generated/development/knowledge/components/github-release.md
+              - GitHub repository: generated/development/knowledge/components/github-repository.md
+              - Invite and identity lifecycle: generated/development/knowledge/components/invite-state.md
+              - Local LAN: generated/development/knowledge/components/lan.md
+              - Last-known-good state and rollback: generated/development/knowledge/components/last-known-good.md
+              - FastAPI /api/lite/*: generated/development/knowledge/components/lite-api.md
+              - Media readiness and app health probes: generated/development/knowledge/components/media-app-health.md
+              - NATS / JetStream: generated/development/knowledge/components/nats-jetstream.md
+              - Primary and secondary NATS listeners: generated/development/knowledge/components/nats-listeners.md
+              - Lite node agent: generated/development/knowledge/components/node-agent.md
+              - PhotoPrism: generated/development/knowledge/components/photoprism.md
+              - PM2 process manager: generated/development/knowledge/components/pm2.md
+              - Post-switch health validation: generated/development/knowledge/components/post-switch-health.md
+              - Audit index, projection refresh, prepared projections, and domain revisions: generated/development/knowledge/components/prepared-state.md
+              - Projection subprocesses: generated/development/knowledge/components/projection-subprocesses.md
+              - PROot Ubuntu application container: generated/development/knowledge/components/proot-ubuntu.md
+              - React / Vite PWA: generated/development/knowledge/components/pwa.md
+              - Backup, restore, and checkpoint state: generated/development/knowledge/components/recovery-state.md
+              - Date-based Lite tag, dist.zip, checksums, and release manifest: generated/development/knowledge/components/release-artifacts.md
+              - Download staging and release verification: generated/development/knowledge/components/release-staging.md
+              - Installed release and runtime state: generated/development/knowledge/components/release-state.md
+              - Release subprocess: generated/development/knowledge/components/release-subprocess.md
+              - Remote-access readiness checks: generated/development/knowledge/components/remote-readiness.md
+              - Restore preview and confirmed restore: generated/development/knowledge/components/restore-preview.md
+              - Explicit retirement and database recovery: generated/development/knowledge/components/retirement-database-recovery.md
+              - Lynis and Trivy scanner adapters: generated/development/knowledge/components/scanner-adapters.md
+              - Security scan coordinator: generated/development/knowledge/components/security-coordinator.md
+              - Quick, Full, and App safety checks: generated/development/knowledge/components/security-profiles.md
+              - Security findings and run state: generated/development/knowledge/components/security-state.md
+              - SQLite control-plane store: generated/development/knowledge/components/sqlite.md
+              - Tailscale remote access: generated/development/knowledge/components/tailscale.md
+              - tailscaled daemon: generated/development/knowledge/components/tailscaled.md
+              - User: generated/development/knowledge/components/user.md
+              - Worker process: generated/development/knowledge/components/worker.md
+              - Workflow execution: generated/development/knowledge/components/workflow-execution.md
+          - API ↔ UI reverse index: generated/development/knowledge/api-ui-index.md
+          - Data lineage: generated/development/knowledge/data-lineage.md
+          - SQLite encyclopedia: generated/development/knowledge/sqlite.md
+          - NATS and events: generated/development/knowledge/events-nats.md
+          - Runtime topology: generated/development/knowledge/runtime-topology.md
+          - Reason codes: generated/development/knowledge/reason-codes.md
+          - Decisions: generated/development/knowledge/decisions.md
+          - Ownership: generated/development/knowledge/ownership.md
+          - Repository map: generated/development/knowledge/repository-map.md
+          - Tests and traceability: generated/development/knowledge/traceability.md
+          - Threat models: generated/development/knowledge/threat-models.md
+          - Releases and changes:
+              - Overview: generated/development/knowledge/releases.md
+              - lite-2026.08.07.1: generated/development/knowledge/releases/lite-2026-08-07-1.md
+          - Limitations and incidents: generated/development/knowledge/limitations-incidents.md
+          - Troubleshooting: generated/development/knowledge/troubleshooting.md
+          - Platforms and capabilities: generated/development/knowledge/capabilities.md
+          - Freshness: generated/development/knowledge/freshness.md
+          - Vocabulary: generated/development/knowledge/vocabulary.md
+          - Glossary: generated/development/knowledge/glossary.md
+          - Knowledge graph: generated/development/knowledge/knowledge-graph.md
       - Setup:
           - Repository and WSL2: generated/development/repository-setup.md
           - Local services: generated/development/local-services.md
@@ -196,6 +279,19 @@ nav:
           - Termux runtime verification: generated/development/runtime-verification.md
   - Production:
       - Overview: generated/production/index.md
+      - Living knowledgebase:
+          - Start here: generated/production/knowledge/index.md
+          - Current health: generated/production/knowledge/current-health.md
+          - How Pocket Lab works: generated/production/knowledge/journeys.md
+          - Troubleshooting: generated/production/knowledge/troubleshooting.md
+          - Known issues: generated/production/knowledge/known-issues.md
+          - Releases:
+              - Overview: generated/production/knowledge/releases.md
+              - lite-2026.08.07.1: generated/production/knowledge/releases/lite-2026-08-07-1.md
+          - Supported platforms: generated/production/knowledge/supported-platforms.md
+          - Security model: generated/production/knowledge/security.md
+          - Vocabulary: generated/production/knowledge/vocabulary.md
+          - Glossary: generated/production/knowledge/glossary.md
       - Pocket Lab Lite Architecture:
           - Architecture overview: generated/production/architecture/index.md
           - Complete system map: generated/production/architecture/complete-system.md

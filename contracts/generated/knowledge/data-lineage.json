@@ -1,0 +1,528 @@
+{
+  "items": [
+    {
+      "api": "api:get:/api/lite/catalog",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/catalog",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:app_action_lifecycle",
+        "table:app_current_state"
+      ],
+      "ui": [
+        "ui:liteapp"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/devices/{device_id}/removal-assessment",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/devices/{device_id}/removal-assessment",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/fleet",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/fleet",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:device_awareness_state",
+        "table:device_enrollment_registry",
+        "table:device_health_attention",
+        "table:device_health_current",
+        "table:device_health_transitions",
+        "table:device_heartbeats",
+        "table:device_identity_guards",
+        "table:device_invite_lifecycle",
+        "table:device_lifecycle_events",
+        "table:device_lifecycle_transactions",
+        "table:device_recovery_history",
+        "table:device_removal_receipts",
+        "table:device_supervisor_state",
+        "table:device_system_profiles"
+      ],
+      "ui": [
+        "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/fleet/devices/{node_id}/restart-agent/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/identity",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/identity",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:liteidentity"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/policy",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/policy",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literules"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/recovery/database",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/recovery/database",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/recovery/details",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/recovery/details",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:backup_manifest_index",
+        "table:recovery_current_state",
+        "table:recovery_operations"
+      ],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/recovery/summary",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/recovery/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/release",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/release",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:lite_installed_release_identity",
+        "table:release_runtime_projection"
+      ],
+      "ui": [
+        "ui:litereleaseupdatecard"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/revisions",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/revisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:domain_revisions",
+        "table:projection_dirty_signals"
+      ],
+      "ui": [
+        "ui:literevisionsyncbridge"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/security/evidence/{run_id}/summary",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/security/evidence/{run_id}/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/security/freshness",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/security/freshness",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/security/history",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/security/history",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/security/profiles/{profile}",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/security/profiles/{profile}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:security_database_backups",
+        "table:security_database_restores",
+        "table:security_maintenance_runs",
+        "table:security_profile_snapshots",
+        "table:security_scan_evidence_refs",
+        "table:security_scan_findings",
+        "table:security_scan_progress_events",
+        "table:security_scan_tool_runs",
+        "table:security_store_metadata"
+      ],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/security/progress",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/security/progress",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/security/summary",
+      "confidence": "contract-derived",
+      "method": "GET",
+      "route": "/api/lite/security/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [
+        "table:security_database_backups",
+        "table:security_database_restores",
+        "table:security_maintenance_runs",
+        "table:security_profile_snapshots",
+        "table:security_scan_evidence_refs",
+        "table:security_scan_findings",
+        "table:security_scan_progress_events",
+        "table:security_scan_tool_runs",
+        "table:security_store_metadata"
+      ],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/apps/{app_id}/backup",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/apps/{app_id}/backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/apps/{app_id}/restore/preview",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/apps/{app_id}/restore/preview",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/fleet/add-device",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/fleet/add-device",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/fleet/devices/{node_id}/restart-agent",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/fleet/remove-device",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/fleet/remove-device",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/identity/rotate",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/identity/rotate",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:liteidentity"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/policy/apply",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/policy/apply",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literules"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/backup",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/backups/{backup_id}/verify",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/backups/{backup_id}/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/database/backup",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/database/backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/database/backups/{backup_id}/preview",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/database/backups/{backup_id}/restore",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/database/backups/{backup_id}/restore",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/database/backups/{backup_id}/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/restore",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/restore",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/restore/preview",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/restore/preview",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/release/apply",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/release/apply",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litereleaseupdatecard"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/release/check",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/release/check",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litereleaseupdatecard"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/security/apps/{app_id}/check",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/security/apps/{app_id}/check",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/security/check",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/security/check",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesecurity"
+      ]
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

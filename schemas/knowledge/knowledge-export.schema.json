@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.local/schemas/knowledge/knowledge-export.schema.json",
+  "title": "Pocket Lab Lite AI-ready knowledge export",
+  "type": "object",
+  "required": ["schema_version", "generator", "source_fingerprint", "entities", "relations", "indexes", "statistics"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "generator": {"type": "string"},
+    "source_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "entities": {"type": "array", "items": {"$ref": "entity.schema.json"}},
+    "relations": {"type": "array", "items": {"$ref": "relation.schema.json"}},
+    "indexes": {"type": "object"},
+    "statistics": {"type": "object"}
+  },
+  "additionalProperties": false
+}

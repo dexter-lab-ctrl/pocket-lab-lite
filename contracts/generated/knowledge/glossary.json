@@ -1,0 +1,170 @@
+{
+  "items": [
+    {
+      "aliases": [
+        "durable source of truth"
+      ],
+      "confidence": "source-derived",
+      "description": "The server-side canonical state that survives process restarts and is authoritative over derived projections.",
+      "domain": "architecture",
+      "id": "glossary:durable-authority",
+      "name": "durable authority",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "runtime lane"
+      ],
+      "confidence": "source-derived",
+      "description": "One bounded observation source such as backend, Termux, desktop browser, or mobile browser used for runtime verification.",
+      "domain": "validation",
+      "id": "glossary:evidence-lane",
+      "name": "evidence lane",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [],
+      "confidence": "source-derived",
+      "description": "A restore preview recent enough to satisfy write-safety guards before a destructive restore.",
+      "domain": "recovery",
+      "id": "glossary:fresh-preview",
+      "name": "fresh preview",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "semantic presentation mapping"
+      ],
+      "confidence": "source-derived",
+      "description": "A user-facing representation that differs textually from backend values but is explicitly allowlisted as semantically equivalent.",
+      "domain": "parity",
+      "id": "glossary:mapped-presentation",
+      "name": "mapped presentation",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "runtime health"
+      ],
+      "confidence": "source-derived",
+      "description": "Current runtime ability of a subsystem to serve reads, accept safe writes, recover, and maintain required connectivity independently of semantic parity.",
+      "domain": "operations",
+      "id": "glossary:operational-health",
+      "name": "operational health",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "prepared state"
+      ],
+      "confidence": "source-derived",
+      "description": "A bounded read model derived from authoritative state for fast UI/API reads; it may become stale without replacing durable authority.",
+      "domain": "projections",
+      "id": "glossary:prepared-projection",
+      "name": "prepared projection",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "runtime verification baseline"
+      ],
+      "confidence": "source-derived",
+      "description": "Sanitized runtime evidence explicitly bound to a release and source commit and accepted through the promotion gate.",
+      "domain": "validation",
+      "id": "glossary:promoted-runtime-evidence",
+      "name": "promoted runtime evidence",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [],
+      "confidence": "source-derived",
+      "description": "An explicit device enrollment path used after identity ownership changes; it is not an automatic overwrite.",
+      "domain": "devices",
+      "id": "glossary:rejoin",
+      "name": "rejoin",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [],
+      "confidence": "source-derived",
+      "description": "The verified association among release tag, source commit, runtime evidence, and release metadata.",
+      "domain": "release",
+      "id": "glossary:release-binding",
+      "name": "release binding",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [],
+      "confidence": "source-derived",
+      "description": "An explicit recovery action that preserves identity and backend ownership rather than silently mutating enrolled state.",
+      "domain": "devices",
+      "id": "glossary:repair",
+      "name": "repair",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "runtime parity"
+      ],
+      "confidence": "source-derived",
+      "description": "Agreement of intended meaning across canonical backend, API, runtime, and presentation lanes under declared comparators.",
+      "domain": "parity",
+      "id": "glossary:semantic-parity",
+      "name": "semantic parity",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [],
+      "confidence": "source-derived",
+      "description": "An architecture boundary where trust level, credentials, validation, or execution ownership changes.",
+      "domain": "security",
+      "id": "glossary:trust-boundary",
+      "name": "trust boundary",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

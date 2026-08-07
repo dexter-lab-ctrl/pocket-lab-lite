@@ -1,0 +1,1542 @@
+{
+  "items": [
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:src/__tests__/enterpriseLabels.test.js",
+      "name": "src/__tests__/enterpriseLabels.test.js",
+      "source_refs": [
+        "src/__tests__/enterpriseLabels.test.js"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:src/__tests__/liteLifecycleDiagnostics.test.js",
+      "name": "src/__tests__/liteLifecycleDiagnostics.test.js",
+      "source_refs": [
+        "src/__tests__/liteLifecycleDiagnostics.test.js"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:src/__tests__/simpleLabels.test.js",
+      "name": "src/__tests__/simpleLabels.test.js",
+      "source_refs": [
+        "src/__tests__/simpleLabels.test.js"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/__init__.py",
+      "name": "tests/backend/__init__.py",
+      "source_refs": [
+        "tests/backend/__init__.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_architecture_contract.py",
+      "name": "tests/backend/test_architecture_contract.py",
+      "source_refs": [
+        "tests/backend/test_architecture_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_catalog.py",
+      "name": "tests/backend/test_catalog.py",
+      "source_refs": [
+        "tests/backend/test_catalog.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_drift.py",
+      "name": "tests/backend/test_drift.py",
+      "source_refs": [
+        "tests/backend/test_drift.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_fault_degraded_mode.py",
+      "name": "tests/backend/test_fault_degraded_mode.py",
+      "source_refs": [
+        "tests/backend/test_fault_degraded_mode.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_fixture_simulation.py",
+      "name": "tests/backend/test_fixture_simulation.py",
+      "source_refs": [
+        "tests/backend/test_fixture_simulation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_fleet.py",
+      "name": "tests/backend/test_fleet.py",
+      "source_refs": [
+        "tests/backend/test_fleet.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_health_engine.py",
+      "name": "tests/backend/test_health_engine.py",
+      "source_refs": [
+        "tests/backend/test_health_engine.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_import_app.py",
+      "name": "tests/backend/test_import_app.py",
+      "source_refs": [
+        "tests/backend/test_import_app.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_install_pwa_ui_local_fallback.py",
+      "name": "tests/backend/test_install_pwa_ui_local_fallback.py",
+      "source_refs": [
+        "tests/backend/test_install_pwa_ui_local_fallback.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_journal_redaction.py",
+      "name": "tests/backend/test_journal_redaction.py",
+      "source_refs": [
+        "tests/backend/test_journal_redaction.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_activity_summary_audit_scope.py",
+      "name": "tests/backend/test_lite_activity_summary_audit_scope.py",
+      "source_refs": [
+        "tests/backend/test_lite_activity_summary_audit_scope.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_api.py",
+      "name": "tests/backend/test_lite_api.py",
+      "source_refs": [
+        "tests/backend/test_lite_api.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
+      "name": "tests/backend/test_lite_app_catalog_runtime_truth.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_catalog_runtime_truth.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_lifecycle_none_operation_regression.py",
+      "name": "tests/backend/test_lite_app_lifecycle_none_operation_regression.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_lifecycle_none_operation_regression.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_projection_deadline.py",
+      "name": "tests/backend/test_lite_app_projection_deadline.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_projection_deadline.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_runtime_reconciliation.py",
+      "name": "tests/backend/test_lite_app_runtime_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_runtime_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
+      "name": "tests/backend/test_lite_command_attention_audit_idempotency.py",
+      "source_refs": [
+        "tests/backend/test_lite_command_attention_audit_idempotency.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_command_lifecycle_reconciliation.py",
+      "name": "tests/backend/test_lite_command_lifecycle_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_lite_command_lifecycle_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "name": "tests/backend/test_lite_complete_documentation_platform.py",
+      "source_refs": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+      "name": "tests/backend/test_lite_control_plane_sqlite_p3.py",
+      "source_refs": [
+        "tests/backend/test_lite_control_plane_sqlite_p3.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_core_supervisor.py",
+      "name": "tests/backend/test_lite_core_supervisor.py",
+      "source_refs": [
+        "tests/backend/test_lite_core_supervisor.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_database_restore_reconciliation.py",
+      "name": "tests/backend/test_lite_database_restore_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_lite_database_restore_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "name": "tests/backend/test_lite_development_documentation_platform.py",
+      "source_refs": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_health_d4.py",
+      "name": "tests/backend/test_lite_device_health_d4.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_health_d4.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_lifecycle_idempotency.py",
+      "name": "tests/backend/test_lite_device_lifecycle_idempotency.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_lifecycle_idempotency.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_system_profile.py",
+      "name": "tests/backend/test_lite_device_system_profile.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_system_profile.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_devices_d2_d3.py",
+      "name": "tests/backend/test_lite_devices_d2_d3.py",
+      "source_refs": [
+        "tests/backend/test_lite_devices_d2_d3.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_devices_durable_enrollment.py",
+      "name": "tests/backend/test_lite_devices_durable_enrollment.py",
+      "source_refs": [
+        "tests/backend/test_lite_devices_durable_enrollment.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_devices_production_readiness.py",
+      "name": "tests/backend/test_lite_devices_production_readiness.py",
+      "source_refs": [
+        "tests/backend/test_lite_devices_production_readiness.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_dispatch_admission_logging.py",
+      "name": "tests/backend/test_lite_dispatch_admission_logging.py",
+      "source_refs": [
+        "tests/backend/test_lite_dispatch_admission_logging.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+      "name": "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+      "source_refs": [
+        "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+      "name": "tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+      "source_refs": [
+        "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_home_capacity_contract.py",
+      "name": "tests/backend/test_lite_home_capacity_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_home_capacity_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_hot_path_profiler.py",
+      "name": "tests/backend/test_lite_hot_path_profiler.py",
+      "source_refs": [
+        "tests/backend/test_lite_hot_path_profiler.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_idle_efficiency_runtime.py",
+      "name": "tests/backend/test_lite_idle_efficiency_runtime.py",
+      "source_refs": [
+        "tests/backend/test_lite_idle_efficiency_runtime.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_android_resume.py",
+      "name": "tests/backend/test_lite_long_gate_android_resume.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_android_resume.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_checkpointing.py",
+      "name": "tests/backend/test_lite_long_gate_checkpointing.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_checkpointing.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_framework.py",
+      "name": "tests/backend/test_lite_long_gate_framework.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_framework.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_group2_reporting.py",
+      "name": "tests/backend/test_lite_long_gate_group2_reporting.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_group2_reporting.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_group4_reconciliation.py",
+      "name": "tests/backend/test_lite_long_gate_group4_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_group4_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_group4_reporting.py",
+      "name": "tests/backend/test_lite_long_gate_group4_reporting.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_group4_reporting.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_idle.py",
+      "name": "tests/backend/test_lite_long_gate_idle.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_idle.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_low_storage.py",
+      "name": "tests/backend/test_lite_long_gate_low_storage.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_low_storage.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_nats_restart.py",
+      "name": "tests/backend/test_lite_long_gate_nats_restart.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_nats_restart.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_progress_soak.py",
+      "name": "tests/backend/test_lite_long_gate_progress_soak.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_progress_soak.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_recovery_reporting.py",
+      "name": "tests/backend/test_lite_long_gate_recovery_reporting.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_recovery_reporting.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_repeated_scans.py",
+      "name": "tests/backend/test_lite_long_gate_repeated_scans.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_repeated_scans.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_reporting.py",
+      "name": "tests/backend/test_lite_long_gate_reporting.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_reporting.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
+      "name": "tests/backend/test_lite_long_gate_submission_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_submission_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_wal_pressure.py",
+      "name": "tests/backend/test_lite_long_gate_wal_pressure.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_wal_pressure.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_long_gate_worker_restart.py",
+      "name": "tests/backend/test_lite_long_gate_worker_restart.py",
+      "source_refs": [
+        "tests/backend/test_lite_long_gate_worker_restart.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_n6b_install_surface.py",
+      "name": "tests/backend/test_lite_n6b_install_surface.py",
+      "source_refs": [
+        "tests/backend/test_lite_n6b_install_surface.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_native_release.py",
+      "name": "tests/backend/test_lite_native_release.py",
+      "source_refs": [
+        "tests/backend/test_lite_native_release.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_phase2_eliminate_collection.py",
+      "name": "tests/backend/test_lite_phase2_eliminate_collection.py",
+      "source_refs": [
+        "tests/backend/test_lite_phase2_eliminate_collection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+      "name": "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+      "source_refs": [
+        "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+      "name": "tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+      "source_refs": [
+        "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+      "name": "tests/backend/test_lite_phase3c_system_aggregates.py",
+      "source_refs": [
+        "tests/backend/test_lite_phase3c_system_aggregates.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+      "name": "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+      "source_refs": [
+        "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_premium_tab_polish.py",
+      "name": "tests/backend/test_lite_premium_tab_polish.py",
+      "source_refs": [
+        "tests/backend/test_lite_premium_tab_polish.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_production_architecture_platform.py",
+      "name": "tests/backend/test_lite_production_architecture_platform.py",
+      "source_refs": [
+        "tests/backend/test_lite_production_architecture_platform.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_production_gate_reporting.py",
+      "name": "tests/backend/test_lite_production_gate_reporting.py",
+      "source_refs": [
+        "tests/backend/test_lite_production_gate_reporting.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_projection_semantic_hardening.py",
+      "name": "tests/backend/test_lite_projection_semantic_hardening.py",
+      "source_refs": [
+        "tests/backend/test_lite_projection_semantic_hardening.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_queue_attribution_part2.py",
+      "name": "tests/backend/test_lite_queue_attribution_part2.py",
+      "source_refs": [
+        "tests/backend/test_lite_queue_attribution_part2.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_queue_attribution_regression.py",
+      "name": "tests/backend/test_lite_queue_attribution_regression.py",
+      "source_refs": [
+        "tests/backend/test_lite_queue_attribution_regression.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_recovery.py",
+      "name": "tests/backend/test_lite_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_recovery_r3_api_split.py",
+      "name": "tests/backend/test_lite_recovery_r3_api_split.py",
+      "source_refs": [
+        "tests/backend/test_lite_recovery_r3_api_split.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+      "name": "tests/backend/test_lite_revision_sync_n4_n5.py",
+      "source_refs": [
+        "tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security.py",
+      "name": "tests/backend/test_lite_security.py",
+      "source_refs": [
+        "tests/backend/test_lite_security.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_f11_events_contract.py",
+      "name": "tests/backend/test_lite_security_f11_events_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_f11_events_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
+      "name": "tests/backend/test_lite_security_f12_f14_stability_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_f12_f14_stability_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_f3_summary_contract.py",
+      "name": "tests/backend/test_lite_security_f3_summary_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_f3_summary_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+      "name": "tests/backend/test_lite_security_f7_split_read_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_f7_split_read_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_f9_etag_contract.py",
+      "name": "tests/backend/test_lite_security_f9_etag_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_f9_etag_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+      "name": "tests/backend/test_lite_security_p2b_reboot_generation.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_p2b_reboot_generation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_progress_projection_cutover.py",
+      "name": "tests/backend/test_lite_security_progress_projection_cutover.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_progress_projection_cutover.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_projection_drift_prevention.py",
+      "name": "tests/backend/test_lite_security_projection_drift_prevention.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_projection_drift_prevention.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
+      "name": "tests/backend/test_lite_security_s6_frontend_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s6_frontend_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s6_replay.py",
+      "name": "tests/backend/test_lite_security_s6_replay.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s6_replay.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s6_retention.py",
+      "name": "tests/backend/test_lite_security_s6_retention.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s6_retention.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s6_server_phone_gate_contract.py",
+      "name": "tests/backend/test_lite_security_s6_server_phone_gate_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s6_server_phone_gate_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+      "name": "tests/backend/test_lite_security_s7_saved_state_history.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s7_saved_state_history.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_cross_environment_worker_restart.py",
+      "name": "tests/backend/test_lite_security_s8_cross_environment_worker_restart.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_cross_environment_worker_restart.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_cross_process_generation.py",
+      "name": "tests/backend/test_lite_security_s8_cross_process_generation.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_cross_process_generation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_fault_checkpoint_identity.py",
+      "name": "tests/backend/test_lite_security_s8_fault_checkpoint_identity.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_fault_checkpoint_identity.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
+      "name": "tests/backend/test_lite_security_s8_gate_submission_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_gate_submission_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_get_transport_recovery.py",
+      "name": "tests/backend/test_lite_security_s8_get_transport_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_get_transport_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+      "name": "tests/backend/test_lite_security_s8_idle_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_idle_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_post_restore_progress_fence.py",
+      "name": "tests/backend/test_lite_security_s8_post_restore_progress_fence.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_post_restore_progress_fence.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_post_restore_readiness.py",
+      "name": "tests/backend/test_lite_security_s8_post_restore_readiness.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_post_restore_readiness.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_recovery.py",
+      "name": "tests/backend/test_lite_security_s8_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_restore_fault_hygiene.py",
+      "name": "tests/backend/test_lite_security_s8_restore_fault_hygiene.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_restore_fault_hygiene.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_restore_progress_reset.py",
+      "name": "tests/backend/test_lite_security_s8_restore_progress_reset.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_restore_progress_reset.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_worker_environment_preservation.py",
+      "name": "tests/backend/test_lite_security_s8_worker_environment_preservation.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_worker_environment_preservation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_worker_loader_isolation.py",
+      "name": "tests/backend/test_lite_security_s8_worker_loader_isolation.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_worker_loader_isolation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_s8_worker_subprocess_environment.py",
+      "name": "tests/backend/test_lite_security_s8_worker_subprocess_environment.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_s8_worker_subprocess_environment.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_scanner_cleanup.py",
+      "name": "tests/backend/test_lite_security_scanner_cleanup.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_scanner_cleanup.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_sqlite_s3_s5.py",
+      "name": "tests/backend/test_lite_security_sqlite_s3_s5.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_sqlite_s3_s5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_store.py",
+      "name": "tests/backend/test_lite_security_store.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_store.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_store_concurrency.py",
+      "name": "tests/backend/test_lite_security_store_concurrency.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_store_concurrency.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_store_migration.py",
+      "name": "tests/backend/test_lite_security_store_migration.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_store_migration.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_worker_sqlite_commit.py",
+      "name": "tests/backend/test_lite_security_worker_sqlite_commit.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_worker_sqlite_commit.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_sqlite_connection.py",
+      "name": "tests/backend/test_lite_sqlite_connection.py",
+      "source_refs": [
+        "tests/backend/test_lite_sqlite_connection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_sqlite_migrations.py",
+      "name": "tests/backend/test_lite_sqlite_migrations.py",
+      "source_refs": [
+        "tests/backend/test_lite_sqlite_migrations.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_sqlite_performance.py",
+      "name": "tests/backend/test_lite_sqlite_performance.py",
+      "source_refs": [
+        "tests/backend/test_lite_sqlite_performance.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_startup_workload_isolation.py",
+      "name": "tests/backend/test_lite_startup_workload_isolation.py",
+      "source_refs": [
+        "tests/backend/test_lite_startup_workload_isolation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_storage_fault_injection.py",
+      "name": "tests/backend/test_lite_storage_fault_injection.py",
+      "source_refs": [
+        "tests/backend/test_lite_storage_fault_injection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_system_health_semantic_revision.py",
+      "name": "tests/backend/test_lite_system_health_semantic_revision.py",
+      "source_refs": [
+        "tests/backend/test_lite_system_health_semantic_revision.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "name": "tests/backend/test_lite_termux_runtime_documentation.py",
+      "source_refs": [
+        "tests/backend/test_lite_termux_runtime_documentation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_worker_recovery.py",
+      "name": "tests/backend/test_lite_worker_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_worker_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_workload_admission.py",
+      "name": "tests/backend/test_lite_workload_admission.py",
+      "source_refs": [
+        "tests/backend/test_lite_workload_admission.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_nats_required.py",
+      "name": "tests/backend/test_nats_required.py",
+      "source_refs": [
+        "tests/backend/test_nats_required.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_nats_status_semantics.py",
+      "name": "tests/backend/test_nats_status_semantics.py",
+      "source_refs": [
+        "tests/backend/test_nats_status_semantics.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_operation_contract.py",
+      "name": "tests/backend/test_operation_contract.py",
+      "source_refs": [
+        "tests/backend/test_operation_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_operations.py",
+      "name": "tests/backend/test_operations.py",
+      "source_refs": [
+        "tests/backend/test_operations.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_ready.py",
+      "name": "tests/backend/test_ready.py",
+      "source_refs": [
+        "tests/backend/test_ready.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_release.py",
+      "name": "tests/backend/test_release.py",
+      "source_refs": [
+        "tests/backend/test_release.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_release_process_isolation.py",
+      "name": "tests/backend/test_release_process_isolation.py",
+      "source_refs": [
+        "tests/backend/test_release_process_isolation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_reliability.py",
+      "name": "tests/backend/test_reliability.py",
+      "source_refs": [
+        "tests/backend/test_reliability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_runbook_execution.py",
+      "name": "tests/backend/test_runbook_execution.py",
+      "source_refs": [
+        "tests/backend/test_runbook_execution.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_security.py",
+      "name": "tests/backend/test_security.py",
+      "source_refs": [
+        "tests/backend/test_security.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_state_migration.py",
+      "name": "tests/backend/test_state_migration.py",
+      "source_refs": [
+        "tests/backend/test_state_migration.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_vault_operations.py",
+      "name": "tests/backend/test_vault_operations.py",
+      "source_refs": [
+        "tests/backend/test_vault_operations.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_workflow_projection_process_isolation.py",
+      "name": "tests/backend/test_workflow_projection_process_isolation.py",
+      "source_refs": [
+        "tests/backend/test_workflow_projection_process_isolation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_workflows.py",
+      "name": "tests/backend/test_workflows.py",
+      "source_refs": [
+        "tests/backend/test_workflows.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/dev/browser-resolver.test.mjs",
+      "name": "tests/dev/browser-resolver.test.mjs",
+      "source_refs": [
+        "tests/dev/browser-resolver.test.mjs"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
+      "name": "tests/dev/runtime-evidence-sanitizer.test.mjs",
+      "source_refs": [
+        "tests/dev/runtime-evidence-sanitizer.test.mjs"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/mkdocs.spec.ts",
+      "name": "tests/docs/mkdocs.spec.ts",
+      "source_refs": [
+        "tests/docs/mkdocs.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_living_knowledgebase.py",
+      "name": "tests/docs/test_living_knowledgebase.py",
+      "source_refs": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/global-setup.ts",
+      "name": "tests/e2e/global-setup.ts",
+      "source_refs": [
+        "tests/e2e/global-setup.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-accessibility.spec.ts",
+      "name": "tests/e2e/lite-accessibility.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-live.spec.ts",
+      "name": "tests/e2e/lite-live.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-live.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-mocked.spec.ts",
+      "name": "tests/e2e/lite-mocked.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-parity.spec.ts",
+      "name": "tests/e2e/lite-parity.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-test-helpers.ts",
+      "name": "tests/e2e/lite-test-helpers.ts",
+      "source_refs": [
+        "tests/e2e/lite-test-helpers.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual.spec.ts",
+      "name": "tests/e2e/lite-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/nats/test_subject_permissions.py",
+      "name": "tests/nats/test_subject_permissions.py",
+      "source_refs": [
+        "tests/nats/test_subject_permissions.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_api_contract_fences.py",
+      "name": "tests/parity/test_api_contract_fences.py",
+      "source_refs": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_backup_recovery_parity.py",
+      "name": "tests/parity/test_backup_recovery_parity.py",
+      "source_refs": [
+        "tests/parity/test_backup_recovery_parity.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_contract_generation.py",
+      "name": "tests/parity/test_contract_generation.py",
+      "source_refs": [
+        "tests/parity/test_contract_generation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_guardrails.py",
+      "name": "tests/parity/test_guardrails.py",
+      "source_refs": [
+        "tests/parity/test_guardrails.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_intelligent_runtime_parity.py",
+      "name": "tests/parity/test_intelligent_runtime_parity.py",
+      "source_refs": [
+        "tests/parity/test_intelligent_runtime_parity.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_local_runtime_report.py",
+      "name": "tests/parity/test_local_runtime_report.py",
+      "source_refs": [
+        "tests/parity/test_local_runtime_report.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_planned_runtime_parity_policy.py",
+      "name": "tests/parity/test_planned_runtime_parity_policy.py",
+      "source_refs": [
+        "tests/parity/test_planned_runtime_parity_policy.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_runtime_drift_reporting.py",
+      "name": "tests/parity/test_runtime_drift_reporting.py",
+      "source_refs": [
+        "tests/parity/test_runtime_drift_reporting.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_runtime_promotion_preflight.py",
+      "name": "tests/parity/test_runtime_promotion_preflight.py",
+      "source_refs": [
+        "tests/parity/test_runtime_promotion_preflight.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_runtime_verification_promotion.py",
+      "name": "tests/parity/test_runtime_verification_promotion.py",
+      "source_refs": [
+        "tests/parity/test_runtime_verification_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_security_profile_openapi_contract.py",
+      "name": "tests/parity/test_security_profile_openapi_contract.py",
+      "source_refs": [
+        "tests/parity/test_security_profile_openapi_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/parity/test_security_runtime_contract.py",
+      "name": "tests/parity/test_security_runtime_contract.py",
+      "source_refs": [
+        "tests/parity/test_security_runtime_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/pocket_lab_test_utils.py",
+      "name": "tests/pocket_lab_test_utils.py",
+      "source_refs": [
+        "tests/pocket_lab_test_utils.py"
+      ],
+      "type": "test"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

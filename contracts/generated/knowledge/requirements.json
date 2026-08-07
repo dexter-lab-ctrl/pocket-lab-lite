@@ -1,0 +1,122 @@
+{
+  "items": [
+    {
+      "confidence": "source-derived",
+      "description": "Frontend never talks directly to NATS.",
+      "domain": "architecture",
+      "id": "requirement:architecture-01",
+      "name": "Frontend never talks directly to NATS.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Frontend never executes shell commands.",
+      "domain": "architecture",
+      "id": "requirement:architecture-02",
+      "name": "Frontend never executes shell commands.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "FastAPI remains the control API.",
+      "domain": "architecture",
+      "id": "requirement:architecture-03",
+      "name": "FastAPI remains the control API.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Agents and supervisors own execution and recovery.",
+      "domain": "architecture",
+      "id": "requirement:architecture-04",
+      "name": "Agents and supervisors own execution and recovery.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Bootstrap scripts are backend-generated.",
+      "domain": "architecture",
+      "id": "requirement:architecture-05",
+      "name": "Bootstrap scripts are backend-generated.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Secrets are not exposed.",
+      "domain": "architecture",
+      "id": "requirement:architecture-06",
+      "name": "Secrets are not exposed.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Offline enrolled devices remain represented.",
+      "domain": "architecture",
+      "id": "requirement:architecture-07",
+      "name": "Offline enrolled devices remain represented.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Lifecycle changes produce audit evidence.",
+      "domain": "architecture",
+      "id": "requirement:architecture-08",
+      "name": "Lifecycle changes produce audit evidence.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Read APIs remain side-effect-free.",
+      "domain": "architecture",
+      "id": "requirement:architecture-09",
+      "name": "Read APIs remain side-effect-free.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Startup scripts own safe startup side effects.",
+      "domain": "architecture",
+      "id": "requirement:architecture-10",
+      "name": "Startup scripts own safe startup side effects.",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "requirement"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

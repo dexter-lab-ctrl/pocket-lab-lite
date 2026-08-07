@@ -1,0 +1,435 @@
+{
+  "items": [
+    {
+      "components": [
+        "api-guards",
+        "invite-state",
+        "device-state",
+        "node-agent",
+        "agent-supervisor"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "journey:add-device",
+      "name": "Add Device",
+      "routes": [
+        "POST /api/lite/fleet/add-device",
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
+        "src/lite/LiteDevices.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "app-catalog",
+        "app-lifecycle-worker",
+        "workflow-execution",
+        "photoprism",
+        "caddy"
+      ],
+      "confidence": "source-derived",
+      "domain": "apps",
+      "id": "journey:app-installation",
+      "name": "App installation",
+      "routes": [
+        "POST /api/lite/catalog/install",
+        "GET /api/lite/catalog"
+      ],
+      "source_refs": [
+        "src/lite/LiteCatalog.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "backup-engine",
+        "recovery-state",
+        "worker"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "id": "journey:backup-create",
+      "name": "Backup creation and verification",
+      "routes": [
+        "POST /api/lite/recovery/backup",
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "api-guards",
+        "lite-api",
+        "sqlite"
+      ],
+      "confidence": "partial",
+      "domain": "identity",
+      "id": "journey:change-password",
+      "name": "Change Password / identity rotation",
+      "routes": [
+        "POST /api/lite/identity/rotate"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-openapi.json",
+        "contracts/parity/parity-model.json",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "api-guards",
+        "invite-state",
+        "device-state",
+        "node-agent",
+        "agent-supervisor",
+        "agent-signals"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "journey:device-enrollment",
+      "name": "Device bootstrap and enrollment",
+      "routes": [
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "agent-signals",
+        "agent-recovery",
+        "node-agent",
+        "agent-supervisor",
+        "nats-jetstream"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "journey:device-reconnect",
+      "name": "Device offline and reconnect recovery",
+      "routes": [
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [],
+      "confidence": "source-derived",
+      "domain": "documentation",
+      "id": "journey:documentation-generation",
+      "name": "Documentation generation",
+      "routes": [],
+      "source_refs": [
+        "scripts/docs/lite/generate_docs.py",
+        "scripts/docs/lite/generate_platform_catalogs.py",
+        "tasks/Taskfile.docs.yml"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "lite-api",
+        "pwa",
+        "sqlite"
+      ],
+      "confidence": "source-derived",
+      "domain": "validation",
+      "id": "journey:parity-capture",
+      "name": "Backend-to-Frontend parity capture and verification",
+      "routes": [],
+      "source_refs": [
+        "contracts/parity/parity-model.json",
+        "scripts/docs/parity/generate_parity.py"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "app-catalog",
+        "photoprism",
+        "proot-ubuntu",
+        "media-app-health",
+        "caddy"
+      ],
+      "confidence": "source-derived",
+      "domain": "apps",
+      "id": "journey:photoprism-operation",
+      "name": "PhotoPrism operation",
+      "routes": [
+        "GET /api/lite/catalog",
+        "GET /api/lite/apps/{app_id}/actions"
+      ],
+      "source_refs": [
+        "src/lite/LiteCatalog.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "prepared-state",
+        "recovery-state",
+        "sqlite"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "id": "journey:recovery-reconciliation",
+      "name": "Recovery reconciliation",
+      "routes": [
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "release-artifacts",
+        "release-staging",
+        "release-subprocess",
+        "post-switch-health",
+        "release-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "release",
+      "id": "journey:release-update",
+      "name": "Release and update flow",
+      "routes": [
+        "GET /api/lite/release"
+      ],
+      "source_refs": [
+        "docs/generated/production/release.md"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "tailscale",
+        "tailscaled",
+        "remote-readiness",
+        "nats-listeners"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "journey:remote-access-readiness",
+      "name": "Tailscale and remote access readiness",
+      "routes": [
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "docs/generated/production/remote-access.md"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "device-state",
+        "retirement-database-recovery"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "journey:remove-old-device",
+      "name": "Remove Old Device",
+      "routes": [
+        "POST /api/lite/fleet/remove-device",
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "src/lite/LiteDevices.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "agent-command-executor",
+        "agent-recovery",
+        "node-agent",
+        "agent-supervisor"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "id": "journey:restart-agent",
+      "name": "Restart Agent",
+      "routes": [
+        "POST /api/lite/fleet/devices/{node_id}/restart-agent",
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "src/lite/LiteDevices.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "restore-preview",
+        "backup-engine",
+        "recovery-state",
+        "workflow-execution"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "id": "journey:restore-execution",
+      "name": "Confirmed restore",
+      "routes": [
+        "POST /api/lite/recovery/restore",
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "runbooks/backup_restore_verify.yaml",
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "restore-preview",
+        "recovery-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "id": "journey:restore-preview",
+      "name": "Restore preview",
+      "routes": [
+        "POST /api/lite/recovery/restore/preview",
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "last-known-good",
+        "release-state",
+        "post-switch-health"
+      ],
+      "confidence": "source-derived",
+      "domain": "release",
+      "id": "journey:rollback",
+      "name": "Rollback",
+      "routes": [
+        "GET /api/lite/release"
+      ],
+      "source_refs": [
+        "runbooks/release_rollback.yaml"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "node-agent",
+        "agent-supervisor",
+        "nats-jetstream"
+      ],
+      "confidence": "source-derived",
+      "domain": "validation",
+      "id": "journey:runtime-capture",
+      "name": "Sanitized Termux runtime capture",
+      "routes": [],
+      "source_refs": [
+        "scripts/docs/runtime/capture_termux_runtime.sh",
+        "scripts/docs/runtime/promote_termux_runtime.py"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "runtime-evidence",
+        "release-state"
+      ],
+      "confidence": "source-derived",
+      "domain": "validation",
+      "id": "journey:runtime-promotion",
+      "name": "Runtime evidence promotion",
+      "routes": [],
+      "source_refs": [
+        "scripts/test/parity/preflight_runtime_promotion.py",
+        "scripts/test/parity/promote_runtime_verification.py"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "security-state",
+        "security-coordinator"
+      ],
+      "confidence": "source-derived",
+      "domain": "security",
+      "id": "journey:security-review",
+      "name": "Security finding review",
+      "routes": [
+        "GET /api/lite/security/summary",
+        "GET /api/lite/security/details/{run_id}"
+      ],
+      "source_refs": [
+        "src/lite/LiteSecurity.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "security-profiles",
+        "security-coordinator",
+        "scanner-adapters",
+        "security-state",
+        "worker"
+      ],
+      "confidence": "source-derived",
+      "domain": "security",
+      "id": "journey:security-scan",
+      "name": "Security scan",
+      "routes": [
+        "POST /api/lite/security/check",
+        "GET /api/lite/security/summary",
+        "GET /api/lite/security/progress"
+      ],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
+        "src/lite/LiteSecurity.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "pm2",
+        "caddy",
+        "lite-api",
+        "nats-jetstream",
+        "worker",
+        "node-agent",
+        "agent-supervisor"
+      ],
+      "confidence": "source-derived",
+      "domain": "platform",
+      "id": "journey:startup",
+      "name": "Pocket Lab Lite startup",
+      "routes": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+      ],
+      "type": "journey"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

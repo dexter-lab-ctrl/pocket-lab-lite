@@ -1,0 +1,255 @@
+{
+  "items": [
+    {
+      "confidence": "source-derived",
+      "description": "Prove backup integrity and controlled restore readiness without bypassing typed operations.",
+      "domain": "disaster-recovery",
+      "evidence": [
+        "audit_events",
+        "backup_manifest",
+        "health_snapshot",
+        "operation_events",
+        "workflow_journal"
+      ],
+      "id": "runbook:backup_restore_verify",
+      "name": "Backup Restore Verification",
+      "owner": "platform-operations",
+      "requires_approval": true,
+      "severity": "high",
+      "source_refs": [
+        "runbooks/backup_restore_verify.yaml"
+      ],
+      "steps": [
+        {
+          "name": "create_backup",
+          "operation": "backup_now",
+          "requires_approval": false
+        },
+        {
+          "name": "verify_backup",
+          "operation": "backup_verify",
+          "requires_approval": false
+        },
+        {
+          "name": "restore_backup",
+          "operation": "restore_backup",
+          "requires_approval": true
+        },
+        {
+          "name": "post_restore_health",
+          "operation": "health_check",
+          "requires_approval": false
+        }
+      ],
+      "tags": [
+        "backup",
+        "disaster-recovery",
+        "validation"
+      ],
+      "type": "runbook"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Guided drift remediation using preview, approval, and typed apply operations.",
+      "domain": "drift-management",
+      "evidence": [
+        "approval_record",
+        "audit_events",
+        "drift_report",
+        "operation_events",
+        "workflow_journal"
+      ],
+      "id": "runbook:drift_detect_approve_apply",
+      "name": "Drift Detect, Approve, and Apply",
+      "owner": "platform-operations",
+      "requires_approval": true,
+      "severity": "medium",
+      "source_refs": [
+        "runbooks/drift_detect_approve_apply.yaml"
+      ],
+      "steps": [
+        {
+          "name": "scan_drift",
+          "operation": "drift_scan",
+          "requires_approval": false
+        },
+        {
+          "name": "preview_remediation",
+          "operation": "drift_preview",
+          "requires_approval": false
+        },
+        {
+          "name": "approve_remediation",
+          "operation": "drift_approve",
+          "requires_approval": true
+        },
+        {
+          "name": "apply_remediation",
+          "operation": "drift_apply",
+          "requires_approval": true
+        }
+      ],
+      "tags": [
+        "approval",
+        "drift",
+        "remediation"
+      ],
+      "type": "runbook"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Guided recovery path for a failed Apps & Services / Blueprint installation.",
+      "domain": "recovery",
+      "evidence": [
+        "audit_events",
+        "backup_manifest",
+        "drift_report",
+        "operation_events",
+        "workflow_journal"
+      ],
+      "id": "runbook:recover_failed_install",
+      "name": "Recover Failed Install",
+      "owner": "platform-operations",
+      "requires_approval": true,
+      "severity": "high",
+      "source_refs": [
+        "runbooks/recover_failed_install.yaml"
+      ],
+      "steps": [
+        {
+          "name": "scan_current_state",
+          "operation": "drift_scan",
+          "requires_approval": false
+        },
+        {
+          "name": "create_safety_backup",
+          "operation": "backup_now",
+          "requires_approval": false
+        },
+        {
+          "name": "reinstall_blueprint",
+          "operation": "deploy_blueprint",
+          "requires_approval": true
+        },
+        {
+          "name": "verify_health",
+          "operation": "health_check",
+          "requires_approval": false
+        }
+      ],
+      "tags": [
+        "apps",
+        "blueprint",
+        "recovery",
+        "simple-mode"
+      ],
+      "type": "runbook"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Controlled rollback path when release validation or apply fails.",
+      "domain": "release-management",
+      "evidence": [
+        "audit_events",
+        "backup_manifest",
+        "health_snapshot",
+        "operation_events",
+        "release_evidence",
+        "workflow_journal"
+      ],
+      "id": "runbook:release_rollback",
+      "name": "Release Rollback",
+      "owner": "release-operations",
+      "requires_approval": true,
+      "severity": "critical",
+      "source_refs": [
+        "runbooks/release_rollback.yaml"
+      ],
+      "steps": [
+        {
+          "name": "check_release_state",
+          "operation": "release_check",
+          "requires_approval": false
+        },
+        {
+          "name": "create_pre_rollback_backup",
+          "operation": "backup_now",
+          "requires_approval": false
+        },
+        {
+          "name": "restore_previous_state",
+          "operation": "restore_backup",
+          "requires_approval": true
+        },
+        {
+          "name": "verify_after_rollback",
+          "operation": "health_check",
+          "requires_approval": false
+        }
+      ],
+      "tags": [
+        "recovery",
+        "release",
+        "rollback"
+      ],
+      "type": "runbook"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Rotate a managed secret with policy approval, audit evidence, and post-change verification.",
+      "domain": "security",
+      "evidence": [
+        "audit_events",
+        "operation_events",
+        "policy_decision",
+        "redaction_check",
+        "workflow_journal"
+      ],
+      "id": "runbook:rotate_secret_with_audit",
+      "name": "Rotate Secret with Audit Evidence",
+      "owner": "security-operations",
+      "requires_approval": true,
+      "severity": "critical",
+      "source_refs": [
+        "runbooks/rotate_secret_with_audit.yaml"
+      ],
+      "steps": [
+        {
+          "name": "pre_rotation_health",
+          "operation": "health_check",
+          "requires_approval": false
+        },
+        {
+          "name": "rotate_secret",
+          "operation": "rotate_secret",
+          "requires_approval": true
+        },
+        {
+          "name": "verify_secret_read",
+          "operation": "secret_read_dynamic",
+          "requires_approval": false
+        },
+        {
+          "name": "post_rotation_health",
+          "operation": "health_check",
+          "requires_approval": false
+        }
+      ],
+      "tags": [
+        "audit",
+        "secrets",
+        "security",
+        "vault"
+      ],
+      "type": "runbook"
+    }
+  ],
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}

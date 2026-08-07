@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 8d0decd2778c55c8a5cf35a3dcf9660b1810178d0e7a5a49442010b0b8c0d9b8
+source_fingerprint: c7268582426fffa7f6d69f2ba87b21107f52e2f84e5369e432b9d3066f441b95
 schema_revision: 1
 validation_status: generated
 ---
@@ -169,6 +169,13 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:events`
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
+- `lite:docs:knowledge:ai-export`
+- `lite:docs:knowledge:check`
+- `lite:docs:knowledge:generate`
+- `lite:docs:knowledge:graph`
+- `lite:docs:knowledge:health`
+- `lite:docs:knowledge:releases`
+- `lite:docs:knowledge:traceability`
 - `lite:docs:openapi`
 - `lite:docs:parity:check`
 - `lite:docs:parity:generate`
@@ -190,6 +197,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:services`
 - `lite:docs:sqlite`
 - `lite:docs:sqlite:check`
+- `lite:docs:sync`
 - `lite:docs:tools:check`
 - `lite:docs:ui`
 - `lite:docs:ui:screenshots`
@@ -197,6 +205,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:evidence:parity:check`
 - `lite:evidence:parity:generate`
 - `lite:evidence:runtime:check`
+- `lite:evidence:runtime:preflight`
 - `lite:evidence:runtime:promote`
 - `lite:har:inspect`
 - `lite:har:sanitize`

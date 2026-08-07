@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 38b61623208b8ea31a4731db03e744b3f0b8d07024e8305baa026e2d5449ad08
+source_fingerprint: e49551565b94f84ac097e652dd489085c4226a601c06ffa8271c9f7165589ce1
 schema_revision: 1
 validation_status: generated
 ---
@@ -42,7 +42,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_PARITY_OPENAPI_CURRENT` | configuration | $ROOT/contracts/generated/lite-openapi.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `LITE_PARITY_OPENAPI_PROMOTION` | configuration | $ROOT/contracts/parity/openapi-baseline-promotion.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `LITE_PARITY_OPENAPI_URL` | configuration | $BASE_URL/openapi.json | yes | component-dependent | scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
-| `LITE_PARITY_RELEASE_TAG` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/parity/generate_parity.py, scripts/test/parity/capture_runtime_parity.py, scripts/test/parity/promote_runtime_verification.py |
+| `LITE_PARITY_RELEASE_TAG` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/parity/generate_parity.py, scripts/test/parity/capture_runtime_parity.py, scripts/test/parity/preflight_runtime_promotion.py, scripts/test/parity/promote_runtime_verification.py |
 | `LITE_PARITY_SCHEMATHESIS_DISCOVERY_EXAMPLES` | configuration | 12 | yes | component-dependent | scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_PARITY_SCHEMATHESIS_DISCOVERY_MAX_FAILURES` | configuration | 100 | yes | component-dependent | scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_PARITY_SCHEMATHESIS_DISCOVERY_RATE_LIMIT` | configuration | 3/s | yes | component-dependent | scripts/test/parity/run_schemathesis_discovery.sh |
@@ -786,10 +786,10 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKET_LAB_PWA_DIR` | configuration | $POCKET_LAB_BASE_DIR/pwa_dist | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKET_LAB_SKIP_TERMUX_UPGRADE` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh |
 | `POCKET_LAB_VAULT_DIR` | configuration | $POCKET_LAB_BASE_DIR/vault | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
-| `SOURCE_COMMIT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/validation_evidence.py, scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py, scripts/test/parity/parity_evidence.py |
+| `SOURCE_COMMIT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/validation_evidence.py, scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/knowledge/generate_knowledge.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py, scripts/test/parity/parity_evidence.py |
 | `SOURCE_DATE_EPOCH` | configuration | source-defined or empty | no | component-dependent | scripts/docs/validation_evidence_lib.py |
 | `SOURCE_DIR` | configuration | $POCKET_LAB_IAC_DIR | no | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh |
-| `SOURCE_GENERATED_AT` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py |
+| `SOURCE_GENERATED_AT` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/knowledge/generate_knowledge.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py |
 | `SOURCE_GLOBS` | configuration | source-defined or empty | no | component-dependent | scripts/docs/generate_policy_evidence.py |
 | `SOURCE_PATTERNS` | configuration | source-defined or empty | no | component-dependent | scripts/docs/threat_model_drift_lib.py |
 | `SOURCE_REAL` | configuration | source-defined or empty | no | component-dependent | scripts/dev/sync-wsl-to-windows.sh |

@@ -1,0 +1,32 @@
+{
+  "items": {
+    "required_fields": [
+      "id",
+      "date",
+      "affected_release",
+      "severity",
+      "affected_domains",
+      "affected_components",
+      "symptom",
+      "detection",
+      "timeline",
+      "root_cause",
+      "containment",
+      "remediation",
+      "permanent_fix",
+      "regression_tests",
+      "release_containing_fix",
+      "runbook",
+      "lessons_learned",
+      "evidence_refs"
+    ]
+  },
+  "metadata": {
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/knowledge/generate_knowledge.py",
+    "generator_version": 1,
+    "schema_version": "1.0.0",
+    "source_commit": "uncommitted",
+    "source_fingerprint": "3952d932cfbdf747fafb468dca9f13a5926ec3343325e0e79e380a7377079613"
+  }
+}
