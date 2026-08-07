@@ -5,7 +5,7 @@
         "/api/lite/status",
         "/api/lite/release"
       ],
-      "fingerprint": "42f03890dc41e562409358ab0ae54f5e980a4cf57d06ac7d5a496d214b3ffcf6",
+      "fingerprint": "e4acd444e0f76623f47280115c63e78fea392f910f34ab1728f70d3b87725682",
       "id": "home",
       "selectors": [
         "buildLiteHomeOverview"

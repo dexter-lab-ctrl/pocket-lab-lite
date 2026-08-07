@@ -9,6 +9,7 @@
         "mapped": 4,
         "match": 12,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -41,7 +42,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "percentage formatting is equivalent",
           "frontend_value": {
-            "fingerprint": "124bd5cc96c734df",
+            "fingerprint": "90050a94a8be3507",
             "length": 13,
             "present": true,
             "type": "string"
@@ -60,7 +61,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "percentage formatting is equivalent",
           "frontend_value": {
-            "fingerprint": "124bd5cc96c734df",
+            "fingerprint": "90050a94a8be3507",
             "length": 13,
             "present": true,
             "type": "string"
@@ -84,7 +85,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "dbe3ab456b7a103a",
+            "fingerprint": "1660f6e32ef97ce3",
             "length": 1839,
             "present": true,
             "type": "string"
@@ -108,7 +109,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "dbe3ab456b7a103a",
+            "fingerprint": "1660f6e32ef97ce3",
             "length": 1839,
             "present": true,
             "type": "string"
@@ -125,13 +126,13 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 7,
-            "fingerprint": "9405b0569c808fa8",
+            "fingerprint": "6aa167147c755309",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "dbe3ab456b7a103a",
+            "fingerprint": "1660f6e32ef97ce3",
             "length": 1839,
             "present": true,
             "type": "string"
@@ -148,13 +149,13 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 7,
-            "fingerprint": "9405b0569c808fa8",
+            "fingerprint": "6aa167147c755309",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "dbe3ab456b7a103a",
+            "fingerprint": "1660f6e32ef97ce3",
             "length": 1839,
             "present": true,
             "type": "string"
@@ -211,10 +212,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 4822,
+          "backend_value": 4652,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 256.0",
-          "frontend_value": 4822,
+          "frontend_value": 4652,
           "id": "home-termux-memory_usage_mb",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -291,10 +292,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 135761,
+          "backend_value": 135411,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 64.0",
-          "frontend_value": 135761,
+          "frontend_value": 135411,
           "id": "home-termux-storage_free_mb",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -311,10 +312,10 @@
       "live_termux_coverage": "observed",
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
-        "backend": "9405b0569c808fa8893f6be99304158f6e982d54d134358d7e2bb6c73ecfc13c",
-        "live_desktop": "132958a595a61adf0b2e65fad8e037f07f5ccb4bb9747dd4526e1050cc36c825",
-        "live_mobile": "132958a595a61adf0b2e65fad8e037f07f5ccb4bb9747dd4526e1050cc36c825",
-        "termux": "9405b0569c808fa8893f6be99304158f6e982d54d134358d7e2bb6c73ecfc13c"
+        "backend": "6aa167147c75530933500ab6dd9999e82990a5494678f8981d4603b6f1100d55",
+        "live_desktop": "ee2044c0f1e0afa0cb743e1b01d83e6efee13886056fa5bd8c4d6e56e870a164",
+        "live_mobile": "ee2044c0f1e0afa0cb743e1b01d83e6efee13886056fa5bd8c4d6e56e870a164",
+        "termux": "6aa167147c75530933500ab6dd9999e82990a5494678f8981d4603b6f1100d55"
       },
       "runtime_parity": "verified-with-mapped-presentation",
       "status": "verified"
@@ -324,6 +325,7 @@
         "mapped": 4,
         "match": 14,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -703,8 +705,8 @@
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
         "backend": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f",
-        "live_desktop": "3b1693b98bcba56d83b422ab147a93b5bfa85d282bbe98949fabe2c12bf42d6e",
-        "live_mobile": "3b1693b98bcba56d83b422ab147a93b5bfa85d282bbe98949fabe2c12bf42d6e",
+        "live_desktop": "4958e17e91f9badbc11bc2f92418b70c2e6ac96b4bafb729930fd8b2bcf5597b",
+        "live_mobile": "4958e17e91f9badbc11bc2f92418b70c2e6ac96b4bafb729930fd8b2bcf5597b",
         "termux": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f"
       },
       "runtime_parity": "verified-with-mapped-presentation",
@@ -715,6 +717,7 @@
         "mapped": 4,
         "match": 14,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -747,7 +750,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "ee0875b31f234d02",
+            "fingerprint": "1007f5e9ebbb123c",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -766,7 +769,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "ee0875b31f234d02",
+            "fingerprint": "1007f5e9ebbb123c",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -789,7 +792,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "ee0875b31f234d02",
+            "fingerprint": "1007f5e9ebbb123c",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -812,7 +815,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "ee0875b31f234d02",
+            "fingerprint": "1007f5e9ebbb123c",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -864,7 +867,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "ee0875b31f234d02",
+            "fingerprint": "1007f5e9ebbb123c",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -888,7 +891,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "ee0875b31f234d02",
+            "fingerprint": "1007f5e9ebbb123c",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -1056,8 +1059,8 @@
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
         "backend": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59",
-        "live_desktop": "f5a477a3814219cf1bdbc1891345c8941c195217be3d755ada73906769ca447f",
-        "live_mobile": "f5a477a3814219cf1bdbc1891345c8941c195217be3d755ada73906769ca447f",
+        "live_desktop": "f51065e1ef9c50dd17494bd1b960e83f080260d9dc5d6734be198511e98d6cb2",
+        "live_mobile": "f51065e1ef9c50dd17494bd1b960e83f080260d9dc5d6734be198511e98d6cb2",
         "termux": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59"
       },
       "runtime_parity": "verified-with-mapped-presentation",
@@ -1068,6 +1071,7 @@
         "mapped": 4,
         "match": 11,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -1403,8 +1407,8 @@
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
         "backend": "3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b",
-        "live_desktop": "3cfcdbbe5c0f707338e3bc7216b00624092248534b7e96322ef4a2b3b2f30ca5",
-        "live_mobile": "3cfcdbbe5c0f707338e3bc7216b00624092248534b7e96322ef4a2b3b2f30ca5",
+        "live_desktop": "8b761a10768ddf086f221851152dc79cd274b06f057165e6a85b25d18fab7d7e",
+        "live_mobile": "8b761a10768ddf086f221851152dc79cd274b06f057165e6a85b25d18fab7d7e",
         "termux": "3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b"
       },
       "runtime_parity": "verified-with-mapped-presentation",
@@ -1415,6 +1419,7 @@
         "mapped": 2,
         "match": 8,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 2,
         "unsupported": 0
       },
@@ -1682,8 +1687,8 @@
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
         "backend": "d481f5125f8cab4356d1d164c9a1518483b786097fee788764bc6dbaa0dae757",
-        "live_desktop": "8eb88b1ab5beb24d0382dba8eacc7fd1529ab4daaecc26c688a1b66b7efe7bc8",
-        "live_mobile": "8eb88b1ab5beb24d0382dba8eacc7fd1529ab4daaecc26c688a1b66b7efe7bc8",
+        "live_desktop": "0c116788f2a43c3ebb778f963a0872cbf73a59d83d9b6632825a8024080b9da7",
+        "live_mobile": "0c116788f2a43c3ebb778f963a0872cbf73a59d83d9b6632825a8024080b9da7",
         "termux": "d481f5125f8cab4356d1d164c9a1518483b786097fee788764bc6dbaa0dae757"
       },
       "runtime_parity": "partial",
@@ -1694,6 +1699,7 @@
         "mapped": 2,
         "match": 12,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -1979,8 +1985,8 @@
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
         "backend": "98c0b2e070d96d05f1f86fcf24a77f4b53d45561f6af6b89adc512d9ef50398e",
-        "live_desktop": "7e8f1961a6914e5076d88f28784e0943748ef5f6bb410201db65b2ca8c234363",
-        "live_mobile": "7e8f1961a6914e5076d88f28784e0943748ef5f6bb410201db65b2ca8c234363",
+        "live_desktop": "4a86f224a424dadc54163630acae433452e59517ff4d46692e2398a34128ce17",
+        "live_mobile": "4a86f224a424dadc54163630acae433452e59517ff4d46692e2398a34128ce17",
         "termux": "98c0b2e070d96d05f1f86fcf24a77f4b53d45561f6af6b89adc512d9ef50398e"
       },
       "runtime_parity": "partial",
@@ -1988,10 +1994,11 @@
     },
     {
       "comparison_summary": {
-        "mapped": 6,
-        "match": 17,
+        "mapped": 8,
+        "match": 33,
         "mismatch": 0,
-        "not_observed": 1,
+        "not_applicable": 0,
+        "not_observed": 0,
         "unsupported": 0
       },
       "comparisons": [
@@ -1999,14 +2006,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 3,
-            "fingerprint": "74abd402b16e816b",
+            "fingerprint": "ac2e16ca135717b1",
             "type": "object"
           },
           "boundary": "desktop-mobile",
           "explanation": "desktop and mobile expose the same headings, status labels, and actions",
           "frontend_value": {
             "count": 3,
-            "fingerprint": "74abd402b16e816b",
+            "fingerprint": "ac2e16ca135717b1",
             "type": "object"
           },
           "id": "desktop-mobile-semantic-agreement",
@@ -2019,6 +2026,158 @@
         },
         {
           "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "recovery-historical-preview-safety",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning matches",
+          "frontend_value": true,
+          "id": "recovery-historical-preview-safety",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 13,
+          "boundary": "live-api-live-ui",
+          "explanation": "values are exactly equal",
+          "frontend_value": 13,
+          "id": "recovery-history-count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 13,
+          "boundary": "live-api-live-ui",
+          "explanation": "values are exactly equal",
+          "frontend_value": 13,
+          "id": "recovery-history-count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "normalized values match",
+          "frontend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-last-restore-identity",
+          "implementation_status": "implemented",
+          "operator": "identity-match",
+          "project": "live-desktop",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "normalized values match",
+          "frontend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-last-restore-identity",
+          "implementation_status": "implemented",
+          "operator": "identity-match",
+          "project": "live-mobile",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "7093fda846e50b26",
+            "length": 9,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "0b2c5f63ff609383",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-last-restore-status",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "7093fda846e50b26",
+            "length": 9,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend uses an allowlisted semantic presentation",
+          "frontend_value": {
+            "fingerprint": "0b2c5f63ff609383",
+            "length": 8,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-last-restore-status",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mapped",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
           "backend_value": {
             "fingerprint": "9385db4dd1fdd328",
             "length": 40,
@@ -2068,15 +2227,15 @@
         {
           "accepted_limitation": false,
           "backend_value": {
-            "count": 14,
-            "fingerprint": "4b10f84137aaf168",
+            "count": 20,
+            "fingerprint": "fcb7a60ce157d4df",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "578369527dbda52e",
-            "length": 867,
+            "fingerprint": "85d0f7f83115b599",
+            "length": 1010,
             "present": true,
             "type": "string"
           },
@@ -2091,15 +2250,15 @@
         {
           "accepted_limitation": false,
           "backend_value": {
-            "count": 14,
-            "fingerprint": "4b10f84137aaf168",
+            "count": 20,
+            "fingerprint": "fcb7a60ce157d4df",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "578369527dbda52e",
-            "length": 867,
+            "fingerprint": "85d0f7f83115b599",
+            "length": 1010,
             "present": true,
             "type": "string"
           },
@@ -2152,16 +2311,16 @@
         {
           "accepted_limitation": false,
           "backend_value": {
-            "fingerprint": "72172bf2e4ccc369",
-            "length": 7,
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
             "present": true,
             "type": "string"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "ebce725f97848145",
-            "length": 16,
+            "fingerprint": "c2ce73ed676fa150",
+            "length": 18,
             "present": true,
             "type": "string"
           },
@@ -2176,16 +2335,16 @@
         {
           "accepted_limitation": false,
           "backend_value": {
-            "fingerprint": "72172bf2e4ccc369",
-            "length": 7,
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
             "present": true,
             "type": "string"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "ebce725f97848145",
-            "length": 16,
+            "fingerprint": "c2ce73ed676fa150",
+            "length": 18,
             "present": true,
             "type": "string"
           },
@@ -2233,6 +2392,20 @@
           "project": "live-mobile",
           "required": true,
           "result": "mapped",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 13,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 13,
+          "id": "recovery-termux-completed_restore_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
           "severity": "high"
         },
         {
@@ -2261,20 +2434,6 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": null,
-          "boundary": "live-api-live-termux",
-          "explanation": "one side was not observed",
-          "frontend_value": null,
-          "id": "recovery-termux-database_protection_status",
-          "implementation_status": "planned",
-          "operator": "exact",
-          "project": "termux",
-          "required": false,
-          "result": "not-observed",
-          "severity": "high"
-        },
-        {
-          "accepted_limitation": false,
           "backend_value": {
             "fingerprint": "addf5c2ec4883881",
             "length": 18,
@@ -2299,17 +2458,89 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": null,
+          "backend_value": true,
           "boundary": "live-api-live-termux",
-          "explanation": "optional implemented field is not applicable in the current runtime state",
-          "frontend_value": null,
+          "explanation": "values are exactly equal",
+          "frontend_value": true,
+          "id": "recovery-termux-fresh_preview_required",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "57236bbcfb093bf0",
+            "length": 20,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "57236bbcfb093bf0",
+            "length": 20,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-last_restore_completed_at",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-last_restore_id",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "7093fda846e50b26",
+            "length": 9,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "7093fda846e50b26",
+            "length": 9,
+            "present": true,
+            "type": "string"
+          },
           "id": "recovery-termux-last_restore_status",
           "implementation_status": "implemented",
           "operator": "exact",
           "project": "termux",
-          "required": false,
-          "result": "not-applicable",
-          "severity": "high"
+          "required": true,
+          "result": "match",
+          "severity": "critical"
         },
         {
           "accepted_limitation": false,
@@ -2328,6 +2559,30 @@
             "type": "string"
           },
           "id": "recovery-termux-latest_backup_id",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "1840d851e539bada",
+            "length": 36,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "1840d851e539bada",
+            "length": 36,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-latest_preview_id",
           "implementation_status": "implemented",
           "operator": "exact",
           "project": "termux",
@@ -2361,13 +2616,51 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 2604833546,
+          "backend_value": 13,
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": 13,
+          "id": "recovery-termux-preview_reference_count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 702262,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 15000.0",
-          "frontend_value": 2604837299,
+          "frontend_value": 706558,
           "id": "recovery-termux-projection_age_ms",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
+          "project": "termux",
+          "required": true,
+          "result": "match",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "e5dd6911470836de",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-termux",
+          "explanation": "values are exactly equal",
+          "frontend_value": {
+            "fingerprint": "e5dd6911470836de",
+            "length": 10,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-termux-projection_reconciliation_status",
+          "implementation_status": "implemented",
+          "operator": "exact",
           "project": "termux",
           "required": true,
           "result": "match",
@@ -2403,45 +2696,45 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": null,
+          "backend_value": false,
           "boundary": "live-api-live-termux",
-          "explanation": "optional implemented field is not applicable in the current runtime state",
-          "frontend_value": null,
+          "explanation": "values are exactly equal",
+          "frontend_value": false,
           "id": "recovery-termux-restore_allowed",
           "implementation_status": "implemented",
           "operator": "exact",
           "project": "termux",
-          "required": false,
-          "result": "not-applicable",
-          "severity": "high"
+          "required": true,
+          "result": "match",
+          "severity": "critical"
         },
         {
           "accepted_limitation": false,
-          "backend_value": null,
+          "backend_value": 13,
           "boundary": "live-api-live-termux",
-          "explanation": "optional implemented field is not applicable in the current runtime state",
-          "frontend_value": null,
-          "id": "recovery-termux-restore_preview_status",
+          "explanation": "values are exactly equal",
+          "frontend_value": 13,
+          "id": "recovery-termux-restore_history_total",
           "implementation_status": "implemented",
           "operator": "exact",
           "project": "termux",
-          "required": false,
-          "result": "not-applicable",
+          "required": true,
+          "result": "match",
           "severity": "high"
         },
         {
           "accepted_limitation": false,
           "backend_value": {
-            "fingerprint": "72172bf2e4ccc369",
-            "length": 7,
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
             "present": true,
             "type": "string"
           },
           "boundary": "live-api-live-termux",
           "explanation": "values are exactly equal",
           "frontend_value": {
-            "fingerprint": "72172bf2e4ccc369",
-            "length": 7,
+            "fingerprint": "43d98d0c66cd4397",
+            "length": 8,
             "present": true,
             "type": "string"
           },
@@ -2456,16 +2749,16 @@
         {
           "accepted_limitation": false,
           "backend_value": {
-            "fingerprint": "c37a71dffd296d42",
-            "length": 14,
+            "fingerprint": "455b6974e79c6f01",
+            "length": 31,
             "present": true,
             "type": "string"
           },
           "boundary": "live-api-live-termux",
           "explanation": "values are exactly equal",
           "frontend_value": {
-            "fingerprint": "c37a71dffd296d42",
-            "length": 14,
+            "fingerprint": "455b6974e79c6f01",
+            "length": 31,
             "present": true,
             "type": "string"
           },
@@ -2531,58 +2824,58 @@
         }
       ],
       "id": "recovery",
-      "implementation_status": "partial",
+      "implementation_status": "implemented",
       "label": "Backup & Restore",
       "live_api_coverage": "observed",
       "live_termux_coverage": "observed",
       "live_ui_coverage": "observed",
       "observation_fingerprints": {
-        "backend": "4b10f84137aaf168660f81b817114acdbf109597b390bfa2c98825cda906a1bd",
-        "live_desktop": "8ba7a2857bcb9afcd1706487d492474c96d8106eb6ab472d8bc36a87010493b1",
-        "live_mobile": "8ba7a2857bcb9afcd1706487d492474c96d8106eb6ab472d8bc36a87010493b1",
-        "termux": "ca15b36c04d03b22c83191afcb00a26d471a10e149617abdea159bda114dc59e"
+        "backend": "fcb7a60ce157d4dff304bba70c61d9cf1520639fa4ca23dc308ec1393ccb4beb",
+        "live_desktop": "e61562cfb90c90c4df666c65556614da8f019203f620f05a607d3502a3d07ce9",
+        "live_mobile": "e61562cfb90c90c4df666c65556614da8f019203f620f05a607d3502a3d07ce9",
+        "termux": "1d1b8f4240656db4d7d5f85369ec78041fb3468cba5079b5a11681b02f027234"
       },
-      "runtime_parity": "partial",
-      "status": "partial"
+      "runtime_parity": "verified-with-mapped-presentation",
+      "status": "verified"
     }
   ],
   "evidence_hashes": {
-    "backend-apps": "e44e837765fb89b79be9aed281c062bd5b8a005bd4c00d6fc8e729840927b69f",
-    "backend-devices": "83a2a2dfb393fd08ca1c8c36b76a93b4e4e9c40c92a42fb91fed07144f713721",
-    "backend-home": "e28748d78d640ce9cad36a12ab02be40e93d4d6be7021f69b09dcee8ed2195da",
-    "backend-identity": "542192ab2dc3a7d1038190ae2b34fdf8a54ff4f9d01ce2a5477841d439867897",
-    "backend-recovery": "b9dfa1eadef96a1935b3312c0c8d01dbf7533e56840711cb50cc1fd15b899fd3",
-    "backend-rules": "e7e7c54790d97cf8e7af9b24a4e47111431ae93ba79c8f41097106395e7e9a93",
-    "backend-security": "e867a89289f457f8fa68f71a06b929b0449b9618303c265f26c69235c34cb51e",
-    "browser-apps-live-desktop": "9de569b457094265b57ebb4399a94e223e578322acc518e2da1a48e75c834f7e",
-    "browser-apps-live-mobile": "80ce754b1330586c7fdce6f3debc1a01dc6633c6bd53a1d4f993033fbb298732",
-    "browser-devices-live-desktop": "17d9271916dbf4f8a87e189b8c769a2b4604ca01134f9d5c780828327a6923d6",
-    "browser-devices-live-mobile": "1f212cf05015f8fe7071cde0ccde1d2a8f26205a73f388279aaa5ee8247e4e8c",
-    "browser-home-live-desktop": "f5513ccc41bfc577d5e537e31177fc242371a94f7f5075e0eadba3ed27769cd1",
-    "browser-home-live-mobile": "478b578e0252e4fd03215fcc3ec35eb0518468c19e4b964fcbd4255d229a30fe",
-    "browser-identity-live-desktop": "5212a8d1e8a466e62c3277f95cb6d5a3bbfda499fd570d20a6542f8c979f6407",
-    "browser-identity-live-mobile": "4b4709048c92e921180b1ce755ce9066fb524d4f1222f1a9d20ad3498d2417e6",
-    "browser-recovery-live-desktop": "034bc452fc2af9bdcb5e81c945134156fd2dd6f694f6613ffcc5b72ced32d114",
-    "browser-recovery-live-mobile": "0857e0eb12e066d04ae603ae7e1659d0adddda5d2ec46b70859219878c5ce14d",
-    "browser-rules-live-desktop": "5981ca787d43e18c227276e4538922217ba77e7e5ffbaf16d805c55228d94867",
-    "browser-rules-live-mobile": "ee33e8019f8a508af2165d41789ed728d69459dd43a833fa52a72c6dca6ce254",
-    "browser-security-live-desktop": "6b3d0849871147e2bd43ff8b6c12c8dffafec449a1a8e8b765c66a7bc6a36e6f",
-    "browser-security-live-mobile": "76df3ef0b65d2f3021d0f7016b5cf77c3f48338e80743845df101d1e2123b2a0",
-    "playwright-report": "e5db3fbc6a27b2e50d0c8dfb61a66c49d4d3b1ac5fd900e481c30278860c4dc4",
-    "runtime-comparison": "c791b467b9c2b8c658ae5960329abd8615c1b62edb5ee3fe82d916a08728e0a6",
-    "termux-apps": "e5b994b30a093ebb40a2036be3f3d204ede243d42f8e1111139101927de7a50a",
-    "termux-devices": "2c0363642acf7d16d9f72171d0922076224d359fe45575afa87d932851080e55",
-    "termux-home": "f64a934f7432ed9d4ead8c87f084568def15e409bc635c5c2372d7383482125e",
-    "termux-identity": "c7c2595cdb3db7b2aac430484db1e847ad7f86f9fead467b1c3ddffabfa3f022",
-    "termux-recovery": "e6584ba303195a781499f2d5f78de79ae2a44f51ee04fc3b4320ca7c000071f2",
-    "termux-rules": "fe4ab3df136115d2a047701e3aa1d63876c0ae6a7a93b408c57cdb3716b3a9ed",
-    "termux-security": "5e06a5765e7688a26ec131557e0d34058a0134e6f14ba5b3c4eb6ec2e506305b"
+    "backend-apps": "eb50f89550ef69616cc9f9ce15788cb8d21ff877644d94b150ac8db1f356a9ac",
+    "backend-devices": "1953fb1d7a9b85141db7214b8eac9aef563e0d26fea61984db533fa680d9c8a9",
+    "backend-home": "a5235386aac4bf05b2dbe3e4c188467d648157f3a5219c653a46d7bc39853874",
+    "backend-identity": "976e3f8ec36cf62cbd95dbae4859e80011574947e177948655ed1dde7db8a133",
+    "backend-recovery": "1a69d94a160127337c3ebafea911ecdef6129040d5703347a11ba94e409face4",
+    "backend-rules": "1ee4443e61de5444edab6dfe7a51305bd02665dcc9015c11f9726065f6ce1358",
+    "backend-security": "ad140705909a16776afd8b35e4d7f26f0fb67e5062ee6c8d784aef17da915600",
+    "browser-apps-live-desktop": "13eb0745324630fd7b18ceeb5dce7c64fc17a1325279919963579436697836b0",
+    "browser-apps-live-mobile": "6c349baabed624f212ba24be9446f43b5c14cd9c4746a4b6dba4995af2ec86e0",
+    "browser-devices-live-desktop": "75f3bbfd71e2ee79cb56959a172e2d84a84b40c5a511d3433072d7eb4c91b3d9",
+    "browser-devices-live-mobile": "1f570eb9f760cf7ff760c612c07d2c1cdac8961788b61a545f11e9c3bf3030f8",
+    "browser-home-live-desktop": "3c80e81f780a75c4d05e90db3ff665270ac97231575923ef360081c4ac5befac",
+    "browser-home-live-mobile": "f232a4ce8371ba4399285ea33e95c1a5bea6267a4cd2f9c7878bd1060a1c3178",
+    "browser-identity-live-desktop": "9e956219646ac14a0b9a7b36240b3e54b5e555767d684d439b968b71cd21395e",
+    "browser-identity-live-mobile": "2a03d0996239f1c0ce3121ad1b3d6ae20ad589b953e97be572032c53bd5ff1b1",
+    "browser-recovery-live-desktop": "b131a60faff1d002e6493fbaa1e3cf2f3929acba94b1116ffddd84cd171213f4",
+    "browser-recovery-live-mobile": "51bf676f58fa705e3c366c8fe9223fcb6ba72428fd52e50c8efed946fbe8c5ec",
+    "browser-rules-live-desktop": "0cb049188b3c572ef52496e95c14568db34abd4885355df9b8fba74509aee691",
+    "browser-rules-live-mobile": "32168776bde6b46703c86fb0c00aac04af00e5e5d132dce9d774508d721638fd",
+    "browser-security-live-desktop": "9c6803f16e03e810fdfc45f3ae2555ebb2c5db14c2f100524c0294e617da14e2",
+    "browser-security-live-mobile": "15ffc6f865dcfbdd0437e105154aa325a0e8ef025b4234694f6ed3328d77304f",
+    "playwright-report": "5d578784ed5d4ca4c79556b65c6e065fa0c782a022736487aa5bb118a7fb926d",
+    "runtime-comparison": "75e2ce0ba27765b03d32f62fc29d6280bc7679b56a6e64f675fefff76b62e6ca",
+    "termux-apps": "74c4190577923e76e327e06bd8f004f9121622d41b969b0b4574e109d33e2f93",
+    "termux-devices": "ec7251d358bb0a35136ee3184664c4a353375658521ffee7f18a6cb9dd5f342b",
+    "termux-home": "6fda549c896121680279714e899d56c60ac2292ceb57a1dab975bbf51191bfca",
+    "termux-identity": "b38a29cfbdbef34cfce8664dd6a74cc4fd05a846204f5c7cae1a23e8dbeb6a8a",
+    "termux-recovery": "fd84a71c42640484fec201fa4f28bd9c81db066529d7e540428be850e1282cb8",
+    "termux-rules": "808fe7a4f430abdaa19e2f3983935a0e1bc4d778e0cd9b32ecd0d1f8001dd262",
+    "termux-security": "4e42a6485fa16a10adb789a65c8b95a4550f3d8d628e138df400afcb71782e0b"
   },
-  "generated_at": "2026-08-06T18:07:55Z",
-  "promoted_at": "2026-08-06T18:14:18Z",
-  "release_tag": "lite-2026.08.06.2",
+  "generated_at": "2026-08-07T07:10:14Z",
+  "promoted_at": "2026-08-07T07:16:22Z",
+  "release_tag": "lite-2026.08.07.1",
   "sanitized": true,
   "schema_version": "2.0.0",
-  "source_commit": "ae54d3adf6c544d040fb923a1894f66b2a92513c",
+  "source_commit": "c44493ede19f45299277d4da3af215dfe4ea8db3",
   "status": "partial"
 }

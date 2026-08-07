@@ -62,18 +62,18 @@
     },
     {
       "comparison_summary": {
-        "mapped": 6,
-        "match": 17,
+        "mapped": 8,
+        "match": 33,
         "mismatch": 0,
         "not_applicable": 0,
-        "not_observed": 1,
+        "not_observed": 0,
         "unsupported": 0
       },
       "id": "recovery",
       "label": "Backup & Restore",
       "mismatches": [],
-      "runtime_parity": "partial",
-      "runtime_status": "partial"
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "verified"
     },
     {
       "comparison_summary": {

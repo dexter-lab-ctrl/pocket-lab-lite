@@ -621,5 +621,8 @@ def test_generated_all_tab_docs_and_contracts_exist():
         if line.startswith("| Backup & Restore |")
     )
     assert "| verified | verified | verified |" in recovery_row
-    assert "| partial | ready-with-accepted-limitations |" in recovery_row
+    assert (
+        "| verified-with-mapped-presentation | verified |"
+        in recovery_row
+    )
     subprocess.run(["python3", str(GENERATOR), "check"], cwd=ROOT, check=True)

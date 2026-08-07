@@ -20,6 +20,6 @@ Pocket Lab Lite has deterministic repository-derived parity contracts for Home, 
 | Security | verified | observed | observed | observed | verified-with-mapped-presentation |
 | Identity | partial | observed | observed | observed | partial |
 | Rules | partial | observed | observed | observed | partial |
-| Backup & Restore | ready-with-accepted-limitations | observed | observed | observed | partial |
+| Backup & Restore | verified | observed | observed | observed | verified-with-mapped-presentation |
 
 A promoted drift result is a review signal, not a documentation failure and not permission to change application behavior automatically.
