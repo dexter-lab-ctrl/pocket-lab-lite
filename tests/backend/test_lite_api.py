@@ -8113,3 +8113,15 @@ def test_legacy_fleet_bootstrap_accepts_valid_joinable_identity(monkeypatch):
     assert captured["node_id"] == "edge-device-1"
     assert captured["role"] == "compute"
     assert "protected-runtime-token" in response.text
+
+
+def test_lite_recovery_stale_projection_uses_truthful_status_presentation():
+    repository_root = Path(__file__).resolve().parents[2]
+    recovery = (repository_root / "src/lite/LiteRecovery.jsx").read_text(encoding="utf-8")
+
+    assert "const recoveryStatus = projectionStale || databaseWriteBlocked ? 'review'" in recovery
+    status_marker = 'data-testid="parity-recovery-status"'
+    status_slice = recovery.partition(status_marker)[2].partition('</div>')[0]
+    assert "backendLabel(recoveryStatus" in status_slice
+    assert "backendLabel(data?.status" not in status_slice
+    assert "review: 'Review recommended'" in status_slice
