@@ -7,7 +7,7 @@ confidence: generated
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/knowledge/generate_knowledge.py
-generator_version: 1
+generator_version: 2
 ---
 
 # Knowledge graph
@@ -15,7 +15,7 @@ generator_version: 1
 | Metric | Count |
 | --- | --- |
 | Entities | 826 |
-| Relations | 1914 |
+| Relations | 1921 |
 | Entity types | 21 |
 | Domains | 46 |
 

@@ -148,7 +148,7 @@
       ],
       "observation_fingerprints": {
         "backend": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f",
-        "live_desktop": "4958e17e91f9badbc11bc2f92418b70c2e6ac96b4bafb729930fd8b2bcf5597b",
+        "live_desktop": "df6b50586d7b1bb3477b780774b62c06643cef7ecf1f3ecf2dfd70ff964a5f6a",
         "live_mobile": "4958e17e91f9badbc11bc2f92418b70c2e6ac96b4bafb729930fd8b2bcf5597b",
         "termux": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f"
       },
@@ -169,8 +169,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend contains the backend meaning",
           "frontend_value": {
-            "fingerprint": "c4bc33ae2468c1a0",
-            "length": 495,
+            "fingerprint": "d04e474368acd69a",
+            "length": 597,
             "present": true,
             "type": "string"
           },
@@ -281,8 +281,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "c4bc33ae2468c1a0",
-            "length": 495,
+            "fingerprint": "d04e474368acd69a",
+            "length": 597,
             "present": true,
             "type": "string"
           },
@@ -328,8 +328,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "c4bc33ae2468c1a0",
-            "length": 495,
+            "fingerprint": "d04e474368acd69a",
+            "length": 597,
             "present": true,
             "type": "string"
           },
@@ -744,8 +744,8 @@
       ],
       "observation_fingerprints": {
         "backend": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59",
-        "live_desktop": "f51065e1ef9c50dd17494bd1b960e83f080260d9dc5d6734be198511e98d6cb2",
-        "live_mobile": "f51065e1ef9c50dd17494bd1b960e83f080260d9dc5d6734be198511e98d6cb2",
+        "live_desktop": "cc5114fba12a156ecd4740f01066da7df5bdab5815d5d34832ab989e54d69bcf",
+        "live_mobile": "cc5114fba12a156ecd4740f01066da7df5bdab5815d5d34832ab989e54d69bcf",
         "termux": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59"
       },
       "query_keys": [
@@ -781,7 +781,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1007f5e9ebbb123c",
+            "fingerprint": "1facf68e3d9849b3",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -800,7 +800,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1007f5e9ebbb123c",
+            "fingerprint": "1facf68e3d9849b3",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -823,7 +823,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "1007f5e9ebbb123c",
+            "fingerprint": "1facf68e3d9849b3",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -846,7 +846,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "1007f5e9ebbb123c",
+            "fingerprint": "1facf68e3d9849b3",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -898,7 +898,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1007f5e9ebbb123c",
+            "fingerprint": "1facf68e3d9849b3",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -922,7 +922,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1007f5e9ebbb123c",
+            "fingerprint": "1facf68e3d9849b3",
             "length": 3657,
             "present": true,
             "type": "string"
@@ -1295,10 +1295,10 @@
         "tests/e2e/lite-mocked.spec.ts"
       ],
       "observation_fingerprints": {
-        "backend": "6aa167147c75530933500ab6dd9999e82990a5494678f8981d4603b6f1100d55",
-        "live_desktop": "ee2044c0f1e0afa0cb743e1b01d83e6efee13886056fa5bd8c4d6e56e870a164",
-        "live_mobile": "ee2044c0f1e0afa0cb743e1b01d83e6efee13886056fa5bd8c4d6e56e870a164",
-        "termux": "6aa167147c75530933500ab6dd9999e82990a5494678f8981d4603b6f1100d55"
+        "backend": "287501051ac06842caeb9ee568a21f958ac5b96fbf3d46dc5c1403ac2cfaed58",
+        "live_desktop": "f5ff4bae71b295c3e257b2f110efc6bc42ab4a9be05848b2f1f5bd7b8e30d638",
+        "live_mobile": "f5ff4bae71b295c3e257b2f110efc6bc42ab4a9be05848b2f1f5bd7b8e30d638",
+        "termux": "287501051ac06842caeb9ee568a21f958ac5b96fbf3d46dc5c1403ac2cfaed58"
       },
       "query_keys": [
         "liteQueryKeys.status",
@@ -1333,7 +1333,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "percentage formatting is equivalent",
           "frontend_value": {
-            "fingerprint": "90050a94a8be3507",
+            "fingerprint": "fcb967d288677d0b",
             "length": 13,
             "present": true,
             "type": "string"
@@ -1352,7 +1352,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "percentage formatting is equivalent",
           "frontend_value": {
-            "fingerprint": "90050a94a8be3507",
+            "fingerprint": "fcb967d288677d0b",
             "length": 13,
             "present": true,
             "type": "string"
@@ -1376,8 +1376,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1660f6e32ef97ce3",
-            "length": 1839,
+            "fingerprint": "dd727d7bc39ecc9d",
+            "length": 1841,
             "present": true,
             "type": "string"
           },
@@ -1400,8 +1400,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1660f6e32ef97ce3",
-            "length": 1839,
+            "fingerprint": "dd727d7bc39ecc9d",
+            "length": 1841,
             "present": true,
             "type": "string"
           },
@@ -1417,14 +1417,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 7,
-            "fingerprint": "6aa167147c755309",
+            "fingerprint": "287501051ac06842",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "1660f6e32ef97ce3",
-            "length": 1839,
+            "fingerprint": "dd727d7bc39ecc9d",
+            "length": 1841,
             "present": true,
             "type": "string"
           },
@@ -1440,14 +1440,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 7,
-            "fingerprint": "6aa167147c755309",
+            "fingerprint": "287501051ac06842",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "1660f6e32ef97ce3",
-            "length": 1839,
+            "fingerprint": "dd727d7bc39ecc9d",
+            "length": 1841,
             "present": true,
             "type": "string"
           },
@@ -1503,10 +1503,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 4652,
+          "backend_value": 4483,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 256.0",
-          "frontend_value": 4652,
+          "frontend_value": 4483,
           "id": "home-termux-memory_usage_mb",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -1541,10 +1541,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": true,
+          "backend_value": false,
           "boundary": "live-api-live-termux",
           "explanation": "values are exactly equal",
-          "frontend_value": true,
+          "frontend_value": false,
           "id": "home-termux-read_degraded",
           "implementation_status": "implemented",
           "operator": "exact",
@@ -1583,10 +1583,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 135411,
+          "backend_value": 135709,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 64.0",
-          "frontend_value": 135411,
+          "frontend_value": 135709,
           "id": "home-termux-storage_free_mb",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -2365,10 +2365,10 @@
         "tests/e2e/lite-parity.spec.ts"
       ],
       "observation_fingerprints": {
-        "backend": "fcb7a60ce157d4dff304bba70c61d9cf1520639fa4ca23dc308ec1393ccb4beb",
-        "live_desktop": "e61562cfb90c90c4df666c65556614da8f019203f620f05a607d3502a3d07ce9",
-        "live_mobile": "e61562cfb90c90c4df666c65556614da8f019203f620f05a607d3502a3d07ce9",
-        "termux": "1d1b8f4240656db4d7d5f85369ec78041fb3468cba5079b5a11681b02f027234"
+        "backend": "a96527f61620b17013226d83fb5a820cc1f3aaa882e2e017193f6561da49e9f1",
+        "live_desktop": "e41919cef09f08feeede72b6efebbd8bdeca1639517c60206b24a96e671545ac",
+        "live_mobile": "e41919cef09f08feeede72b6efebbd8bdeca1639517c60206b24a96e671545ac",
+        "termux": "3daeff5942bf80057bf3326d81425fdb965b78ca9c2b33e18f81861eb64e8ffe"
       },
       "query_keys": [
         "liteQueryKeys.recoverySummary",
@@ -2602,13 +2602,13 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 20,
-            "fingerprint": "fcb7a60ce157d4df",
+            "fingerprint": "a96527f61620b170",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "85d0f7f83115b599",
+            "fingerprint": "58a099df685478a3",
             "length": 1010,
             "present": true,
             "type": "string"
@@ -2625,13 +2625,13 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 20,
-            "fingerprint": "fcb7a60ce157d4df",
+            "fingerprint": "a96527f61620b170",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "85d0f7f83115b599",
+            "fingerprint": "58a099df685478a3",
             "length": 1010,
             "present": true,
             "type": "string"
@@ -3004,10 +3004,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 702262,
+          "backend_value": 141714,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 15000.0",
-          "frontend_value": 706558,
+          "frontend_value": 147224,
           "id": "recovery-termux-projection_age_ms",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",

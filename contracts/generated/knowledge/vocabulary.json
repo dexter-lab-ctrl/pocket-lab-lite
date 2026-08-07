@@ -731,9 +731,9 @@
   "metadata": {
     "generated_at": "uncommitted",
     "generator": "scripts/docs/knowledge/generate_knowledge.py",
-    "generator_version": 1,
+    "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "2de81f1ef488645017f4168beac4fa5713bceacc886be1ed62c90e114a0fef42"
+    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
   }
 }

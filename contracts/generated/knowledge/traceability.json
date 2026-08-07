@@ -2046,9 +2046,11 @@
       "entity": "domain:apps",
       "name": "Apps",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
       "type": "domain",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "domain:architecture",
@@ -2102,9 +2104,11 @@
       "entity": "domain:devices",
       "name": "Devices",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
       "type": "domain",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "domain:diagnostics",
@@ -2170,9 +2174,11 @@
       "entity": "domain:home",
       "name": "Home",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
       "type": "domain",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "domain:identity",
@@ -2181,6 +2187,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
@@ -2275,6 +2282,7 @@
       "name": "Backup & Restore",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
       "type": "domain",
@@ -2311,9 +2319,11 @@
       "entity": "domain:rules",
       "name": "Rules",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
       "type": "domain",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "domain:runbook",
@@ -2371,6 +2381,7 @@
         "test:tests/backend/test_lite_startup_workload_isolation.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
@@ -2841,9 +2852,9 @@
   "metadata": {
     "generated_at": "uncommitted",
     "generator": "scripts/docs/knowledge/generate_knowledge.py",
-    "generator_version": 1,
+    "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "2de81f1ef488645017f4168beac4fa5713bceacc886be1ed62c90e114a0fef42"
+    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
   }
 }

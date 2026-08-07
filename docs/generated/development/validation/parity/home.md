@@ -135,16 +135,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
-| backend-home | a5235386aac4bf05b2dbe3e4c188467d648157f3a5219c653a46d7bc39853874 |
-| browser-home-live-desktop | 3c80e81f780a75c4d05e90db3ff665270ac97231575923ef360081c4ac5befac |
-| browser-home-live-mobile | f232a4ce8371ba4399285ea33e95c1a5bea6267a4cd2f9c7878bd1060a1c3178 |
-| observation-backend | 6aa167147c75530933500ab6dd9999e82990a5494678f8981d4603b6f1100d55 |
-| observation-live_desktop | ee2044c0f1e0afa0cb743e1b01d83e6efee13886056fa5bd8c4d6e56e870a164 |
-| observation-live_mobile | ee2044c0f1e0afa0cb743e1b01d83e6efee13886056fa5bd8c4d6e56e870a164 |
-| observation-termux | 6aa167147c75530933500ab6dd9999e82990a5494678f8981d4603b6f1100d55 |
-| playwright-report | 5d578784ed5d4ca4c79556b65c6e065fa0c782a022736487aa5bb118a7fb926d |
-| runtime-comparison | 75e2ce0ba27765b03d32f62fc29d6280bc7679b56a6e64f675fefff76b62e6ca |
-| termux-home | 6fda549c896121680279714e899d56c60ac2292ceb57a1dab975bbf51191bfca |
+| backend-home | c717f87f57a3c395e7e1e3aadab5451c44078ece7d97165f790aa012be0ced87 |
+| browser-home-live-desktop | f81425a1ecbbd5dea872296152a032c4905be44d87da73a41d1236889f05db1f |
+| browser-home-live-mobile | 0d31d4df7bd91adab8ad6cdffe050669ac2e33881dd39b6900ca0219375202de |
+| observation-backend | 287501051ac06842caeb9ee568a21f958ac5b96fbf3d46dc5c1403ac2cfaed58 |
+| observation-live_desktop | f5ff4bae71b295c3e257b2f110efc6bc42ab4a9be05848b2f1f5bd7b8e30d638 |
+| observation-live_mobile | f5ff4bae71b295c3e257b2f110efc6bc42ab4a9be05848b2f1f5bd7b8e30d638 |
+| observation-termux | 287501051ac06842caeb9ee568a21f958ac5b96fbf3d46dc5c1403ac2cfaed58 |
+| playwright-report | 3c90b4b00cb31ad64c1f64a47913ac11fc9582100ffcc5068e280cb4a5b668ef |
+| runtime-comparison | 274f3a0d3e13986672c2462abf778101f86584679ce20e05dfe78a54f01d3140 |
+| termux-home | cb60f607076905fcfca6b59cc92f330846b0d46d596977f63937acececc6e638 |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -152,7 +152,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 2.0.0 | lite-2026.08.07.1 | c44493ede19f45299277d4da3af215dfe4ea8db3 | 2026-08-07T07:16:22Z |
+| 2.0.0 | lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | 2026-08-07T18:04:28Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 

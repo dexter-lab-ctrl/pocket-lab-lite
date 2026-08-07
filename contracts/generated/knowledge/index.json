@@ -8762,7 +8762,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "degraded",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -11026,13 +11026,13 @@
       "artifact_checksum": null,
       "confidence": "release-promoted",
       "domain": "release",
-      "id": "release:lite-2026.08.07.1",
-      "name": "lite-2026.08.07.1",
-      "promoted_at": "2026-08-07T07:16:22Z",
+      "id": "release:lite-2026.08.07.3",
+      "name": "lite-2026.08.07.3",
+      "promoted_at": "2026-08-07T18:04:28Z",
       "release_manifest_status": "unvalidated",
       "runtime_parity_status": "partial",
       "sanitized": true,
-      "source_commit": "c44493ede19f45299277d4da3af215dfe4ea8db3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
       "source_refs": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -21577,7 +21577,7 @@
         "journey:release-update",
         "journey:rollback",
         "reason:release_projection_unavailable",
-        "release:lite-2026.08.07.1",
+        "release:lite-2026.08.07.3",
         "subject:pocketlab.commands.release.apply",
         "subject:pocketlab.commands.release.check",
         "subject:pocketlab.events.release.applied",
@@ -22316,7 +22316,7 @@
         "reason:worker_start_timeout"
       ],
       "release": [
-        "release:lite-2026.08.07.1"
+        "release:lite-2026.08.07.3"
       ],
       "requirement": [
         "requirement:architecture-01",
@@ -25496,7 +25496,7 @@
           "type": "owns"
         }
       ],
-      "release:lite-2026.08.07.1": [
+      "release:lite-2026.08.07.3": [
         {
           "source": "domain:apps",
           "type": "observed_by"
@@ -30394,7 +30394,23 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:apps",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:devices",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:home",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
           "type": "verified_by"
         },
         {
@@ -30402,7 +30418,19 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:release",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:rules",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
           "type": "verified_by"
         },
         {
@@ -36322,7 +36350,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -36444,6 +36472,10 @@
         {
           "target": "table:app_current_state",
           "type": "owns"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
         }
       ],
       "domain:audit": [
@@ -36522,7 +36554,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -36808,6 +36840,10 @@
         {
           "target": "ui:litedevices",
           "type": "owns"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
         }
       ],
       "domain:diagnostics": [
@@ -36938,7 +36974,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -36948,6 +36984,10 @@
         {
           "target": "api:get:/api/lite/status",
           "type": "owns"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
         }
       ],
       "domain:identity": [
@@ -36968,7 +37008,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -36993,6 +37033,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
         {
@@ -37474,7 +37518,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -37646,6 +37690,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_intelligent_runtime_parity.py",
           "type": "verified_by"
         }
@@ -37756,7 +37804,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -37770,6 +37818,10 @@
         {
           "target": "ui:literules",
           "type": "owns"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
         }
       ],
       "domain:runbook": [
@@ -37852,7 +37904,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.1",
+          "target": "release:lite-2026.08.07.3",
           "type": "observed_by"
         },
         {
@@ -38153,6 +38205,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
         {
@@ -40533,15 +40589,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:0700c7e28587ad4b",
-      "source": "domain:devices",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:071629345a2151bd",
@@ -41740,6 +41787,15 @@
       "source": "requirement:architecture-07",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:178db9474df07f86",
+      "source": "domain:apps",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -43588,15 +43644,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:33050a1e82ceae79",
-      "source": "domain:identity",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:33673cce43e25643",
@@ -44321,6 +44368,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:3c1c0e7aa7188142",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:3c621aeb167af6c1",
@@ -44820,15 +44876,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:44d372897f20c348",
-      "source": "domain:apps",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:44f19ae0397a5028",
@@ -44978,6 +45025,15 @@
       "id": "rel:478fcd9bf1062286",
       "source": "domain:security",
       "target": "test:tests/e2e/lite-test-helpers.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4799813c37744ee8",
+      "source": "domain:apps",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -46037,6 +46093,15 @@
     },
     {
       "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:5908b9df1fd2eab2",
+      "source": "domain:devices",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:591c4edff5f8ff05",
@@ -46363,6 +46428,15 @@
       "source": "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:5d8425ad91bae68e",
+      "source": "domain:identity",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -48060,6 +48134,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:774c5abe28463447",
+      "source": "domain:devices",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:776af9de6e9a6fa7",
@@ -48228,6 +48311,15 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-1",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:795f9511f8a6328d",
+      "source": "domain:security",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -48427,6 +48519,15 @@
       "source": "journey:parity-capture",
       "target": "component:lite-api",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:7dc96324995aa17a",
+      "source": "domain:rules",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -49150,6 +49251,15 @@
       "source": "domain:events",
       "target": "api:get:/api/lite/events",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:87fc713719b30696",
+      "source": "domain:recovery",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -49938,6 +50048,15 @@
       "source": "component:completion-evidence",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:934568ac31cf02a9",
+      "source": "domain:home",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -51744,15 +51863,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:ae72cf686cf1f3d0",
-      "source": "domain:rules",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:ae99b49cab7c514e",
@@ -52004,6 +52114,15 @@
       "source": "domain:security",
       "target": "api:get:/api/lite/security/history",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:b2ad71795b029536",
+      "source": "domain:rules",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -52353,15 +52472,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:b82d8e6436701735",
-      "source": "domain:recovery",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:b8731ae28caa1f4d",
@@ -52701,15 +52811,6 @@
       "source": "domain:recovery",
       "target": "api:post:/api/lite/recovery/backups/{backup_id}/verify",
       "type": "owns"
-    },
-    {
-      "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:bd3811a2c9a21961",
-      "source": "domain:home",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
     },
     {
       "evidence": [
@@ -54060,15 +54161,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:cfc50b36f512624a",
-      "source": "domain:security",
-      "target": "release:lite-2026.08.07.1",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:cfd0fb78768e3e88",
@@ -54502,6 +54594,15 @@
       "source": "domain:platform",
       "target": "journey:startup",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d70ebd75c11bcdf9",
+      "source": "domain:home",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -55177,6 +55278,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e185a2b96d4fb238",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
       ],
       "id": "rel:e1b5fcce46bedbb1",
@@ -55273,6 +55383,15 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_premium_tab_polish.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:e336aec58c5c5e3c",
+      "source": "domain:recovery",
+      "target": "release:lite-2026.08.07.3",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -57304,7 +57423,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "2de81f1ef488645017f4168beac4fa5713bceacc886be1ed62c90e114a0fef42",
+  "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4",
   "statistics": {
     "entity_count": 826,
     "entity_type_counts": {
@@ -57330,7 +57449,7 @@
       "ui": 8,
       "vocabulary": 37
     },
-    "relation_count": 1914,
+    "relation_count": 1921,
     "source_count": 188
   }
 }
