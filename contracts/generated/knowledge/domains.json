@@ -43,6 +43,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -53,7 +54,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "unvalidated",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -228,6 +229,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -238,7 +240,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "unvalidated",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -423,25 +425,26 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "status_dimensions": {
         "capability_status": "implemented",
         "confidence": "release-promoted",
-        "degraded_reason": null,
+        "degraded_reason": "service_unavailable",
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "healthy",
-        "readiness": "ready-with-guardrails",
+        "operational_health": "degraded",
+        "readiness": "degraded",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
       },
       "type": "domain"
     },
     {
-      "confidence": "release-promoted",
+      "confidence": "partial",
       "description": "",
       "domain": "identity",
       "id": "domain:identity",
@@ -459,12 +462,13 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "status_dimensions": {
         "capability_status": "partial",
-        "confidence": "release-promoted",
+        "confidence": "partial",
         "degraded_reason": null,
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
@@ -729,6 +733,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -737,10 +742,10 @@
         "confidence": "release-promoted",
         "degraded_reason": "projection_too_old",
         "evidence_status": "release-promoted",
-        "freshness": "promoted-observation",
+        "freshness": "stale",
         "implementation_status": "implemented",
         "operational_health": "degraded",
-        "readiness": "ready-with-guardrails",
+        "readiness": "degraded",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
       },
@@ -807,7 +812,7 @@
       "type": "domain"
     },
     {
-      "confidence": "release-promoted",
+      "confidence": "partial",
       "description": "",
       "domain": "rules",
       "id": "domain:rules",
@@ -824,12 +829,13 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "status_dimensions": {
         "capability_status": "partial",
-        "confidence": "release-promoted",
+        "confidence": "partial",
         "degraded_reason": null,
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
@@ -909,6 +915,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -919,7 +926,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "unvalidated",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -1168,6 +1175,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
+    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
   }
 }

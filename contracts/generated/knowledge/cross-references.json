@@ -7777,6 +7777,188 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_operational_health_bridge.py": [
+        {
+          "source": "domain:apps",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:devices",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:home",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:rules",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:parity-capture",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:recovery-reconciliation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:already_tuned",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:cold_start_validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:command_undeliverable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:diagnostics_not_active",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:insufficient_storage",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invalid_domain",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:lease_active",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:legacy_multiple_active_runs",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:no_active_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:not_found_in_restored_snapshot",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:queue_full",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:read_degraded",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:release_projection_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:remote_access_not_ready",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:service_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:submit_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unregistered_domain",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:worker_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:worker_start_timeout",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-live.spec.ts": [
         {
           "source": "reason:disabled",
@@ -13627,6 +13809,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "domain:audit": [
@@ -13995,6 +14181,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "domain:diagnostics": [
@@ -14139,6 +14329,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "domain:identity": [
@@ -14188,6 +14382,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         },
         {
@@ -14845,6 +15043,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_intelligent_runtime_parity.py",
           "type": "verified_by"
         }
@@ -14972,6 +15174,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -15360,6 +15566,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         },
         {
@@ -15755,6 +15965,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_api_contract_fences.py",
           "type": "verified_by"
         }
@@ -15851,6 +16065,10 @@
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "journey:parity-capture": [
@@ -15865,6 +16083,10 @@
         {
           "target": "component:sqlite",
           "type": "uses"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "journey:photoprism-operation": [
@@ -15917,6 +16139,10 @@
         {
           "target": "component:sqlite",
           "type": "uses"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "journey:release-update": [
@@ -16379,6 +16605,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:cold_start_validation": [
@@ -16388,6 +16618,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16399,6 +16633,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:diagnostics_not_active": [
@@ -16408,6 +16646,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16449,6 +16691,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-live.spec.ts",
           "type": "verified_by"
         },
@@ -16469,6 +16715,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:generation_changed": [
@@ -16478,6 +16728,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16505,6 +16759,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:insufficient_storage": [
@@ -16518,6 +16776,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16545,6 +16807,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:invalid_domain": [
@@ -16555,6 +16821,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:invite_expired": [
@@ -16564,6 +16834,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16579,6 +16853,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:lease_active": [
@@ -16588,6 +16866,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16599,6 +16881,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:metadata_only": [
@@ -16608,6 +16894,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16619,6 +16909,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:not_found_in_restored_snapshot": [
@@ -16628,6 +16922,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16643,6 +16941,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:projection_too_old": [
@@ -16652,6 +16954,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         },
         {
@@ -16666,6 +16972,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16711,6 +17021,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-live.spec.ts",
           "type": "verified_by"
         }
@@ -16726,6 +17040,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16767,6 +17085,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-live.spec.ts",
           "type": "verified_by"
         },
@@ -16783,6 +17105,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:remote_access_not_ready": [
@@ -16797,6 +17123,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:service_unavailable": [
@@ -16810,6 +17140,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16857,6 +17191,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:shutdown_during_mailbox_backpressure": [
@@ -16866,6 +17204,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16881,6 +17223,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:target_not_allowed": [
@@ -16890,6 +17236,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16905,6 +17255,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:worker_failed": [
@@ -16914,6 +17268,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -16928,6 +17286,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -17199,6 +17561,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
+    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
   }
 }

@@ -1,7 +1,317 @@
 {
-  "items": [
+  "domains": {
+    "apps": {
+      "confidence": "release-promoted",
+      "dependencies": [
+        "Caddy",
+        "FastAPI",
+        "NATS/JetStream",
+        "worker",
+        "PhotoPrism runtime"
+      ],
+      "evidence": [
+        {
+          "comparison_id": "apps-termux-runtime_status",
+          "health_effect": "healthy",
+          "observed_value": "ready",
+          "reason": null
+        },
+        {
+          "comparison_id": "apps-termux-installed",
+          "health_effect": "healthy",
+          "observed_value": true,
+          "reason": null
+        },
+        {
+          "comparison_id": "apps-termux-route_ready",
+          "health_effect": "healthy",
+          "observed_value": true,
+          "reason": null
+        },
+        {
+          "comparison_id": "apps-termux-open_enabled",
+          "health_effect": "healthy",
+          "observed_value": true,
+          "reason": null
+        }
+      ],
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "freshness_age_seconds": null,
+      "freshness_threshold_seconds": 60,
+      "implementation_status": "implemented",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "healthy",
+      "readiness": "ready-with-guardrails",
+      "reason": null,
+      "runtime_status": "observed",
+      "semantic_parity": "verified-with-mapped-presentation",
+      "severity": "info",
+      "source": {
+        "evidence_comparisons": [
+          "apps-termux-runtime_status",
+          "apps-termux-installed",
+          "apps-termux-route_ready",
+          "apps-termux-open_enabled"
+        ],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "guarded-by-backend-readiness"
+    },
+    "devices": {
+      "confidence": "release-promoted",
+      "dependencies": [
+        "FastAPI",
+        "NATS/JetStream",
+        "node agent",
+        "agent supervisor",
+        "Tailscale"
+      ],
+      "evidence": [
+        {
+          "comparison_id": "devices-termux-server_status",
+          "health_effect": "healthy",
+          "observed_value": "Protected server host",
+          "reason": null
+        },
+        {
+          "comparison_id": "devices-termux-server_identity_expected",
+          "health_effect": "healthy",
+          "observed_value": true,
+          "reason": null
+        },
+        {
+          "comparison_id": "devices-termux-remote_access_ready",
+          "health_effect": "healthy",
+          "observed_value": true,
+          "reason": null
+        }
+      ],
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "freshness_age_seconds": null,
+      "freshness_threshold_seconds": 60,
+      "implementation_status": "implemented",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "healthy",
+      "readiness": "ready-with-guardrails",
+      "reason": null,
+      "runtime_status": "observed",
+      "semantic_parity": "verified-with-mapped-presentation",
+      "severity": "info",
+      "source": {
+        "evidence_comparisons": [
+          "devices-termux-server_status",
+          "devices-termux-server_identity_expected",
+          "devices-termux-remote_access_ready"
+        ],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "guarded-by-delivery-readiness"
+    },
+    "home": {
+      "confidence": "release-promoted",
+      "dependencies": [
+        "Caddy",
+        "FastAPI",
+        "NATS/JetStream",
+        "worker",
+        "node agent",
+        "core supervisor"
+      ],
+      "evidence": [
+        {
+          "comparison_id": "home-termux-overall_status",
+          "health_effect": "degraded",
+          "observed_value": "degraded",
+          "reason": "service_unavailable"
+        },
+        {
+          "comparison_id": "home-termux-read_degraded",
+          "health_effect": "healthy",
+          "observed_value": false,
+          "reason": null
+        }
+      ],
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "freshness_age_seconds": null,
+      "freshness_threshold_seconds": 60,
+      "implementation_status": "implemented",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "degraded",
+      "readiness": "degraded",
+      "reason": "service_unavailable",
+      "runtime_status": "observed",
+      "semantic_parity": "verified-with-mapped-presentation",
+      "severity": "warning",
+      "source": {
+        "evidence_comparisons": [
+          "home-termux-overall_status",
+          "home-termux-read_degraded"
+        ],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "not-applicable"
+    },
+    "identity": {
+      "confidence": "partial",
+      "dependencies": [],
+      "evidence": [],
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "freshness_age_seconds": null,
+      "freshness_threshold_seconds": null,
+      "implementation_status": "partial",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "unvalidated",
+      "readiness": "partial",
+      "reason": null,
+      "runtime_status": "observed",
+      "semantic_parity": "partial",
+      "severity": "unknown",
+      "source": {
+        "evidence_comparisons": [],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "unvalidated"
+    },
+    "recovery": {
+      "confidence": "release-promoted",
+      "dependencies": [
+        "FastAPI",
+        "NATS/JetStream",
+        "worker",
+        "SQLite",
+        "restic"
+      ],
+      "evidence": [
+        {
+          "comparison_id": "recovery-termux-status",
+          "health_effect": "degraded",
+          "observed_value": "degraded",
+          "reason": "read_degraded"
+        },
+        {
+          "comparison_id": "recovery-termux-degraded_reason",
+          "health_effect": "degraded",
+          "observed_value": "projection_too_old",
+          "reason": "projection_too_old"
+        },
+        {
+          "comparison_id": "recovery-termux-read_degraded",
+          "health_effect": "degraded",
+          "observed_value": true,
+          "reason": "read_degraded"
+        },
+        {
+          "comparison_id": "recovery-termux-projection_age_ms",
+          "health_effect": "stale",
+          "observed_value": 141.714,
+          "reason": "projection_too_old"
+        }
+      ],
+      "evidence_status": "release-promoted",
+      "freshness": "stale",
+      "freshness_age_seconds": 141.714,
+      "freshness_threshold_seconds": 60,
+      "implementation_status": "implemented",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "degraded",
+      "readiness": "degraded",
+      "reason": "projection_too_old",
+      "runtime_status": "observed",
+      "semantic_parity": "verified-with-mapped-presentation",
+      "severity": "warning",
+      "source": {
+        "evidence_comparisons": [
+          "recovery-termux-status",
+          "recovery-termux-degraded_reason",
+          "recovery-termux-read_degraded",
+          "recovery-termux-projection_age_ms"
+        ],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "blocked"
+    },
+    "rules": {
+      "confidence": "partial",
+      "dependencies": [],
+      "evidence": [],
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "freshness_age_seconds": null,
+      "freshness_threshold_seconds": null,
+      "implementation_status": "partial",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "unvalidated",
+      "readiness": "partial",
+      "reason": null,
+      "runtime_status": "observed",
+      "semantic_parity": "partial",
+      "severity": "unknown",
+      "source": {
+        "evidence_comparisons": [],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "unvalidated"
+    },
+    "security": {
+      "confidence": "release-promoted",
+      "dependencies": [
+        "FastAPI",
+        "NATS/JetStream",
+        "worker",
+        "Lynis",
+        "Trivy"
+      ],
+      "evidence": [
+        {
+          "comparison_id": "security-termux-status",
+          "health_effect": "healthy",
+          "observed_value": "healthy",
+          "reason": null
+        }
+      ],
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "freshness_age_seconds": null,
+      "freshness_threshold_seconds": 300,
+      "implementation_status": "implemented",
+      "observed_at": "2026-08-07T18:04:28Z",
+      "operational_health": "healthy",
+      "readiness": "ready-with-guardrails",
+      "reason": null,
+      "runtime_status": "observed",
+      "semantic_parity": "verified-with-mapped-presentation",
+      "severity": "info",
+      "source": {
+        "evidence_comparisons": [
+          "security-termux-status"
+        ],
+        "parity_model": "contracts/parity/parity-model.json",
+        "policy": "contracts/metadata/documentation-platform.json",
+        "runtime_baseline": "contracts/parity/runtime-verification-baseline.json"
+      },
+      "write_safety": "guarded-by-scanner-readiness"
+    }
+  },
+  "observed_at": "2026-08-07T18:04:28Z",
+  "platform_capabilities": [
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [
         "apps-termux-installed",
@@ -21,7 +331,7 @@
       "status": "verified"
     },
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [
         "apps-termux-installed",
@@ -41,7 +351,7 @@
       "status": "verified"
     },
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -57,7 +367,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -73,7 +383,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -89,7 +399,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [],
       "evidence_status": "source-derived",
@@ -104,7 +414,7 @@
       "status": "implemented"
     },
     {
-      "capability": "capability:app-host",
+      "capability": "app_host",
       "capability_name": "App Host",
       "evidence_comparisons": [
         "apps-termux-installed",
@@ -124,7 +434,7 @@
       "status": "verified"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -140,7 +450,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "source-derived",
@@ -155,7 +465,7 @@
       "status": "implemented"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -171,7 +481,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -187,7 +497,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -203,7 +513,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "source-derived",
@@ -218,7 +528,7 @@
       "status": "implemented"
     },
     {
-      "capability": "capability:backup-target",
+      "capability": "backup_target",
       "capability_name": "Backup Target",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -233,7 +543,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -249,7 +559,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [
         "devices-termux-server_identity_expected",
@@ -268,7 +578,7 @@
       "status": "verified"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -284,7 +594,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -300,7 +610,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -316,7 +626,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [],
       "evidence_status": "source-derived",
@@ -331,7 +641,7 @@
       "status": "implemented"
     },
     {
-      "capability": "capability:compute",
+      "capability": "compute",
       "capability_name": "Compute",
       "evidence_comparisons": [
         "devices-termux-server_identity_expected",
@@ -350,7 +660,7 @@
       "status": "verified"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -366,7 +676,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "source-derived",
@@ -381,7 +691,7 @@
       "status": "implemented"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -397,7 +707,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -413,7 +723,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -429,7 +739,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "source-derived",
@@ -444,7 +754,7 @@
       "status": "implemented"
     },
     {
-      "capability": "capability:media-storage",
+      "capability": "media_storage",
       "capability_name": "Storage Node",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -459,7 +769,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -475,7 +785,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [
         "security-termux-status"
@@ -493,7 +803,7 @@
       "status": "verified"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -509,7 +819,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -525,7 +835,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [],
       "evidence_status": "not-applicable",
@@ -541,7 +851,7 @@
       "status": "not-applicable"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [],
       "evidence_status": "unvalidated",
@@ -556,7 +866,7 @@
       "status": "unvalidated"
     },
     {
-      "capability": "capability:security-scanner",
+      "capability": "security_scanner",
       "capability_name": "Security Scanner",
       "evidence_comparisons": [
         "security-termux-status"
@@ -574,12 +884,12 @@
       "status": "verified"
     }
   ],
-  "metadata": {
-    "generated_at": "uncommitted",
-    "generator": "scripts/docs/knowledge/generate_knowledge.py",
-    "generator_version": 2,
-    "schema_version": "1.0.0",
-    "source_commit": "uncommitted",
-    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
-  }
+  "promoted_at": "2026-08-07T18:04:28Z",
+  "release_tag": "lite-2026.08.07.3",
+  "runtime_baseline_status": "partial",
+  "sanitized": true,
+  "schema_revision": 1,
+  "schema_version": "1.0.0",
+  "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+  "source_fingerprint": "e57225cf56a9ea196a8cde37e60600549f06d3ea3a75299ff5573f3b2dc68513"
 }

@@ -172,6 +172,7 @@ tasks:
     cmds:
       - task: lite:evidence:runtime:preflight
       - '{{.PYTHON}} scripts/test/parity/promote_runtime_verification.py promote --release-tag "{{.LITE_PARITY_RELEASE_TAG}}"'
+      - task: lite:docs:health:generate
       - '{{.PYTHON}} scripts/docs/parity/generate_parity.py generate'
 
   lite:evidence:runtime:check:

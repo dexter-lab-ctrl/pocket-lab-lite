@@ -189,14 +189,14 @@ generator_version: 2
 | Worker process | component | test:tests/backend/test_lite_control_plane_sqlite_p3.py, test:tests/backend/test_lite_projection_semantic_hardening.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/backend/test_lite_worker_recovery.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Workflow execution | component | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Api | domain | — | unvalidated |
-| Apps | domain | test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Apps | domain | test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
 | Architecture | domain | — | unvalidated |
 | Audit | domain | — | unvalidated |
 | Command | domain | — | unvalidated |
 | Commands | domain | — | unvalidated |
 | Control Plane | domain | — | unvalidated |
 | Database | domain | — | unvalidated |
-| Devices | domain | test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Devices | domain | test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
 | Diagnostics | domain | — | unvalidated |
 | Disaster Recovery | domain | — | unvalidated |
 | Documentation | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_living_knowledgebase.py | test-linked |
@@ -204,8 +204,8 @@ generator_version: 2
 | Drift Management | domain | — | unvalidated |
 | Events | domain | — | unvalidated |
 | Health | domain | — | unvalidated |
-| Home | domain | test:tests/docs/test_living_knowledgebase.py | test-linked |
-| Identity | domain | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Home | domain | test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
+| Identity | domain | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | Lite | domain | — | unvalidated |
 | Live Status | domain | — | unvalidated |
 | Manual | domain | — | unvalidated |
@@ -216,14 +216,14 @@ generator_version: 2
 | Platform | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Prepared State | domain | — | unvalidated |
 | Projections | domain | — | unvalidated |
-| Backup & Restore | domain | test:tests/docs/test_living_knowledgebase.py, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Backup & Restore | domain | test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | Release | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Release Management | domain | — | unvalidated |
 | Remote Access | domain | — | unvalidated |
-| Rules | domain | test:tests/docs/test_living_knowledgebase.py | test-linked |
+| Rules | domain | test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
 | Runbook | domain | — | unvalidated |
 | Runtime | domain | — | unvalidated |
-| Security | domain | test:src/__tests__/liteLifecycleDiagnostics.test.js, test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_long_gate_group2_reporting.py, test:tests/backend/test_lite_long_gate_group4_reporting.py, test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f12_f14_stability_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_p2b_reboot_generation.py, test:tests/backend/test_lite_security_progress_projection_cutover.py, test:tests/backend/test_lite_security_projection_drift_prevention.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_security_s6_replay.py, test:tests/backend/test_lite_security_s6_retention.py, test:tests/backend/test_lite_security_s7_saved_state_history.py, test:tests/backend/test_lite_security_s8_cross_process_generation.py, test:tests/backend/test_lite_security_s8_fault_checkpoint_identity.py, test:tests/backend/test_lite_security_s8_gate_submission_recovery.py, test:tests/backend/test_lite_security_s8_idle_reconciliation.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_security_sqlite_s3_s5.py, test:tests/backend/test_lite_security_store.py, test:tests/backend/test_lite_security_store_concurrency.py, test:tests/backend/test_lite_security_store_migration.py, test:tests/backend/test_lite_security_worker_sqlite_commit.py, test:tests/backend/test_lite_sqlite_performance.py, test:tests/backend/test_lite_startup_workload_isolation.py, test:tests/backend/test_lite_worker_recovery.py, test:tests/backend/test_lite_workload_admission.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Security | domain | test:src/__tests__/liteLifecycleDiagnostics.test.js, test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_long_gate_group2_reporting.py, test:tests/backend/test_lite_long_gate_group4_reporting.py, test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_f11_events_contract.py, test:tests/backend/test_lite_security_f12_f14_stability_contract.py, test:tests/backend/test_lite_security_f3_summary_contract.py, test:tests/backend/test_lite_security_f7_split_read_contract.py, test:tests/backend/test_lite_security_f9_etag_contract.py, test:tests/backend/test_lite_security_p2b_reboot_generation.py, test:tests/backend/test_lite_security_progress_projection_cutover.py, test:tests/backend/test_lite_security_projection_drift_prevention.py, test:tests/backend/test_lite_security_s6_frontend_contract.py, test:tests/backend/test_lite_security_s6_replay.py, test:tests/backend/test_lite_security_s6_retention.py, test:tests/backend/test_lite_security_s7_saved_state_history.py, test:tests/backend/test_lite_security_s8_cross_process_generation.py, test:tests/backend/test_lite_security_s8_fault_checkpoint_identity.py, test:tests/backend/test_lite_security_s8_gate_submission_recovery.py, test:tests/backend/test_lite_security_s8_idle_reconciliation.py, test:tests/backend/test_lite_security_s8_recovery.py, test:tests/backend/test_lite_security_sqlite_s3_s5.py, test:tests/backend/test_lite_security_store.py, test:tests/backend/test_lite_security_store_concurrency.py, test:tests/backend/test_lite_security_store_migration.py, test:tests/backend/test_lite_security_worker_sqlite_commit.py, test:tests/backend/test_lite_sqlite_performance.py, test:tests/backend/test_lite_startup_workload_isolation.py, test:tests/backend/test_lite_worker_recovery.py, test:tests/backend/test_lite_workload_admission.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | System | domain | — | unvalidated |
 | Telemetry | domain | — | unvalidated |
 | Testing | domain | — | unvalidated |
@@ -237,13 +237,13 @@ generator_version: 2
 | Add Device | journey | test:src/__tests__/enterpriseLabels.test.js, test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_devices_durable_enrollment.py | test-linked |
 | App installation | journey | test:tests/backend/test_lite_api.py | test-linked |
 | Backup creation and verification | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_database_restore_reconciliation.py, test:tests/backend/test_lite_premium_tab_polish.py, test:tests/backend/test_lite_security_s8_recovery.py | test-linked |
-| Change Password / identity rotation | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| Change Password / identity rotation | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/docs/test_operational_health_bridge.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | Device bootstrap and enrollment | journey | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_devices_production_readiness.py | test-linked |
 | Device offline and reconnect recovery | journey | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
-| Documentation generation | journey | test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_production_architecture_platform.py, test:tests/backend/test_lite_termux_runtime_documentation.py | test-linked |
-| Backend-to-Frontend parity capture and verification | journey | — | unvalidated |
+| Documentation generation | journey | test:tests/backend/test_lite_complete_documentation_platform.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_production_architecture_platform.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
+| Backend-to-Frontend parity capture and verification | journey | test:tests/docs/test_operational_health_bridge.py | test-linked |
 | PhotoPrism operation | journey | test:tests/backend/test_lite_api.py | test-linked |
-| Recovery reconciliation | journey | — | unvalidated |
+| Recovery reconciliation | journey | test:tests/docs/test_operational_health_bridge.py | test-linked |
 | Release and update flow | journey | — | unvalidated |
 | Tailscale and remote access readiness | journey | — | unvalidated |
 | Remove Old Device | journey | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_d2_d3.py, test:tests/backend/test_lite_devices_durable_enrollment.py | test-linked |

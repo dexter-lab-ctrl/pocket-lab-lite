@@ -25,6 +25,25 @@
       "blocks_writes": "policy-dependent",
       "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
       "confidence": "source-derived",
+      "description": "Repository-defined status `agent stopped`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "agent stopped",
+      "id": "vocabulary:agent-stopped",
+      "name": "agent stopped",
+      "proves": "Only the owning status dimension's repository-defined condition for `agent stopped`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
       "description": "Repository-defined status `capture-failed`; consult its owning contract before applying it across dimensions.",
       "dimensions": [],
       "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
@@ -516,6 +535,25 @@
       "blocks_writes": "policy-dependent",
       "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
       "confidence": "source-derived",
+      "description": "Repository-defined status `remote access not ready`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "remote access not ready",
+      "id": "vocabulary:remote-access-not-ready",
+      "name": "remote access not ready",
+      "proves": "Only the owning status dimension's repository-defined condition for `remote access not ready`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
       "description": "Repository-defined status `repairing`; consult its owning contract before applying it across dimensions.",
       "dimensions": [],
       "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
@@ -734,6 +772,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
+    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
   }
 }

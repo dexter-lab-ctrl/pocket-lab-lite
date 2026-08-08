@@ -35,6 +35,7 @@ UI_STATES = ROOT / "contracts/generated/ui-state-catalog.json"
 RELEASES = ROOT / "contracts/generated/releases/index.json"
 PARITY_MODEL = ROOT / "contracts/parity/parity-model.json"
 RUNTIME_BASELINE = ROOT / "contracts/parity/runtime-verification-baseline.json"
+OPERATIONAL_HEALTH = ROOT / "contracts/generated/runtime/domain-operational-health.json"
 ACCEPTED_LIMITATIONS = ROOT / "contracts/generated/parity/accepted-limitations.json"
 RUNTIME_CONTRACT_ROOT = ROOT / "contracts/generated/runtime"
 RUNBOOK_ROOT = ROOT / "runbooks"
@@ -256,10 +257,6 @@ def source_text_cache(paths: Iterable[str]) -> dict[str, str]:
     return cache
 
 
-def known_reason_fingerprints(reasons: list[dict[str, Any]]) -> dict[str, str]:
-    # Runtime parity sanitizes strings as sha256(JSON-string)[:16]. Reverse only against the canonical reason registry.
-    return {hashlib.sha256(json.dumps(r["code"]).encode()).hexdigest()[:16]: r["code"] for r in reasons}
-
 
 def build_graph() -> tuple[Graph, dict[str, Any]]:
     meta = read_json(META)
@@ -273,6 +270,12 @@ def build_graph() -> tuple[Graph, dict[str, Any]]:
     reasons = reasons_payload.get("reason_codes", reasons_payload if isinstance(reasons_payload, list) else [])
     parity = read_json(PARITY_MODEL)
     runtime = read_json(RUNTIME_BASELINE)
+    operational_health = read_json(OPERATIONAL_HEALTH)
+    for field in ("release_tag", "source_commit", "promoted_at"):
+        if operational_health.get(field) != runtime.get(field):
+            raise ValueError(f"operational-health projection {field} does not match promoted runtime baseline")
+    if operational_health.get("sanitized") is not True:
+        raise ValueError("operational-health projection must remain sanitized")
     accepted = read_json(ACCEPTED_LIMITATIONS, {"items": []})
     capabilities_payload = read_json(CAPABILITIES, {"device_capabilities": []})
     runbooks = load_runbooks()
@@ -283,42 +286,36 @@ def build_graph() -> tuple[Graph, dict[str, Any]]:
 
     baseline_domains = {d["id"]: d for d in runtime.get("domains", [])}
     parity_domains = {d["id"]: d for d in parity.get("domains", [])}
-    reason_fp = known_reason_fingerprints(reasons)
+    health_domains = operational_health.get("domains", {})
 
-    # Domains and independent status dimensions.
+    # Domains and independent status dimensions. Operational health is consumed from the
+    # release-bound canonical projection; semantic parity remains an independent dimension.
     for did, domain in sorted(parity_domains.items()):
         b = baseline_domains.get(did, {})
-        read_degraded = None
-        degraded_reason = None
-        for comparison in b.get("comparisons", []):
-            cid = comparison.get("id", "")
-            if cid == f"{did}-termux-read_degraded" and isinstance(comparison.get("backend_value"), bool):
-                read_degraded = comparison["backend_value"]
-            if cid == f"{did}-termux-degraded_reason":
-                val = comparison.get("backend_value")
-                if isinstance(val, dict) and val.get("fingerprint") in reason_fp:
-                    degraded_reason = reason_fp[val["fingerprint"]]
-        implementation = b.get("implementation_status") or domain.get("implementation_status") or "unvalidated"
-        parity_state = b.get("runtime_parity") or domain.get("runtime_parity") or "unvalidated"
-        runtime_status = "observed" if all(b.get(k) == "observed" for k in ("live_api_coverage", "live_termux_coverage", "live_ui_coverage")) else "not-observed"
-        operational = "degraded" if read_degraded is True else ("healthy" if read_degraded is False else "unvalidated")
-        evidence_status = "release-promoted" if b and runtime.get("release_tag") else "unvalidated"
-        confidence = "release-promoted" if b else ("source-derived" if domain else "unvalidated")
+        health = health_domains.get(did)
+        if not health:
+            raise ValueError(f"operational-health projection is missing domain {did}")
+        implementation = health.get("implementation_status") or b.get("implementation_status") or "unvalidated"
+        confidence = health.get("confidence") or "unvalidated"
         entity = {
             "id": f"domain:{did}", "type": "domain", "name": domain.get("label", did.title()), "domain": did,
             "description": domain.get("description", ""), "confidence": confidence,
-            "source_refs": ["contracts/parity/parity-model.json"] + (["contracts/parity/runtime-verification-baseline.json"] if b else []),
+            "source_refs": [
+                "contracts/parity/parity-model.json",
+                "contracts/parity/runtime-verification-baseline.json",
+                "contracts/generated/runtime/domain-operational-health.json",
+            ],
             "status_dimensions": {
                 "implementation_status": implementation,
-                "runtime_status": runtime_status,
-                "operational_health": operational,
-                "runtime_parity": parity_state,
-                "evidence_status": evidence_status,
+                "runtime_status": health.get("runtime_status", "unvalidated"),
+                "operational_health": health.get("operational_health", "unvalidated"),
+                "runtime_parity": health.get("semantic_parity", "unvalidated"),
+                "evidence_status": health.get("evidence_status", "unvalidated"),
                 "confidence": confidence,
-                "freshness": "promoted-observation" if b else "unvalidated",
-                "readiness": "ready-with-guardrails" if implementation == "implemented" else "partial",
+                "freshness": health.get("freshness", "unvalidated"),
+                "readiness": health.get("readiness", "unvalidated"),
                 "capability_status": implementation,
-                "degraded_reason": degraded_reason,
+                "degraded_reason": health.get("reason"),
             },
             "observation_summary": b.get("comparison_summary", {}),
             "known_gaps": domain.get("known_gaps", []),
@@ -605,6 +602,8 @@ def build_graph() -> tuple[Graph, dict[str, Any]]:
     # Runtime topology entities from promoted sanitized contracts.
     runtime_contracts = []
     for path in sorted(RUNTIME_CONTRACT_ROOT.glob("*.json")):
+        if path == OPERATIONAL_HEALTH:
+            continue
         payload = read_json(path)
         key = next((k for k in payload if k != "metadata"), path.stem)
         runtime_contracts.append({"id": key, "source": str(path.relative_to(ROOT)), "payload": payload.get(key, {})})
@@ -675,6 +674,7 @@ def build_graph() -> tuple[Graph, dict[str, Any]]:
     return graph, {
         "meta": meta, "arch": arch, "doc_meta": doc_meta, "openapi": openapi, "frontend": frontend,
         "sqlite": sqlite, "asyncapi": asyncapi, "reasons": reasons, "parity": parity, "runtime": runtime,
+        "operational_health": operational_health,
         "accepted": accepted, "runbooks": runbooks, "tests": tests, "runtime_contracts": runtime_contracts,
         "repo_map": {k: sorted(set(v)) for k, v in sorted(repo_map.items())},
     }
@@ -810,6 +810,7 @@ def entity_exports(graph: Graph, indexes: dict[str, Any], context: dict[str, Any
         "promoted_at": runtime.get("promoted_at"),
         "runtime_baseline_status": runtime.get("status"),
         "runtime_evidence_sanitized": runtime.get("sanitized"),
+        "operational_health_source_fingerprint": context["operational_health"].get("source_fingerprint"),
         "architecture_source": "architecture/metadata/pocket-lab-architecture.json",
         "openapi_source": "contracts/generated/lite-openapi.json",
         "sqlite_source": "contracts/generated/lite-sqlite-schema.json",
@@ -836,37 +837,22 @@ def entity_exports(graph: Graph, indexes: dict[str, Any], context: dict[str, Any
     elif release_items:
         release_changes.append({"from": None, "to": release_items[-1]["id"], "status": "no-comparable-verified-prior-release", "added": [], "removed": [], "changed": [], "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated."})
 
-    # Platform/capability support is derived conservatively from capability APIs and architecture component platform metadata.
-    supported_platform_labels = ["Android/Termux ARM64", "ARM64 Ubuntu/proot", "Ubuntu/WSL2 Dev", "desktop browser", "mobile browser", "server phone", "secondary device"]
-    platform_aliases = {
-        "Android/Termux ARM64": {"Android/Termux", "Android", "ARM64"},
-        "ARM64 Ubuntu/proot": {"Ubuntu", "ARM64"},
-        "Ubuntu/WSL2 Dev": {"Ubuntu", "WSL2 development"},
-        "desktop browser": {"Browser", "Desktop"},
-        "mobile browser": {"Browser", "Android"},
-        "server phone": {"Android/Termux", "Android", "ARM64"},
-        "secondary device": {"Android/Termux", "Android", "ARM64"},
-    }
+    # Platform/capability support comes from the same canonical promoted projection as domain
+    # health. Metadata describes interpretation/roles; only promoted evidence can yield verified.
     platform_matrix = []
-    for cap in items("capability"):
-        related_api = normalize_route(str(cap.get("related_api") or ""))
-        component_ids: set[str] = set()
-        if related_api:
-            for aid in api_by_route.get(related_api, []):
-                for rel in indexes["incoming"].get(aid, []):
-                    if rel["type"] == "uses" and rel["source"].startswith("component:"):
-                        component_ids.add(rel["source"])
-        component_platforms = {p for cid in component_ids for p in graph.entities[cid].get("supported_platforms", [])}
-        for platform in supported_platform_labels:
-            overlap = component_platforms & platform_aliases[platform]
-            status = "implemented" if overlap else "unvalidated"
-            if overlap and platform in {"Android/Termux ARM64", "server phone", "secondary device"} and runtime.get("release_tag"):
-                status = "observed" if platform != "secondary device" else "unvalidated"
-            platform_matrix.append({
-                "capability": cap["id"], "capability_name": cap["name"], "platform": platform, "status": status,
-                "components": sorted(component_ids), "source_refs": sorted(set(cap.get("source_refs", []) + ["architecture/metadata/pocket-lab-architecture.json"])),
-                "note": "Platform status is derived only from exact API/component relationships; unavailable relationships remain unvalidated.",
-            })
+    for row in context["operational_health"].get("platform_capabilities", []):
+        platform_matrix.append({
+            "capability": f"capability:{slug(str(row.get('capability') or 'capability'))}",
+            "capability_name": row.get("capability_name"),
+            "platform": row.get("platform"),
+            "role": row.get("role"),
+            "status": row.get("status"),
+            "evidence_status": row.get("evidence_status"),
+            "source_domain": row.get("source_domain"),
+            "evidence_comparisons": row.get("evidence_comparisons", []),
+            "rationale": row.get("rationale"),
+            "source_refs": row.get("source_refs", []),
+        })
 
     ownership_reverse: dict[str, list[str]] = defaultdict(list)
     for component in items("component"):
@@ -984,7 +970,7 @@ def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) 
     outputs[DEV / "troubleshooting.md"] = frontmatter("Troubleshooting decision trees", "Generated safe troubleshooting paths from structured knowledge metadata.") + "# Troubleshooting decision trees\n\n" + "\n".join(f"## {t['name']}\n\n**Check**\n" + "".join(f"- {x}\n" for x in t.get("checks", [])) + "\n**Recovery**\n" + "".join(f"- {x}\n" for x in t.get("recovery", [])) for t in exports["troubleshooting"])
     outputs[DEV / "threat-models.md"] = frontmatter("Security threat models", "Trust-boundary threat/failure views derived from canonical architecture.", "inferred") + "# Security threat models\n\nThreat/failure modes are labeled inferred when they are derived from verified boundary/component failure metadata rather than a historical incident.\n\n" + "\n".join(f"## {t['name']}\n\n{t.get('description','')}\n\n**Assets:** {', '.join(t.get('assets') or [])}\n\n**Entry points:** {', '.join(t.get('entry_points') or [])}\n\n**Threats/failure modes:** {', '.join(t.get('threats_or_failure_modes') or []) or 'unvalidated'}\n\n**Mitigations/recovery:** {', '.join(t.get('mitigations') or []) or 'unvalidated'}\n" for t in exports["threat-models"])
     outputs[DEV / "traceability.md"] = frontmatter("Tests and traceability", "Requirement/implementation/test traceability without equating tests to runtime verification.") + "# Tests and traceability\n\n" + md_table(["Entity", "Type", "Tests", "Status"], ((x["name"], x["type"], x["tests"], x["verification_status"]) for x in exports["traceability"]))
-    outputs[DEV / "capabilities.md"] = frontmatter("Platforms and capabilities", "Capability knowledge designed for Android/Termux, ARM64, WSL2, desktop, and mobile contexts.") + "# Platforms and capabilities\n\n" + md_table(["Capability", "Freshness", "Expiry", "Degraded behavior", "Runtime evidence"], ((x["name"], x.get("freshness_seconds"), x.get("expiry_behavior"), x.get("degraded_behavior"), x.get("runtime_evidence")) for x in exports["capabilities"])) + "\n## Platform matrix\n\n" + md_table(["Capability", "Platform", "Status", "Components"], ((x["capability_name"], x["platform"], x["status"], x["components"]) for x in exports["platform-capabilities"])) + "\nIdentity and Rules remain partial and are not promoted to supported/verified by this matrix.\n"
+    outputs[DEV / "capabilities.md"] = frontmatter("Platforms and capabilities", "Capability knowledge designed for Android/Termux, ARM64, WSL2, desktop, and mobile contexts.") + "# Platforms and capabilities\n\n" + md_table(["Capability", "Freshness", "Expiry", "Degraded behavior", "Runtime evidence"], ((x["name"], x.get("freshness_seconds"), x.get("expiry_behavior"), x.get("degraded_behavior"), x.get("runtime_evidence")) for x in exports["capabilities"])) + "\n## Platform matrix\n\n" + md_table(["Capability", "Platform", "Role", "Status", "Evidence", "Rationale"], ((x["capability_name"], x["platform"], x.get("role"), x["status"], x.get("evidence_status"), x.get("rationale")) for x in exports["platform-capabilities"])) + "\nIdentity and Rules remain partial and are not promoted to supported/verified by this matrix. Browser and development surfaces remain control/development roles rather than execution hosts.\n"
     outputs[DEV / "vocabulary.md"] = frontmatter("Vocabulary", "Canonical status semantics and independent documentation dimensions.") + "# Vocabulary\n\n" + md_table(["Status", "Exact meaning", "Does not prove", "Dimensions", "Blocks promotion", "Blocks writes", "Can coexist"], ((f"`{x['name']}`", x.get("description"), x.get("does_not_prove"), x.get("dimensions"), x.get("blocks_promotion"), x.get("blocks_writes"), x.get("can_coexist_with")) for x in exports["vocabulary"]))
     outputs[DEV / "glossary.md"] = frontmatter("Glossary", "Canonical Pocket Lab Lite terminology ontology.") + "# Glossary\n\n" + md_table(["Term", "Definition", "Aliases", "Domain"], ((x["name"], x.get("description"), x.get("aliases"), x.get("domain")) for x in exports["glossary"]))
     outputs[DEV / "freshness.md"] = frontmatter("Knowledge freshness dashboard", "Pre-generated documentation freshness and evidence status dashboard.") + "# Freshness dashboard\n\n" + md_table(["Signal", "Value"], sorted(exports["freshness"].items()))
@@ -992,12 +978,12 @@ def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) 
 
     # Production keeps Lite-friendly operator views and omits source-heavy catalogs.
     outputs[PROD / "index.md"] = frontmatter("Pocket Lab Lite knowledge", "Operator-oriented living knowledgebase.") + "# Pocket Lab Lite knowledge\n\nUse this section to understand current health, workflows, supported capabilities, known limitations, releases, and safe recovery guidance.\n"
-    outputs[PROD / "current-health.md"] = frontmatter("Current health", "Operational health and semantic parity shown independently.", "release-promoted") + "# Current health\n\n" + md_table(["Area", "Health", "Semantic parity", "Freshness", "Action"], ((x["label"], x["operational_health"], x["runtime_parity"], x["freshness"], x["recommended_operator_action"]) for x in health))
+    outputs[PROD / "current-health.md"] = frontmatter("Current health", "Operational health and semantic parity shown independently.", "release-promoted") + "# Current health\n\n" + md_table(["Area", "Health", "Reason", "Semantic parity", "Freshness", "Action"], ((x["label"], x["operational_health"], x.get("degraded_reason"), x["runtime_parity"], x["freshness"], x["recommended_operator_action"]) for x in health))
     outputs[PROD / "journeys.md"] = frontmatter("How Pocket Lab works", "Lite-friendly workflow guide generated from verified journey metadata.") + "# How Pocket Lab works\n\n" + md_table(["Workflow", "Area", "Status"], ((x["name"], x.get("domain"), x.get("confidence")) for x in exports["journeys"]))
     outputs[PROD / "troubleshooting.md"] = frontmatter("Troubleshooting", "Safe operator guidance generated from canonical decision trees.") + "# Troubleshooting\n\n" + "\n".join(f"## {t['name']}\n\n" + "".join(f"- Check: {x}\n" for x in t.get("checks", [])) + "".join(f"- Recovery: {x}\n" for x in t.get("recovery", [])) for t in exports["troubleshooting"])
     outputs[PROD / "known-issues.md"] = frontmatter("Known issues", "Current limitations without hiding accepted constraints.") + "# Known issues\n\n" + md_table(["Area", "Status", "What it means"], ((x.get("domain"), x.get("status"), x.get("description")) for x in exports["limitations"]))
     outputs[PROD / "releases.md"] = frontmatter("Releases", "Verified release binding and promoted runtime evidence.", "release-promoted") + "# Releases\n\n" + md_table(["Release", "Source", "Runtime parity", "Manifest status"], ((r["name"], r.get("source_commit"), r.get("runtime_parity_status"), r.get("release_manifest_status")) for r in exports["releases"]))
-    outputs[PROD / "supported-platforms.md"] = frontmatter("Supported platforms", "Platform-aware capability knowledge.") + "# Supported platforms\n\nPocket Lab Lite remains designed for Android/Termux ARM64 and low-power edge operation, with Ubuntu/WSL2 used for development. Capability evidence is nuanced; implemented, observed, verified, partial, and unvalidated are not collapsed into yes/no.\n\n" + md_table(["Capability", "Freshness", "Degraded behavior"], ((x["name"], x.get("freshness_seconds"), x.get("degraded_behavior")) for x in exports["capabilities"]))
+    outputs[PROD / "supported-platforms.md"] = frontmatter("Supported platforms", "Platform-aware capability knowledge.") + "# Supported platforms\n\nPocket Lab Lite remains designed for Android/Termux ARM64 and low-power edge operation, with Ubuntu/WSL2 used for development. Capability evidence is role-aware; verified, observed, implemented, not-applicable, and unvalidated are not collapsed into yes/no.\n\n## Capability definitions\n\n" + md_table(["Capability", "Freshness", "Degraded behavior"], ((x["name"], x.get("freshness_seconds"), x.get("degraded_behavior")) for x in exports["capabilities"])) + "\n## Evidence-backed platform matrix\n\n" + md_table(["Capability", "Platform", "Role", "Status", "Evidence"], ((x["capability_name"], x["platform"], x.get("role"), x["status"], x.get("evidence_status")) for x in exports["platform-capabilities"]))
     outputs[PROD / "security.md"] = frontmatter("Security model", "Trust boundaries, fail-closed controls, and safe recovery guidance.") + "# Security model\n\n" + md_table(["Boundary", "Assets", "Entry points", "Confidence"], ((x["name"], x.get("assets"), x.get("entry_points"), x.get("confidence")) for x in exports["threat-models"]))
     outputs[PROD / "vocabulary.md"] = outputs[DEV / "vocabulary.md"].replace("audience: knowledgebase", "audience: production")
     outputs[PROD / "glossary.md"] = outputs[DEV / "glossary.md"].replace("audience: knowledgebase", "audience: production")
@@ -1011,7 +997,7 @@ def build_outputs() -> tuple[dict[Path, str], dict[str, Any]]:
     if errors:
         raise ValueError("knowledge graph validation failed:\n" + "\n".join(f" - {x}" for x in errors))
     indexes = graph_indexes(graph)
-    source_paths = [META, ARCH, DOC_META, OPENAPI, FRONTEND, SQLITE, ASYNCAPI, REASON_CODES, CAPABILITIES, SERVICES, PROJECTIONS, UI_STATES, RELEASES, PARITY_MODEL, RUNTIME_BASELINE, ACCEPTED_LIMITATIONS]
+    source_paths = [META, ARCH, DOC_META, OPENAPI, FRONTEND, SQLITE, ASYNCAPI, REASON_CODES, CAPABILITIES, SERVICES, PROJECTIONS, UI_STATES, RELEASES, PARITY_MODEL, RUNTIME_BASELINE, OPERATIONAL_HEALTH, ACCEPTED_LIMITATIONS]
     source_paths.extend(sorted(RUNTIME_CONTRACT_ROOT.glob("*.json")))
     source_paths.extend(sorted(RUNBOOK_ROOT.glob("*.yaml")))
     source_paths.extend(ROOT / rel for rel in context["tests"])

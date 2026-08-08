@@ -676,6 +676,18 @@
     },
     {
       "entities": [
+        "domain:apps",
+        "domain:devices",
+        "domain:home",
+        "domain:identity",
+        "domain:recovery",
+        "domain:rules",
+        "domain:security"
+      ],
+      "source": "contracts/generated/runtime/domain-operational-health.json"
+    },
+    {
+      "entities": [
         "runtime:nats-topology"
       ],
       "source": "contracts/generated/runtime/nats-topology.json"
@@ -824,6 +836,7 @@
         "journey:parity-capture",
         "journey:recovery-reconciliation",
         "vocabulary:accepted-limitation",
+        "vocabulary:agent-stopped",
         "vocabulary:capture-failed",
         "vocabulary:contract-derived",
         "vocabulary:degraded",
@@ -849,6 +862,7 @@
         "vocabulary:ready",
         "vocabulary:ready-with-accepted-limitations",
         "vocabulary:release-promoted",
+        "vocabulary:remote-access-not-ready",
         "vocabulary:repairing",
         "vocabulary:runtime-observed",
         "vocabulary:runtime-unavailable",
@@ -2660,6 +2674,12 @@
     },
     {
       "entities": [
+        "test:tests/docs/test_operational_health_bridge.py"
+      ],
+      "source": "tests/docs/test_operational_health_bridge.py"
+    },
+    {
+      "entities": [
         "test:tests/e2e/global-setup.ts"
       ],
       "source": "tests/e2e/global-setup.ts"
@@ -2791,6 +2811,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
+    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
   }
 }

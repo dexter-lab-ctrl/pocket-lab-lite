@@ -8372,6 +8372,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -8382,7 +8383,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "unvalidated",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -8557,6 +8558,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -8567,7 +8569,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "unvalidated",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -8752,25 +8754,26 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "status_dimensions": {
         "capability_status": "implemented",
         "confidence": "release-promoted",
-        "degraded_reason": null,
+        "degraded_reason": "service_unavailable",
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "healthy",
-        "readiness": "ready-with-guardrails",
+        "operational_health": "degraded",
+        "readiness": "degraded",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
       },
       "type": "domain"
     },
     {
-      "confidence": "release-promoted",
+      "confidence": "partial",
       "description": "",
       "domain": "identity",
       "id": "domain:identity",
@@ -8788,12 +8791,13 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "status_dimensions": {
         "capability_status": "partial",
-        "confidence": "release-promoted",
+        "confidence": "partial",
         "degraded_reason": null,
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
@@ -9058,6 +9062,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -9066,10 +9071,10 @@
         "confidence": "release-promoted",
         "degraded_reason": "projection_too_old",
         "evidence_status": "release-promoted",
-        "freshness": "promoted-observation",
+        "freshness": "stale",
         "implementation_status": "implemented",
         "operational_health": "degraded",
-        "readiness": "ready-with-guardrails",
+        "readiness": "degraded",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
       },
@@ -9136,7 +9141,7 @@
       "type": "domain"
     },
     {
-      "confidence": "release-promoted",
+      "confidence": "partial",
       "description": "",
       "domain": "rules",
       "id": "domain:rules",
@@ -9153,12 +9158,13 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "status_dimensions": {
         "capability_status": "partial",
-        "confidence": "release-promoted",
+        "confidence": "partial",
         "degraded_reason": null,
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
@@ -9238,6 +9244,7 @@
         "unsupported": 0
       },
       "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -9248,7 +9255,7 @@
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
-        "operational_health": "unvalidated",
+        "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
         "runtime_parity": "verified-with-mapped-presentation",
         "runtime_status": "observed"
@@ -19132,6 +19139,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_operational_health_bridge.py",
+      "name": "tests/docs/test_operational_health_bridge.py",
+      "source_refs": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/global-setup.ts",
       "name": "tests/e2e/global-setup.ts",
       "source_refs": [
@@ -20410,6 +20427,25 @@
       "blocks_writes": "policy-dependent",
       "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
       "confidence": "source-derived",
+      "description": "Repository-defined status `agent stopped`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "agent stopped",
+      "id": "vocabulary:agent-stopped",
+      "name": "agent stopped",
+      "proves": "Only the owning status dimension's repository-defined condition for `agent stopped`.",
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
       "description": "Repository-defined status `capture-failed`; consult its owning contract before applying it across dimensions.",
       "dimensions": [],
       "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
@@ -20891,6 +20927,25 @@
       "proves": "Evidence was explicitly promoted and bound to a release/source identity.",
       "source_refs": [
         "contracts/metadata/knowledge-base.json",
+        "contracts/parity/parity-model.json"
+      ],
+      "type": "vocabulary",
+      "where_used": "Repository contracts, runtime evidence, generated documentation, or UI state where the owning source defines this exact value."
+    },
+    {
+      "blocks_promotion": "policy-dependent",
+      "blocks_writes": "policy-dependent",
+      "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
+      "confidence": "source-derived",
+      "description": "Repository-defined status `remote access not ready`; consult its owning contract before applying it across dimensions.",
+      "dimensions": [],
+      "does_not_prove": "A status in one documentation dimension does not automatically prove another dimension.",
+      "domain": "vocabulary",
+      "example": "remote access not ready",
+      "id": "vocabulary:remote-access-not-ready",
+      "name": "remote access not ready",
+      "proves": "Only the owning status dimension's repository-defined condition for `remote access not ready`.",
+      "source_refs": [
         "contracts/parity/parity-model.json"
       ],
       "type": "vocabulary",
@@ -21867,6 +21922,7 @@
         "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -21919,6 +21975,7 @@
       "vocabulary": [
         "domain:vocabulary",
         "vocabulary:accepted-limitation",
+        "vocabulary:agent-stopped",
         "vocabulary:capture-failed",
         "vocabulary:contract-derived",
         "vocabulary:degraded",
@@ -21944,6 +22001,7 @@
         "vocabulary:ready",
         "vocabulary:ready-with-accepted-limitations",
         "vocabulary:release-promoted",
+        "vocabulary:remote-access-not-ready",
         "vocabulary:repairing",
         "vocabulary:runtime-observed",
         "vocabulary:runtime-unavailable",
@@ -22730,6 +22788,7 @@
         "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -22811,6 +22870,7 @@
       ],
       "vocabulary": [
         "vocabulary:accepted-limitation",
+        "vocabulary:agent-stopped",
         "vocabulary:capture-failed",
         "vocabulary:contract-derived",
         "vocabulary:degraded",
@@ -22836,6 +22896,7 @@
         "vocabulary:ready",
         "vocabulary:ready-with-accepted-limitations",
         "vocabulary:release-promoted",
+        "vocabulary:remote-access-not-ready",
         "vocabulary:repairing",
         "vocabulary:runtime-observed",
         "vocabulary:runtime-unavailable",
@@ -30626,6 +30687,188 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_operational_health_bridge.py": [
+        {
+          "source": "domain:apps",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:devices",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:home",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:rules",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:parity-capture",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:recovery-reconciliation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:already_tuned",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:cold_start_validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:command_undeliverable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:diagnostics_not_active",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:insufficient_storage",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invalid_domain",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:lease_active",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:legacy_multiple_active_runs",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:no_active_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:not_found_in_restored_snapshot",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:queue_full",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:read_degraded",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:release_projection_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:remote_access_not_ready",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:service_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:submit_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unregistered_domain",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:worker_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:worker_start_timeout",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-live.spec.ts": [
         {
           "source": "reason:disabled",
@@ -36476,6 +36719,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "domain:audit": [
@@ -36844,6 +37091,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "domain:diagnostics": [
@@ -36988,6 +37239,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "domain:identity": [
@@ -37037,6 +37292,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         },
         {
@@ -37694,6 +37953,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_intelligent_runtime_parity.py",
           "type": "verified_by"
         }
@@ -37821,6 +38084,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -38209,6 +38476,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         },
         {
@@ -38604,6 +38875,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_api_contract_fences.py",
           "type": "verified_by"
         }
@@ -38700,6 +38975,10 @@
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "journey:parity-capture": [
@@ -38714,6 +38993,10 @@
         {
           "target": "component:sqlite",
           "type": "uses"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "journey:photoprism-operation": [
@@ -38766,6 +39049,10 @@
         {
           "target": "component:sqlite",
           "type": "uses"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "journey:release-update": [
@@ -39228,6 +39515,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:cold_start_validation": [
@@ -39237,6 +39528,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39248,6 +39543,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:diagnostics_not_active": [
@@ -39257,6 +39556,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39298,6 +39601,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-live.spec.ts",
           "type": "verified_by"
         },
@@ -39318,6 +39625,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:generation_changed": [
@@ -39327,6 +39638,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39354,6 +39669,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:insufficient_storage": [
@@ -39367,6 +39686,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39394,6 +39717,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:invalid_domain": [
@@ -39404,6 +39731,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:invite_expired": [
@@ -39413,6 +39744,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39428,6 +39763,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:lease_active": [
@@ -39437,6 +39776,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39448,6 +39791,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:metadata_only": [
@@ -39457,6 +39804,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39468,6 +39819,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:not_found_in_restored_snapshot": [
@@ -39477,6 +39832,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39492,6 +39851,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:projection_too_old": [
@@ -39501,6 +39864,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         },
         {
@@ -39515,6 +39882,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39560,6 +39931,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-live.spec.ts",
           "type": "verified_by"
         }
@@ -39575,6 +39950,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39616,6 +39995,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-live.spec.ts",
           "type": "verified_by"
         },
@@ -39632,6 +40015,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:remote_access_not_ready": [
@@ -39646,6 +40033,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:service_unavailable": [
@@ -39659,6 +40050,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39706,6 +40101,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:shutdown_during_mailbox_backpressure": [
@@ -39715,6 +40114,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39730,6 +40133,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:target_not_allowed": [
@@ -39739,6 +40146,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39754,6 +40165,10 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
         }
       ],
       "reason:worker_failed": [
@@ -39763,6 +40178,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -39777,6 +40196,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
       ],
@@ -40490,6 +40913,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:05d7945f3449feef",
+      "source": "reason:service_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:05eb3017b6b4162f",
@@ -40595,6 +41027,15 @@
       "source": "component:last-known-good",
       "target": "threat-model:server-host",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:07494ea2c9b200cd",
+      "source": "reason:payload_too_large",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -40721,6 +41162,15 @@
       "id": "rel:08770e8078fac390",
       "source": "api:get:/api/lite/commands/history",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:08df6ed61526fe8e",
+      "source": "reason:invite_expired",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -41445,6 +41895,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:132e48ae723e2475",
+      "source": "reason:projection_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:1342ddde4a18981a",
@@ -41817,6 +42276,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1811dc9cff2e8982",
+      "source": "reason:queue_full",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json",
         "contracts/parity/parity-model.json",
         "src/lite/LiteIdentity.jsx"
@@ -41834,6 +42302,15 @@
       "source": "domain:projections",
       "target": "reason:no_active_generation",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1872223070eab807",
+      "source": "reason:lease_active",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -42587,6 +43064,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:23e365d5d66c06a2",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:24001cc19601e1f2",
@@ -43337,6 +43823,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:2ef4ebec4db38e5a",
+      "source": "reason:shutdown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:2f0b8cb53c2ce9fd",
@@ -43387,6 +43882,15 @@
       "id": "rel:3004962585c3af64",
       "source": "api:post:/api/lite/recovery/apps/{app_id}/restore",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:3023a23e0e633d41",
+      "source": "reason:duplicate_device",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -43644,6 +44148,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:3359622c146877ee",
+      "source": "domain:home",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:33673cce43e25643",
@@ -43843,11 +44356,29 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:362bfd3bac8b4632",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_workload_admission.py"
       ],
       "id": "rel:365ed06d040503d5",
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_workload_admission.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:3671da39a025f972",
+      "source": "journey:recovery-reconciliation",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -43885,6 +44416,15 @@
       "source": "domain:worker",
       "target": "subject:pocketlab.events.worker.stopped",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:36cb6be15ae1ccc1",
+      "source": "reason:already_tuned",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -44209,6 +44749,15 @@
       "id": "rel:3a25c643c9e082bf",
       "source": "api:get:/api/lite/security/details/{run_id}",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:3a3492e3305713e7",
+      "source": "reason:legacy_multiple_active_runs",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -44849,6 +45398,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:446294cc26b3239f",
+      "source": "reason:unregistered_domain",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:564"
       ],
       "id": "rel:447a749e1d832fa8",
@@ -45098,6 +45656,15 @@
       "source": "ui:literecovery",
       "target": "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:485857f56af32c69",
+      "source": "reason:insufficient_storage",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -45850,6 +46417,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5515bddfa96932ef",
+      "source": "domain:devices",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:5556b8199f2d3e58",
@@ -46584,6 +47160,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5f786f4892868ad2",
+      "source": "reason:target_not_allowed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_f7_split_read_contract.py"
       ],
       "id": "rel:5f78f6b9627e2997",
@@ -47116,6 +47701,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6884184459939ae8",
+      "source": "reason:shutdown_during_mailbox_backpressure",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:688775a3eba25bff",
@@ -47347,6 +47941,15 @@
       "id": "rel:6b8acfe3600c3398",
       "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6b8cfdd7ccf13fef",
+      "source": "domain:rules",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -47927,6 +48530,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:746de92c367e48c7",
+      "source": "reason:interrupted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_control_plane_sqlite_p3.py"
       ],
       "id": "rel:74858bdb2ea22c56",
@@ -47941,6 +48553,15 @@
       "id": "rel:749870a84fe84e21",
       "source": "component:bounded-reconciliation",
       "target": "test:tests/backend/test_lite_devices_durable_enrollment.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:74a2626a0594630c",
+      "source": "reason:release_projection_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -49353,11 +49974,29 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:8971e08ddddb0f08",
+      "source": "reason:read_degraded",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:898381fb44ecf00f",
       "source": "journey:restart-agent",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:898c6dde22745eae",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -50803,6 +51442,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:9ea3ac3d1dbb7da6",
+      "source": "reason:projection_too_old",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_store.py"
       ],
       "id": "rel:9eb75e4df8a4fe75",
@@ -50935,6 +51583,15 @@
       "source": "domain:runbook",
       "target": "subject:pocketlab.commands.runbook.reject",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a120775086ad9395",
+      "source": "reason:cold_start_validation",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -51202,6 +51859,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a4e69f27ac4878e9",
+      "source": "reason:invalid_domain",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:a4ff4c1829bfe010",
@@ -51217,6 +51883,15 @@
       "source": "component:caddy",
       "target": "troubleshooting:caddy-unavailable",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a5105a2aeb9b8fef",
+      "source": "reason:submit_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -51270,6 +51945,15 @@
       "id": "rel:a5d2769d11b61cb6",
       "source": "api:post:/api/lite/recovery/backup",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a5e81c90853de2d7",
+      "source": "reason:diagnostics_not_active",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -52117,6 +52801,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b27a20cd06f4bd30",
+      "source": "reason:command_undeliverable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
       "id": "rel:b2ad71795b029536",
@@ -52706,6 +53399,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:bc0caaced4eb4373",
+      "source": "reason:worker_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:bc254411a018f964",
@@ -53245,6 +53947,15 @@
       "source": "component:api-domain-surfaces",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:c42b14a48507fa0f",
+      "source": "domain:recovery",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -54533,6 +55244,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:d5e60151be80330f",
+      "source": "journey:change-password",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:d631f8382661725c",
@@ -54696,6 +55416,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:d8209b2c7bb432b2",
+      "source": "journey:parity-capture",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d8332916b4ac726f",
@@ -54775,6 +55504,15 @@
       "source": "journey:add-device",
       "target": "component:invite-state",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:d943d6b95efe05f4",
+      "source": "reason:invite_identity_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -54950,6 +55688,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:db4b3cf96d3bb103",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_system_profile.py"
       ],
       "id": "rel:db506fada606cff7",
@@ -55000,6 +55747,15 @@
       "id": "rel:dbc9b2a4986310e5",
       "source": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:dbcb706e2ff14cea",
+      "source": "reason:generation_changed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -55134,6 +55890,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:de07de86ab1ef65e",
+      "source": "reason:no_active_generation",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:de0da3bfc6ca182d",
@@ -55184,6 +55949,15 @@
       "id": "rel:deda7e3587cfa4f9",
       "source": "journey:restore-preview",
       "target": "test:tests/backend/test_lite_premium_tab_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:df2e88934477bf1c",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -55338,6 +56112,15 @@
       "source": "component:recovery-state",
       "target": "threat-model:durable-state",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e261bb27c02f8c28",
+      "source": "domain:apps",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -55786,6 +56569,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e822997df96b9796",
+      "source": "reason:not_found_in_restored_snapshot",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:e82315d749d25c3c",
@@ -55997,6 +56789,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:eb9f3535f7cb9f33",
+      "source": "reason:worker_start_timeout",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:eba9c431420f1f63",
@@ -56039,6 +56840,15 @@
       "source": "domain:live_status",
       "target": "subject:pocketlab.events.live_status.{name}_error",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ec086d57d8ce1a7f",
+      "source": "reason:metadata_only",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -56692,12 +57502,30 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f418b5eafc5b76b9",
+      "source": "reason:remote_access_not_ready",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:f42b002fae057332",
       "source": "component:worker",
       "target": "troubleshooting:security-scan-failure",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f46096761b2a43bc",
+      "source": "reason:disabled",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -57423,9 +58251,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4",
+  "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2",
   "statistics": {
-    "entity_count": 826,
+    "entity_count": 829,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -57442,14 +58270,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 153,
+      "test": 154,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
-      "vocabulary": 37
+      "vocabulary": 39
     },
-    "relation_count": 1921,
-    "source_count": 188
+    "relation_count": 1966,
+    "source_count": 190
   }
 }

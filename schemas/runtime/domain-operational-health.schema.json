@@ -1,0 +1,387 @@
+{
+  "$defs": {
+    "domain": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "enum": [
+            "release-promoted",
+            "source-derived",
+            "partial",
+            "unvalidated"
+          ]
+        },
+        "dependencies": {
+          "items": {
+            "maxLength": 96,
+            "type": "string"
+          },
+          "maxItems": 24,
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "evidence_status": {
+          "enum": [
+            "release-promoted",
+            "source-derived",
+            "unvalidated"
+          ]
+        },
+        "freshness": {
+          "enum": [
+            "promoted-observation",
+            "fresh",
+            "stale",
+            "unvalidated"
+          ]
+        },
+        "freshness_age_seconds": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "freshness_threshold_seconds": {
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "implementation_status": {
+          "type": "string"
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operational_health": {
+          "$ref": "#/$defs/health"
+        },
+        "readiness": {
+          "maxLength": 96,
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "runtime_status": {
+          "type": "string"
+        },
+        "semantic_parity": {
+          "maxLength": 96,
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "write_safety": {
+          "maxLength": 96,
+          "type": "string"
+        }
+      },
+      "required": [
+        "implementation_status",
+        "runtime_status",
+        "operational_health",
+        "reason",
+        "severity",
+        "freshness",
+        "freshness_age_seconds",
+        "freshness_threshold_seconds",
+        "observed_at",
+        "evidence_status",
+        "confidence",
+        "write_safety",
+        "readiness",
+        "semantic_parity",
+        "dependencies",
+        "source",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison_id": {
+          "maxLength": 120,
+          "type": "string"
+        },
+        "health_effect": {
+          "$ref": "#/$defs/health"
+        },
+        "observed_value": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "comparison_id",
+        "observed_value",
+        "health_effect",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "health": {
+      "enum": [
+        "healthy",
+        "stale",
+        "degraded",
+        "unavailable",
+        "unvalidated"
+      ]
+    },
+    "platformCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "type": "string"
+        },
+        "capability_name": {
+          "maxLength": 96,
+          "type": "string"
+        },
+        "evidence_comparisons": {
+          "items": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "maxItems": 24,
+          "type": "array"
+        },
+        "evidence_status": {
+          "enum": [
+            "release-promoted",
+            "source-derived",
+            "unvalidated",
+            "not-applicable"
+          ]
+        },
+        "platform": {
+          "maxLength": 96,
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 320,
+          "minLength": 8,
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "execution",
+            "control-client",
+            "development",
+            "runtime-host",
+            "storage",
+            "scanner-host",
+            "remote-node",
+            "not-applicable"
+          ]
+        },
+        "source_domain": {
+          "maxLength": 48,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_refs": {
+          "items": {
+            "maxLength": 240,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "verified",
+            "observed",
+            "implemented",
+            "unsupported",
+            "not-applicable",
+            "unvalidated"
+          ]
+        }
+      },
+      "required": [
+        "capability",
+        "capability_name",
+        "platform",
+        "role",
+        "status",
+        "evidence_status",
+        "source_domain",
+        "evidence_comparisons",
+        "rationale",
+        "source_refs"
+      ],
+      "type": "object"
+    },
+    "severity": {
+      "enum": [
+        "info",
+        "warning",
+        "critical",
+        "unknown"
+      ]
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_comparisons": {
+          "items": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "parity_model": {
+          "const": "contracts/parity/parity-model.json"
+        },
+        "policy": {
+          "const": "contracts/metadata/documentation-platform.json"
+        },
+        "runtime_baseline": {
+          "const": "contracts/parity/runtime-verification-baseline.json"
+        }
+      },
+      "required": [
+        "runtime_baseline",
+        "parity_model",
+        "policy",
+        "evidence_comparisons"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://pocketlab.invalid/schemas/runtime/domain-operational-health.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "domains": {
+      "additionalProperties": false,
+      "properties": {
+        "apps": {
+          "$ref": "#/$defs/domain"
+        },
+        "devices": {
+          "$ref": "#/$defs/domain"
+        },
+        "home": {
+          "$ref": "#/$defs/domain"
+        },
+        "identity": {
+          "$ref": "#/$defs/domain"
+        },
+        "recovery": {
+          "$ref": "#/$defs/domain"
+        },
+        "rules": {
+          "$ref": "#/$defs/domain"
+        },
+        "security": {
+          "$ref": "#/$defs/domain"
+        }
+      },
+      "required": [
+        "home",
+        "apps",
+        "devices",
+        "security",
+        "recovery",
+        "identity",
+        "rules"
+      ],
+      "type": "object"
+    },
+    "observed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "platform_capabilities": {
+      "items": {
+        "$ref": "#/$defs/platformCapability"
+      },
+      "maxItems": 128,
+      "type": "array"
+    },
+    "promoted_at": {
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z$",
+      "type": "string"
+    },
+    "release_tag": {
+      "pattern": "^lite-[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]+$",
+      "type": "string"
+    },
+    "runtime_baseline_status": {
+      "type": "string"
+    },
+    "sanitized": {
+      "const": true
+    },
+    "schema_revision": {
+      "const": 1
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "source_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "source_fingerprint": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "schema_revision",
+    "release_tag",
+    "source_commit",
+    "promoted_at",
+    "observed_at",
+    "sanitized",
+    "runtime_baseline_status",
+    "source_fingerprint",
+    "domains",
+    "platform_capabilities"
+  ],
+  "title": "Pocket Lab Lite promoted domain operational health and capability evidence",
+  "type": "object"
+}
