@@ -12,12 +12,12 @@ generator_version: 2
 
 # Current health
 
-| Area | Health | Semantic parity | Freshness | Action |
-| --- | --- | --- | --- | --- |
-| Apps | unvalidated | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
-| Devices | unvalidated | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
-| Home | healthy | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
-| Identity | unvalidated | partial | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
-| Backup & Restore | degraded | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
-| Rules | unvalidated | partial | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
-| Security | unvalidated | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
+| Area | Health | Reason | Semantic parity | Freshness | Action |
+| --- | --- | --- | --- | --- | --- |
+| Apps | healthy | — | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
+| Devices | healthy | — | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
+| Home | degraded | service_unavailable | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
+| Identity | unvalidated | — | partial | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
+| Backup & Restore | degraded | projection_too_old | verified-with-mapped-presentation | stale | Follow the linked troubleshooting path when operational health is degraded. |
+| Rules | unvalidated | — | partial | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |
+| Security | healthy | — | verified-with-mapped-presentation | promoted-observation | Follow the linked troubleshooting path when operational health is degraded. |

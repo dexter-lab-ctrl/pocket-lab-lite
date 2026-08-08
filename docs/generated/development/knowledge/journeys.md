@@ -81,7 +81,7 @@ generator_version: 2
 
 **Verified API routes:** `POST /api/lite/identity/rotate`
 
-**Graph links:** calls: `POST /api/lite/identity/rotate`, uses: `Identity, authentication, and invite guards`, uses: `FastAPI /api/lite/*`, uses: `SQLite control-plane store`, verified_by: `tests/backend/test_lite_api.py`, verified_by: `tests/backend/test_lite_development_documentation_platform.py`, verified_by: `tests/parity/test_api_contract_fences.py`
+**Graph links:** calls: `POST /api/lite/identity/rotate`, uses: `Identity, authentication, and invite guards`, uses: `FastAPI /api/lite/*`, uses: `SQLite control-plane store`, verified_by: `tests/backend/test_lite_api.py`, verified_by: `tests/backend/test_lite_development_documentation_platform.py`, verified_by: `tests/docs/test_operational_health_bridge.py`, verified_by: `tests/parity/test_api_contract_fences.py`
 
 **Sources:** `contracts/generated/lite-openapi.json`, `contracts/parity/parity-model.json`, `src/lite/LiteIdentity.jsx`
 
@@ -117,7 +117,7 @@ generator_version: 2
 
 **Verified API routes:** none
 
-**Graph links:** verified_by: `tests/backend/test_lite_complete_documentation_platform.py`, verified_by: `tests/backend/test_lite_development_documentation_platform.py`, verified_by: `tests/backend/test_lite_production_architecture_platform.py`, verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+**Graph links:** verified_by: `tests/backend/test_lite_complete_documentation_platform.py`, verified_by: `tests/backend/test_lite_development_documentation_platform.py`, verified_by: `tests/backend/test_lite_production_architecture_platform.py`, verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`, verified_by: `tests/docs/test_operational_health_bridge.py`
 
 **Sources:** `scripts/docs/lite/generate_docs.py`, `scripts/docs/lite/generate_platform_catalogs.py`, `tasks/Taskfile.docs.yml`
 
@@ -129,7 +129,7 @@ generator_version: 2
 
 **Verified API routes:** none
 
-**Graph links:** uses: `FastAPI /api/lite/*`, uses: `React / Vite PWA`, uses: `SQLite control-plane store`
+**Graph links:** uses: `FastAPI /api/lite/*`, uses: `React / Vite PWA`, uses: `SQLite control-plane store`, verified_by: `tests/docs/test_operational_health_bridge.py`
 
 **Sources:** `contracts/parity/parity-model.json`, `scripts/docs/parity/generate_parity.py`
 
@@ -153,7 +153,7 @@ generator_version: 2
 
 **Verified API routes:** `GET /api/lite/recovery/summary`
 
-**Graph links:** calls: `GET /api/lite/recovery/summary`, uses: `Audit index, projection refresh, prepared projections, and domain revisions`, uses: `Backup, restore, and checkpoint state`, uses: `SQLite control-plane store`
+**Graph links:** calls: `GET /api/lite/recovery/summary`, uses: `Audit index, projection refresh, prepared projections, and domain revisions`, uses: `Backup, restore, and checkpoint state`, uses: `SQLite control-plane store`, verified_by: `tests/docs/test_operational_health_bridge.py`
 
 **Sources:** `contracts/parity/parity-model.json`
 

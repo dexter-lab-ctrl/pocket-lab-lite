@@ -52,6 +52,17 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/docs/runtime/generate_termux_runtime_docs.py check'
       - '{{.PYTHON}} scripts/docs/runtime/runtime_redaction.py --paths architecture/runtime-baselines contracts/generated/runtime docs/generated/development/runtime-verification.md docs/generated/production/android-termux-runtime.md docs/generated/production/services-pm2-runtime.md docs/generated/production/remote-access-runtime.md'
+
+  lite:docs:health:generate:
+    desc: Generate release-bound Lite domain operational health and platform capability evidence from promoted sanitized runtime verification
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/generate_domain_operational_health.py generate'
+
+  lite:docs:health:check:
+    desc: Check release binding, schema, health/parity independence, capability roles, sanitization, and deterministic operational-health drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/generate_domain_operational_health.py check'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_operational_health_bridge.py'
   lite:docs:tools:check:
     desc: Verify pinned development-only documentation tools without changing the host
     cmds:
@@ -270,6 +281,7 @@ tasks:
       - task: lite:docs:platform:generate
       - task: lite:docs:runtime:generate
       - task: lite:docs:parity:generate
+      - task: lite:docs:health:generate
       - task: lite:docs:knowledge:generate
       - task: lite:docs:architecture:generate
       - task: lite:docs:development:generate
@@ -291,6 +303,7 @@ tasks:
       - task: lite:docs:platform:check
       - task: lite:docs:runtime:check
       - task: lite:docs:parity:check
+      - task: lite:docs:health:check
       - task: lite:docs:knowledge:check
       - task: lite:docs:architecture:check
       - task: lite:docs:development:check

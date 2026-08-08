@@ -7,12 +7,13 @@
       "freshness": "promoted-observation",
       "implementation_status": "implemented",
       "label": "Apps",
-      "operational_health": "unvalidated",
+      "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
       "runtime_parity": "verified-with-mapped-presentation",
       "runtime_status": "observed",
       "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -25,30 +26,32 @@
       "freshness": "promoted-observation",
       "implementation_status": "implemented",
       "label": "Devices",
-      "operational_health": "unvalidated",
-      "readiness": "ready-with-guardrails",
-      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
-      "runtime_parity": "verified-with-mapped-presentation",
-      "runtime_status": "observed",
-      "source_of_truth": [
-        "contracts/parity/parity-model.json",
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
-    },
-    {
-      "degraded_reason": null,
-      "domain": "home",
-      "evidence_status": "release-promoted",
-      "freshness": "promoted-observation",
-      "implementation_status": "implemented",
-      "label": "Home",
       "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
       "runtime_parity": "verified-with-mapped-presentation",
       "runtime_status": "observed",
       "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
+    },
+    {
+      "degraded_reason": "service_unavailable",
+      "domain": "home",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "readiness": "degraded",
+      "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "observed",
+      "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -67,6 +70,7 @@
       "runtime_parity": "partial",
       "runtime_status": "observed",
       "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -76,15 +80,16 @@
       "degraded_reason": "projection_too_old",
       "domain": "recovery",
       "evidence_status": "release-promoted",
-      "freshness": "promoted-observation",
+      "freshness": "stale",
       "implementation_status": "implemented",
       "label": "Backup & Restore",
       "operational_health": "degraded",
-      "readiness": "ready-with-guardrails",
+      "readiness": "degraded",
       "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
       "runtime_parity": "verified-with-mapped-presentation",
       "runtime_status": "observed",
       "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -103,6 +108,7 @@
       "runtime_parity": "partial",
       "runtime_status": "observed",
       "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -115,12 +121,13 @@
       "freshness": "promoted-observation",
       "implementation_status": "implemented",
       "label": "Security",
-      "operational_health": "unvalidated",
+      "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
       "runtime_parity": "verified-with-mapped-presentation",
       "runtime_status": "observed",
       "source_of_truth": [
+        "contracts/generated/runtime/domain-operational-health.json",
         "contracts/parity/parity-model.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -133,6 +140,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
+    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
   }
 }

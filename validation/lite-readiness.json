@@ -144,7 +144,7 @@
     "status": "validation contract documented; local PASS is not claimed"
   },
   "metadata": {
-    "aggregate_fingerprint": "00d82c5442d55372e5656c862c53ff4f6d1776d199fe9488c58a3c9ffd88e2a6",
+    "aggregate_fingerprint": "35765003a39d646c08babfb925c27ae81aac71b0092518704f70320a6420b216",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -155,7 +155,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "Taskfile.yml": "78b51f7bb8c99a9b2dfb6b1994bfa77f31bad73dd82f0157b3d6f1fb83c4332f",
-      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "contracts/metadata/documentation-platform.json": "e3fe370d9b039c813d031300a9f90d5796dc808552a04a57c6d02d7d9e662113",
       "scripts/dev/lite/run-gate.sh": "43bce72d0da69e2eca2b63df3f7a5d83d7df8aa3345bd1414c75c63d5129b546",
       "scripts/dev/lite/validation_evidence.py": "bbca414f1a3fa1a505c2c36db88874eb728d146e03f87d0d2649e4791d2d98b8",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"

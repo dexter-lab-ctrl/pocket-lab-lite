@@ -31,7 +31,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "32ff658c98f0c55536b08f6952e47ef3b123ec37a95516cd56123197ec0ab64c",
+  "source_fingerprint": "49505939a3847c1d0a060ef758da897797c4061eaacf6dd23d00aeaf8da6cd53",
   "source_fingerprints": {
     ".github/workflows/lite-quality.yml": "048c82b170403201c8f8f5050da38b90365186e185352617d0b4d76aacccd3c4",
     ".github/workflows/release-dist.yml": "9c88d615195b8f3005c9e84c4ead3729885d1ebe6bfc0ffc352f34c9df6b8be4",
@@ -120,9 +120,9 @@
     "src/lite/security/SecurityHistoryLazy.jsx": "5be1da91a21e91b384b9b19acd9014c8c1d24b3ed75df4988514571d2953ce61",
     "src/lite/security/SecurityProgressiveDetailsLazy.jsx": "902a7f126beb546d9300d4ca1b3db9a597ec52c853aaecfa64d061fe45072198",
     "src/lite/stories/LiteStoryFrame.jsx": "cff6e567fe860381153734a0cd63614908ad07336499879bdb8fd1cda69a5d69",
-    "tasks/Taskfile.docs.yml": "6c5c571c6257fa2652b9088c40b1dcf5f26e930bb35c4b0b1bcb9a9830b3b116",
+    "tasks/Taskfile.docs.yml": "361ae68e322940485bca9b28fb5841d4947d71fe100e97b43512c836de05184a",
     "tasks/Taskfile.lite.yml": "51ce4485df905953b40ea27e45e2984f1b6d9702a62644a7210ff2db6ad951dc",
-    "tasks/Taskfile.parity.yml": "d00e0a6c8f3bffe20d934f8906ebe59ace973e096ab5cc8b9459e094a896e9f8",
+    "tasks/Taskfile.parity.yml": "8c391f835e11b0a25a215c8cf7a4cfbf36f19ef9c623675a0e9f56861e6f7b34",
     "tasks/Taskfile.release.yml": "c027ceca7a9f849cf4eb3f167a6b8d4f4bb52f292277ea3bbda572b14b4fb35e",
     "tasks/Taskfile.ui.yml": "c8b270a8713b1d0f334706f5f0febbefd4e5cfe40c94f5438fd4131e44b980f8",
     "tasks/Taskfile.windows.yml": "76ccbc66408709c1623fa30e7d11df48a2e542e329590625f107781cf7c6ff5d"

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 32ff658c98f0c55536b08f6952e47ef3b123ec37a95516cd56123197ec0ab64c
+source_fingerprint: 49505939a3847c1d0a060ef758da897797c4061eaacf6dd23d00aeaf8da6cd53
 schema_revision: 1
 validation_status: generated
 ---
@@ -59,6 +59,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:events`
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
+- `lite:docs:health:check`
+- `lite:docs:health:generate`
 - `lite:docs:knowledge:ai-export`
 - `lite:docs:knowledge:check`
 - `lite:docs:knowledge:generate`
@@ -167,6 +169,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:architecture:check`
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
+- `lite:docs:check` → `lite:docs:health:check`
 - `lite:docs:check` → `lite:docs:knowledge:check`
 - `lite:docs:check` → `lite:docs:parity:check`
 - `lite:docs:check` → `lite:docs:platform:check`
@@ -177,6 +180,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:architecture:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
+- `lite:docs:generate` → `lite:docs:health:generate`
 - `lite:docs:generate` → `lite:docs:knowledge:generate`
 - `lite:docs:generate` → `lite:docs:parity:generate`
 - `lite:docs:generate` → `lite:docs:platform:generate`
@@ -187,6 +191,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:sync` → `lite:docs:check`
 - `lite:docs:sync` → `lite:docs:generate`
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`
+- `lite:evidence:runtime:promote` → `lite:docs:health:generate`
 - `lite:evidence:runtime:promote` → `lite:evidence:runtime:preflight`
 - `lite:parity:check` → `lite:a11y:check`
 - `lite:parity:check` → `lite:docs:parity:check`

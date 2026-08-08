@@ -2047,7 +2047,8 @@
       "name": "Apps",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
-        "test:tests/docs/test_living_knowledgebase.py"
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "domain",
       "verification_status": "test-linked"
@@ -2105,7 +2106,8 @@
       "name": "Devices",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
-        "test:tests/docs/test_living_knowledgebase.py"
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "domain",
       "verification_status": "test-linked"
@@ -2175,7 +2177,8 @@
       "name": "Home",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
-        "test:tests/docs/test_living_knowledgebase.py"
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "domain",
       "verification_status": "test-linked"
@@ -2188,6 +2191,7 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
@@ -2283,6 +2287,7 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
       "type": "domain",
@@ -2320,7 +2325,8 @@
       "name": "Rules",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
-        "test:tests/docs/test_living_knowledgebase.py"
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "domain",
       "verification_status": "test-linked"
@@ -2382,6 +2388,7 @@
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
@@ -2518,6 +2525,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "type": "journey",
@@ -2554,7 +2562,8 @@
         "test:tests/backend/test_lite_complete_documentation_platform.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_production_architecture_platform.py",
-        "test:tests/backend/test_lite_termux_runtime_documentation.py"
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -2563,9 +2572,11 @@
       "entity": "journey:parity-capture",
       "name": "Backend-to-Frontend parity capture and verification",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/docs/test_operational_health_bridge.py"
+      ],
       "type": "journey",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "journey:photoprism-operation",
@@ -2581,9 +2592,11 @@
       "entity": "journey:recovery-reconciliation",
       "name": "Recovery reconciliation",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/docs/test_operational_health_bridge.py"
+      ],
       "type": "journey",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "journey:release-update",
@@ -2855,6 +2868,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bfe2e742d96f978e78643dd1e5d2719633141234a3cab46c2ff9e29323f750a4"
+    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
   }
 }

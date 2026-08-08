@@ -22,42 +22,42 @@ generator_version: 2
 
 ## Platform matrix
 
-| Capability | Platform | Status | Components |
-| --- | --- | --- | --- |
-| App Host | Android/Termux ARM64 | unvalidated | — |
-| App Host | ARM64 Ubuntu/proot | unvalidated | — |
-| App Host | Ubuntu/WSL2 Dev | unvalidated | — |
-| App Host | desktop browser | unvalidated | — |
-| App Host | mobile browser | unvalidated | — |
-| App Host | server phone | unvalidated | — |
-| App Host | secondary device | unvalidated | — |
-| Backup Target | Android/Termux ARM64 | unvalidated | — |
-| Backup Target | ARM64 Ubuntu/proot | unvalidated | — |
-| Backup Target | Ubuntu/WSL2 Dev | unvalidated | — |
-| Backup Target | desktop browser | unvalidated | — |
-| Backup Target | mobile browser | unvalidated | — |
-| Backup Target | server phone | unvalidated | — |
-| Backup Target | secondary device | unvalidated | — |
-| Compute | Android/Termux ARM64 | unvalidated | — |
-| Compute | ARM64 Ubuntu/proot | unvalidated | — |
-| Compute | Ubuntu/WSL2 Dev | unvalidated | — |
-| Compute | desktop browser | unvalidated | — |
-| Compute | mobile browser | unvalidated | — |
-| Compute | server phone | unvalidated | — |
-| Compute | secondary device | unvalidated | — |
-| Storage Node | Android/Termux ARM64 | unvalidated | — |
-| Storage Node | ARM64 Ubuntu/proot | unvalidated | — |
-| Storage Node | Ubuntu/WSL2 Dev | unvalidated | — |
-| Storage Node | desktop browser | unvalidated | — |
-| Storage Node | mobile browser | unvalidated | — |
-| Storage Node | server phone | unvalidated | — |
-| Storage Node | secondary device | unvalidated | — |
-| Security Scanner | Android/Termux ARM64 | unvalidated | — |
-| Security Scanner | ARM64 Ubuntu/proot | unvalidated | — |
-| Security Scanner | Ubuntu/WSL2 Dev | unvalidated | — |
-| Security Scanner | desktop browser | unvalidated | — |
-| Security Scanner | mobile browser | unvalidated | — |
-| Security Scanner | server phone | unvalidated | — |
-| Security Scanner | secondary device | unvalidated | — |
+| Capability | Platform | Role | Status | Evidence | Rationale |
+| --- | --- | --- | --- | --- | --- |
+| App Host | ARM64 Ubuntu/proot | execution | verified | release-promoted | PhotoPrism executes in the ARM64 Ubuntu/proot runtime owned by the server phone. |
+| App Host | Android/Termux ARM64 | runtime-host | verified | release-promoted | The server-host role advertises app_host and the promoted Apps lane observes the managed app runtime. |
+| App Host | Ubuntu/WSL2 Dev | development | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| App Host | desktop browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| App Host | mobile browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| App Host | secondary device | remote-node | implemented | source-derived | The compute device role advertises app_host, but the promoted baseline does not prove a currently ready secondary app host. |
+| App Host | server phone | runtime-host | verified | release-promoted | The protected server-host role owns the current App Host runtime. |
+| Backup Target | ARM64 Ubuntu/proot | execution | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Backup Target | Android/Termux ARM64 | storage | implemented | source-derived | The storage role advertises backup_target, while readiness still depends on a current qualifying storage node. |
+| Backup Target | Ubuntu/WSL2 Dev | development | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Backup Target | desktop browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Backup Target | mobile browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Backup Target | secondary device | storage | implemented | source-derived | Secondary storage nodes are the canonical remote backup-target role. |
+| Backup Target | server phone | runtime-host | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Compute | ARM64 Ubuntu/proot | execution | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Compute | Android/Termux ARM64 | runtime-host | verified | release-promoted | The server-host and compute roles advertise compute on Android/Termux ARM64. |
+| Compute | Ubuntu/WSL2 Dev | development | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Compute | desktop browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Compute | mobile browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Compute | secondary device | remote-node | implemented | source-derived | The compute device role advertises compute, but current readiness must still come from fresh device evidence. |
+| Compute | server phone | runtime-host | verified | release-promoted | The protected server phone is the canonical control-plane compute host. |
+| Storage Node | ARM64 Ubuntu/proot | execution | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Storage Node | Android/Termux ARM64 | storage | implemented | source-derived | The storage role advertises media_storage on enrolled Android/Termux nodes; no current ready storage node is promoted. |
+| Storage Node | Ubuntu/WSL2 Dev | development | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Storage Node | desktop browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Storage Node | mobile browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Storage Node | secondary device | storage | implemented | source-derived | The storage device role owns media_storage capability on secondary nodes. |
+| Storage Node | server phone | runtime-host | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Security Scanner | ARM64 Ubuntu/proot | execution | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Security Scanner | Android/Termux ARM64 | scanner-host | verified | release-promoted | Lynis and Trivy execute behind FastAPI/worker boundaries on the Android/Termux server runtime. |
+| Security Scanner | Ubuntu/WSL2 Dev | development | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Security Scanner | desktop browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Security Scanner | mobile browser | control-client | not-applicable | not-applicable | This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here. |
+| Security Scanner | secondary device | remote-node | unvalidated | unvalidated | No canonical repository binding currently claims this capability on this platform. |
+| Security Scanner | server phone | scanner-host | verified | release-promoted | The protected server-host role advertises security_scanner and promoted Security evidence observes it healthy. |
 
-Identity and Rules remain partial and are not promoted to supported/verified by this matrix.
+Identity and Rules remain partial and are not promoted to supported/verified by this matrix. Browser and development surfaces remain control/development roles rather than execution hosts.

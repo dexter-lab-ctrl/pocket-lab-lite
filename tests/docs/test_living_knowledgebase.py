@@ -181,7 +181,15 @@ def test_platform_capabilities_use_nuanced_statuses():
     assert {x["platform"] for x in matrix} == {
         "Android/Termux ARM64", "ARM64 Ubuntu/proot", "Ubuntu/WSL2 Dev", "desktop browser", "mobile browser", "server phone", "secondary device"
     }
-    assert {x["status"] for x in matrix} <= {"implemented", "observed", "unvalidated"}
+    assert {x["status"] for x in matrix} <= {
+        "verified", "observed", "implemented", "unsupported", "not-applicable", "unvalidated"
+    }
+    assert any(x["status"] == "verified" for x in matrix)
+    assert all(
+        x["status"] == "not-applicable"
+        for x in matrix
+        if x.get("role") in {"control-client", "development"}
+    )
 
 
 def test_traceability_does_not_equate_test_link_with_runtime_verification():
@@ -203,6 +211,12 @@ def test_vocabulary_unique_and_semantically_independent():
 
 def test_operational_health_is_independent_from_semantic_parity():
     health = {x["domain"]: x for x in load("operational-health.json")}
+    assert health["home"]["runtime_parity"] == "verified-with-mapped-presentation"
+    assert health["home"]["operational_health"] == "degraded"
+    assert health["home"]["degraded_reason"] == "service_unavailable"
+    assert health["apps"]["operational_health"] == "healthy"
+    assert health["devices"]["operational_health"] == "healthy"
+    assert health["security"]["operational_health"] == "healthy"
     recovery = health["recovery"]
     assert recovery["runtime_parity"] == "verified-with-mapped-presentation"
     assert recovery["operational_health"] == "degraded"
@@ -215,6 +229,9 @@ def test_freshness_dashboard_is_pre_generated_and_release_bound():
     assert freshness["promoted_release"] == runtime["release_tag"]
     assert freshness["promoted_source_commit"] == runtime["source_commit"]
     assert freshness["runtime_evidence_sanitized"] is True
+    assert freshness["operational_health_source_fingerprint"] == json.loads(
+        (ROOT / "contracts/generated/runtime/domain-operational-health.json").read_text(encoding="utf-8")
+    )["source_fingerprint"]
     assert set(freshness["operational_degradation"]) <= {
         x["domain"] for x in load("operational-health.json")
     }

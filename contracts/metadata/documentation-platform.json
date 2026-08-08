@@ -140,6 +140,425 @@
       "type": "command"
     }
   },
+  "operational_health": {
+    "browser_authority": "presentation-semantics-only",
+    "domains": {
+      "apps": {
+        "dependencies": [
+          "Caddy",
+          "FastAPI",
+          "NATS/JetStream",
+          "worker",
+          "PhotoPrism runtime"
+        ],
+        "freshness_threshold_seconds": 60,
+        "guards": [
+          {
+            "comparison_id": "apps-termux-installed",
+            "expected": true,
+            "mismatch_health": "unavailable",
+            "reason": "service_unavailable"
+          },
+          {
+            "comparison_id": "apps-termux-route_ready",
+            "expected": true,
+            "mismatch_health": "degraded",
+            "reason": "service_unavailable"
+          },
+          {
+            "comparison_id": "apps-termux-open_enabled",
+            "expected": true,
+            "mismatch_health": "degraded",
+            "reason": "service_unavailable"
+          }
+        ],
+        "status_signal": {
+          "candidate_mapping_id": "apps-runtime-presentation",
+          "comparison_id": "apps-termux-runtime_status",
+          "health_map": {
+            "healthy": "healthy",
+            "installed": "degraded",
+            "installing": "degraded",
+            "not installed": "unavailable",
+            "not_installed": "unavailable",
+            "ready": "healthy",
+            "review": "degraded"
+          },
+          "reason_by_health": {
+            "degraded": "service_unavailable",
+            "unavailable": "service_unavailable"
+          }
+        },
+        "write_safety": "guarded-by-backend-readiness"
+      },
+      "devices": {
+        "dependencies": [
+          "FastAPI",
+          "NATS/JetStream",
+          "node agent",
+          "agent supervisor",
+          "Tailscale"
+        ],
+        "freshness_threshold_seconds": 60,
+        "guards": [
+          {
+            "comparison_id": "devices-termux-server_identity_expected",
+            "expected": true,
+            "mismatch_health": "unavailable",
+            "reason": "service_unavailable"
+          },
+          {
+            "comparison_id": "devices-termux-remote_access_ready",
+            "expected": true,
+            "mismatch_health": "degraded",
+            "reason": "remote_access_not_ready"
+          }
+        ],
+        "ignored_aggregate_signals": [
+          {
+            "comparison_id": "devices-termux-online_count",
+            "reason": "Retained stale/offline device records do not by themselves degrade the protected server host."
+          }
+        ],
+        "status_signal": {
+          "candidate_mapping_id": "devices-server-state",
+          "candidates": [
+            "Protected server host",
+            "Online",
+            "Joining",
+            "Waiting",
+            "Offline",
+            "Agent stopped",
+            "Repairing",
+            "Remote access not ready"
+          ],
+          "comparison_id": "devices-termux-server_status",
+          "health_map": {
+            "agent stopped": "unavailable",
+            "agent_stopped": "unavailable",
+            "joining": "degraded",
+            "offline": "unavailable",
+            "online": "healthy",
+            "protected server host": "healthy",
+            "remote access not ready": "degraded",
+            "repairing": "degraded",
+            "waiting": "degraded"
+          },
+          "reason_by_health": {
+            "degraded": "service_unavailable",
+            "unavailable": "service_unavailable"
+          }
+        },
+        "write_safety": "guarded-by-delivery-readiness"
+      },
+      "home": {
+        "dependencies": [
+          "Caddy",
+          "FastAPI",
+          "NATS/JetStream",
+          "worker",
+          "node agent",
+          "core supervisor"
+        ],
+        "freshness_threshold_seconds": 60,
+        "guards": [
+          {
+            "comparison_id": "home-termux-read_degraded",
+            "expected": false,
+            "mismatch_health": "degraded",
+            "reason": "read_degraded"
+          }
+        ],
+        "status_signal": {
+          "candidate_mapping_id": "home-overall-presentation",
+          "comparison_id": "home-termux-overall_status",
+          "health_map": {
+            "degraded": "degraded",
+            "failed": "unavailable",
+            "healthy": "healthy",
+            "unknown": "unavailable"
+          },
+          "reason_by_health": {
+            "degraded": "service_unavailable",
+            "unavailable": "service_unavailable"
+          }
+        },
+        "write_safety": "not-applicable"
+      },
+      "recovery": {
+        "dependencies": [
+          "FastAPI",
+          "NATS/JetStream",
+          "worker",
+          "SQLite",
+          "restic"
+        ],
+        "freshness_age_signal": {
+          "comparison_id": "recovery-termux-projection_age_ms",
+          "stale_reason": "projection_too_old",
+          "unit": "milliseconds"
+        },
+        "freshness_threshold_seconds": 60,
+        "guards": [
+          {
+            "comparison_id": "recovery-termux-read_degraded",
+            "expected": false,
+            "mismatch_health": "degraded",
+            "reason": "read_degraded"
+          }
+        ],
+        "reason_signal": {
+          "candidate_source": "reason-codes",
+          "comparison_id": "recovery-termux-degraded_reason"
+        },
+        "status_signal": {
+          "candidate_mapping_id": "recovery-status-presentation",
+          "comparison_id": "recovery-termux-status",
+          "health_map": {
+            "degraded": "degraded",
+            "failed": "unavailable",
+            "healthy": "healthy",
+            "unknown": "unavailable"
+          },
+          "reason_by_health": {
+            "degraded": "read_degraded",
+            "unavailable": "service_unavailable"
+          }
+        },
+        "write_safety": "blocked-when-read-degraded"
+      },
+      "security": {
+        "dependencies": [
+          "FastAPI",
+          "NATS/JetStream",
+          "worker",
+          "Lynis",
+          "Trivy"
+        ],
+        "freshness_threshold_seconds": 300,
+        "status_signal": {
+          "candidate_mapping_id": "security-summary-presentation",
+          "comparison_id": "security-termux-status",
+          "health_map": {
+            "degraded": "degraded",
+            "failed": "unavailable",
+            "healthy": "healthy",
+            "running": "healthy",
+            "unknown": "unavailable"
+          },
+          "reason_by_health": {
+            "degraded": "service_unavailable",
+            "unavailable": "service_unavailable"
+          }
+        },
+        "write_safety": "guarded-by-scanner-readiness"
+      }
+    },
+    "evidence_precedence": [
+      "promoted-sanitized-runtime-verification",
+      "canonical-source-runtime-contracts",
+      "architecture-metadata",
+      "documentation-metadata"
+    ],
+    "health_states": [
+      "healthy",
+      "stale",
+      "degraded",
+      "unavailable",
+      "unvalidated"
+    ],
+    "precedence": [
+      "unavailable",
+      "degraded",
+      "stale",
+      "healthy"
+    ],
+    "schema_version": "1.0.0",
+    "severity_by_health": {
+      "degraded": "warning",
+      "healthy": "info",
+      "stale": "warning",
+      "unavailable": "critical",
+      "unvalidated": "unknown"
+    }
+  },
+  "platform_capability_bindings": [
+    {
+      "capability": "app_host",
+      "evidence_comparisons": {
+        "apps-termux-installed": true,
+        "apps-termux-route_ready": true,
+        "apps-termux-runtime_status": "ready"
+      },
+      "platform": "Android/Termux ARM64",
+      "rationale": "The server-host role advertises app_host and the promoted Apps lane observes the managed app runtime.",
+      "role": "runtime-host",
+      "source_domain": "apps",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "app_host",
+      "evidence_comparisons": {
+        "apps-termux-installed": true,
+        "apps-termux-runtime_status": "ready"
+      },
+      "platform": "ARM64 Ubuntu/proot",
+      "rationale": "PhotoPrism executes in the ARM64 Ubuntu/proot runtime owned by the server phone.",
+      "role": "execution",
+      "source_domain": "apps",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "app_host",
+      "evidence_comparisons": {
+        "apps-termux-installed": true,
+        "apps-termux-route_ready": true,
+        "apps-termux-runtime_status": "ready"
+      },
+      "platform": "server phone",
+      "rationale": "The protected server-host role owns the current App Host runtime.",
+      "role": "runtime-host",
+      "source_domain": "apps",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "app_host",
+      "evidence_comparisons": {},
+      "platform": "secondary device",
+      "rationale": "The compute device role advertises app_host, but the promoted baseline does not prove a currently ready secondary app host.",
+      "role": "remote-node",
+      "source_domain": "devices",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "media_storage",
+      "evidence_comparisons": {},
+      "platform": "Android/Termux ARM64",
+      "rationale": "The storage role advertises media_storage on enrolled Android/Termux nodes; no current ready storage node is promoted.",
+      "role": "storage",
+      "source_domain": "devices",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "media_storage",
+      "evidence_comparisons": {},
+      "platform": "secondary device",
+      "rationale": "The storage device role owns media_storage capability on secondary nodes.",
+      "role": "storage",
+      "source_domain": "devices",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "backup_target",
+      "evidence_comparisons": {},
+      "platform": "Android/Termux ARM64",
+      "rationale": "The storage role advertises backup_target, while readiness still depends on a current qualifying storage node.",
+      "role": "storage",
+      "source_domain": "recovery",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "backup_target",
+      "evidence_comparisons": {},
+      "platform": "secondary device",
+      "rationale": "Secondary storage nodes are the canonical remote backup-target role.",
+      "role": "storage",
+      "source_domain": "recovery",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "security_scanner",
+      "evidence_comparisons": {
+        "security-termux-status": "healthy"
+      },
+      "platform": "Android/Termux ARM64",
+      "rationale": "Lynis and Trivy execute behind FastAPI/worker boundaries on the Android/Termux server runtime.",
+      "role": "scanner-host",
+      "source_domain": "security",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "security_scanner",
+      "evidence_comparisons": {
+        "security-termux-status": "healthy"
+      },
+      "platform": "server phone",
+      "rationale": "The protected server-host role advertises security_scanner and promoted Security evidence observes it healthy.",
+      "role": "scanner-host",
+      "source_domain": "security",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "compute",
+      "evidence_comparisons": {
+        "devices-termux-server_identity_expected": true,
+        "devices-termux-server_status": "Protected server host"
+      },
+      "platform": "Android/Termux ARM64",
+      "rationale": "The server-host and compute roles advertise compute on Android/Termux ARM64.",
+      "role": "runtime-host",
+      "source_domain": "devices",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "compute",
+      "evidence_comparisons": {
+        "devices-termux-server_identity_expected": true,
+        "devices-termux-server_status": "Protected server host"
+      },
+      "platform": "server phone",
+      "rationale": "The protected server phone is the canonical control-plane compute host.",
+      "role": "runtime-host",
+      "source_domain": "devices",
+      "source_status": "implemented"
+    },
+    {
+      "capability": "compute",
+      "evidence_comparisons": {},
+      "platform": "secondary device",
+      "rationale": "The compute device role advertises compute, but current readiness must still come from fresh device evidence.",
+      "role": "remote-node",
+      "source_domain": "devices",
+      "source_status": "implemented"
+    }
+  ],
+  "platforms": [
+    {
+      "name": "Android/Termux ARM64",
+      "role": "runtime-host",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    },
+    {
+      "name": "ARM64 Ubuntu/proot",
+      "role": "execution",
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+    },
+    {
+      "name": "Ubuntu/WSL2 Dev",
+      "role": "development",
+      "source": "scripts/dev/setup-wsl-ubuntu-dev.sh"
+    },
+    {
+      "name": "desktop browser",
+      "role": "control-client",
+      "source": "tests/e2e/lite-parity.spec.ts"
+    },
+    {
+      "name": "mobile browser",
+      "role": "control-client",
+      "source": "tests/e2e/lite-parity.spec.ts"
+    },
+    {
+      "name": "server phone",
+      "role": "runtime-host",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    },
+    {
+      "name": "secondary device",
+      "role": "remote-node",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    }
+  ],
   "projections": [
     {
       "cache_owner": "FastAPI prepared SQLite read and TanStack Query",
