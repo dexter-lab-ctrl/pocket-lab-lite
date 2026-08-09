@@ -372,3 +372,140 @@ ${String(error)}`
   expect(failedRequests).toEqual([]);
   expect(consoleFailures).toEqual([]);
 });
+
+test('documentation intelligence dashboard is responsive, progressive, and evidence-aware', async ({ page }, testInfo) => {
+  await page.goto(DOCS_PREFIX);
+  await expect(page.locator('[data-pl-dashboard="true"]')).toBeVisible();
+  await expect(page.getByText('Documentation Control Center')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Current operational health' })).toBeVisible();
+  await expect(page.locator('.pl-health-card')).toHaveCount(5);
+  const recoveryHealthCard = page
+    .locator('.pl-health-card')
+    .filter({ hasText: 'Backup & Restore' });
+
+  await expect(recoveryHealthCard).toHaveCount(1);
+  await expect(
+    recoveryHealthCard.getByText('projection_too_old', { exact: true }),
+  ).toBeVisible();
+
+  const dashboardOverflow = await page.locator('[data-pl-dashboard="true"]').evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(dashboardOverflow.scrollWidth).toBeLessThanOrEqual(dashboardOverflow.clientWidth + 1);
+
+  await page.goto(`${DOCS_PREFIX}generated/development/intelligence/dependency-health/`);
+  await expect(page.getByRole('heading', { name: 'Service and dependency health' })).toBeVisible();
+  await expect(page.locator('.pl-status-strip').first()).toBeVisible();
+  // Scope evidence assertions to Material's rendered article, never to
+  // <main>, because desktop Material navigation can place hidden labels
+  // inside the broader main DOM tree.
+  const dependencyContent = page
+    .locator('.md-content__inner.md-typeset')
+    .first();
+
+  await expect(dependencyContent).toBeVisible();
+  await expect(dependencyContent).toContainText(/Lynis/i);
+  await expect(dependencyContent).toContainText(/unvalidated/i);
+
+  // If the requested evidence is intentionally behind progressive
+  // disclosure, exercise the real disclosure interaction before making
+  // visibility assertions. Do not assume a fixed DOM position.
+  const lynisDisclosure = dependencyContent
+    .locator('details')
+    .filter({ hasText: /Lynis/i })
+    .first();
+
+  if (await lynisDisclosure.count()) {
+    const lynisSummary = lynisDisclosure.locator('summary').first();
+
+    await expect(lynisSummary).toBeVisible();
+
+    const alreadyOpen = await lynisDisclosure.evaluate(
+      (element: HTMLDetailsElement) => element.open,
+    );
+
+    if (!alreadyOpen) {
+      await lynisSummary.click();
+    }
+
+    await expect(lynisDisclosure).toHaveAttribute('open', '');
+    await expect(lynisDisclosure).toContainText(/Lynis/i);
+    await expect(lynisDisclosure).toContainText(/unvalidated/i);
+  }
+
+  await page.goto(`${DOCS_PREFIX}generated/development/intelligence/evidence-lineage/`);
+  await expect(page.getByRole('heading', { name: 'Why do we believe this?' })).toBeVisible();
+  await expect(page.locator('.pl-lineage').first()).toBeVisible();
+  const disclosure = page.locator('details.pl-disclosure').first();
+  await expect(disclosure).toBeVisible();
+  expect(await disclosure.getAttribute('open')).toBeNull();
+
+  await page.goto(`${DOCS_PREFIX}generated/development/intelligence/release-impact/`);
+  await expect(page.getByRole('heading', { name: 'What changed?' })).toBeVisible();
+  await expect(page.getByText('No comparable verified prior release')).toBeVisible();
+
+  if (testInfo.project.name === 'docs-mobile') {
+    await page.goto(
+      `${DOCS_PREFIX}generated/development/intelligence/platform-matrix/`,
+    );
+
+    const capabilityMatrix = page
+      .locator('.pl-capability-matrix')
+      .first();
+
+    await expect(capabilityMatrix).toBeVisible();
+
+    // Responsive behavior is validated from computed browser layout,
+    // not from a transient CSS wrapper class.
+    const matrixLayout = await capabilityMatrix.evaluate((matrix) => {
+      const viewportWidth = document.documentElement.clientWidth;
+      const matrixRect = matrix.getBoundingClientRect();
+
+      let candidate: HTMLElement | null = matrix.parentElement;
+      let scrollHost: HTMLElement | null = null;
+
+      while (candidate && candidate !== document.body) {
+        const style = window.getComputedStyle(candidate);
+        const overflowX = style.overflowX;
+
+        if (
+          overflowX === 'auto' ||
+          overflowX === 'scroll'
+        ) {
+          scrollHost = candidate;
+          break;
+        }
+
+        candidate = candidate.parentElement;
+      }
+
+      return {
+        viewportWidth,
+        matrixLeft: matrixRect.left,
+        matrixRight: matrixRect.right,
+        scrollContainerFound: Boolean(scrollHost),
+        scrollClientWidth: scrollHost?.clientWidth ?? 0,
+        scrollWidth: scrollHost?.scrollWidth ?? 0,
+      };
+    });
+
+    expect(
+      matrixLayout.scrollContainerFound,
+      'Platform capability matrix must have a bounded horizontal scroll container on mobile',
+    ).toBeTruthy();
+
+    expect(
+      matrixLayout.scrollClientWidth,
+      'Platform Matrix scroll container must fit within the viewport',
+    ).toBeLessThanOrEqual(matrixLayout.viewportWidth + 1);
+
+    expect(
+      matrixLayout.scrollWidth,
+      'Platform Matrix scroll region must contain at least its visible width',
+    ).toBeGreaterThanOrEqual(matrixLayout.scrollClientWidth);
+  }
+
+  expect(consoleFailures, consoleFailures.join('\n')).toEqual([]);
+  expect(failedRequests, failedRequests.join('\n')).toEqual([]);
+});

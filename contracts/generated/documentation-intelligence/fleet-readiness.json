@@ -1,0 +1,45 @@
+{
+  "items": {
+    "checks": [
+      {
+        "name": "Protected server-host health",
+        "status": "healthy",
+        "value": "healthy"
+      },
+      {
+        "name": "Server identity guard",
+        "status": "healthy",
+        "value": true
+      },
+      {
+        "name": "Remote access readiness",
+        "status": "healthy",
+        "value": true
+      },
+      {
+        "name": "Agent presence",
+        "status": "healthy",
+        "value": "present"
+      },
+      {
+        "name": "Supervisor presence",
+        "status": "healthy",
+        "value": "present"
+      },
+      {
+        "name": "NATS connectivity",
+        "status": "healthy",
+        "value": "ready"
+      }
+    ],
+    "interpretation": "Retained stale/offline records do not by themselves degrade the protected server host; fleet counts and protected-host readiness remain separate signals.",
+    "known_device_records": 7,
+    "online_device_records": 0,
+    "overall": "healthy",
+    "readiness": "ready-with-guardrails",
+    "remote_access_ready": true,
+    "tailscale_ip_present": false
+  },
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

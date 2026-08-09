@@ -1,0 +1,69 @@
+{
+  "items": {
+    "added": [],
+    "changed": [],
+    "current_snapshot": {
+      "operational_health": {
+        "degraded": 2,
+        "healthy": 3,
+        "unvalidated": 2
+      },
+      "platform_capabilities": {
+        "implemented": 6,
+        "not-applicable": 15,
+        "unvalidated": 7,
+        "verified": 7
+      },
+      "semantic_parity": {
+        "partial": 2,
+        "verified": 5
+      }
+    },
+    "dimensions": [
+      {
+        "changed": [],
+        "dimension": "source/repository",
+        "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
+        "status": "no-comparable-verified-prior-release"
+      },
+      {
+        "changed": [],
+        "dimension": "operational-health",
+        "note": "Current promoted domain health is available; prior promoted domain health is not fabricated.",
+        "status": "current-baseline-only"
+      },
+      {
+        "changed": [],
+        "dimension": "semantic-parity",
+        "note": "Current runtime parity is available independently from operational health.",
+        "status": "current-baseline-only"
+      },
+      {
+        "changed": [],
+        "dimension": "capability-evidence",
+        "note": "Current role-aware platform capability evidence is available.",
+        "status": "current-baseline-only"
+      },
+      {
+        "changed": [],
+        "dimension": "database",
+        "note": "No verified prior release schema snapshot is present for a release-to-release delta.",
+        "status": "not-comparable"
+      },
+      {
+        "changed": [],
+        "dimension": "architecture",
+        "note": "No verified prior architecture snapshot is present for a release-to-release delta.",
+        "status": "not-comparable"
+      }
+    ],
+    "from_release": null,
+    "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
+    "removed": [],
+    "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+    "status": "no-comparable-verified-prior-release",
+    "to_release": "lite-2026.08.07.3"
+  },
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

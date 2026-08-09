@@ -1,0 +1,694 @@
+{
+  "items": [
+    {
+      "components": [
+        "Identity, authentication, and invite guards",
+        "Invite and identity lifecycle",
+        "Enrollment and device lifecycle state",
+        "Lite node agent",
+        "Lite agent supervisor"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "add-device",
+      "routes": [
+        "POST /api/lite/fleet/add-device",
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "src/lite/LiteDevices.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Identity, authentication, and invite guards",
+        "Invite and identity lifecycle",
+        "Enrollment and device lifecycle state",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Add Device",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "App Catalog",
+        "App lifecycle worker",
+        "Workflow execution",
+        "PhotoPrism",
+        "Caddy same-origin proxy"
+      ],
+      "confidence": "source-derived",
+      "domain": "apps",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "app-installation",
+      "routes": [
+        "POST /api/lite/catalog/install",
+        "GET /api/lite/catalog"
+      ],
+      "source_refs": [
+        "src/lite/LiteCatalog.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream + execution owner",
+        "App Catalog",
+        "App lifecycle worker",
+        "Workflow execution",
+        "PhotoPrism",
+        "Caddy same-origin proxy",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "App installation",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Backup and verification engine",
+        "Backup, restore, and checkpoint state",
+        "Worker process"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "backup-create",
+      "routes": [
+        "POST /api/lite/recovery/backup",
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream + execution owner",
+        "Backup and verification engine",
+        "Backup, restore, and checkpoint state",
+        "Worker process",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Backup creation and verification",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Identity, authentication, and invite guards",
+        "FastAPI /api/lite/*",
+        "SQLite control-plane store"
+      ],
+      "confidence": "partial",
+      "domain": "identity",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "change-password",
+      "routes": [
+        "POST /api/lite/identity/rotate"
+      ],
+      "source_refs": [
+        "contracts/parity/parity-model.json",
+        "contracts/generated/lite-openapi.json",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Identity, authentication, and invite guards",
+        "SQLite control-plane store",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Change Password / identity rotation",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Identity, authentication, and invite guards",
+        "Invite and identity lifecycle",
+        "Enrollment and device lifecycle state",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "Heartbeat, telemetry, and health publishers"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "device-enrollment",
+      "routes": [
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Identity, authentication, and invite guards",
+        "Invite and identity lifecycle",
+        "Enrollment and device lifecycle state",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "Heartbeat, telemetry, and health publishers",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Device bootstrap and enrollment",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Heartbeat, telemetry, and health publishers",
+        "Reconnect watchdog and supervisor recovery",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "NATS / JetStream"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "device-reconnect",
+      "routes": [
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Heartbeat, telemetry, and health publishers",
+        "Reconnect watchdog and supervisor recovery",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "NATS / JetStream",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Device offline and reconnect recovery",
+      "write_flow": false
+    },
+    {
+      "components": [],
+      "confidence": "source-derived",
+      "domain": "documentation",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "documentation-generation",
+      "routes": [],
+      "source_refs": [
+        "tasks/Taskfile.docs.yml",
+        "scripts/docs/lite/generate_docs.py",
+        "scripts/docs/lite/generate_platform_catalogs.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Documentation generation",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "FastAPI /api/lite/*",
+        "React / Vite PWA",
+        "SQLite control-plane store"
+      ],
+      "confidence": "source-derived",
+      "domain": "validation",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "parity-capture",
+      "routes": [],
+      "source_refs": [
+        "scripts/docs/parity/generate_parity.py",
+        "contracts/parity/parity-model.json"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "React / Vite PWA",
+        "SQLite control-plane store",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Backend-to-Frontend parity capture and verification",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "App Catalog",
+        "PhotoPrism",
+        "PROot Ubuntu application container",
+        "Media readiness and app health probes",
+        "Caddy same-origin proxy"
+      ],
+      "confidence": "source-derived",
+      "domain": "apps",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "photoprism-operation",
+      "routes": [
+        "GET /api/lite/catalog",
+        "GET /api/lite/apps/{app_id}/actions"
+      ],
+      "source_refs": [
+        "src/lite/LiteCatalog.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "App Catalog",
+        "PhotoPrism",
+        "PROot Ubuntu application container",
+        "Media readiness and app health probes",
+        "Caddy same-origin proxy",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "PhotoPrism operation",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Audit index, projection refresh, prepared projections, and domain revisions",
+        "Backup, restore, and checkpoint state",
+        "SQLite control-plane store"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "recovery-reconciliation",
+      "routes": [
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "contracts/parity/parity-model.json"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Audit index, projection refresh, prepared projections, and domain revisions",
+        "Backup, restore, and checkpoint state",
+        "SQLite control-plane store",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Recovery reconciliation",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Date-based Lite tag, dist.zip, checksums, and release manifest",
+        "Download staging and release verification",
+        "Release subprocess",
+        "Post-switch health validation",
+        "Installed release and runtime state"
+      ],
+      "confidence": "source-derived",
+      "domain": "release",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "release-update",
+      "routes": [
+        "GET /api/lite/release"
+      ],
+      "source_refs": [
+        "docs/generated/production/release.md"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Date-based Lite tag, dist.zip, checksums, and release manifest",
+        "Download staging and release verification",
+        "Release subprocess",
+        "Post-switch health validation",
+        "Installed release and runtime state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Release and update flow",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Tailscale remote access",
+        "tailscaled daemon",
+        "Remote-access readiness checks",
+        "Primary and secondary NATS listeners"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "remote-access-readiness",
+      "routes": [
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "docs/generated/production/remote-access.md"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Tailscale remote access",
+        "tailscaled daemon",
+        "Remote-access readiness checks",
+        "Primary and secondary NATS listeners",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Tailscale and remote access readiness",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Enrollment and device lifecycle state",
+        "Explicit retirement and database recovery"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "remove-old-device",
+      "routes": [
+        "POST /api/lite/fleet/remove-device",
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "src/lite/LiteDevices.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Enrollment and device lifecycle state",
+        "Explicit retirement and database recovery",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Remove Old Device",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Device command executor",
+        "Reconnect watchdog and supervisor recovery",
+        "Lite node agent",
+        "Lite agent supervisor"
+      ],
+      "confidence": "source-derived",
+      "domain": "devices",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "restart-agent",
+      "routes": [
+        "POST /api/lite/fleet/devices/{node_id}/restart-agent",
+        "GET /api/lite/fleet"
+      ],
+      "source_refs": [
+        "src/lite/LiteDevices.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream + execution owner",
+        "Device command executor",
+        "Reconnect watchdog and supervisor recovery",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Restart Agent",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Restore preview and confirmed restore",
+        "Backup and verification engine",
+        "Backup, restore, and checkpoint state",
+        "Workflow execution"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "restore-execution",
+      "routes": [
+        "POST /api/lite/recovery/restore",
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "src/lite/LiteRecovery.jsx",
+        "runbooks/backup_restore_verify.yaml"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream + execution owner",
+        "Restore preview and confirmed restore",
+        "Backup and verification engine",
+        "Backup, restore, and checkpoint state",
+        "Workflow execution",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Confirmed restore",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Restore preview and confirmed restore",
+        "Backup, restore, and checkpoint state"
+      ],
+      "confidence": "source-derived",
+      "domain": "recovery",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "restore-preview",
+      "routes": [
+        "POST /api/lite/recovery/restore/preview",
+        "GET /api/lite/recovery/summary"
+      ],
+      "source_refs": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Restore preview and confirmed restore",
+        "Backup, restore, and checkpoint state",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Restore preview",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Last-known-good state and rollback",
+        "Installed release and runtime state",
+        "Post-switch health validation"
+      ],
+      "confidence": "source-derived",
+      "domain": "release",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "rollback",
+      "routes": [
+        "GET /api/lite/release"
+      ],
+      "source_refs": [
+        "runbooks/release_rollback.yaml"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Last-known-good state and rollback",
+        "Installed release and runtime state",
+        "Post-switch health validation",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Rollback",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Lite node agent",
+        "Lite agent supervisor",
+        "NATS / JetStream"
+      ],
+      "confidence": "source-derived",
+      "domain": "validation",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "runtime-capture",
+      "routes": [],
+      "source_refs": [
+        "scripts/docs/runtime/capture_termux_runtime.sh",
+        "scripts/docs/runtime/promote_termux_runtime.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "NATS / JetStream",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Sanitized Termux runtime capture",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "runtime-evidence",
+        "Installed release and runtime state"
+      ],
+      "confidence": "source-derived",
+      "domain": "validation",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "runtime-promotion",
+      "routes": [],
+      "source_refs": [
+        "scripts/test/parity/preflight_runtime_promotion.py",
+        "scripts/test/parity/promote_runtime_verification.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "runtime-evidence",
+        "Installed release and runtime state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Runtime evidence promotion",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Security findings and run state",
+        "Security scan coordinator"
+      ],
+      "confidence": "source-derived",
+      "domain": "security",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "security-review",
+      "routes": [
+        "GET /api/lite/security/summary",
+        "GET /api/lite/security/details/{run_id}"
+      ],
+      "source_refs": [
+        "src/lite/LiteSecurity.jsx"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Security findings and run state",
+        "Security scan coordinator",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Security finding review",
+      "write_flow": false
+    },
+    {
+      "components": [
+        "Quick, Full, and App safety checks",
+        "Security scan coordinator",
+        "Lynis and Trivy scanner adapters",
+        "Security findings and run state",
+        "Worker process"
+      ],
+      "confidence": "source-derived",
+      "domain": "security",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "security-scan",
+      "routes": [
+        "POST /api/lite/security/check",
+        "GET /api/lite/security/summary",
+        "GET /api/lite/security/progress"
+      ],
+      "source_refs": [
+        "src/lite/LiteSecurity.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream + execution owner",
+        "Quick, Full, and App safety checks",
+        "Security scan coordinator",
+        "Lynis and Trivy scanner adapters",
+        "Security findings and run state",
+        "Worker process",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Security scan",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "PM2 process manager",
+        "Caddy same-origin proxy",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream",
+        "Worker process",
+        "Lite node agent",
+        "Lite agent supervisor"
+      ],
+      "confidence": "source-derived",
+      "domain": "platform",
+      "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+      "id": "startup",
+      "routes": [],
+      "source_refs": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "PM2 process manager",
+        "Caddy same-origin proxy",
+        "FastAPI /api/lite/*",
+        "NATS / JetStream",
+        "Worker process",
+        "Lite node agent",
+        "Lite agent supervisor",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Pocket Lab Lite startup",
+      "write_flow": false
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

@@ -1,0 +1,231 @@
+{
+  "items": [
+    {
+      "category": "accepted-limitation",
+      "description": "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract.",
+      "domain": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "Application-owned media indexing is not a Pocket Lab parity authority.",
+      "domain": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "Restore apply and update apply remain unavailable unless separately implemented and validated.",
+      "domain": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "status": "unsupported"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "Heartbeat freshness can move during capture; comparison records the observed revision.",
+      "domain": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "Per-device profile fields remain partial when the agent has not published them.",
+      "domain": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "Healthy online devices are not removed without explicit confirmation.",
+      "domain": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "status": "unsupported"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "CPU, memory, and storage presentation may be rounded or unit-formatted.",
+      "domain": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "Live runtime semantic evidence remains explicit and release-bound.",
+      "domain": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "Home never executes system operations directly.",
+      "domain": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "status": "unsupported"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "Credential values are never observable parity fields.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "status": "accepted"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "The current tab is direct-rendered and has no dedicated selector layer.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "status": "open"
+    },
+    {
+      "category": "known-gap",
+      "description": "Identity guard and protected server-host projections are not fully implemented.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "Identity mismatch repair/rejoin must remain explicit and fail closed.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "status": "unsupported"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "status": "accepted"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "App restore apply remains explicitly unsupported where the repository reports it unavailable.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "status": "accepted"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "Historical restore previews are evidence only and never authorize a new restore.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "Live Termux and live browser semantic capture remain explicit; missing capture is not drift.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "Unsafe writes remain disabled while the recovery projection is stale.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "status": "unsupported"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine.",
+      "domain": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "Per-rule identity and execution history are planned, not present in the current API.",
+      "domain": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "Planned trigger/condition/action automation is not marked verified.",
+      "domain": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "status": "unsupported"
+    },
+    {
+      "category": "accepted-limitation",
+      "description": "Raw scanner output and sensitive paths are intentionally excluded.",
+      "domain": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "healthy",
+      "status": "accepted"
+    },
+    {
+      "category": "known-gap",
+      "description": "A missing scanner is runtime-unavailable, not semantic drift.",
+      "domain": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "healthy",
+      "status": "open"
+    },
+    {
+      "category": "unsupported-operation",
+      "description": "The browser never runs Lynis, Trivy, shell, PM2, or NATS commands.",
+      "domain": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "healthy",
+      "status": "unsupported"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

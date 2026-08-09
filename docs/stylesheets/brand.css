@@ -105,3 +105,19 @@ code, kbd, pre, samp { font-family: "SFMono-Regular", Consolas, "Liberation Mono
 [data-md-color-scheme="pocketlab-dark"] .md-footer-meta {
   color: #cbd5e1;
 }
+
+/* Documentation Experience tokens: semantic, restrained, and shared by generated intelligence pages. */
+:root {
+  --pl-space-1: 0.35rem;
+  --pl-space-2: 0.6rem;
+  --pl-space-3: 0.9rem;
+  --pl-space-4: 1.25rem;
+  --pl-space-5: 1.75rem;
+  --pl-space-6: 2.5rem;
+  --pl-surface-raised: color-mix(in srgb, var(--md-default-bg-color) 96%, var(--md-default-fg-color));
+  --pl-surface-muted: color-mix(in srgb, var(--md-default-bg-color) 92%, var(--md-primary-fg-color));
+  --pl-reading-width: 78ch;
+  --pl-duration-fast: 140ms;
+  --pl-duration-normal: 190ms;
+  --pl-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}

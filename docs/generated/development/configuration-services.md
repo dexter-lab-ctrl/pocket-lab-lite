@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 49505939a3847c1d0a060ef758da897797c4061eaacf6dd23d00aeaf8da6cd53
+source_fingerprint: 23e288333abf6ba8a66745abdb34f335aedf6391326c63bb036903c2ca5ed234
 schema_revision: 1
 validation_status: generated
 ---
@@ -24,6 +24,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 ## Environment variables (250)
 
 - `CHROME_PATH`
+- `EDGE_META`
 - `EDGE_STYLES`
 - `LITE_ANDROID_GATE`
 - `LITE_API_DIRECT_URL`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_S8_GATE_OPERATION_TIMEOUT_SECONDS`
 - `POCKETLAB_S8_GATE_PLATFORM`
 - `POCKETLAB_S8_GATE_POST_RESTORE_READINESS_TIMEOUT`
-- `POCKETLAB_S8_GATE_SCAN_TIMEOUT_SECONDS`
 
 ## Process roles
 

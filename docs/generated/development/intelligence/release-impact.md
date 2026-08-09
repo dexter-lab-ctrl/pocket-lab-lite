@@ -1,0 +1,36 @@
+---
+title: "Release change impact"
+description: "Semantic release delta across source, health, parity, capabilities, database, and architecture."
+generated: true
+audience: development
+confidence: release-promoted
+---
+
+# What changed?
+
+<div class="pl-empty-state"><strong>No comparable verified prior release</strong><p>The platform will not fabricate a historical delta. Current-release evidence is shown below and becomes the comparison basis when a second canonical release is available.</p></div>
+
+| Dimension | Comparison status | Note |
+| --- | --- | --- |
+| source/repository | no-comparable-verified-prior-release | No second verified canonical release record exists in the repository; no historical diff is fabricated. |
+| operational-health | current-baseline-only | Current promoted domain health is available; prior promoted domain health is not fabricated. |
+| semantic-parity | current-baseline-only | Current runtime parity is available independently from operational health. |
+| capability-evidence | current-baseline-only | Current role-aware platform capability evidence is available. |
+| database | not-comparable | No verified prior release schema snapshot is present for a release-to-release delta. |
+| architecture | not-comparable | No verified prior architecture snapshot is present for a release-to-release delta. |
+
+## Current release snapshot
+
+**Operational Health:** degraded 2, healthy 3, unvalidated 2
+
+**Semantic Parity:** partial 2, verified 5
+
+**Platform Capabilities:** implemented 6, not-applicable 15, unvalidated 7, verified 7
+
+<details class="pl-disclosure"><summary>Technical delta payload</summary>
+
+| Added | Changed | Removed |
+| --- | --- | --- |
+| — | — | — |
+
+</details>

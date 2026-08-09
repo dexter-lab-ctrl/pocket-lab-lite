@@ -1,0 +1,441 @@
+{
+  "items": {
+    "by_domain": {
+      "apps": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "devices": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "home": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "identity": {
+        "confidence": "partial",
+        "coverage_fraction": "8/9",
+        "evidenced": 8,
+        "total": 9
+      },
+      "recovery": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "rules": {
+        "confidence": "partial",
+        "coverage_fraction": "8/9",
+        "evidenced": 8,
+        "total": 9
+      },
+      "security": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      }
+    },
+    "cells": [
+      {
+        "dimension": "implementation",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "implemented"
+      },
+      {
+        "dimension": "api",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "verified-with-mapped-presentation"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "healthy"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "promoted-observation"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "apps",
+        "evidenced": true,
+        "status": "release-bound"
+      },
+      {
+        "dimension": "implementation",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "implemented"
+      },
+      {
+        "dimension": "api",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "verified-with-mapped-presentation"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "healthy"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "promoted-observation"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "devices",
+        "evidenced": true,
+        "status": "release-bound"
+      },
+      {
+        "dimension": "implementation",
+        "domain": "home",
+        "evidenced": true,
+        "status": "implemented"
+      },
+      {
+        "dimension": "api",
+        "domain": "home",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "home",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "home",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "home",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "home",
+        "evidenced": true,
+        "status": "verified-with-mapped-presentation"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "home",
+        "evidenced": true,
+        "status": "degraded"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "home",
+        "evidenced": true,
+        "status": "promoted-observation"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "home",
+        "evidenced": true,
+        "status": "release-bound"
+      },
+      {
+        "dimension": "implementation",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "partial"
+      },
+      {
+        "dimension": "api",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "partial"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "identity",
+        "evidenced": false,
+        "status": "unvalidated"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "promoted-observation"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "identity",
+        "evidenced": true,
+        "status": "release-bound"
+      },
+      {
+        "dimension": "implementation",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "implemented"
+      },
+      {
+        "dimension": "api",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "verified-with-mapped-presentation"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "degraded"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "stale"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "recovery",
+        "evidenced": true,
+        "status": "release-bound"
+      },
+      {
+        "dimension": "implementation",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "partial"
+      },
+      {
+        "dimension": "api",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "partial"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "rules",
+        "evidenced": false,
+        "status": "unvalidated"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "promoted-observation"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "rules",
+        "evidenced": true,
+        "status": "release-bound"
+      },
+      {
+        "dimension": "implementation",
+        "domain": "security",
+        "evidenced": true,
+        "status": "implemented"
+      },
+      {
+        "dimension": "api",
+        "domain": "security",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "termux",
+        "domain": "security",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "desktop",
+        "domain": "security",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "mobile",
+        "domain": "security",
+        "evidenced": true,
+        "status": "observed"
+      },
+      {
+        "dimension": "semantic-parity",
+        "domain": "security",
+        "evidenced": true,
+        "status": "verified-with-mapped-presentation"
+      },
+      {
+        "dimension": "operational-health",
+        "domain": "security",
+        "evidenced": true,
+        "status": "healthy"
+      },
+      {
+        "dimension": "freshness",
+        "domain": "security",
+        "evidenced": true,
+        "status": "promoted-observation"
+      },
+      {
+        "dimension": "lineage",
+        "domain": "security",
+        "evidenced": true,
+        "status": "release-bound"
+      }
+    ],
+    "dimensions": [
+      "implementation",
+      "api",
+      "termux",
+      "desktop",
+      "mobile",
+      "semantic-parity",
+      "operational-health",
+      "freshness",
+      "lineage"
+    ]
+  },
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

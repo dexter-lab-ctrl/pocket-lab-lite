@@ -1,0 +1,3199 @@
+{
+  "generator": "scripts/docs/intelligence/generate_documentation_intelligence.py",
+  "items": {
+    "dashboard": {
+      "coverage": {
+        "apps": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "devices": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "home": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "identity": {
+          "confidence": "partial",
+          "coverage_fraction": "8/9",
+          "evidenced": 8,
+          "total": 9
+        },
+        "recovery": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "rules": {
+          "confidence": "partial",
+          "coverage_fraction": "8/9",
+          "evidenced": 8,
+          "total": 9
+        },
+        "security": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        }
+      },
+      "domain_health_counts": {
+        "degraded": 2,
+        "healthy": 3,
+        "unvalidated": 2
+      },
+      "fleet": {
+        "known": 7,
+        "online": 0,
+        "overall": "healthy"
+      },
+      "implemented_domains": 5,
+      "partial_domains": 2,
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "recovery": {
+        "overall": "degraded",
+        "readiness": "degraded",
+        "reason": "projection_too_old"
+      },
+      "release_impact_status": "no-comparable-verified-prior-release",
+      "release_tag": "lite-2026.08.07.3",
+      "runtime_baseline_status": "partial",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7"
+    },
+    "dependency_health": [
+      {
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "Caddy",
+            "note": "Runtime baseline reports healthy.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "NATS/JetStream",
+            "note": "Runtime baseline reports ready.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "worker",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "PhotoPrism runtime",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 5
+        },
+        "domain": "apps",
+        "evidence_status": "release-promoted",
+        "freshness": "promoted-observation",
+        "label": "Apps",
+        "operational_health": "healthy",
+        "reason": null,
+        "semantic_parity": "verified-with-mapped-presentation"
+      },
+      {
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "NATS/JetStream",
+            "note": "Runtime baseline reports ready.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "node agent",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "agent supervisor",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "Tailscale",
+            "note": "Runtime baseline reports ready.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 4,
+          "unvalidated": 1
+        },
+        "domain": "devices",
+        "evidence_status": "release-promoted",
+        "freshness": "promoted-observation",
+        "label": "Devices",
+        "operational_health": "healthy",
+        "reason": null,
+        "semantic_parity": "verified-with-mapped-presentation"
+      },
+      {
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "Caddy",
+            "note": "Runtime baseline reports healthy.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "NATS/JetStream",
+            "note": "Runtime baseline reports ready.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "worker",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "node agent",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "core supervisor",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 6
+        },
+        "domain": "home",
+        "evidence_status": "release-promoted",
+        "freshness": "promoted-observation",
+        "label": "Home",
+        "operational_health": "degraded",
+        "reason": "service_unavailable",
+        "semantic_parity": "verified-with-mapped-presentation"
+      },
+      {
+        "dependencies": [],
+        "dependency_summary": {},
+        "domain": "identity",
+        "evidence_status": "release-promoted",
+        "freshness": "promoted-observation",
+        "label": "Identity",
+        "operational_health": "unvalidated",
+        "reason": null,
+        "semantic_parity": "partial"
+      },
+      {
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "NATS/JetStream",
+            "note": "Runtime baseline reports ready.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "worker",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "SQLite",
+            "note": "Runtime baseline reports healthy.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "restic",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 4,
+          "unvalidated": 1
+        },
+        "domain": "recovery",
+        "evidence_status": "release-promoted",
+        "freshness": "stale",
+        "label": "Backup & Restore",
+        "operational_health": "degraded",
+        "reason": "projection_too_old",
+        "semantic_parity": "verified-with-mapped-presentation"
+      },
+      {
+        "dependencies": [],
+        "dependency_summary": {},
+        "domain": "rules",
+        "evidence_status": "release-promoted",
+        "freshness": "promoted-observation",
+        "label": "Rules",
+        "operational_health": "unvalidated",
+        "reason": null,
+        "semantic_parity": "partial"
+      },
+      {
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "NATS/JetStream",
+            "note": "Runtime baseline reports ready.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "worker",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "Lynis",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "Trivy",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 3,
+          "unvalidated": 2
+        },
+        "domain": "security",
+        "evidence_status": "release-promoted",
+        "freshness": "promoted-observation",
+        "label": "Security",
+        "operational_health": "healthy",
+        "reason": null,
+        "semantic_parity": "verified-with-mapped-presentation"
+      }
+    ],
+    "evidence_coverage": {
+      "by_domain": {
+        "apps": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "devices": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "home": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "identity": {
+          "confidence": "partial",
+          "coverage_fraction": "8/9",
+          "evidenced": 8,
+          "total": 9
+        },
+        "recovery": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        },
+        "rules": {
+          "confidence": "partial",
+          "coverage_fraction": "8/9",
+          "evidenced": 8,
+          "total": 9
+        },
+        "security": {
+          "confidence": "release-promoted",
+          "coverage_fraction": "9/9",
+          "evidenced": 9,
+          "total": 9
+        }
+      },
+      "cells": [
+        {
+          "dimension": "implementation",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "implemented"
+        },
+        {
+          "dimension": "api",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "verified-with-mapped-presentation"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "healthy"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "promoted-observation"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "apps",
+          "evidenced": true,
+          "status": "release-bound"
+        },
+        {
+          "dimension": "implementation",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "implemented"
+        },
+        {
+          "dimension": "api",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "verified-with-mapped-presentation"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "healthy"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "promoted-observation"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "devices",
+          "evidenced": true,
+          "status": "release-bound"
+        },
+        {
+          "dimension": "implementation",
+          "domain": "home",
+          "evidenced": true,
+          "status": "implemented"
+        },
+        {
+          "dimension": "api",
+          "domain": "home",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "home",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "home",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "home",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "home",
+          "evidenced": true,
+          "status": "verified-with-mapped-presentation"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "home",
+          "evidenced": true,
+          "status": "degraded"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "home",
+          "evidenced": true,
+          "status": "promoted-observation"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "home",
+          "evidenced": true,
+          "status": "release-bound"
+        },
+        {
+          "dimension": "implementation",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "partial"
+        },
+        {
+          "dimension": "api",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "partial"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "identity",
+          "evidenced": false,
+          "status": "unvalidated"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "promoted-observation"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "identity",
+          "evidenced": true,
+          "status": "release-bound"
+        },
+        {
+          "dimension": "implementation",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "implemented"
+        },
+        {
+          "dimension": "api",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "verified-with-mapped-presentation"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "degraded"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "stale"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "recovery",
+          "evidenced": true,
+          "status": "release-bound"
+        },
+        {
+          "dimension": "implementation",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "partial"
+        },
+        {
+          "dimension": "api",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "partial"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "rules",
+          "evidenced": false,
+          "status": "unvalidated"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "promoted-observation"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "rules",
+          "evidenced": true,
+          "status": "release-bound"
+        },
+        {
+          "dimension": "implementation",
+          "domain": "security",
+          "evidenced": true,
+          "status": "implemented"
+        },
+        {
+          "dimension": "api",
+          "domain": "security",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "termux",
+          "domain": "security",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "desktop",
+          "domain": "security",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "mobile",
+          "domain": "security",
+          "evidenced": true,
+          "status": "observed"
+        },
+        {
+          "dimension": "semantic-parity",
+          "domain": "security",
+          "evidenced": true,
+          "status": "verified-with-mapped-presentation"
+        },
+        {
+          "dimension": "operational-health",
+          "domain": "security",
+          "evidenced": true,
+          "status": "healthy"
+        },
+        {
+          "dimension": "freshness",
+          "domain": "security",
+          "evidenced": true,
+          "status": "promoted-observation"
+        },
+        {
+          "dimension": "lineage",
+          "domain": "security",
+          "evidenced": true,
+          "status": "release-bound"
+        }
+      ],
+      "dimensions": [
+        "implementation",
+        "api",
+        "termux",
+        "desktop",
+        "mobile",
+        "semantic-parity",
+        "operational-health",
+        "freshness",
+        "lineage"
+      ]
+    },
+    "evidence_lineage": [
+      {
+        "claim": "healthy",
+        "confidence": "release-promoted",
+        "domain": "apps",
+        "evidence_comparisons": [
+          "apps-termux-runtime_status",
+          "apps-termux-installed",
+          "apps-termux-route_ready",
+          "apps-termux-open_enabled"
+        ],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Apps",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      },
+      {
+        "claim": "healthy",
+        "confidence": "release-promoted",
+        "domain": "devices",
+        "evidence_comparisons": [
+          "devices-termux-server_status",
+          "devices-termux-server_identity_expected",
+          "devices-termux-remote_access_ready"
+        ],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Devices",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      },
+      {
+        "claim": "degraded",
+        "confidence": "release-promoted",
+        "domain": "home",
+        "evidence_comparisons": [
+          "home-termux-overall_status",
+          "home-termux-read_degraded"
+        ],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Home",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      },
+      {
+        "claim": "unvalidated",
+        "confidence": "partial",
+        "domain": "identity",
+        "evidence_comparisons": [],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Identity",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      },
+      {
+        "claim": "degraded",
+        "confidence": "release-promoted",
+        "domain": "recovery",
+        "evidence_comparisons": [
+          "recovery-termux-status",
+          "recovery-termux-degraded_reason",
+          "recovery-termux-read_degraded",
+          "recovery-termux-projection_age_ms"
+        ],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Backup & Restore",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      },
+      {
+        "claim": "unvalidated",
+        "confidence": "partial",
+        "domain": "rules",
+        "evidence_comparisons": [],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Rules",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      },
+      {
+        "claim": "healthy",
+        "confidence": "release-promoted",
+        "domain": "security",
+        "evidence_comparisons": [
+          "security-termux-status"
+        ],
+        "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+        "label": "Security",
+        "projection": "contracts/generated/runtime/domain-operational-health.json",
+        "promoted_at": "2026-08-07T18:04:28Z",
+        "release_tag": "lite-2026.08.07.3",
+        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "sources": [
+          "contracts/parity/runtime-verification-baseline.json",
+          "contracts/parity/parity-model.json",
+          "contracts/metadata/documentation-platform.json",
+          "contracts/generated/reason-codes.json"
+        ]
+      }
+    ],
+    "fleet_readiness": {
+      "checks": [
+        {
+          "name": "Protected server-host health",
+          "status": "healthy",
+          "value": "healthy"
+        },
+        {
+          "name": "Server identity guard",
+          "status": "healthy",
+          "value": true
+        },
+        {
+          "name": "Remote access readiness",
+          "status": "healthy",
+          "value": true
+        },
+        {
+          "name": "Agent presence",
+          "status": "healthy",
+          "value": "present"
+        },
+        {
+          "name": "Supervisor presence",
+          "status": "healthy",
+          "value": "present"
+        },
+        {
+          "name": "NATS connectivity",
+          "status": "healthy",
+          "value": "ready"
+        }
+      ],
+      "interpretation": "Retained stale/offline records do not by themselves degrade the protected server host; fleet counts and protected-host readiness remain separate signals.",
+      "known_device_records": 7,
+      "online_device_records": 0,
+      "overall": "healthy",
+      "readiness": "ready-with-guardrails",
+      "remote_access_ready": true,
+      "tailscale_ip_present": false
+    },
+    "limitations": [
+      {
+        "category": "accepted-limitation",
+        "description": "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract.",
+        "domain": "apps",
+        "implementation_status": "implemented",
+        "label": "Apps",
+        "operational_health": "healthy",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "Application-owned media indexing is not a Pocket Lab parity authority.",
+        "domain": "apps",
+        "implementation_status": "implemented",
+        "label": "Apps",
+        "operational_health": "healthy",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "Restore apply and update apply remain unavailable unless separately implemented and validated.",
+        "domain": "apps",
+        "implementation_status": "implemented",
+        "label": "Apps",
+        "operational_health": "healthy",
+        "status": "unsupported"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "Heartbeat freshness can move during capture; comparison records the observed revision.",
+        "domain": "devices",
+        "implementation_status": "implemented",
+        "label": "Devices",
+        "operational_health": "healthy",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "Per-device profile fields remain partial when the agent has not published them.",
+        "domain": "devices",
+        "implementation_status": "implemented",
+        "label": "Devices",
+        "operational_health": "healthy",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "Healthy online devices are not removed without explicit confirmation.",
+        "domain": "devices",
+        "implementation_status": "implemented",
+        "label": "Devices",
+        "operational_health": "healthy",
+        "status": "unsupported"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "CPU, memory, and storage presentation may be rounded or unit-formatted.",
+        "domain": "home",
+        "implementation_status": "implemented",
+        "label": "Home",
+        "operational_health": "degraded",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "Live runtime semantic evidence remains explicit and release-bound.",
+        "domain": "home",
+        "implementation_status": "implemented",
+        "label": "Home",
+        "operational_health": "degraded",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "Home never executes system operations directly.",
+        "domain": "home",
+        "implementation_status": "implemented",
+        "label": "Home",
+        "operational_health": "degraded",
+        "status": "unsupported"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "Credential values are never observable parity fields.",
+        "domain": "identity",
+        "implementation_status": "partial",
+        "label": "Identity",
+        "operational_health": "unvalidated",
+        "status": "accepted"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented.",
+        "domain": "identity",
+        "implementation_status": "partial",
+        "label": "Identity",
+        "operational_health": "unvalidated",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "The current tab is direct-rendered and has no dedicated selector layer.",
+        "domain": "identity",
+        "implementation_status": "partial",
+        "label": "Identity",
+        "operational_health": "unvalidated",
+        "status": "open"
+      },
+      {
+        "category": "known-gap",
+        "description": "Identity guard and protected server-host projections are not fully implemented.",
+        "domain": "identity",
+        "implementation_status": "partial",
+        "label": "Identity",
+        "operational_health": "unvalidated",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "Identity mismatch repair/rejoin must remain explicit and fail closed.",
+        "domain": "identity",
+        "implementation_status": "partial",
+        "label": "Identity",
+        "operational_health": "unvalidated",
+        "status": "unsupported"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+        "domain": "recovery",
+        "implementation_status": "implemented",
+        "label": "Backup & Restore",
+        "operational_health": "degraded",
+        "status": "accepted"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "App restore apply remains explicitly unsupported where the repository reports it unavailable.",
+        "domain": "recovery",
+        "implementation_status": "implemented",
+        "label": "Backup & Restore",
+        "operational_health": "degraded",
+        "status": "accepted"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "Historical restore previews are evidence only and never authorize a new restore.",
+        "domain": "recovery",
+        "implementation_status": "implemented",
+        "label": "Backup & Restore",
+        "operational_health": "degraded",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "Live Termux and live browser semantic capture remain explicit; missing capture is not drift.",
+        "domain": "recovery",
+        "implementation_status": "implemented",
+        "label": "Backup & Restore",
+        "operational_health": "degraded",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "Unsafe writes remain disabled while the recovery projection is stale.",
+        "domain": "recovery",
+        "implementation_status": "implemented",
+        "label": "Backup & Restore",
+        "operational_health": "degraded",
+        "status": "unsupported"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine.",
+        "domain": "rules",
+        "implementation_status": "partial",
+        "label": "Rules",
+        "operational_health": "unvalidated",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "Per-rule identity and execution history are planned, not present in the current API.",
+        "domain": "rules",
+        "implementation_status": "partial",
+        "label": "Rules",
+        "operational_health": "unvalidated",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "Planned trigger/condition/action automation is not marked verified.",
+        "domain": "rules",
+        "implementation_status": "partial",
+        "label": "Rules",
+        "operational_health": "unvalidated",
+        "status": "unsupported"
+      },
+      {
+        "category": "accepted-limitation",
+        "description": "Raw scanner output and sensitive paths are intentionally excluded.",
+        "domain": "security",
+        "implementation_status": "implemented",
+        "label": "Security",
+        "operational_health": "healthy",
+        "status": "accepted"
+      },
+      {
+        "category": "known-gap",
+        "description": "A missing scanner is runtime-unavailable, not semantic drift.",
+        "domain": "security",
+        "implementation_status": "implemented",
+        "label": "Security",
+        "operational_health": "healthy",
+        "status": "open"
+      },
+      {
+        "category": "unsupported-operation",
+        "description": "The browser never runs Lynis, Trivy, shell, PM2, or NATS commands.",
+        "domain": "security",
+        "implementation_status": "implemented",
+        "label": "Security",
+        "operational_health": "healthy",
+        "status": "unsupported"
+      }
+    ],
+    "platform_matrix": [
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [
+          "apps-termux-installed",
+          "apps-termux-runtime_status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "ARM64 Ubuntu/proot",
+        "rationale": "PhotoPrism executes in the ARM64 Ubuntu/proot runtime owned by the server phone.",
+        "role": "execution",
+        "source_domain": "apps",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [
+          "apps-termux-installed",
+          "apps-termux-route_ready",
+          "apps-termux-runtime_status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "Android/Termux ARM64",
+        "rationale": "The server-host role advertises app_host and the promoted Apps lane observes the managed app runtime.",
+        "role": "runtime-host",
+        "source_domain": "apps",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "Ubuntu/WSL2 Dev",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "development",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "scripts/dev/setup-wsl-ubuntu-dev.sh"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "desktop browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "mobile browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [],
+        "evidence_status": "source-derived",
+        "platform": "secondary device",
+        "rationale": "The compute device role advertises app_host, but the promoted baseline does not prove a currently ready secondary app host.",
+        "role": "remote-node",
+        "source_domain": "devices",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "implemented"
+      },
+      {
+        "capability": "app_host",
+        "capability_name": "App Host",
+        "evidence_comparisons": [
+          "apps-termux-installed",
+          "apps-termux-route_ready",
+          "apps-termux-runtime_status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "server phone",
+        "rationale": "The protected server-host role owns the current App Host runtime.",
+        "role": "runtime-host",
+        "source_domain": "apps",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "ARM64 Ubuntu/proot",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "execution",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+        ],
+        "status": "unvalidated"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "source-derived",
+        "platform": "Android/Termux ARM64",
+        "rationale": "The storage role advertises backup_target, while readiness still depends on a current qualifying storage node.",
+        "role": "storage",
+        "source_domain": "recovery",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "implemented"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "Ubuntu/WSL2 Dev",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "development",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "scripts/dev/setup-wsl-ubuntu-dev.sh"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "desktop browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "mobile browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "source-derived",
+        "platform": "secondary device",
+        "rationale": "Secondary storage nodes are the canonical remote backup-target role.",
+        "role": "storage",
+        "source_domain": "recovery",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "implemented"
+      },
+      {
+        "capability": "backup_target",
+        "capability_name": "Backup Target",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "server phone",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "runtime-host",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "unvalidated"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "ARM64 Ubuntu/proot",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "execution",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+        ],
+        "status": "unvalidated"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [
+          "devices-termux-server_identity_expected",
+          "devices-termux-server_status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "Android/Termux ARM64",
+        "rationale": "The server-host and compute roles advertise compute on Android/Termux ARM64.",
+        "role": "runtime-host",
+        "source_domain": "devices",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "Ubuntu/WSL2 Dev",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "development",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "scripts/dev/setup-wsl-ubuntu-dev.sh"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "desktop browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "mobile browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [],
+        "evidence_status": "source-derived",
+        "platform": "secondary device",
+        "rationale": "The compute device role advertises compute, but current readiness must still come from fresh device evidence.",
+        "role": "remote-node",
+        "source_domain": "devices",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "implemented"
+      },
+      {
+        "capability": "compute",
+        "capability_name": "Compute",
+        "evidence_comparisons": [
+          "devices-termux-server_identity_expected",
+          "devices-termux-server_status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "server phone",
+        "rationale": "The protected server phone is the canonical control-plane compute host.",
+        "role": "runtime-host",
+        "source_domain": "devices",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "ARM64 Ubuntu/proot",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "execution",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+        ],
+        "status": "unvalidated"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [
+          "security-termux-status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "Android/Termux ARM64",
+        "rationale": "Lynis and Trivy execute behind FastAPI/worker boundaries on the Android/Termux server runtime.",
+        "role": "scanner-host",
+        "source_domain": "security",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "Ubuntu/WSL2 Dev",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "development",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "scripts/dev/setup-wsl-ubuntu-dev.sh"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "desktop browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "mobile browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "secondary device",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "remote-node",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "unvalidated"
+      },
+      {
+        "capability": "security_scanner",
+        "capability_name": "Security Scanner",
+        "evidence_comparisons": [
+          "security-termux-status"
+        ],
+        "evidence_status": "release-promoted",
+        "platform": "server phone",
+        "rationale": "The protected server-host role advertises security_scanner and promoted Security evidence observes it healthy.",
+        "role": "scanner-host",
+        "source_domain": "security",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "contracts/parity/runtime-verification-baseline.json"
+        ],
+        "status": "verified"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "ARM64 Ubuntu/proot",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "execution",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+        ],
+        "status": "unvalidated"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "source-derived",
+        "platform": "Android/Termux ARM64",
+        "rationale": "The storage role advertises media_storage on enrolled Android/Termux nodes; no current ready storage node is promoted.",
+        "role": "storage",
+        "source_domain": "devices",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "implemented"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "Ubuntu/WSL2 Dev",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "development",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "scripts/dev/setup-wsl-ubuntu-dev.sh"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "desktop browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "not-applicable",
+        "platform": "mobile browser",
+        "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+        "role": "control-client",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+          "tests/e2e/lite-parity.spec.ts"
+        ],
+        "status": "not-applicable"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "source-derived",
+        "platform": "secondary device",
+        "rationale": "The storage device role owns media_storage capability on secondary nodes.",
+        "role": "storage",
+        "source_domain": "devices",
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "implemented"
+      },
+      {
+        "capability": "media_storage",
+        "capability_name": "Storage Node",
+        "evidence_comparisons": [],
+        "evidence_status": "unvalidated",
+        "platform": "server phone",
+        "rationale": "No canonical repository binding currently claims this capability on this platform.",
+        "role": "runtime-host",
+        "source_domain": null,
+        "source_refs": [
+          "contracts/metadata/documentation-platform.json",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+        ],
+        "status": "unvalidated"
+      }
+    ],
+    "reason_codes": [
+      {
+        "code": "already_tuned",
+        "domain": "validation",
+        "http_status": 200,
+        "meaning": "No additional tuning was required.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "No additional tuning was required."
+      },
+      {
+        "code": "cold_start_validation",
+        "domain": "validation",
+        "http_status": 200,
+        "meaning": "Cold-start validation is in progress.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Cold-start validation is in progress."
+      },
+      {
+        "code": "diagnostics_not_active",
+        "domain": "validation",
+        "http_status": 200,
+        "meaning": "Diagnostics are not active.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Diagnostics are not active."
+      },
+      {
+        "code": "disabled",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "The requested capability is disabled.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The requested capability is disabled."
+      },
+      {
+        "code": "generation_changed",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "The source generation changed during work.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The source generation changed during work."
+      },
+      {
+        "code": "insufficient_storage",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "There is not enough safe storage for the operation.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "There is not enough safe storage for the operation."
+      },
+      {
+        "code": "interrupted",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "The operation was interrupted.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The operation was interrupted."
+      },
+      {
+        "code": "invalid_domain",
+        "domain": "projections",
+        "http_status": 400,
+        "meaning": "The requested projection domain is invalid.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The requested projection domain is invalid."
+      },
+      {
+        "code": "invite_identity_mismatch",
+        "domain": "devices",
+        "http_status": 409,
+        "meaning": "The invite identity does not match the enrolled device.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "high",
+        "terminal": true,
+        "user_message": "The invite identity does not match the enrolled device."
+      },
+      {
+        "code": "lease_active",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "Another bounded owner currently holds the lease.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Another bounded owner currently holds the lease."
+      },
+      {
+        "code": "legacy_multiple_active_runs",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "Legacy state contains multiple active runs.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Legacy state contains multiple active runs."
+      },
+      {
+        "code": "metadata_only",
+        "domain": "validation",
+        "http_status": 200,
+        "meaning": "Only metadata was evaluated.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Only metadata was evaluated."
+      },
+      {
+        "code": "no_active_generation",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "There is no active generation.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "There is no active generation."
+      },
+      {
+        "code": "not_found_in_restored_snapshot",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "The record is not present in the restored snapshot.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The record is not present in the restored snapshot."
+      },
+      {
+        "code": "payload_too_large",
+        "domain": "validation",
+        "http_status": 200,
+        "meaning": "The bounded payload limit was exceeded.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The bounded payload limit was exceeded."
+      },
+      {
+        "code": "projection_unavailable",
+        "domain": "projections",
+        "http_status": 503,
+        "meaning": "The prepared projection is unavailable.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The prepared projection is unavailable."
+      },
+      {
+        "code": "queue_full",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "The bounded queue cannot accept more work.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The bounded queue cannot accept more work."
+      },
+      {
+        "code": "release_projection_unavailable",
+        "domain": "release",
+        "http_status": 503,
+        "meaning": "The release prepared projection is unavailable.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The release prepared projection is unavailable."
+      },
+      {
+        "code": "shutdown",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "The process is shutting down.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The process is shutting down."
+      },
+      {
+        "code": "shutdown_during_mailbox_backpressure",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "Shutdown occurred while the bounded mailbox was under pressure.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
+      },
+      {
+        "code": "submit_failed",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "The work request could not be admitted.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The work request could not be admitted."
+      },
+      {
+        "code": "target_not_allowed",
+        "domain": "validation",
+        "http_status": 400,
+        "meaning": "The requested target is outside the approved scope.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "warning",
+        "terminal": true,
+        "user_message": "The requested target is outside the approved scope."
+      },
+      {
+        "code": "unregistered_domain",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "The requested domain is not registered.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The requested domain is not registered."
+      },
+      {
+        "code": "worker_failed",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "The worker reported a terminal failure.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "high",
+        "terminal": true,
+        "user_message": "The worker reported a terminal failure."
+      },
+      {
+        "code": "worker_start_timeout",
+        "domain": "security",
+        "http_status": 503,
+        "meaning": "The worker did not start the accepted work within the recovery window.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": true,
+        "user_message": "The worker did not start the accepted work within the recovery window."
+      },
+      {
+        "code": "projection_too_old",
+        "domain": "projections",
+        "http_status": 200,
+        "meaning": "The last committed projection is too old for a safe write.",
+        "next_action": "Capture fresh sanitized runtime evidence and explicitly promote it before claiming current readiness.",
+        "observed_in_current_health": [
+          "recovery"
+        ],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The last committed projection is too old for a safe write."
+      },
+      {
+        "code": "read_degraded",
+        "domain": "system",
+        "http_status": 200,
+        "meaning": "A safe last-known read is shown while refresh is unavailable.",
+        "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "A safe last-known read is shown while refresh is unavailable."
+      },
+      {
+        "code": "identity_mismatch",
+        "domain": "devices",
+        "http_status": 409,
+        "meaning": "The local identity does not match the requested enrollment.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "high",
+        "terminal": true,
+        "user_message": "The local identity does not match the requested enrollment."
+      },
+      {
+        "code": "remote_access_not_ready",
+        "domain": "devices",
+        "http_status": 200,
+        "meaning": "Private remote access is not ready.",
+        "next_action": "Verify Tailscale readiness and backend reachability; do not infer remote readiness from UI presentation.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Private remote access is not ready."
+      },
+      {
+        "code": "service_unavailable",
+        "domain": "system",
+        "http_status": 503,
+        "meaning": "A required backend service is unavailable.",
+        "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
+        "observed_in_current_health": [
+          "home"
+        ],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "A required backend service is unavailable."
+      },
+      {
+        "code": "command_undeliverable",
+        "domain": "devices",
+        "http_status": 200,
+        "meaning": "The target agent cannot currently receive the command.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The target agent cannot currently receive the command."
+      },
+      {
+        "code": "invite_expired",
+        "domain": "devices",
+        "http_status": 200,
+        "meaning": "The device invite is no longer valid.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": true,
+        "user_message": "The device invite is no longer valid."
+      },
+      {
+        "code": "duplicate_device",
+        "domain": "devices",
+        "http_status": 409,
+        "meaning": "A matching device or invite already exists.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "A matching device or invite already exists."
+      },
+      {
+        "code": "protected_server_host",
+        "domain": "devices",
+        "http_status": 200,
+        "meaning": "The protected server host cannot use this destructive action.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The protected server host cannot use this destructive action."
+      }
+    ],
+    "recovery_readiness": {
+      "checks": [
+        {
+          "authority": "release-promoted",
+          "name": "Operational health",
+          "status": "degraded",
+          "value": "degraded"
+        },
+        {
+          "authority": "release-promoted",
+          "name": "Evidence freshness",
+          "status": "degraded",
+          "value": "stale"
+        },
+        {
+          "authority": "release-promoted",
+          "name": "Write safety",
+          "status": "degraded",
+          "value": "blocked"
+        },
+        {
+          "authority": "release-promoted",
+          "name": "Fresh restore preview required",
+          "status": "degraded",
+          "value": true
+        },
+        {
+          "authority": "release-promoted",
+          "name": "Restore currently allowed",
+          "status": "degraded",
+          "value": false
+        },
+        {
+          "authority": "release-promoted",
+          "name": "Projection refresh pending",
+          "status": "healthy",
+          "value": false
+        },
+        {
+          "authority": "release-promoted",
+          "name": "Completed restore evidence",
+          "status": "healthy",
+          "value": 13
+        }
+      ],
+      "freshness_age_seconds": 141.714,
+      "freshness_threshold_seconds": 60,
+      "next_action": "Refresh and explicitly promote runtime evidence before a guarded restore write.",
+      "overall": "degraded",
+      "readiness": "degraded",
+      "reason": "projection_too_old"
+    },
+    "release": {
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7"
+    },
+    "release_impact": {
+      "added": [],
+      "changed": [],
+      "current_snapshot": {
+        "operational_health": {
+          "degraded": 2,
+          "healthy": 3,
+          "unvalidated": 2
+        },
+        "platform_capabilities": {
+          "implemented": 6,
+          "not-applicable": 15,
+          "unvalidated": 7,
+          "verified": 7
+        },
+        "semantic_parity": {
+          "partial": 2,
+          "verified": 5
+        }
+      },
+      "dimensions": [
+        {
+          "changed": [],
+          "dimension": "source/repository",
+          "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
+          "status": "no-comparable-verified-prior-release"
+        },
+        {
+          "changed": [],
+          "dimension": "operational-health",
+          "note": "Current promoted domain health is available; prior promoted domain health is not fabricated.",
+          "status": "current-baseline-only"
+        },
+        {
+          "changed": [],
+          "dimension": "semantic-parity",
+          "note": "Current runtime parity is available independently from operational health.",
+          "status": "current-baseline-only"
+        },
+        {
+          "changed": [],
+          "dimension": "capability-evidence",
+          "note": "Current role-aware platform capability evidence is available.",
+          "status": "current-baseline-only"
+        },
+        {
+          "changed": [],
+          "dimension": "database",
+          "note": "No verified prior release schema snapshot is present for a release-to-release delta.",
+          "status": "not-comparable"
+        },
+        {
+          "changed": [],
+          "dimension": "architecture",
+          "note": "No verified prior architecture snapshot is present for a release-to-release delta.",
+          "status": "not-comparable"
+        }
+      ],
+      "from_release": null,
+      "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
+      "removed": [],
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "status": "no-comparable-verified-prior-release",
+      "to_release": "lite-2026.08.07.3"
+    },
+    "runtime_drift": {
+      "configuration_runtime": [
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "caddy",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "healthy",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "core-supervisor",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "online",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "lite-api",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "online",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "nats",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "ready",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "node-agent",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "online",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "photoprism",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "online",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "pm2",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "ready",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "not-evaluated",
+          "expected_source_match": "not-evaluated",
+          "id": "proot-ubuntu",
+          "kind": "service",
+          "presence": "missing",
+          "runtime_status": "unavailable",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "sqlite",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "healthy",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "tailscaled",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "ready",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "matched",
+          "id": "worker",
+          "kind": "service",
+          "presence": "present",
+          "runtime_status": "online",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "route-contract",
+          "id": "api-lite",
+          "kind": "route",
+          "presence": "present",
+          "runtime_status": "present",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "route-contract",
+          "id": "photoprism",
+          "kind": "route",
+          "presence": "present",
+          "runtime_status": "present",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "route-contract",
+          "id": "pwa",
+          "kind": "route",
+          "presence": "present",
+          "runtime_status": "present",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "route-contract",
+          "id": "remote-access",
+          "kind": "route",
+          "presence": "present",
+          "runtime_status": "present",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        },
+        {
+          "classification": "aligned",
+          "expected_source_match": "schema-expectation",
+          "id": "sqlite-control-plane",
+          "kind": "datastore",
+          "presence": "present",
+          "runtime_status": "ok",
+          "source": "architecture/runtime-baselines/server-phone.json"
+        }
+      ],
+      "configuration_summary": {
+        "aligned": 15,
+        "not-evaluated": 1
+      },
+      "semantic_drift_independent": [
+        {
+          "domain": "apps",
+          "mismatch_count": 0,
+          "runtime_parity": "verified-with-mapped-presentation"
+        },
+        {
+          "domain": "devices",
+          "mismatch_count": 0,
+          "runtime_parity": "verified-with-mapped-presentation"
+        },
+        {
+          "domain": "home",
+          "mismatch_count": 0,
+          "runtime_parity": "verified-with-mapped-presentation"
+        },
+        {
+          "domain": "identity",
+          "mismatch_count": 0,
+          "runtime_parity": "partial"
+        },
+        {
+          "domain": "recovery",
+          "mismatch_count": 0,
+          "runtime_parity": "verified-with-mapped-presentation"
+        },
+        {
+          "domain": "rules",
+          "mismatch_count": 0,
+          "runtime_parity": "partial"
+        },
+        {
+          "domain": "security",
+          "mismatch_count": 0,
+          "runtime_parity": "verified-with-mapped-presentation"
+        }
+      ],
+      "semantic_note": "Semantic parity drift is reported independently and does not prove configuration alignment or operational health.",
+      "unresolved_mismatches": []
+    },
+    "scenarios": [
+      {
+        "components": [
+          "Identity, authentication, and invite guards",
+          "Invite and identity lifecycle",
+          "Enrollment and device lifecycle state",
+          "Lite node agent",
+          "Lite agent supervisor"
+        ],
+        "confidence": "source-derived",
+        "domain": "devices",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "add-device",
+        "routes": [
+          "POST /api/lite/fleet/add-device",
+          "GET /api/lite/fleet"
+        ],
+        "source_refs": [
+          "src/lite/LiteDevices.jsx",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Identity, authentication, and invite guards",
+          "Invite and identity lifecycle",
+          "Enrollment and device lifecycle state",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Add Device",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "App Catalog",
+          "App lifecycle worker",
+          "Workflow execution",
+          "PhotoPrism",
+          "Caddy same-origin proxy"
+        ],
+        "confidence": "source-derived",
+        "domain": "apps",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "app-installation",
+        "routes": [
+          "POST /api/lite/catalog/install",
+          "GET /api/lite/catalog"
+        ],
+        "source_refs": [
+          "src/lite/LiteCatalog.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream + execution owner",
+          "App Catalog",
+          "App lifecycle worker",
+          "Workflow execution",
+          "PhotoPrism",
+          "Caddy same-origin proxy",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "App installation",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Backup and verification engine",
+          "Backup, restore, and checkpoint state",
+          "Worker process"
+        ],
+        "confidence": "source-derived",
+        "domain": "recovery",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "backup-create",
+        "routes": [
+          "POST /api/lite/recovery/backup",
+          "GET /api/lite/recovery/summary"
+        ],
+        "source_refs": [
+          "src/lite/LiteRecovery.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream + execution owner",
+          "Backup and verification engine",
+          "Backup, restore, and checkpoint state",
+          "Worker process",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Backup creation and verification",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Identity, authentication, and invite guards",
+          "FastAPI /api/lite/*",
+          "SQLite control-plane store"
+        ],
+        "confidence": "partial",
+        "domain": "identity",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "change-password",
+        "routes": [
+          "POST /api/lite/identity/rotate"
+        ],
+        "source_refs": [
+          "contracts/parity/parity-model.json",
+          "contracts/generated/lite-openapi.json",
+          "src/lite/LiteIdentity.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Identity, authentication, and invite guards",
+          "SQLite control-plane store",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Change Password / identity rotation",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Identity, authentication, and invite guards",
+          "Invite and identity lifecycle",
+          "Enrollment and device lifecycle state",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "Heartbeat, telemetry, and health publishers"
+        ],
+        "confidence": "source-derived",
+        "domain": "devices",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "device-enrollment",
+        "routes": [
+          "GET /api/lite/fleet"
+        ],
+        "source_refs": [
+          "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Identity, authentication, and invite guards",
+          "Invite and identity lifecycle",
+          "Enrollment and device lifecycle state",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "Heartbeat, telemetry, and health publishers",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Device bootstrap and enrollment",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Heartbeat, telemetry, and health publishers",
+          "Reconnect watchdog and supervisor recovery",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "NATS / JetStream"
+        ],
+        "confidence": "source-derived",
+        "domain": "devices",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "device-reconnect",
+        "routes": [
+          "GET /api/lite/fleet"
+        ],
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Heartbeat, telemetry, and health publishers",
+          "Reconnect watchdog and supervisor recovery",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "NATS / JetStream",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Device offline and reconnect recovery",
+        "write_flow": false
+      },
+      {
+        "components": [],
+        "confidence": "source-derived",
+        "domain": "documentation",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "documentation-generation",
+        "routes": [],
+        "source_refs": [
+          "tasks/Taskfile.docs.yml",
+          "scripts/docs/lite/generate_docs.py",
+          "scripts/docs/lite/generate_platform_catalogs.py"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Documentation generation",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "FastAPI /api/lite/*",
+          "React / Vite PWA",
+          "SQLite control-plane store"
+        ],
+        "confidence": "source-derived",
+        "domain": "validation",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "parity-capture",
+        "routes": [],
+        "source_refs": [
+          "scripts/docs/parity/generate_parity.py",
+          "contracts/parity/parity-model.json"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "React / Vite PWA",
+          "SQLite control-plane store",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Backend-to-Frontend parity capture and verification",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "App Catalog",
+          "PhotoPrism",
+          "PROot Ubuntu application container",
+          "Media readiness and app health probes",
+          "Caddy same-origin proxy"
+        ],
+        "confidence": "source-derived",
+        "domain": "apps",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "photoprism-operation",
+        "routes": [
+          "GET /api/lite/catalog",
+          "GET /api/lite/apps/{app_id}/actions"
+        ],
+        "source_refs": [
+          "src/lite/LiteCatalog.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "App Catalog",
+          "PhotoPrism",
+          "PROot Ubuntu application container",
+          "Media readiness and app health probes",
+          "Caddy same-origin proxy",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "PhotoPrism operation",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Audit index, projection refresh, prepared projections, and domain revisions",
+          "Backup, restore, and checkpoint state",
+          "SQLite control-plane store"
+        ],
+        "confidence": "source-derived",
+        "domain": "recovery",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "recovery-reconciliation",
+        "routes": [
+          "GET /api/lite/recovery/summary"
+        ],
+        "source_refs": [
+          "contracts/parity/parity-model.json"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Audit index, projection refresh, prepared projections, and domain revisions",
+          "Backup, restore, and checkpoint state",
+          "SQLite control-plane store",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Recovery reconciliation",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Date-based Lite tag, dist.zip, checksums, and release manifest",
+          "Download staging and release verification",
+          "Release subprocess",
+          "Post-switch health validation",
+          "Installed release and runtime state"
+        ],
+        "confidence": "source-derived",
+        "domain": "release",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "release-update",
+        "routes": [
+          "GET /api/lite/release"
+        ],
+        "source_refs": [
+          "docs/generated/production/release.md"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Date-based Lite tag, dist.zip, checksums, and release manifest",
+          "Download staging and release verification",
+          "Release subprocess",
+          "Post-switch health validation",
+          "Installed release and runtime state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Release and update flow",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Tailscale remote access",
+          "tailscaled daemon",
+          "Remote-access readiness checks",
+          "Primary and secondary NATS listeners"
+        ],
+        "confidence": "source-derived",
+        "domain": "devices",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "remote-access-readiness",
+        "routes": [
+          "GET /api/lite/fleet"
+        ],
+        "source_refs": [
+          "docs/generated/production/remote-access.md"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Tailscale remote access",
+          "tailscaled daemon",
+          "Remote-access readiness checks",
+          "Primary and secondary NATS listeners",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Tailscale and remote access readiness",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Enrollment and device lifecycle state",
+          "Explicit retirement and database recovery"
+        ],
+        "confidence": "source-derived",
+        "domain": "devices",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "remove-old-device",
+        "routes": [
+          "POST /api/lite/fleet/remove-device",
+          "GET /api/lite/fleet"
+        ],
+        "source_refs": [
+          "src/lite/LiteDevices.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Enrollment and device lifecycle state",
+          "Explicit retirement and database recovery",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Remove Old Device",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Device command executor",
+          "Reconnect watchdog and supervisor recovery",
+          "Lite node agent",
+          "Lite agent supervisor"
+        ],
+        "confidence": "source-derived",
+        "domain": "devices",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "restart-agent",
+        "routes": [
+          "POST /api/lite/fleet/devices/{node_id}/restart-agent",
+          "GET /api/lite/fleet"
+        ],
+        "source_refs": [
+          "src/lite/LiteDevices.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream + execution owner",
+          "Device command executor",
+          "Reconnect watchdog and supervisor recovery",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Restart Agent",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Restore preview and confirmed restore",
+          "Backup and verification engine",
+          "Backup, restore, and checkpoint state",
+          "Workflow execution"
+        ],
+        "confidence": "source-derived",
+        "domain": "recovery",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "restore-execution",
+        "routes": [
+          "POST /api/lite/recovery/restore",
+          "GET /api/lite/recovery/summary"
+        ],
+        "source_refs": [
+          "src/lite/LiteRecovery.jsx",
+          "runbooks/backup_restore_verify.yaml"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream + execution owner",
+          "Restore preview and confirmed restore",
+          "Backup and verification engine",
+          "Backup, restore, and checkpoint state",
+          "Workflow execution",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Confirmed restore",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Restore preview and confirmed restore",
+          "Backup, restore, and checkpoint state"
+        ],
+        "confidence": "source-derived",
+        "domain": "recovery",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "restore-preview",
+        "routes": [
+          "POST /api/lite/recovery/restore/preview",
+          "GET /api/lite/recovery/summary"
+        ],
+        "source_refs": [
+          "src/lite/LiteRecovery.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Restore preview and confirmed restore",
+          "Backup, restore, and checkpoint state",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Restore preview",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "Last-known-good state and rollback",
+          "Installed release and runtime state",
+          "Post-switch health validation"
+        ],
+        "confidence": "source-derived",
+        "domain": "release",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "rollback",
+        "routes": [
+          "GET /api/lite/release"
+        ],
+        "source_refs": [
+          "runbooks/release_rollback.yaml"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Last-known-good state and rollback",
+          "Installed release and runtime state",
+          "Post-switch health validation",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Rollback",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Lite node agent",
+          "Lite agent supervisor",
+          "NATS / JetStream"
+        ],
+        "confidence": "source-derived",
+        "domain": "validation",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "runtime-capture",
+        "routes": [],
+        "source_refs": [
+          "scripts/docs/runtime/capture_termux_runtime.sh",
+          "scripts/docs/runtime/promote_termux_runtime.py"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "NATS / JetStream",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Sanitized Termux runtime capture",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "runtime-evidence",
+          "Installed release and runtime state"
+        ],
+        "confidence": "source-derived",
+        "domain": "validation",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "runtime-promotion",
+        "routes": [],
+        "source_refs": [
+          "scripts/test/parity/preflight_runtime_promotion.py",
+          "scripts/test/parity/promote_runtime_verification.py"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "runtime-evidence",
+          "Installed release and runtime state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Runtime evidence promotion",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Security findings and run state",
+          "Security scan coordinator"
+        ],
+        "confidence": "source-derived",
+        "domain": "security",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "security-review",
+        "routes": [
+          "GET /api/lite/security/summary",
+          "GET /api/lite/security/details/{run_id}"
+        ],
+        "source_refs": [
+          "src/lite/LiteSecurity.jsx"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "Security findings and run state",
+          "Security scan coordinator",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Security finding review",
+        "write_flow": false
+      },
+      {
+        "components": [
+          "Quick, Full, and App safety checks",
+          "Security scan coordinator",
+          "Lynis and Trivy scanner adapters",
+          "Security findings and run state",
+          "Worker process"
+        ],
+        "confidence": "source-derived",
+        "domain": "security",
+        "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+        "id": "security-scan",
+        "routes": [
+          "POST /api/lite/security/check",
+          "GET /api/lite/security/summary",
+          "GET /api/lite/security/progress"
+        ],
+        "source_refs": [
+          "src/lite/LiteSecurity.jsx",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream + execution owner",
+          "Quick, Full, and App safety checks",
+          "Security scan coordinator",
+          "Lynis and Trivy scanner adapters",
+          "Security findings and run state",
+          "Worker process",
+          "Sanitized evidence/state",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Security scan",
+        "write_flow": true
+      },
+      {
+        "components": [
+          "PM2 process manager",
+          "Caddy same-origin proxy",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream",
+          "Worker process",
+          "Lite node agent",
+          "Lite agent supervisor"
+        ],
+        "confidence": "source-derived",
+        "domain": "platform",
+        "guardrail": "This scenario is read-oriented and does not authorize browser-side execution.",
+        "id": "startup",
+        "routes": [],
+        "source_refs": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "stages": [
+          "User intent",
+          "Pocket Lab Lite UI",
+          "PM2 process manager",
+          "Caddy same-origin proxy",
+          "FastAPI /api/lite/*",
+          "NATS / JetStream",
+          "Worker process",
+          "Lite node agent",
+          "Lite agent supervisor",
+          "FastAPI projection",
+          "UI result"
+        ],
+        "title": "Pocket Lab Lite startup",
+        "write_flow": false
+      }
+    ],
+    "schema_version": "1.0.0"
+  },
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

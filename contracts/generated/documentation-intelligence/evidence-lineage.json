@@ -1,0 +1,151 @@
+{
+  "items": [
+    {
+      "claim": "healthy",
+      "confidence": "release-promoted",
+      "domain": "apps",
+      "evidence_comparisons": [
+        "apps-termux-runtime_status",
+        "apps-termux-installed",
+        "apps-termux-route_ready",
+        "apps-termux-open_enabled"
+      ],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Apps",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    },
+    {
+      "claim": "healthy",
+      "confidence": "release-promoted",
+      "domain": "devices",
+      "evidence_comparisons": [
+        "devices-termux-server_status",
+        "devices-termux-server_identity_expected",
+        "devices-termux-remote_access_ready"
+      ],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Devices",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    },
+    {
+      "claim": "degraded",
+      "confidence": "release-promoted",
+      "domain": "home",
+      "evidence_comparisons": [
+        "home-termux-overall_status",
+        "home-termux-read_degraded"
+      ],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Home",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    },
+    {
+      "claim": "unvalidated",
+      "confidence": "partial",
+      "domain": "identity",
+      "evidence_comparisons": [],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Identity",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    },
+    {
+      "claim": "degraded",
+      "confidence": "release-promoted",
+      "domain": "recovery",
+      "evidence_comparisons": [
+        "recovery-termux-status",
+        "recovery-termux-degraded_reason",
+        "recovery-termux-read_degraded",
+        "recovery-termux-projection_age_ms"
+      ],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Backup & Restore",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    },
+    {
+      "claim": "unvalidated",
+      "confidence": "partial",
+      "domain": "rules",
+      "evidence_comparisons": [],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Rules",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    },
+    {
+      "claim": "healthy",
+      "confidence": "release-promoted",
+      "domain": "security",
+      "evidence_comparisons": [
+        "security-termux-status"
+      ],
+      "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
+      "label": "Security",
+      "projection": "contracts/generated/runtime/domain-operational-health.json",
+      "promoted_at": "2026-08-07T18:04:28Z",
+      "release_tag": "lite-2026.08.07.3",
+      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "sources": [
+        "contracts/parity/runtime-verification-baseline.json",
+        "contracts/parity/parity-model.json",
+        "contracts/metadata/documentation-platform.json",
+        "contracts/generated/reason-codes.json"
+      ]
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

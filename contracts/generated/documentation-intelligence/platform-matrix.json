@@ -1,0 +1,579 @@
+{
+  "items": [
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [
+        "apps-termux-installed",
+        "apps-termux-runtime_status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "ARM64 Ubuntu/proot",
+      "rationale": "PhotoPrism executes in the ARM64 Ubuntu/proot runtime owned by the server phone.",
+      "role": "execution",
+      "source_domain": "apps",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [
+        "apps-termux-installed",
+        "apps-termux-route_ready",
+        "apps-termux-runtime_status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "Android/Termux ARM64",
+      "rationale": "The server-host role advertises app_host and the promoted Apps lane observes the managed app runtime.",
+      "role": "runtime-host",
+      "source_domain": "apps",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "Ubuntu/WSL2 Dev",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "development",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "scripts/dev/setup-wsl-ubuntu-dev.sh"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "desktop browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "mobile browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [],
+      "evidence_status": "source-derived",
+      "platform": "secondary device",
+      "rationale": "The compute device role advertises app_host, but the promoted baseline does not prove a currently ready secondary app host.",
+      "role": "remote-node",
+      "source_domain": "devices",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "implemented"
+    },
+    {
+      "capability": "app_host",
+      "capability_name": "App Host",
+      "evidence_comparisons": [
+        "apps-termux-installed",
+        "apps-termux-route_ready",
+        "apps-termux-runtime_status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "server phone",
+      "rationale": "The protected server-host role owns the current App Host runtime.",
+      "role": "runtime-host",
+      "source_domain": "apps",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "ARM64 Ubuntu/proot",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "execution",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "source-derived",
+      "platform": "Android/Termux ARM64",
+      "rationale": "The storage role advertises backup_target, while readiness still depends on a current qualifying storage node.",
+      "role": "storage",
+      "source_domain": "recovery",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "implemented"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "Ubuntu/WSL2 Dev",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "development",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "scripts/dev/setup-wsl-ubuntu-dev.sh"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "desktop browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "mobile browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "source-derived",
+      "platform": "secondary device",
+      "rationale": "Secondary storage nodes are the canonical remote backup-target role.",
+      "role": "storage",
+      "source_domain": "recovery",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "implemented"
+    },
+    {
+      "capability": "backup_target",
+      "capability_name": "Backup Target",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "server phone",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "runtime-host",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "ARM64 Ubuntu/proot",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "execution",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [
+        "devices-termux-server_identity_expected",
+        "devices-termux-server_status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "Android/Termux ARM64",
+      "rationale": "The server-host and compute roles advertise compute on Android/Termux ARM64.",
+      "role": "runtime-host",
+      "source_domain": "devices",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "Ubuntu/WSL2 Dev",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "development",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "scripts/dev/setup-wsl-ubuntu-dev.sh"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "desktop browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "mobile browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [],
+      "evidence_status": "source-derived",
+      "platform": "secondary device",
+      "rationale": "The compute device role advertises compute, but current readiness must still come from fresh device evidence.",
+      "role": "remote-node",
+      "source_domain": "devices",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "implemented"
+    },
+    {
+      "capability": "compute",
+      "capability_name": "Compute",
+      "evidence_comparisons": [
+        "devices-termux-server_identity_expected",
+        "devices-termux-server_status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "server phone",
+      "rationale": "The protected server phone is the canonical control-plane compute host.",
+      "role": "runtime-host",
+      "source_domain": "devices",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "ARM64 Ubuntu/proot",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "execution",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [
+        "security-termux-status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "Android/Termux ARM64",
+      "rationale": "Lynis and Trivy execute behind FastAPI/worker boundaries on the Android/Termux server runtime.",
+      "role": "scanner-host",
+      "source_domain": "security",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "Ubuntu/WSL2 Dev",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "development",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "scripts/dev/setup-wsl-ubuntu-dev.sh"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "desktop browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "mobile browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "secondary device",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "remote-node",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "security_scanner",
+      "capability_name": "Security Scanner",
+      "evidence_comparisons": [
+        "security-termux-status"
+      ],
+      "evidence_status": "release-promoted",
+      "platform": "server phone",
+      "rationale": "The protected server-host role advertises security_scanner and promoted Security evidence observes it healthy.",
+      "role": "scanner-host",
+      "source_domain": "security",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "verified"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "ARM64 Ubuntu/proot",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "execution",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "source-derived",
+      "platform": "Android/Termux ARM64",
+      "rationale": "The storage role advertises media_storage on enrolled Android/Termux nodes; no current ready storage node is promoted.",
+      "role": "storage",
+      "source_domain": "devices",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "implemented"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "Ubuntu/WSL2 Dev",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "development",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "scripts/dev/setup-wsl-ubuntu-dev.sh"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "desktop browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "not-applicable",
+      "platform": "mobile browser",
+      "rationale": "This platform is a control/development surface; Pocket Lab capabilities remain backend/runtime-owned and are not executed here.",
+      "role": "control-client",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "status": "not-applicable"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "source-derived",
+      "platform": "secondary device",
+      "rationale": "The storage device role owns media_storage capability on secondary nodes.",
+      "role": "storage",
+      "source_domain": "devices",
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "implemented"
+    },
+    {
+      "capability": "media_storage",
+      "capability_name": "Storage Node",
+      "evidence_comparisons": [],
+      "evidence_status": "unvalidated",
+      "platform": "server phone",
+      "rationale": "No canonical repository binding currently claims this capability on this platform.",
+      "role": "runtime-host",
+      "source_domain": null,
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+      ],
+      "status": "unvalidated"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

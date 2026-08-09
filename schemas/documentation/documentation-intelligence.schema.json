@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pocket Lab Lite documentation intelligence export",
+  "type": "object",
+  "required": ["schema_version", "release", "dependency_health", "release_impact", "runtime_drift", "recovery_readiness", "fleet_readiness", "evidence_lineage", "evidence_coverage", "limitations", "reason_codes", "scenarios", "platform_matrix", "dashboard"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "release": {"type": "object", "required": ["release_tag", "source_commit", "promoted_at"]},
+    "dependency_health": {"type": "array"},
+    "release_impact": {"type": "object"},
+    "runtime_drift": {"type": "object"},
+    "recovery_readiness": {"type": "object"},
+    "fleet_readiness": {"type": "object"},
+    "evidence_lineage": {"type": "array"},
+    "evidence_coverage": {"type": "object"},
+    "limitations": {"type": "array"},
+    "reason_codes": {"type": "array"},
+    "scenarios": {"type": "array"},
+    "platform_matrix": {"type": "array"},
+    "dashboard": {"type": "object"}
+  },
+  "additionalProperties": false
+}
