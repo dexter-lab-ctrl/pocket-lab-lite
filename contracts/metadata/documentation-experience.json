@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "product_name": "Pocket Lab Lite Documentation",
+  "information_architecture": ["understand", "operate", "evidence", "develop", "release", "reference"],
+  "page_anatomy": {
+    "evidence": ["status-strip", "summary", "why-it-matters", "evidence", "provenance", "technical-details", "next-step"],
+    "domain": ["summary", "current-health", "what-user-sees", "how-it-works", "dependencies", "capabilities", "evidence", "limitations", "failure-recovery", "provenance"],
+    "release": ["summary", "what-changed", "operational-impact", "compatibility", "evidence", "limitations"]
+  },
+  "status_hierarchy": ["operational-health", "implementation-status", "runtime-status", "semantic-parity", "freshness", "evidence-confidence"],
+  "truth_language": {
+    "known": "Supported by promoted or verified repository evidence.",
+    "derived": "Deterministically derived from canonical repository sources.",
+    "partial": "Some required evidence is present, but the claim is incomplete.",
+    "unknown": "No authoritative evidence currently supports the claim.",
+    "not-applicable": "The capability does not belong to this platform or role."
+  },
+  "progressive_disclosure": ["summary", "explanation", "technical-evidence"],
+  "visual_status": {
+    "healthy": {"symbol": "●", "tone": "positive"},
+    "degraded": {"symbol": "▲", "tone": "warning"},
+    "stale": {"symbol": "◷", "tone": "warning"},
+    "unavailable": {"symbol": "×", "tone": "critical"},
+    "unvalidated": {"symbol": "○", "tone": "neutral"},
+    "verified": {"symbol": "✓", "tone": "positive"},
+    "partial": {"symbol": "◐", "tone": "warning"},
+    "not-applicable": {"symbol": "—", "tone": "neutral"}
+  },
+  "role_shortcuts": {
+    "operator": ["current-health", "fleet-readiness", "recovery-readiness", "known-limitations"],
+    "developer": ["architecture", "api-contracts", "runtime-drift", "evidence-lineage"],
+    "security-reviewer": ["security", "trust-boundaries", "evidence-coverage", "reason-codes"],
+    "release-owner": ["release-impact", "semantic-parity", "runtime-baseline", "validation"]
+  },
+  "task_entry_points": [
+    "Understand the architecture",
+    "Check whether the system is healthy",
+    "Investigate a degraded subsystem",
+    "Understand why a device is offline",
+    "Review security evidence",
+    "Prepare a release",
+    "Understand what changed",
+    "Recover safely",
+    "Develop a new capability"
+  ],
+  "search_synonyms": {
+    "recovery": ["backup", "restore", "restore readiness"],
+    "devices": ["fleet", "node", "agent", "offline"],
+    "remote-access": ["tailscale", "tailnet", "remote access not ready"],
+    "security": ["safety", "lynis", "trivy", "safety check"],
+    "operational-health": ["health", "degraded", "unavailable", "stale"],
+    "release-impact": ["what changed", "release delta", "change impact"]
+  },
+  "responsive": {
+    "reading_width_ch": 78,
+    "wide_data_min_rem": 62,
+    "compact_breakpoint_rem": 45,
+    "dashboard_min_card_rem": 14
+  },
+  "motion": {
+    "fast_ms": 140,
+    "normal_ms": 190,
+    "continuous_animation_allowed": false,
+    "reduced_motion_required": true
+  },
+  "performance_budgets": {
+    "custom_javascript_bytes": 12288,
+    "custom_css_bytes": 65536,
+    "dashboard_cards_max": 12,
+    "details_default_open_max": 1
+  },
+  "guardrails": [
+    "documentation-generation-never-captures-live-runtime",
+    "documentation-sync-never-promotes-runtime-evidence",
+    "semantic-parity-never-implies-operational-health",
+    "browser-evidence-never-proves-runtime-execution",
+    "unknown-evidence-never-becomes-verified",
+    "color-is-never-the-only-status-signal",
+    "no-continuous-decorative-animation",
+    "no-raw-secrets-private-paths-or-runtime-identities",
+    "no-heavy-monitoring-stack-in-documentation"
+  ]
+}

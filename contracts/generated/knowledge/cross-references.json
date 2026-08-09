@@ -7317,6 +7317,68 @@
         {
           "source": "domain:documentation",
           "type": "verified_by"
+        },
+        {
+          "source": "domain:platform",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_documentation_intelligence.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:apps",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:devices",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:home",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:rules",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:service_unavailable",
+          "type": "verified_by"
         }
       ],
       "test:tests/docs/test_living_knowledgebase.py": [
@@ -12415,6 +12477,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -13807,6 +13873,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -14179,6 +14249,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -14216,6 +14290,10 @@
         },
         {
           "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -14327,6 +14405,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -14378,6 +14460,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -14785,6 +14871,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -15039,6 +15129,14 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -15171,6 +15269,10 @@
         {
           "target": "ui:literules",
           "type": "owns"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -15562,6 +15664,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -16064,6 +16170,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -16953,6 +17063,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -17136,6 +17254,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -17561,6 +17683,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
+    "source_fingerprint": "61861b3c18410567242d0cb83ab9c280c6767685b1c1b54ab3cc1fa781bf4ab5"
   }
 }

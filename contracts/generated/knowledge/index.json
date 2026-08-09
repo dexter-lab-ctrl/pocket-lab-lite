@@ -19129,6 +19129,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_documentation_intelligence.py",
+      "name": "tests/docs/test_documentation_intelligence.py",
+      "source_refs": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_living_knowledgebase.py",
       "name": "tests/docs/test_living_knowledgebase.py",
       "source_refs": [
@@ -21921,6 +21931,7 @@
         "test:tests/dev/browser-resolver.test.mjs",
         "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/global-setup.ts",
@@ -22787,6 +22798,7 @@
         "test:tests/dev/browser-resolver.test.mjs",
         "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/global-setup.ts",
@@ -30227,6 +30239,68 @@
         {
           "source": "domain:documentation",
           "type": "verified_by"
+        },
+        {
+          "source": "domain:platform",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_documentation_intelligence.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:apps",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:devices",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:home",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:rules",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:service_unavailable",
+          "type": "verified_by"
         }
       ],
       "test:tests/docs/test_living_knowledgebase.py": [
@@ -35325,6 +35399,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -36717,6 +36795,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -37089,6 +37171,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -37126,6 +37212,10 @@
         },
         {
           "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -37237,6 +37327,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -37288,6 +37382,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -37695,6 +37793,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -37949,6 +38051,14 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -38081,6 +38191,10 @@
         {
           "target": "ui:literules",
           "type": "owns"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -38472,6 +38586,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -38974,6 +39092,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -39863,6 +39985,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -40046,6 +40176,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -42323,6 +42457,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:18b85266448fa046",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_intelligent_runtime_parity.py"
       ],
       "id": "rel:18d72fcc38c29a02",
@@ -42727,6 +42870,15 @@
       "source": "api:get:/api/lite/catalog",
       "target": "table:app_action_lifecycle",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/docs/mkdocs.spec.ts"
+      ],
+      "id": "rel:1d84b83a400dc12a",
+      "source": "domain:recovery",
+      "target": "test:tests/docs/mkdocs.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -43142,6 +43294,15 @@
       "source": "domain:workflow",
       "target": "subject:pocketlab.events.workflow.recovery_completed",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:24da0372f242c09b",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -44645,6 +44806,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:39158da8d7e0eea0",
+      "source": "domain:home",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:39159a9890fef325",
@@ -45310,6 +45480,15 @@
       "id": "rel:4310e36a0da3848a",
       "source": "component:browser",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:43272e0446fbbe45",
+      "source": "reason:projection_too_old",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
       "type": "verified_by"
     },
     {
@@ -46387,6 +46566,15 @@
       "source": "component:app-lifecycle-worker",
       "target": "component:app-workflow-state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:53d765bb5c80acbf",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -47548,6 +47736,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:666af0b969e1c394",
+      "source": "domain:devices",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:6696c01617334b93",
@@ -48283,6 +48480,15 @@
       "id": "rel:70ae4b56a9b0c8fe",
       "source": "reason:shutdown_during_mailbox_backpressure",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/mkdocs.spec.ts"
+      ],
+      "id": "rel:70c5f759d0811506",
+      "source": "domain:platform",
+      "target": "test:tests/docs/mkdocs.spec.ts",
       "type": "verified_by"
     },
     {
@@ -51127,6 +51333,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:9ac61f8333a4ebc2",
+      "source": "domain:recovery",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:9ad25d76a7278c99",
@@ -52981,6 +53196,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:b4c884844ab3221d",
+      "source": "domain:rules",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:b4d9e648f26828cf",
@@ -54769,6 +54993,15 @@
       "id": "rel:ce6744b23e734c28",
       "source": "component:completion-evidence",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:cec424e21ab1d4fa",
+      "source": "reason:service_unavailable",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
       "type": "verified_by"
     },
     {
@@ -56717,6 +56950,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:ea1a1be63e0b3a7f",
+      "source": "component:photoprism",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:493"
       ],
       "id": "rel:ea28260066d38c0f",
@@ -57484,6 +57726,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:f3e1259d778ec5d7",
+      "source": "domain:apps",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_s6_frontend_contract.py"
       ],
       "id": "rel:f3f4aa052326f1fd",
@@ -58161,6 +58412,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:fe1b4bae4e0bd583",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3244"
       ],
       "id": "rel:fe30f428c2df7938",
@@ -58185,6 +58445,15 @@
       "source": "domain:apps",
       "target": "api:post:/api/lite/catalog/install",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/mkdocs.spec.ts"
+      ],
+      "id": "rel:fe6ef08a688578e6",
+      "source": "reason:projection_too_old",
+      "target": "test:tests/docs/mkdocs.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -58251,9 +58520,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2",
+  "source_fingerprint": "61861b3c18410567242d0cb83ab9c280c6767685b1c1b54ab3cc1fa781bf4ab5",
   "statistics": {
-    "entity_count": 829,
+    "entity_count": 830,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -58270,14 +58539,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 154,
+      "test": 155,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 1966,
-    "source_count": 190
+    "relation_count": 1981,
+    "source_count": 191
   }
 }

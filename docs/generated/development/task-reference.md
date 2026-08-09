@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 49505939a3847c1d0a060ef758da897797c4061eaacf6dd23d00aeaf8da6cd53
+source_fingerprint: 23e288333abf6ba8a66745abdb34f335aedf6391326c63bb036903c2ca5ed234
 schema_revision: 1
 validation_status: generated
 ---
@@ -61,6 +61,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate`
 - `lite:docs:health:check`
 - `lite:docs:health:generate`
+- `lite:docs:intelligence:check`
+- `lite:docs:intelligence:generate`
 - `lite:docs:knowledge:ai-export`
 - `lite:docs:knowledge:check`
 - `lite:docs:knowledge:generate`
@@ -170,6 +172,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
 - `lite:docs:check` → `lite:docs:health:check`
+- `lite:docs:check` → `lite:docs:intelligence:check`
 - `lite:docs:check` → `lite:docs:knowledge:check`
 - `lite:docs:check` → `lite:docs:parity:check`
 - `lite:docs:check` → `lite:docs:platform:check`
@@ -181,6 +184,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
 - `lite:docs:generate` → `lite:docs:health:generate`
+- `lite:docs:generate` → `lite:docs:intelligence:generate`
 - `lite:docs:generate` → `lite:docs:knowledge:generate`
 - `lite:docs:generate` → `lite:docs:parity:generate`
 - `lite:docs:generate` → `lite:docs:platform:generate`

@@ -22,49 +22,7 @@ Operate, develop, validate, and recover your private edge-first workspace throug
 <span class="pl-status pl-status--patch-provided">Repository generated</span>
 </div>
 
-<div class="pl-card-grid" markdown>
-
-<div class="pl-card" markdown>
-
-### Devices
-
-Enroll, inspect, repair, and retire Lite devices safely.
-
-[Open Devices documentation](generated/production/devices.md)
-
-</div>
-
-<div class="pl-card" markdown>
-
-### Apps
-
-Install and manage private self-hosted apps through Pocket Lab Lite.
-
-[Open Apps documentation](generated/production/apps.md)
-
-</div>
-
-<div class="pl-card" markdown>
-
-### Recovery
-
-Create backups, verify restore points, and perform safe recovery.
-
-[Open Recovery documentation](generated/production/recovery.md)
-
-</div>
-
-<div class="pl-card" markdown>
-
-### Development
-
-Use the canonical Task, Storybook, Playwright, API-contract, and evidence workflows.
-
-[Open Development documentation](generated/development/index.md)
-
-</div>
-
-</div>
+--8<-- "generated/home-dashboard.md"
 
 ## Architecture
 

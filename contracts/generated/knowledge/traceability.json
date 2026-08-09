@@ -1720,6 +1720,7 @@
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/parity/test_planned_runtime_parity_policy.py",
         "test:tests/parity/test_runtime_drift_reporting.py"
@@ -2047,6 +2048,7 @@
       "name": "Apps",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py"
       ],
@@ -2106,6 +2108,7 @@
       "name": "Devices",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py"
       ],
@@ -2135,6 +2138,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "domain",
@@ -2177,6 +2181,7 @@
       "name": "Home",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py"
       ],
@@ -2190,6 +2195,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-test-helpers.ts",
@@ -2260,6 +2266,7 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "domain",
@@ -2286,6 +2293,8 @@
       "name": "Backup & Restore",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/parity/test_intelligent_runtime_parity.py"
@@ -2325,6 +2334,7 @@
       "name": "Rules",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py"
       ],
@@ -2387,6 +2397,7 @@
         "test:tests/backend/test_lite_startup_workload_isolation.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-mocked.spec.ts",
@@ -2563,6 +2574,7 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_production_architecture_platform.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "journey",
@@ -2868,6 +2880,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a7931872e8e6b02b16e74eebf3f3a8fd5eb69b965e21bc0558424ad3c7a97cb2"
+    "source_fingerprint": "61861b3c18410567242d0cb83ab9c280c6767685b1c1b54ab3cc1fa781bf4ab5"
   }
 }

@@ -1,0 +1,72 @@
+{
+  "items": {
+    "coverage": {
+      "apps": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "devices": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "home": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "identity": {
+        "confidence": "partial",
+        "coverage_fraction": "8/9",
+        "evidenced": 8,
+        "total": 9
+      },
+      "recovery": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      },
+      "rules": {
+        "confidence": "partial",
+        "coverage_fraction": "8/9",
+        "evidenced": 8,
+        "total": 9
+      },
+      "security": {
+        "confidence": "release-promoted",
+        "coverage_fraction": "9/9",
+        "evidenced": 9,
+        "total": 9
+      }
+    },
+    "domain_health_counts": {
+      "degraded": 2,
+      "healthy": 3,
+      "unvalidated": 2
+    },
+    "fleet": {
+      "known": 7,
+      "online": 0,
+      "overall": "healthy"
+    },
+    "implemented_domains": 5,
+    "partial_domains": 2,
+    "promoted_at": "2026-08-07T18:04:28Z",
+    "recovery": {
+      "overall": "degraded",
+      "readiness": "degraded",
+      "reason": "projection_too_old"
+    },
+    "release_impact_status": "no-comparable-verified-prior-release",
+    "release_tag": "lite-2026.08.07.3",
+    "runtime_baseline_status": "partial",
+    "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7"
+  },
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

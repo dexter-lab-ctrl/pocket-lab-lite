@@ -1,0 +1,283 @@
+{
+  "items": [
+    {
+      "dependencies": [
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "Caddy",
+          "note": "Runtime baseline reports healthy.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "FastAPI",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "NATS/JetStream",
+          "note": "Runtime baseline reports ready.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "worker",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "PhotoPrism runtime",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        }
+      ],
+      "dependency_summary": {
+        "healthy": 5
+      },
+      "domain": "apps",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "reason": null,
+      "semantic_parity": "verified-with-mapped-presentation"
+    },
+    {
+      "dependencies": [
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "FastAPI",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "NATS/JetStream",
+          "note": "Runtime baseline reports ready.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "node agent",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "source-derived",
+          "name": "agent supervisor",
+          "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+          "source": "contracts/metadata/documentation-platform.json",
+          "state": "unvalidated"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "Tailscale",
+          "note": "Runtime baseline reports ready.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        }
+      ],
+      "dependency_summary": {
+        "healthy": 4,
+        "unvalidated": 1
+      },
+      "domain": "devices",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "reason": null,
+      "semantic_parity": "verified-with-mapped-presentation"
+    },
+    {
+      "dependencies": [
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "Caddy",
+          "note": "Runtime baseline reports healthy.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "FastAPI",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "NATS/JetStream",
+          "note": "Runtime baseline reports ready.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "worker",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "node agent",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "core supervisor",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        }
+      ],
+      "dependency_summary": {
+        "healthy": 6
+      },
+      "domain": "home",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "label": "Home",
+      "operational_health": "degraded",
+      "reason": "service_unavailable",
+      "semantic_parity": "verified-with-mapped-presentation"
+    },
+    {
+      "dependencies": [],
+      "dependency_summary": {},
+      "domain": "identity",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "reason": null,
+      "semantic_parity": "partial"
+    },
+    {
+      "dependencies": [
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "FastAPI",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "NATS/JetStream",
+          "note": "Runtime baseline reports ready.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "worker",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "SQLite",
+          "note": "Runtime baseline reports healthy.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "source-derived",
+          "name": "restic",
+          "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+          "source": "contracts/metadata/documentation-platform.json",
+          "state": "unvalidated"
+        }
+      ],
+      "dependency_summary": {
+        "healthy": 4,
+        "unvalidated": 1
+      },
+      "domain": "recovery",
+      "evidence_status": "release-promoted",
+      "freshness": "stale",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "reason": "projection_too_old",
+      "semantic_parity": "verified-with-mapped-presentation"
+    },
+    {
+      "dependencies": [],
+      "dependency_summary": {},
+      "domain": "rules",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "reason": null,
+      "semantic_parity": "partial"
+    },
+    {
+      "dependencies": [
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "FastAPI",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "NATS/JetStream",
+          "note": "Runtime baseline reports ready.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "verified-runtime-baseline",
+          "name": "worker",
+          "note": "Runtime baseline reports online.",
+          "source": "architecture/runtime-baselines/server-phone.json",
+          "state": "healthy"
+        },
+        {
+          "evidence_status": "source-derived",
+          "name": "Lynis",
+          "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+          "source": "contracts/metadata/documentation-platform.json",
+          "state": "unvalidated"
+        },
+        {
+          "evidence_status": "source-derived",
+          "name": "Trivy",
+          "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+          "source": "contracts/metadata/documentation-platform.json",
+          "state": "unvalidated"
+        }
+      ],
+      "dependency_summary": {
+        "healthy": 3,
+        "unvalidated": 2
+      },
+      "domain": "security",
+      "evidence_status": "release-promoted",
+      "freshness": "promoted-observation",
+      "label": "Security",
+      "operational_health": "healthy",
+      "reason": null,
+      "semantic_parity": "verified-with-mapped-presentation"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

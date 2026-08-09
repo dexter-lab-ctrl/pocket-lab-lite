@@ -1,13 +1,13 @@
 ---
 title: "Documentation experience"
-description: "The MkDocs Material portal is a tested product surface with separate Development and Production navigation, responsive behavior, accessible status semantics, and strict generated-content ownership."
+description: "The MkDocs Material portal is a tested knowledge product with question-oriented navigation, a canonical UX contract, responsive intelligence views, accessible status semantics, and strict generated-content ownership."
 status: verified
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 49505939a3847c1d0a060ef758da897797c4061eaacf6dd23d00aeaf8da6cd53
+source_fingerprint: 23e288333abf6ba8a66745abdb34f335aedf6391326c63bb036903c2ca5ed234
 schema_revision: 1
 validation_status: generated
 ---
@@ -19,14 +19,18 @@ validation_status: generated
 <span class="pl-status pl-status--patch-provided">Development guidance</span>
 </div>
 
-The MkDocs Material portal is a tested product surface with separate Development and Production navigation, responsive behavior, accessible status semantics, and strict generated-content ownership.
+The MkDocs Material portal is a tested knowledge product with question-oriented navigation, a canonical UX contract, responsive intelligence views, accessible status semantics, and strict generated-content ownership.
 
 ## Design system
 
-- Brand, component, and print styles live outside generated directories.
+- `contracts/metadata/documentation-experience.json` is the canonical Documentation UX contract.
+- Brand, component, intelligence, and print styles live outside generated directories.
 - System fonts avoid external font requests.
-- Verified, inferred, patch-provided, missing, planned, and unvalidated states use text plus color.
-- Cards, tables, code, admonitions, tabs, and Mermaid diagrams use shared tokens.
+- Status always uses text plus shape/symbol and color; color is never the only signal.
+- Evidence-heavy pages use a consistent status hierarchy: health first, then implementation/runtime/parity, then freshness and evidence confidence.
+- Summary → explanation → technical evidence is the default progressive-disclosure sequence.
+- The home dashboard, role shortcuts, task-oriented entry points, evidence lineage, scorecards, and matrix views are generated from canonical source and promoted evidence.
+- Motion is bounded and respects `prefers-reduced-motion`; continuous decorative animation is prohibited.
 
 ## Authoring conventions
 
@@ -39,9 +43,10 @@ The MkDocs Material portal is a tested product surface with separate Development
 ```bash title="Documentation validation"
 task lite:docs:generate
 task lite:docs:check
+task lite:docs:intelligence:check
 task lite:test:docs
 ```
 
 ## Browser acceptance
 
-The dedicated Playwright documentation suite checks Development and Production navigation, search, theme switching, mobile navigation, code-copy controls, console health, horizontal overflow, and serious/critical Axe findings.
+The dedicated Playwright documentation suite checks the dashboard, question-oriented navigation, search, theme switching, mobile layouts, progressive disclosure, evidence lineage, matrix overflow, code-copy controls, console health, and serious/critical Axe findings.

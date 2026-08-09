@@ -273,6 +273,17 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py ai-export'
 
+  lite:docs:intelligence:generate:
+    desc: Generate diagnostic Documentation Intelligence and Experience views from canonical source and promoted evidence
+    cmds:
+      - '{{.PYTHON}} scripts/docs/intelligence/generate_documentation_intelligence.py generate'
+
+  lite:docs:intelligence:check:
+    desc: Check Documentation Intelligence, UX contract, performance budgets, sanitization, and generated drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/intelligence/generate_documentation_intelligence.py check'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_intelligence.py'
+
   lite:docs:generate:
     desc: Generate contracts, catalogs, runtime evidence, architecture, Development/Production docs, SchemaSpy, and diagrams
     cmds:
@@ -283,6 +294,7 @@ tasks:
       - task: lite:docs:parity:generate
       - task: lite:docs:health:generate
       - task: lite:docs:knowledge:generate
+      - task: lite:docs:intelligence:generate
       - task: lite:docs:architecture:generate
       - task: lite:docs:development:generate
       - task: lite:docs:production:generate
@@ -305,6 +317,7 @@ tasks:
       - task: lite:docs:parity:check
       - task: lite:docs:health:check
       - task: lite:docs:knowledge:check
+      - task: lite:docs:intelligence:check
       - task: lite:docs:architecture:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check

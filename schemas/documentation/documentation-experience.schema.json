@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pocket Lab Lite documentation experience contract",
+  "type": "object",
+  "required": ["schema_version", "information_architecture", "page_anatomy", "status_hierarchy", "truth_language", "visual_status", "role_shortcuts", "task_entry_points", "responsive", "motion", "performance_budgets", "guardrails"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "information_architecture": {"type": "array", "items": {"type": "string"}, "minItems": 6, "uniqueItems": true},
+    "page_anatomy": {"type": "object", "minProperties": 3},
+    "status_hierarchy": {"type": "array", "items": {"type": "string"}, "minItems": 5, "uniqueItems": true},
+    "truth_language": {"type": "object", "required": ["known", "derived", "partial", "unknown", "not-applicable"]},
+    "visual_status": {"type": "object", "minProperties": 8},
+    "role_shortcuts": {"type": "object", "required": ["operator", "developer", "security-reviewer", "release-owner"]},
+    "task_entry_points": {"type": "array", "items": {"type": "string"}, "minItems": 6},
+    "search_synonyms": {"type": "object"},
+    "responsive": {"type": "object", "required": ["reading_width_ch", "compact_breakpoint_rem"]},
+    "motion": {"type": "object", "required": ["fast_ms", "normal_ms", "continuous_animation_allowed", "reduced_motion_required"]},
+    "performance_budgets": {"type": "object", "required": ["custom_javascript_bytes", "custom_css_bytes", "dashboard_cards_max", "details_default_open_max"]},
+    "guardrails": {"type": "array", "items": {"type": "string"}, "minItems": 8, "uniqueItems": true}
+  },
+  "additionalProperties": true
+}

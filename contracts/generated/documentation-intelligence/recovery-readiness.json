@@ -1,0 +1,56 @@
+{
+  "items": {
+    "checks": [
+      {
+        "authority": "release-promoted",
+        "name": "Operational health",
+        "status": "degraded",
+        "value": "degraded"
+      },
+      {
+        "authority": "release-promoted",
+        "name": "Evidence freshness",
+        "status": "degraded",
+        "value": "stale"
+      },
+      {
+        "authority": "release-promoted",
+        "name": "Write safety",
+        "status": "degraded",
+        "value": "blocked"
+      },
+      {
+        "authority": "release-promoted",
+        "name": "Fresh restore preview required",
+        "status": "degraded",
+        "value": true
+      },
+      {
+        "authority": "release-promoted",
+        "name": "Restore currently allowed",
+        "status": "degraded",
+        "value": false
+      },
+      {
+        "authority": "release-promoted",
+        "name": "Projection refresh pending",
+        "status": "healthy",
+        "value": false
+      },
+      {
+        "authority": "release-promoted",
+        "name": "Completed restore evidence",
+        "status": "healthy",
+        "value": 13
+      }
+    ],
+    "freshness_age_seconds": 141.714,
+    "freshness_threshold_seconds": 60,
+    "next_action": "Refresh and explicitly promote runtime evidence before a guarded restore write.",
+    "overall": "degraded",
+    "readiness": "degraded",
+    "reason": "projection_too_old"
+  },
+  "schema_version": "1.0.0",
+  "source_fingerprint": "ab1fa4cd26d91205ed4f4af020cd1e8585757dc0ddcf2a743567ba13b0c468ea"
+}

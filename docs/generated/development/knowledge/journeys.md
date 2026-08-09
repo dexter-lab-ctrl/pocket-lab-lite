@@ -117,7 +117,7 @@ generator_version: 2
 
 **Verified API routes:** none
 
-**Graph links:** verified_by: `tests/backend/test_lite_complete_documentation_platform.py`, verified_by: `tests/backend/test_lite_development_documentation_platform.py`, verified_by: `tests/backend/test_lite_production_architecture_platform.py`, verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`, verified_by: `tests/docs/test_operational_health_bridge.py`
+**Graph links:** verified_by: `tests/backend/test_lite_complete_documentation_platform.py`, verified_by: `tests/backend/test_lite_development_documentation_platform.py`, verified_by: `tests/backend/test_lite_production_architecture_platform.py`, verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`, verified_by: `tests/docs/test_documentation_intelligence.py`, verified_by: `tests/docs/test_operational_health_bridge.py`
 
 **Sources:** `scripts/docs/lite/generate_docs.py`, `scripts/docs/lite/generate_platform_catalogs.py`, `tasks/Taskfile.docs.yml`
 
