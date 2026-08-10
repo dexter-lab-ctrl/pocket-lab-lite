@@ -1,0 +1,19 @@
+{
+  "gitleaks": {
+    "coverage": [
+      "gitleaks-release.json",
+      "gitleaks-worktree.json"
+    ],
+    "finding_count": 329,
+    "redacted": true
+  },
+  "raw_findings_included": false,
+  "schema_version": "1.0.0",
+  "semgrep": {
+    "finding_count": 0,
+    "rule_ids": []
+  },
+  "trivy": {
+    "counts": {}
+  }
+}

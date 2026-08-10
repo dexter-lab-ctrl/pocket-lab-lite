@@ -1,0 +1,177 @@
+{
+  "classifications": [
+    "added",
+    "removed",
+    "changed",
+    "breaking",
+    "non-breaking",
+    "improved",
+    "degraded",
+    "newly-observed",
+    "no-longer-observed",
+    "evidence-stale",
+    "new-vulnerability",
+    "resolved-vulnerability",
+    "new-license",
+    "dependency-added",
+    "dependency-removed",
+    "dependency-updated",
+    "architecture-drift",
+    "not-comparable",
+    "unknown",
+    "unchanged"
+  ],
+  "dimensions": [
+    {
+      "classification": "not-comparable",
+      "dimension": "git-source",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "openapi",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "asyncapi-events",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "sqlite-schema-migrations",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "architecture",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "trust-boundaries",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "capabilities",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "operational-health",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "runtime-topology",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "semantic-parity",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "platform-capability-evidence",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "reason-codes",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "task-inventory",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "security-controls",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "threat-model",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "sbom",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "supply_chain_change": {
+          "dependencies_added": [],
+          "dependencies_removed": [],
+          "upstream_posture_changes": [],
+          "versions_changed": []
+        }
+      },
+      "dimension": "dependency-versions",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "supply_chain_change": {
+          "new_vulnerabilities": [],
+          "resolved_vulnerabilities": [],
+          "scanner_history_comparable": false
+        }
+      },
+      "dimension": "vulnerabilities",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "supply_chain_change": {
+          "license_classification_changes": [],
+          "new_licenses": [],
+          "removed_licenses": []
+        }
+      },
+      "dimension": "licenses",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "release-artifacts",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "documentation-coverage",
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "dimension": "validation-coverage",
+      "status": "not-comparable"
+    }
+  ],
+  "evidence_status": "not-comparable",
+  "from": null,
+  "implementation_status": "implemented",
+  "status": "no-comparable-verified-prior-release",
+  "supply_chain_change": {
+    "dependencies_added": [],
+    "dependencies_removed": [],
+    "evidence_status": "not-comparable",
+    "implementation_status": "implemented",
+    "license_classification_changes": [],
+    "new_licenses": [],
+    "new_vulnerabilities": [],
+    "removed_licenses": [],
+    "resolved_vulnerabilities": [],
+    "status": "no-comparable-verified-prior-release",
+    "upstream_posture_changes": [],
+    "versions_changed": []
+  },
+  "to": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1"
+}

@@ -1,0 +1,10 @@
+digraph flow {
+  graph [rankdir="LR", bgcolor="transparent", label="ADR intelligence", labelloc="t"];
+  node [shape="box", style="rounded,filled", fillcolor="#f8fafc"];
+  n0 [label="Agents and supervisors own device execution and recovery"]; n0 -> m0; m0 [label="accepted"];
+  n1 [label="Bootstrap artifacts are backend-generated and identity-guarded"]; n1 -> m1; m1 [label="accepted"];
+  n2 [label="SQLite is durable authority for control-plane state"]; n2 -> m2; m2 [label="accepted"];
+  n3 [label="Runtime evidence is explicitly promoted"]; n3 -> m3; m3 [label="accepted"];
+  n4 [label="FastAPI owns the browser-facing control API"]; n4 -> m4; m4 [label="accepted"];
+  n5 [label="Frontend state libraries have distinct ownership"]; n5 -> m5; m5 [label="accepted"];
+}

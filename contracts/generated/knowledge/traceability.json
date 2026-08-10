@@ -2139,6 +2139,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_intelligence.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "domain",
@@ -2398,6 +2399,7 @@
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_documentation_intelligence.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-mocked.spec.ts",
@@ -2575,6 +2577,7 @@
         "test:tests/backend/test_lite_production_architecture_platform.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_intelligence.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_operational_health_bridge.py"
       ],
       "type": "journey",
@@ -2744,7 +2747,8 @@
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
         "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
         "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
-        "test:tests/backend/test_lite_workload_admission.py"
+        "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/test_enterprise_completion.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -2880,6 +2884,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "61861b3c18410567242d0cb83ab9c280c6767685b1c1b54ab3cc1fa781bf4ab5"
+    "source_fingerprint": "589f51dc5082cfd9da5bc553c9852e74eea925dd70428a0f4d8e89ea10d8973a"
   }
 }

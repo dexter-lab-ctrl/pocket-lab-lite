@@ -1,0 +1,31 @@
+rules:
+  - id: pocketlab-frontend-no-nats-client
+    message: Frontend code must not import or require a NATS client; FastAPI owns the browser-facing control boundary.
+    severity: ERROR
+    languages: [javascript, typescript]
+    paths:
+      include: [src/**]
+    pattern-either:
+      - pattern: import $X from "nats"
+      - pattern: import { ... } from "nats"
+      - pattern: require("nats")
+  - id: pocketlab-frontend-no-child-process
+    message: Frontend code must not execute shell commands.
+    severity: ERROR
+    languages: [javascript, typescript]
+    paths:
+      include: [src/**]
+    pattern-either:
+      - pattern: import $X from "child_process"
+      - pattern: require("child_process")
+  - id: pocketlab-doc-generators-no-network-runtime-probe
+    message: Documentation generators must not make live HTTP/runtime calls; consume canonical or promoted evidence instead.
+    severity: ERROR
+    languages: [python]
+    paths:
+      include: [scripts/docs/**]
+    pattern-either:
+      - pattern: requests.get(...)
+      - pattern: requests.post(...)
+      - pattern: httpx.get(...)
+      - pattern: httpx.post(...)

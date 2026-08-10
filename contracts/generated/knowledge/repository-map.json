@@ -2662,6 +2662,18 @@
     },
     {
       "entities": [
+        "test:tests/dev/test_dev_scratch_policy.py"
+      ],
+      "source": "tests/dev/test_dev_scratch_policy.py"
+    },
+    {
+      "entities": [
+        "test:tests/dev/test_pytest_temp_policy.py"
+      ],
+      "source": "tests/dev/test_pytest_temp_policy.py"
+    },
+    {
+      "entities": [
         "test:tests/docs/mkdocs.spec.ts"
       ],
       "source": "tests/docs/mkdocs.spec.ts"
@@ -2671,6 +2683,18 @@
         "test:tests/docs/test_documentation_intelligence.py"
       ],
       "source": "tests/docs/test_documentation_intelligence.py"
+    },
+    {
+      "entities": [
+        "test:tests/docs/test_enterprise_completion.py"
+      ],
+      "source": "tests/docs/test_enterprise_completion.py"
+    },
+    {
+      "entities": [
+        "test:tests/docs/test_enterprise_documentation.py"
+      ],
+      "source": "tests/docs/test_enterprise_documentation.py"
     },
     {
       "entities": [
@@ -2817,6 +2841,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "61861b3c18410567242d0cb83ab9c280c6767685b1c1b54ab3cc1fa781bf4ab5"
+    "source_fingerprint": "589f51dc5082cfd9da5bc553c9852e74eea925dd70428a0f4d8e89ea10d8973a"
   }
 }

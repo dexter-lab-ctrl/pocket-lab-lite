@@ -284,6 +284,101 @@ tasks:
       - '{{.PYTHON}} scripts/docs/intelligence/generate_documentation_intelligence.py check'
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_intelligence.py'
 
+  lite:docs:enterprise:generate:
+    desc: Generate enterprise documentation intelligence, threat model, dependency visualizations, engineering handbooks, and fail-closed release/supply-chain projections
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py generate'
+
+  lite:docs:enterprise:check:
+    desc: Check enterprise Documentation Platform determinism, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py'
+
+  lite:docs:security-tools:plan:
+    desc: Show the pinned architecture-aware WSL2/CI security-tool installation plan without downloading anything
+    cmds:
+      - bash scripts/dev/lite/setup-documentation-security-tools.sh --plan
+
+  lite:docs:security-tools:setup:
+    desc: Install missing pinned Documentation Platform security/supply-chain tools plus the existing Graphviz/SchemaSpy documentation prerequisites on WSL2/CI without upgrading working tools
+    cmds:
+      - bash scripts/dev/lite/setup-documentation-tools.sh --install-missing
+      - bash scripts/dev/lite/setup-documentation-security-tools.sh --install-missing
+
+  lite:docs:security-tools:update:
+    desc: Explicitly update/replace mismatched Documentation Platform security tools to the canonical reviewed pins; never runs automatically
+    cmds:
+      - bash scripts/dev/lite/setup-documentation-security-tools.sh --update
+
+  lite:docs:security-tools:check:
+    desc: Check existing Graphviz/SchemaSpy prerequisites plus pinned heavy Documentation Platform security/supply-chain tools on WSL2/CI without installing or upgrading them
+    cmds:
+      - bash scripts/dev/lite/setup-documentation-tools.sh --check
+      - bash scripts/dev/lite/check-documentation-security-tools.sh
+
+  lite:docs:supply-chain:capture:
+    desc: Explicitly run heavy WSL2/CI SBOM, vulnerability, secret, static-analysis, licensing and Scorecard capture into transient .pocketlab-dev evidence; never invoked by docs generation
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}}'
+
+  lite:docs:supply-chain:qualify:
+    desc: Explicitly run heavy WSL2/CI supply-chain capture, normalize/promote sanitized evidence, and validate canonical outputs in one operator-invoked workflow
+    cmds:
+      - |
+        set -euo pipefail
+        run_dir=".pocketlab-dev/documentation-security/runs/manual-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+        history_arg=""
+        if [ -n "{{.INCLUDE_GIT_HISTORY}}" ]; then history_arg="--include-git-history"; fi
+        {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir "$run_dir" $history_arg
+        {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir "$run_dir"
+        {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check
+        printf 'Canonical supply-chain evidence promoted from %s\n' "$run_dir"
+
+  lite:docs:supply-chain:promote:
+    desc: Explicitly normalize and promote a reviewed WSL2/CI supply-chain capture into sanitized canonical CycloneDX/security contracts
+    cmds:
+      - 'test -n "{{.RUN_DIR}}" || (echo "RUN_DIR is required, e.g. task lite:docs:supply-chain:promote RUN_DIR=.pocketlab-dev/documentation-security/runs/<run>" >&2; exit 2)'
+      - '{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir {{.RUN_DIR}}'
+
+  lite:docs:supply-chain:check:
+    desc: Validate already-promoted canonical supply-chain evidence without running scanners or accessing runtime
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check'
+
+  lite:docs:supply-chain:dependency-track:export:
+    desc: Stage canonical CycloneDX files for optional Dependency-Track import; MkDocs never depends on the external service
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py dependency-track-export'
+
+  lite:docs:provenance:generate:
+    desc: Generate SLSA-style release provenance metadata without claiming a formal SLSA level or signing implicitly
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/release_provenance.py generate'
+
+  lite:docs:provenance:sign:
+    desc: Explicitly sign a release artifact with Cosign keyless/default Sigstore flow; ARTIFACT and BUNDLE are required and no private key is stored by the task
+    cmds:
+      - 'test -n "{{.ARTIFACT}}" && test -n "{{.BUNDLE}}" || (echo "ARTIFACT and BUNDLE are required" >&2; exit 2)'
+      - '{{.PYTHON}} scripts/docs/enterprise/release_provenance.py sign --artifact {{.ARTIFACT}} --bundle {{.BUNDLE}}'
+
+  lite:docs:provenance:verify:
+    desc: Explicitly verify a Cosign/Sigstore blob bundle against the expected certificate identity and OIDC issuer
+    cmds:
+      - 'test -n "{{.ARTIFACT}}" && test -n "{{.BUNDLE}}" && test -n "{{.IDENTITY}}" && test -n "{{.ISSUER}}" || (echo "ARTIFACT, BUNDLE, IDENTITY and ISSUER are required" >&2; exit 2)'
+      - '{{.PYTHON}} scripts/docs/enterprise/release_provenance.py verify --artifact {{.ARTIFACT}} --bundle {{.BUNDLE}} --identity {{.IDENTITY}} --issuer {{.ISSUER}}'
+
+  lite:docs:provenance:sign-release-set:
+    desc: Explicitly sign all applicable local release artifacts (dist.zip, release manifest, CycloneDX SBOMs, provenance) into transient Sigstore bundles
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/release_provenance.py sign-release-set {{if .SIGNATURE_DIR}}--directory {{.SIGNATURE_DIR}}{{end}}'
+
+  lite:docs:provenance:verify-release-set:
+    desc: Verify every release-set Sigstore bundle and optionally promote only sanitized verification evidence into the canonical release documentation contract
+    cmds:
+      - 'test -n "{{.IDENTITY}}" && test -n "{{.ISSUER}}" || (echo "IDENTITY and ISSUER are required" >&2; exit 2)'
+      - '{{.PYTHON}} scripts/docs/enterprise/release_provenance.py verify-release-set {{if .SIGNATURE_DIR}}--directory {{.SIGNATURE_DIR}}{{end}} --identity {{.IDENTITY}} --issuer {{.ISSUER}} {{if .PROMOTE}}--promote{{end}}'
+
   lite:docs:generate:
     desc: Generate contracts, catalogs, runtime evidence, architecture, Development/Production docs, SchemaSpy, and diagrams
     cmds:
@@ -295,6 +390,7 @@ tasks:
       - task: lite:docs:health:generate
       - task: lite:docs:knowledge:generate
       - task: lite:docs:intelligence:generate
+      - task: lite:docs:enterprise:generate
       - task: lite:docs:architecture:generate
       - task: lite:docs:development:generate
       - task: lite:docs:production:generate
@@ -309,6 +405,7 @@ tasks:
 
   lite:docs:check:
     desc: Strict combined documentation, schema, runtime, diagram, contract, safety, and MkDocs gate
+    deps: [lite:dev:scratch:prepare]
     cmds:
       - task: lite:docs:tools:check
       - task: lite:contracts:check
@@ -318,6 +415,7 @@ tasks:
       - task: lite:docs:health:check
       - task: lite:docs:knowledge:check
       - task: lite:docs:intelligence:check
+      - task: lite:docs:enterprise:check
       - task: lite:docs:architecture:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check
@@ -327,11 +425,12 @@ tasks:
 
   lite:test:docs:
     desc: Validate the MkDocs portal in external Chrome on desktop and mobile
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:docs
 
   lite:docs:serve:
     desc: Serve combined Development and Production docs locally
+    deps: [lite:dev:scratch:prepare]
     cmds:
-      - '{{.PYTHON}} -m mkdocs serve --strict --dev-addr 127.0.0.1:8001'
+      - bash scripts/dev/lite/serve-docs.sh

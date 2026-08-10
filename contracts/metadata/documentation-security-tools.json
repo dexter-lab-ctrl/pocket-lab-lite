@@ -1,0 +1,362 @@
+{
+  "execution_policy": {
+    "cache_root": "~/.cache/pocket-lab-lite/documentation-security",
+    "docs_check_runs_heavy_tools": false,
+    "heavy_default_surface": "WSL2/CI",
+    "installation_root": ".pocketlab-dev/tools/documentation-security",
+    "integrity_policy": "pinned release + SHA-256 from the official release API/checksum asset; fail closed when integrity metadata is unavailable",
+    "raw_output_canonical": false,
+    "termux_policy": "bounded-runtime-evidence-only",
+    "upgrade_policy": "never replace a working system tool; install the reviewed pin repo-locally when the system version differs; replace a mismatched repo-local pin only when --update is explicit"
+  },
+  "schema_version": "2.0.0",
+  "tools": [
+    {
+      "binary": "syft",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "syft",
+      "id": "syft",
+      "install": {
+        "archive": "tar.gz",
+        "asset_regex": {
+          "amd64": "^syft_1\\.50\\.0_linux_amd64\\.tar\\.gz$",
+          "arm64": "^syft_1\\.50\\.0_linux_arm64\\.tar\\.gz$"
+        },
+        "binary_path_regex": "(^|/)syft$",
+        "method": "github-release",
+        "repository": "anchore/syft",
+        "tag": "v1.50.0"
+      },
+      "license": "Apache-2.0",
+      "output": "CycloneDX JSON",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Primary CycloneDX SBOM generation for development and release staging",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "syft",
+        "help"
+      ],
+      "source": "https://github.com/anchore/syft",
+      "tool": "syft",
+      "validation_command": [
+        "syft",
+        "version"
+      ],
+      "version": "1.50.0"
+    },
+    {
+      "binary": "trivy",
+      "execution_surface": "WSL2/CI and bounded existing Termux profiles",
+      "expected_binary": "trivy",
+      "id": "trivy",
+      "install": {
+        "archive": "tar.gz",
+        "asset_regex": {
+          "amd64": "^trivy_0\\.73\\.0_Linux-64bit\\.tar\\.gz$",
+          "arm64": "^trivy_0\\.73\\.0_Linux-ARM64\\.tar\\.gz$"
+        },
+        "binary_path_regex": "(^|/)trivy$",
+        "method": "github-release",
+        "repository": "aquasecurity/trivy",
+        "tag": "v0.73.0"
+      },
+      "license": "Apache-2.0",
+      "output": "normalized security evidence",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Development SBOM/vulnerability/misconfiguration/secret correlation; existing Termux Trivy remains bounded and runtime-owned",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "trivy",
+        "--help"
+      ],
+      "source": "https://github.com/aquasecurity/trivy",
+      "tool": "trivy",
+      "validation_command": [
+        "trivy",
+        "--version"
+      ],
+      "version": "0.73.0"
+    },
+    {
+      "binary": "osv-scanner",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "osv-scanner",
+      "id": "osv-scanner",
+      "install": {
+        "archive": "binary",
+        "asset_regex": {
+          "amd64": "^osv-scanner_linux_amd64$",
+          "arm64": "^osv-scanner_linux_arm64$"
+        },
+        "binary_path_regex": "osv-scanner",
+        "method": "github-release",
+        "repository": "google/osv-scanner",
+        "tag": "v2.5.0"
+      },
+      "license": "Apache-2.0",
+      "output": "normalized vulnerability evidence",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Lockfile and CycloneDX vulnerability correlation",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "osv-scanner",
+        "scan",
+        "source",
+        "--help"
+      ],
+      "source": "https://github.com/google/osv-scanner",
+      "tool": "osv-scanner",
+      "validation_command": [
+        "osv-scanner",
+        "--version"
+      ],
+      "version": "2.5.0"
+    },
+    {
+      "binary": "grype",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "grype",
+      "id": "grype",
+      "install": {
+        "archive": "tar.gz",
+        "asset_regex": {
+          "amd64": "^grype_0\\.116\\.1_linux_amd64\\.tar\\.gz$",
+          "arm64": "^grype_0\\.116\\.1_linux_arm64\\.tar\\.gz$"
+        },
+        "binary_path_regex": "(^|/)grype$",
+        "method": "github-release",
+        "repository": "anchore/grype",
+        "tag": "v0.116.1"
+      },
+      "license": "Apache-2.0",
+      "output": "normalized vulnerability evidence",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Secondary SBOM vulnerability corroboration without treating scanner disagreement as automatic failure",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "grype",
+        "help"
+      ],
+      "source": "https://github.com/anchore/grype",
+      "tool": "grype",
+      "validation_command": [
+        "grype",
+        "version"
+      ],
+      "version": "0.116.1"
+    },
+    {
+      "binary": "gitleaks",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "gitleaks",
+      "id": "gitleaks",
+      "install": {
+        "archive": "tar.gz",
+        "asset_regex": {
+          "amd64": "^gitleaks_8\\.30\\.1_linux_x64\\.tar\\.gz$",
+          "arm64": "^gitleaks_8\\.30\\.1_linux_arm64\\.tar\\.gz$"
+        },
+        "binary_path_regex": "(^|/)gitleaks$",
+        "method": "github-release",
+        "repository": "gitleaks/gitleaks",
+        "tag": "v8.30.1"
+      },
+      "license": "MIT",
+      "output": "redacted finding summary",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Secret detection for Git history, working tree, generated documentation and release staging",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [],
+      "source": "https://github.com/gitleaks/gitleaks",
+      "tool": "gitleaks",
+      "validation_command": [
+        "gitleaks",
+        "version"
+      ],
+      "version": "8.30.1"
+    },
+    {
+      "binary": "semgrep",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "semgrep",
+      "id": "semgrep",
+      "install": {
+        "method": "pypi-venv",
+        "package": "semgrep",
+        "supported_arches": [
+          "amd64",
+          "arm64"
+        ],
+        "version": "1.172.0"
+      },
+      "license": "LGPL-2.1-or-later; rules may have their own licenses",
+      "output": "normalized static-analysis summary",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Community static analysis plus Pocket Lab architecture-boundary rules",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "semgrep",
+        "--help"
+      ],
+      "source": "https://pypi.org/project/semgrep/",
+      "tool": "semgrep",
+      "validation_command": [
+        "semgrep",
+        "--version"
+      ],
+      "version": "1.172.0"
+    },
+    {
+      "binary": "scancode",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "scancode",
+      "id": "scancode",
+      "install": {
+        "method": "pypi-venv",
+        "package": "scancode-toolkit",
+        "supported_arches": [
+          "amd64",
+          "arm64"
+        ],
+        "version": "32.5.0"
+      },
+      "license": "Apache-2.0",
+      "output": "normalized license inventory",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64 via isolated pinned PyPI virtualenv",
+      "purpose": "License, package attribution and copyright inventory",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "scancode",
+        "--help"
+      ],
+      "source": "https://pypi.org/project/scancode-toolkit/",
+      "tool": "scancode",
+      "validation_command": [
+        "scancode",
+        "--version"
+      ],
+      "version": "32.5.0"
+    },
+    {
+      "binary": "scorecard",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "scorecard",
+      "id": "scorecard",
+      "install": {
+        "archive": "tar.gz",
+        "asset_regex": {
+          "amd64": "^scorecard_5\\.5\\.0_linux_amd64\\.tar\\.gz$",
+          "arm64": "^scorecard_5\\.5\\.0_linux_arm64\\.tar\\.gz$"
+        },
+        "binary_path_regex": "(^|/)scorecard$",
+        "method": "github-release",
+        "repository": "ossf/scorecard",
+        "tag": "v5.5.0"
+      },
+      "license": "Apache-2.0",
+      "output": "normalized individual checks",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "OpenSSF repository posture with individual check evidence",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "scorecard",
+        "--help"
+      ],
+      "source": "https://github.com/ossf/scorecard",
+      "tool": "scorecard",
+      "validation_command": [
+        "scorecard",
+        "version"
+      ],
+      "version": "5.5.0"
+    },
+    {
+      "binary": "cosign",
+      "execution_surface": "WSL2/CI",
+      "expected_binary": "cosign",
+      "id": "cosign",
+      "install": {
+        "archive": "binary",
+        "asset_regex": {
+          "amd64": "^cosign-linux-amd64$",
+          "arm64": "^cosign-linux-arm64$"
+        },
+        "binary_path_regex": "cosign",
+        "method": "github-release",
+        "repository": "sigstore/cosign",
+        "tag": "v3.1.3"
+      },
+      "license": "Apache-2.0",
+      "output": "Sigstore bundle and verification metadata",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Explicit release-artifact and SBOM signing/provenance; never invoked by documentation generation",
+      "required": true,
+      "required_or_optional": "required",
+      "smoke_command": [
+        "cosign",
+        "help"
+      ],
+      "source": "https://github.com/sigstore/cosign",
+      "tool": "cosign",
+      "validation_command": [
+        "cosign",
+        "version"
+      ],
+      "version": "3.1.3"
+    },
+    {
+      "binary": "docker",
+      "execution_surface": "WSL2/desktop review",
+      "expected_binary": "docker",
+      "id": "threat-dragon",
+      "install": {
+        "images": {
+          "amd64": "owasp/threat-dragon:v2.6.2",
+          "arm64": "owasp/threat-dragon:v2.6.2-arm64"
+        },
+        "method": "docker-image"
+      },
+      "license": "Apache-2.0",
+      "output": "derived visualization only",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Optional human review/visualization of the canonical generated STRIDE model",
+      "required": false,
+      "required_or_optional": "optional",
+      "source": "https://github.com/OWASP/threat-dragon",
+      "tool": "threat-dragon",
+      "validation_command": [
+        "docker",
+        "version"
+      ],
+      "version": "2.6.2"
+    },
+    {
+      "binary": "optional",
+      "execution_surface": "CI/server optional",
+      "expected_binary": "optional",
+      "id": "dependency-track",
+      "install": {
+        "export_task": "lite:docs:supply-chain:dependency-track:export",
+        "method": "external-optional"
+      },
+      "license": "Apache-2.0",
+      "output": "optional external dashboard only",
+      "platform": "WSL2/Ubuntu Linux amd64/arm64",
+      "purpose": "Optional enterprise CycloneDX import/export dashboard; MkDocs never depends on a live Dependency-Track service",
+      "required": false,
+      "required_or_optional": "optional",
+      "source": "https://github.com/DependencyTrack/dependency-track",
+      "tool": "dependency-track",
+      "validation_command": [],
+      "version": "5.0.4"
+    }
+  ]
+}

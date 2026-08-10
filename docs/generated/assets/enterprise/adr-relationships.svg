@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="394" viewBox="0 0 1080 394" role="img">
+<style>.t{font-family:system-ui,sans-serif;fill:#101828}.h{font-size:17px;font-weight:700}.s{font-size:12px}.b{fill:#f8fafc;stroke:#98a2b3}.e{stroke:#667085;stroke-width:1.5}</style>
+<text class="t h" x="24" y="30">ADR intelligence</text>
+<rect class="b" x="24" y="50" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="73">Agents and supervisors own device execution and recovery</text>
+<line class="e" x1="444" y1="68" x2="610" y2="68"/>
+<polygon points="610,68 600,62 600,74" fill="#667085"/>
+<rect class="b" x="620" y="50" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="73">accepted</text>
+<rect class="b" x="24" y="104" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="127">Bootstrap artifacts are backend-generated and identity-guarded</text>
+<line class="e" x1="444" y1="122" x2="610" y2="122"/>
+<polygon points="610,122 600,116 600,128" fill="#667085"/>
+<rect class="b" x="620" y="104" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="127">accepted</text>
+<rect class="b" x="24" y="158" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="181">SQLite is durable authority for control-plane state</text>
+<line class="e" x1="444" y1="176" x2="610" y2="176"/>
+<polygon points="610,176 600,170 600,182" fill="#667085"/>
+<rect class="b" x="620" y="158" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="181">accepted</text>
+<rect class="b" x="24" y="212" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="235">Runtime evidence is explicitly promoted</text>
+<line class="e" x1="444" y1="230" x2="610" y2="230"/>
+<polygon points="610,230 600,224 600,236" fill="#667085"/>
+<rect class="b" x="620" y="212" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="235">accepted</text>
+<rect class="b" x="24" y="266" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="289">FastAPI owns the browser-facing control API</text>
+<line class="e" x1="444" y1="284" x2="610" y2="284"/>
+<polygon points="610,284 600,278 600,290" fill="#667085"/>
+<rect class="b" x="620" y="266" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="289">accepted</text>
+<rect class="b" x="24" y="320" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="343">Frontend state libraries have distinct ownership</text>
+<line class="e" x1="444" y1="338" x2="610" y2="338"/>
+<polygon points="610,338 600,332 600,344" fill="#667085"/>
+<rect class="b" x="620" y="320" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="343">accepted</text>
+</svg>

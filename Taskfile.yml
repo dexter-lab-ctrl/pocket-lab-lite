@@ -10,6 +10,7 @@ vars:
   NATS_URL: '{{default "nats://127.0.0.1:4222" .NATS_URL}}'
   STATE_DIR: '{{default ".pocketlab-dev/state" .STATE_DIR}}'
   VALIDATION_DIR: '{{default ".pocketlab-dev/validation" .VALIDATION_DIR}}'
+  DEV_TMPDIR: '{{default ".pocketlab-dev/tmp" .POCKETLAB_DEV_TMPDIR}}'
 
 env:
   LITE_API_DIRECT_URL: '{{.LITE_API_DIRECT_URL}}'
@@ -26,6 +27,10 @@ env:
   POCKETLAB_NATS_REQUIRE_JETSTREAM: '1'
   POCKETLAB_ENV: dev
   POCKETLAB_DEV_PYTHON: '{{.PYTHON}}'
+  POCKETLAB_DEV_TMPDIR: '{{.DEV_TMPDIR}}'
+  TMPDIR: '{{default .DEV_TMPDIR .TMPDIR}}'
+  TMP: '{{default .DEV_TMPDIR .TMP}}'
+  TEMP: '{{default .DEV_TMPDIR .TEMP}}'
 
 includes:
   lite-core:
@@ -57,3 +62,14 @@ tasks:
     desc: 'Compatibility alias for lite:check'
     cmds:
       - task: lite:check
+
+  lite:dev:scratch:prepare:
+    internal: true
+    desc: Prepare the repo-local development scratch root used by WSL2/CI tooling
+    cmds:
+      - bash scripts/dev/lite/dev-scratch.sh check task
+
+  lite:dev:scratch:check:
+    desc: Validate the repo-local Pocket Lab development scratch policy and filesystem
+    cmds:
+      - bash scripts/dev/lite/dev-scratch.sh check manual

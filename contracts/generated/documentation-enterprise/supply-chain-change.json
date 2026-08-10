@@ -1,0 +1,14 @@
+{
+  "dependencies_added": [],
+  "dependencies_removed": [],
+  "evidence_status": "not-comparable",
+  "implementation_status": "implemented",
+  "license_classification_changes": [],
+  "new_licenses": [],
+  "new_vulnerabilities": [],
+  "removed_licenses": [],
+  "resolved_vulnerabilities": [],
+  "status": "no-comparable-verified-prior-release",
+  "upstream_posture_changes": [],
+  "versions_changed": []
+}

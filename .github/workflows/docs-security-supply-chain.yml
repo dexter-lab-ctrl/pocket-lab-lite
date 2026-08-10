@@ -1,0 +1,98 @@
+name: Documentation Security and Supply Chain Qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_git_history:
+        description: Run bounded Gitleaks Git-history scan
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      POCKETLAB_DOC_SECURITY_TOOL_ROOT: ${{ github.workspace }}/.pocketlab-dev/tools/documentation-security
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned documentation tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/dev/lite/setup-documentation-tools.sh --install-missing
+          scripts/dev/lite/setup-documentation-security-tools.sh --install-missing
+          scripts/dev/lite/check-documentation-security-tools.sh
+          echo "${POCKETLAB_DOC_SECURITY_TOOL_ROOT}/bin" >> "$GITHUB_PATH"
+
+      - name: Capture transient supply-chain evidence
+        id: capture
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_dir="${GITHUB_WORKSPACE}/.pocketlab-dev/documentation-security/runs/ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "$(dirname "$run_dir")"
+          history_arg=()
+          if [[ "${{ inputs.include_git_history }}" == "true" ]]; then
+            history_arg+=(--include-git-history)
+          fi
+          python3 scripts/docs/enterprise/supply_chain_automation.py capture \
+            --run-dir "$run_dir" "${history_arg[@]}"
+          echo "run_dir=$run_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Explicitly normalize and promote sanitized evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/docs/enterprise/supply_chain_automation.py promote \
+            --run-dir "${{ steps.capture.outputs.run_dir }}"
+          python3 scripts/docs/enterprise/supply_chain_automation.py check
+
+      - name: Generate SLSA-style provenance metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/docs/enterprise/release_provenance.py generate
+
+      - name: Regenerate and validate enterprise documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/docs/enterprise/generate_enterprise_documentation.py generate
+          python3 scripts/docs/enterprise/generate_enterprise_documentation.py check
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/docs
+          git diff --check
+
+      - name: Verify no raw scanner output is uploaded
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e contracts/generated/supply-chain/raw
+          ! grep -R -n -E 'BEGIN [A-Z ]*PRIVATE KEY|password[=:][^[:space:]]+|token[=:][^[:space:]]+' \
+            contracts/generated/supply-chain contracts/generated/documentation-enterprise docs/generated/enterprise
+
+      - name: Upload sanitized qualification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocketlab-docs-security-supply-chain-${{ github.run_id }}
+          if-no-files-found: error
+          path: |
+            contracts/generated/supply-chain/
+            contracts/generated/release-provenance.json
+            contracts/generated/documentation-enterprise/
+            docs/generated/enterprise/
+            docs/generated/assets/enterprise/

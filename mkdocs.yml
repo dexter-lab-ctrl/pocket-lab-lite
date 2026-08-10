@@ -237,7 +237,54 @@ nav:
           - Troubleshooting: generated/production/troubleshooting.md
           - Projection parity readiness: generated/production/parity-readiness.md
           - Current limitations: generated/production/limitations.md
+  - Knowledgebase:
+      - Overview: generated/enterprise/knowledgebase/index.md
+      - Components: generated/production/knowledge/index.md
+      - How Pocket Lab Works: generated/production/knowledge/journeys.md
+      - Troubleshooting: generated/production/knowledge/troubleshooting.md
+      - Known Limitations: generated/production/knowledge/known-issues.md
+      - Glossary: generated/production/knowledge/glossary.md
+      - Evidence: generated/production/intelligence/why-we-believe-this.md
+  - Architecture:
+      - Overview: generated/enterprise/architecture/index.md
+      - Complete System: generated/production/architecture/complete-system.md
+      - Runtime Topology: generated/production/architecture/runtime-topology.md
+      - Trust Boundaries: generated/production/architecture/network-boundaries.md
+      - Components: generated/production/architecture/component-catalog.md
+      - Data Flows: generated/production/architecture/data-projections.md
+      - Event Flows: generated/development/knowledge/events-nats.md
+      - Device Runtime: generated/production/architecture/device-recovery.md
+      - Remote Access: generated/production/architecture/remote-access.md
+      - Applications: generated/production/architecture/apps.md
+  - Threat Model:
+      - Overview: generated/enterprise/threat-model/index.md
+      - Application Containers: generated/enterprise/threat-model/application-container.md
+      - Browser Boundary: generated/enterprise/threat-model/browser.md
+      - Control API: generated/enterprise/threat-model/control-api.md
+      - Durable State: generated/enterprise/threat-model/durable-state.md
+      - Release Supply Chain: generated/enterprise/threat-model/external-release.md
+      - Managed Devices: generated/enterprise/threat-model/managed-device.md
+      - Messaging & Execution: generated/enterprise/threat-model/messaging-execution.md
+      - Server Host: generated/enterprise/threat-model/server-host.md
+      - Tailnet / Private Network: generated/enterprise/threat-model/private-network.md
+      - Security Controls: generated/enterprise/reference/security-controls.md
   - Evidence: generated/experience/evidence.md
+  - Documentation Platform:
+      - Overview: generated/enterprise/documentation-platform/index.md
+      - Information Architecture: generated/enterprise/documentation-platform/information-architecture.md
+      - Generation Pipeline: generated/enterprise/documentation-platform/generation-pipeline.md
+      - Evidence Model: generated/enterprise/documentation-platform/evidence-model.md
+      - Documentation UX Contract: generated/development/documentation-experience.md
+      - Design System: generated/enterprise/documentation-platform/design-system.md
+      - Page Types: generated/enterprise/documentation-platform/page-types.md
+      - Search Model: generated/enterprise/documentation-platform/search-model.md
+      - Dependency Health: generated/enterprise/reference/dependency-health.md
+      - Search Aliases: generated/enterprise/search-synonyms.md
+      - Living Knowledge: generated/development/knowledge/index.md
+      - Runtime Promotion: generated/development/runtime-verification.md
+      - Architecture Generation: generated/development/architecture.md
+      - Validation Gates: generated/enterprise/reference/validation-coverage.md
+      - Contributing: generated/enterprise/engineering/contribution-review.md
   - Develop:
       - Overview: generated/development/index.md
       - Living knowledgebase:
@@ -356,7 +403,7 @@ nav:
           - Documentation experience: generated/development/documentation-experience.md
       - Validation and release:
           - Task ownership audit: generated/development/task-audit.md
-          - Task reference: generated/development/task-reference.md
+          - Task Reference: generated/enterprise/engineering/task-reference.md
           - HAR sanitization: generated/development/har-sanitization.md
           - Allure-compatible evidence: generated/development/allure-evidence.md
           - Configuration reference: generated/development/configuration-reference.md
@@ -412,14 +459,34 @@ nav:
           - Release engineering: generated/development/release-engineering.md
           - Contribution and review: generated/development/contribution-review.md
           - Identity and Rules partial contracts: generated/development/partial-surfaces.md
-          - Events: generated/development/events.md
+          - Events: generated/enterprise/engineering/events.md
           - Release inventory: generated/development/release-inventory.md
           - Termux runtime verification: generated/development/runtime-verification.md
   - Release:
       - Overview: generated/experience/release.md
       - What changed: generated/production/intelligence/what-changed.md
       - Why we believe this: generated/production/intelligence/why-we-believe-this.md
-      - Release evidence: generated/production/knowledge/releases.md
+      - Release evidence: generated/enterprise/engineering/release-evidence.md
+      - Upgrade & migration: generated/enterprise/reference/upgrade-migration.md
+      - Supply chain: generated/enterprise/reference/supply-chain.md
+      - Provenance: generated/enterprise/release/index.md
+  - Enterprise Reference:
+      - Configuration Intelligence: generated/enterprise/reference/configuration.md
+      - API-to-UI Trace Explorer: generated/enterprise/reference/api-ui-trace.md
+      - Data Lifecycle & Privacy: generated/enterprise/reference/data-lifecycle.md
+      - Failure Modes & Resilience: generated/enterprise/reference/fmea.md
+      - Reliability Objectives: generated/enterprise/reference/reliability.md
+      - Security Controls: generated/enterprise/reference/security-controls.md
+      - Change Impact Advisor: generated/enterprise/reference/change-advisor.md
+      - Ownership: generated/enterprise/reference/ownership.md
+      - Validation Coverage: generated/enterprise/reference/validation-coverage.md
+      - Disaster Recovery: generated/enterprise/reference/disaster-recovery.md
+      - Documentation Quality: generated/enterprise/reference/documentation-quality.md
+      - ADR Intelligence: generated/enterprise/reference/adr-intelligence.md
+      - Supply-chain Changes: generated/enterprise/reference/supply-chain-change.md
+      - Development Troubleshooting: generated/enterprise/engineering/troubleshooting.md
+      - Production Incident Runbooks: generated/enterprise/operate/incident-runbooks.md
+      - Production Troubleshooting: generated/enterprise/operate/troubleshooting.md
   - Reference:
       - Android / Termux: getting-started/android-termux.md
       - Lite architecture: architecture/lite-architecture.md

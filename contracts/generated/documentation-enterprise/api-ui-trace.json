@@ -1,0 +1,829 @@
+{
+  "items": [
+    {
+      "action": "Add Device",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "lite_fleet_agent_bootstrap_blocked_api_lite_fleet_agent_bootstrap_blocked_post",
+          "path": "/api/lite/fleet/agent/bootstrap-blocked"
+        },
+        {
+          "method": "POST",
+          "operation_id": "lite_fleet_agent_bootstrap_env_api_lite_fleet_agent_bootstrap_env_post",
+          "path": "/api/lite/fleet/agent/bootstrap.env"
+        },
+        {
+          "method": "GET",
+          "operation_id": "lite_fleet_agent_bootstrap_script_api_lite_fleet_agent_bootstrap_sh_get",
+          "path": "/api/lite/fleet/agent/bootstrap.sh"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_latest_lite_fleet_invite_api_lite_fleet_invites_latest_get",
+          "path": "/api/lite/fleet/invites/latest"
+        },
+        {
+          "method": "POST",
+          "operation_id": "revoke_lite_fleet_invite_api_lite_fleet_invites__invite_id__revoke_post",
+          "path": "/api/lite/fleet/invites/{invite_id}/revoke"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.events.fleet.bootstrap_blocked",
+        "pocketlab.events.fleet.invite_accepted",
+        "pocketlab.events.fleet.invite_created",
+        "pocketlab.events.fleet.invite_revoked",
+        "pocketlab.events.fleet.invite_started"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → node agent/supervisor",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.events.fleet.bootstrap_blocked",
+        "pocketlab.events.fleet.invite_accepted",
+        "pocketlab.events.fleet.invite_created",
+        "pocketlab.events.fleet.invite_revoked",
+        "pocketlab.events.fleet.invite_started"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Restart Agent",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "restart_lite_fleet_agent_api_lite_fleet_devices__node_id__restart_agent_post",
+          "path": "/api/lite/fleet/devices/{node_id}/restart-agent"
+        },
+        {
+          "method": "GET",
+          "operation_id": "lite_fleet_agent_restart_status_api_lite_fleet_devices__node_id__restart_agent_status_get",
+          "path": "/api/lite/fleet/devices/{node_id}/restart-agent/status"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.commands.lite.device.restart",
+        "pocketlab.commands.node.{normalized_node_id}.agent.restart",
+        "pocketlab.events.lite.database.restore.started",
+        "pocketlab.events.lite.restore.service_restart_checked",
+        "pocketlab.events.lite.restore.started"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → node agent/supervisor",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.commands.lite.device.restart",
+        "pocketlab.commands.node.{normalized_node_id}.agent.restart",
+        "pocketlab.events.lite.database.restore.started",
+        "pocketlab.events.lite.restore.service_restart_checked",
+        "pocketlab.events.lite.restore.started"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "src/lib/liteApi.js",
+        "src/lib/liteQueryClient.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Install App",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_lifecycle_profiles_api_lite_apps_lifecycle_get",
+          "path": "/api/lite/apps/lifecycle"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_lifecycle_profile_api_lite_apps_lifecycle__app_id__get",
+          "path": "/api/lite/apps/lifecycle/{app_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_photoprism_storage_mappings_api_lite_apps_photoprism_storage_mappings_get",
+          "path": "/api/lite/apps/photoprism/storage-mappings"
+        },
+        {
+          "method": "POST",
+          "operation_id": "create_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings_post",
+          "path": "/api/lite/apps/photoprism/storage-mappings"
+        },
+        {
+          "method": "DELETE",
+          "operation_id": "delete_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings__mapping_id__delete",
+          "path": "/api/lite/apps/photoprism/storage-mappings/{mapping_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_photoprism_storage_preview_api_lite_apps_photoprism_storage_preview_get",
+          "path": "/api/lite/apps/photoprism/storage-preview"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_action_history_api_lite_apps__app_id__action_history_get",
+          "path": "/api/lite/apps/{app_id}/action-history"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_actions_api_lite_apps__app_id__actions_get",
+          "path": "/api/lite/apps/{app_id}/actions"
+        },
+        {
+          "method": "POST",
+          "operation_id": "run_lite_app_action_api_lite_apps__app_id__actions__action_id__post",
+          "path": "/api/lite/apps/{app_id}/actions/{action_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_backup_status_api_lite_apps__app_id__backup_get",
+          "path": "/api/lite/apps/{app_id}/backup"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.commands.lite.app.safety",
+        "pocketlab.commands.lite.catalog.install",
+        "pocketlab.events.lite.catalog.install_completed",
+        "pocketlab.events.lite.catalog.install_failed",
+        "pocketlab.events.lite.catalog.install_started"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → worker",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.commands.lite.app.safety",
+        "pocketlab.commands.lite.catalog.install",
+        "pocketlab.events.lite.catalog.install_completed",
+        "pocketlab.events.lite.catalog.install_failed",
+        "pocketlab.events.lite.catalog.install_started"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Open App",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_lifecycle_profiles_api_lite_apps_lifecycle_get",
+          "path": "/api/lite/apps/lifecycle"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_lifecycle_profile_api_lite_apps_lifecycle__app_id__get",
+          "path": "/api/lite/apps/lifecycle/{app_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_photoprism_storage_mappings_api_lite_apps_photoprism_storage_mappings_get",
+          "path": "/api/lite/apps/photoprism/storage-mappings"
+        },
+        {
+          "method": "POST",
+          "operation_id": "create_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings_post",
+          "path": "/api/lite/apps/photoprism/storage-mappings"
+        },
+        {
+          "method": "DELETE",
+          "operation_id": "delete_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings__mapping_id__delete",
+          "path": "/api/lite/apps/photoprism/storage-mappings/{mapping_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_photoprism_storage_preview_api_lite_apps_photoprism_storage_preview_get",
+          "path": "/api/lite/apps/photoprism/storage-preview"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_action_history_api_lite_apps__app_id__action_history_get",
+          "path": "/api/lite/apps/{app_id}/action-history"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_actions_api_lite_apps__app_id__actions_get",
+          "path": "/api/lite/apps/{app_id}/actions"
+        },
+        {
+          "method": "POST",
+          "operation_id": "run_lite_app_action_api_lite_apps__app_id__actions__action_id__post",
+          "path": "/api/lite/apps/{app_id}/actions/{action_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_backup_status_api_lite_apps__app_id__backup_get",
+          "path": "/api/lite/apps/{app_id}/backup"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.commands.catalog.refresh",
+        "pocketlab.commands.lite.app.safety",
+        "pocketlab.commands.lite.catalog.install",
+        "pocketlab.events.catalog.refresh_started",
+        "pocketlab.events.catalog.refreshed",
+        "pocketlab.events.lite.catalog.install_completed",
+        "pocketlab.events.lite.catalog.install_failed",
+        "pocketlab.events.lite.catalog.install_started"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI/Caddy read path",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.commands.catalog.refresh",
+        "pocketlab.commands.lite.app.safety",
+        "pocketlab.commands.lite.catalog.install",
+        "pocketlab.events.catalog.refresh_started",
+        "pocketlab.events.catalog.refreshed",
+        "pocketlab.events.lite.catalog.install_completed",
+        "pocketlab.events.lite.catalog.install_failed",
+        "pocketlab.events.lite.catalog.install_started"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Run Security Check",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "check_lite_security_api_lite_security_check_post",
+          "path": "/api/lite/security/check"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact channel binding source-derived for this action"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → worker",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact channel binding source-derived for this action"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Back Up",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "backup_lite_api_lite_recovery_backup_post",
+          "path": "/api/lite/recovery/backup"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_backup_targets_api_lite_recovery_backup_targets_get",
+          "path": "/api/lite/recovery/backup-targets"
+        },
+        {
+          "method": "GET",
+          "operation_id": "list_lite_backups_api_lite_recovery_backups_get",
+          "path": "/api/lite/recovery/backups"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_backup_api_lite_recovery_backups__backup_id__get",
+          "path": "/api/lite/recovery/backups/{backup_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "verify_lite_backup_api_lite_recovery_backups__backup_id__verify_post",
+          "path": "/api/lite/recovery/backups/{backup_id}/verify"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact channel binding source-derived for this action"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → worker",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineDb.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteRecoveryStateIntegration.test.js",
+        "src/lite/recovery/RecoveryBackupHistory.jsx"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact channel binding source-derived for this action"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/lib/liteOfflineDb.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteRecoveryStateIntegration.test.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lite/recovery/RecoveryBackupHistory.jsx",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineDb.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteRecoveryStateIntegration.test.js",
+        "src/lite/recovery/RecoveryBackupHistory.jsx"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Preview Restore",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "get_photoprism_storage_preview_api_lite_apps_photoprism_storage_preview_get",
+          "path": "/api/lite/apps/photoprism/storage-preview"
+        },
+        {
+          "method": "POST",
+          "operation_id": "start_lite_app_restore_preview_api_lite_apps__app_id__restore_preview_post",
+          "path": "/api/lite/apps/{app_id}/restore/preview"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_restore_preview_api_lite_apps__app_id__restore_previews__preview_id__get",
+          "path": "/api/lite/apps/{app_id}/restore/previews/{preview_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "preview_lite_app_restore_api_lite_recovery_apps__app_id__restore_preview_post",
+          "path": "/api/lite/recovery/apps/{app_id}/restore/preview"
+        },
+        {
+          "method": "POST",
+          "operation_id": "preview_lite_database_restore_api_lite_recovery_database_backups__backup_id__preview_post",
+          "path": "/api/lite/recovery/database/backups/{backup_id}/preview"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_database_restore_preview_api_lite_recovery_database_restore_previews__preview_id__get",
+          "path": "/api/lite/recovery/database/restore/previews/{preview_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "preview_lite_restore_api_lite_recovery_restore_preview_post",
+          "path": "/api/lite/recovery/restore/preview"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_restore_preview_api_lite_recovery_restore_previews__preview_id__get",
+          "path": "/api/lite/recovery/restore/previews/{preview_id}"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.commands.drift.preview",
+        "pocketlab.commands.lite.app.restore.preview",
+        "pocketlab.commands.lite.database.restore.preview",
+        "pocketlab.commands.lite.restore.preview",
+        "pocketlab.events.drift.previewed",
+        "pocketlab.events.lite.app.restore.preview_created",
+        "pocketlab.events.lite.app.restore.preview_failed",
+        "pocketlab.events.lite.app.restore.preview_started",
+        "pocketlab.events.lite.database.restore.preview_ready",
+        "pocketlab.events.lite.restore.preview_created"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → worker",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteRecoveryR3R4.test.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.commands.drift.preview",
+        "pocketlab.commands.lite.app.restore.preview",
+        "pocketlab.commands.lite.database.restore.preview",
+        "pocketlab.commands.lite.restore.preview",
+        "pocketlab.events.drift.previewed",
+        "pocketlab.events.lite.app.restore.preview_created",
+        "pocketlab.events.lite.app.restore.preview_failed",
+        "pocketlab.events.lite.app.restore.preview_started",
+        "pocketlab.events.lite.database.restore.preview_ready",
+        "pocketlab.events.lite.restore.preview_created"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js",
+        "src/lib/liteRecoveryR3R4.test.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteRecoveryR3R4.test.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Restore",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "start_lite_app_restore_preview_api_lite_apps__app_id__restore_preview_post",
+          "path": "/api/lite/apps/{app_id}/restore/preview"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_app_restore_preview_api_lite_apps__app_id__restore_previews__preview_id__get",
+          "path": "/api/lite/apps/{app_id}/restore/previews/{preview_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "restore_lite_app_api_lite_recovery_apps__app_id__restore_post",
+          "path": "/api/lite/recovery/apps/{app_id}/restore"
+        },
+        {
+          "method": "POST",
+          "operation_id": "preview_lite_app_restore_api_lite_recovery_apps__app_id__restore_preview_post",
+          "path": "/api/lite/recovery/apps/{app_id}/restore/preview"
+        },
+        {
+          "method": "POST",
+          "operation_id": "restore_lite_database_api_lite_recovery_database_backups__backup_id__restore_post",
+          "path": "/api/lite/recovery/database/backups/{backup_id}/restore"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_database_restore_preview_api_lite_recovery_database_restore_previews__preview_id__get",
+          "path": "/api/lite/recovery/database/restore/previews/{preview_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_database_restore_run_api_lite_recovery_database_restore__restore_id__get",
+          "path": "/api/lite/recovery/database/restore/{restore_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "restore_lite_api_lite_recovery_restore_post",
+          "path": "/api/lite/recovery/restore"
+        },
+        {
+          "method": "GET",
+          "operation_id": "get_lite_restore_checkpoint_api_lite_recovery_restore_checkpoints__checkpoint_id__get",
+          "path": "/api/lite/recovery/restore/checkpoints/{checkpoint_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "preview_lite_restore_api_lite_recovery_restore_preview_post",
+          "path": "/api/lite/recovery/restore/preview"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.commands.lite.app.restore.preview",
+        "pocketlab.commands.lite.database.restore",
+        "pocketlab.commands.lite.database.restore.preview",
+        "pocketlab.commands.lite.restore.apply",
+        "pocketlab.commands.lite.restore.preview",
+        "pocketlab.events.lite.app.restore.preview_created",
+        "pocketlab.events.lite.app.restore.preview_failed",
+        "pocketlab.events.lite.app.restore.preview_started",
+        "pocketlab.events.lite.database.restore.preview_ready",
+        "pocketlab.events.lite.database.restore.started"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → worker",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteRecoveryR3R4.test.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.commands.lite.app.restore.preview",
+        "pocketlab.commands.lite.database.restore",
+        "pocketlab.commands.lite.database.restore.preview",
+        "pocketlab.commands.lite.restore.apply",
+        "pocketlab.commands.lite.restore.preview",
+        "pocketlab.events.lite.app.restore.preview_created",
+        "pocketlab.events.lite.app.restore.preview_failed",
+        "pocketlab.events.lite.app.restore.preview_started",
+        "pocketlab.events.lite.database.restore.preview_ready",
+        "pocketlab.events.lite.database.restore.started"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js",
+        "src/lib/liteRecoveryR3R4.test.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteRecoveryR3R4.test.js",
+        "src/lib/liteApi.js",
+        "src/lib/liteSafeSnapshots.js",
+        "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteQueryClient.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Remove Old Device",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "remove_lite_catalog_item_api_lite_catalog_remove_post",
+          "path": "/api/lite/catalog/remove"
+        },
+        {
+          "method": "POST",
+          "operation_id": "remove_lite_device_api_lite_fleet_remove_device_post",
+          "path": "/api/lite/fleet/remove-device"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "pocketlab.events.fleet.device_removed"
+      ],
+      "evidence": "backend-owned sanitized evidence/projection",
+      "execution_owner": "FastAPI → NATS/JetStream → node agent/supervisor",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "command undeliverable/timeout where asynchronous",
+        "backend result failed/blocked where operation is guarded"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "frontend": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "pocketlab.events.fleet.device_removed"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "canonical lifecycle/event projection when declared",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    }
+  ]
+}

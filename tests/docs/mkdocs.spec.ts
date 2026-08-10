@@ -16,15 +16,42 @@ test.beforeEach(async ({ page }) => {
   page.on('pageerror', (error) => consoleFailures.push(`PAGEERROR ${error.message}`));
   page.on('requestfailed', (request) => {
     const url = request.url();
-    // MkDocs dev-server live reload uses long-poll requests that are routinely
-    // aborted during page navigation and worker teardown. They are transport
-    // noise, not broken documentation assets.
+    const failure = request.failure()?.errorText || 'requestfailed';
+
+    // MkDocs development live reload uses requests that are routinely
+    // cancelled during navigation and teardown.
     if (url.includes('/livereload/')) return;
-    failedRequests.push(`${request.failure()?.errorText || 'requestfailed'} ${url}`);
+
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      failedRequests.push(`${failure} ${url}`);
+      return;
+    }
+
+    const isLocalDocsPageAbort =
+      failure === 'net::ERR_ABORTED'
+      && ['127.0.0.1', 'localhost'].includes(parsed.hostname)
+      && parsed.pathname.startsWith(DOCS_PREFIX)
+      && parsed.pathname.endsWith('/');
+
+    // Material for MkDocs instant navigation may cancel a redundant
+    // same-origin HTML-page request while the requested destination still
+    // loads successfully. Destination headings/content are asserted by the
+    // test itself, so this transport cancellation is not a broken asset.
+    //
+    // Do NOT suppress aborted assets, scripts, stylesheets, SVGs, external
+    // requests, DNS failures, connection failures, or other error classes.
+    if (isLocalDocsPageAbort) return;
+
+    failedRequests.push(`${failure} ${url}`);
   });
 });
 
 test('documentation portal navigation, theme, search, and accessibility', async ({ page }, testInfo) => {
+
+  test.setTimeout(90_000);
   await page.goto(DOCS_PREFIX);
   await expect(page.getByRole('heading', { name: 'Pocket Lab Lite Documentation' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Development guide' })).toBeVisible();

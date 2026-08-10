@@ -1,0 +1,281 @@
+{
+  "checks": [
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "parity/backend.json",
+          "id": "parity-backend",
+          "kind": "validation-gate",
+          "status": "verified",
+          "task": "lite:parity:backend"
+        },
+        {
+          "evidence": "parity/api.json",
+          "id": "parity-api",
+          "kind": "validation-gate",
+          "status": "verified",
+          "task": "lite:parity:api"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "verified",
+      "live_polling": false,
+      "name": "backend tests",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "parity/evidence-manifest.json",
+          "id": "release-readiness",
+          "kind": "validation-gate",
+          "status": "partial",
+          "task": "lite:parity:check"
+        },
+        {
+          "evidence": "parity/contracts.json",
+          "id": "parity-contracts",
+          "kind": "validation-gate",
+          "status": "verified",
+          "task": "lite:parity:contracts:check"
+        },
+        {
+          "evidence": "parity/selectors.json",
+          "id": "parity-selectors",
+          "kind": "validation-gate",
+          "status": "verified",
+          "task": "lite:parity:selectors"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "verified",
+      "live_polling": false,
+      "name": "parity",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "playwright-results.json",
+          "id": "parity-playwright-mocked",
+          "kind": "validation-gate",
+          "status": "patch-provided",
+          "task": "lite:parity:playwright:mocked"
+        },
+        {
+          "evidence": "playwright-results.json",
+          "id": "parity-playwright-live",
+          "kind": "validation-gate",
+          "status": "unvalidated",
+          "task": "lite:parity:playwright:live"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "patch-provided",
+      "live_polling": false,
+      "name": "Playwright",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "playwright-junit.xml",
+          "id": "parity-a11y",
+          "kind": "validation-gate",
+          "status": "patch-provided",
+          "task": "lite:a11y:check"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "patch-provided",
+      "live_polling": false,
+      "name": "accessibility",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "parity/oasdiff.json",
+          "id": "api-breaking",
+          "kind": "validation-gate",
+          "status": "patch-provided",
+          "task": "lite:api:breaking-changes"
+        },
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/parity/openapi-baseline-promotion.json",
+          "status": "promoted"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "promoted",
+      "live_polling": false,
+      "name": "OpenAPI",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "parity/schemathesis.xml",
+          "id": "api-schemathesis",
+          "kind": "validation-gate",
+          "status": "patch-provided",
+          "task": "lite:api:schemathesis"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "patch-provided",
+      "live_polling": false,
+      "name": "Schemathesis",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "parity/oasdiff.json",
+          "id": "api-breaking",
+          "kind": "validation-gate",
+          "status": "patch-provided",
+          "task": "lite:api:breaking-changes"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "patch-provided",
+      "live_polling": false,
+      "name": "oasdiff",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/generated/architecture-catalog.json",
+          "status": "observed"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "observed",
+      "live_polling": false,
+      "name": "architecture drift",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/generated/knowledge/index.json",
+          "status": "observed"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "observed",
+      "live_polling": false,
+      "name": "knowledge determinism",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/parity/runtime-verification-baseline.json",
+          "status": "promoted"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "promoted",
+      "live_polling": false,
+      "name": "runtime evidence",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/generated/supply-chain/sbom-dev.cdx.json",
+          "status": "observed"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "observed",
+      "live_polling": false,
+      "name": "SBOM",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/generated/supply-chain/vulnerability-correlation.json",
+          "status": "observed"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "observed",
+      "live_polling": false,
+      "name": "vulnerability analysis",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/generated/supply-chain/security-analysis.json",
+          "status": "observed"
+        }
+      ],
+      "gate_discoverable": false,
+      "implementation_status": "implemented",
+      "latest_verified_status": "observed",
+      "live_polling": false,
+      "name": "secret scanning",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "kind": "canonical-artifact",
+          "path": "contracts/generated/supply-chain/security-analysis.json",
+          "status": "observed"
+        }
+      ],
+      "gate_discoverable": false,
+      "implementation_status": "implemented",
+      "latest_verified_status": "observed",
+      "live_polling": false,
+      "name": "static analysis",
+      "source": "Taskfiles + recorded canonical contracts only"
+    },
+    {
+      "canonical_evidence": [
+        {
+          "evidence": "parity/docs.json",
+          "id": "docs-parity",
+          "kind": "validation-gate",
+          "status": "verified",
+          "task": "lite:docs:parity:check"
+        }
+      ],
+      "gate_discoverable": true,
+      "implementation_status": "implemented",
+      "latest_verified_status": "verified",
+      "live_polling": false,
+      "name": "documentation strict build",
+      "source": "Taskfiles + recorded canonical contracts only"
+    }
+  ],
+  "implementation_status": "implemented",
+  "rule": "never poll CI; never claim current PASS without recorded canonical output",
+  "status": "repository-evidence-only"
+}

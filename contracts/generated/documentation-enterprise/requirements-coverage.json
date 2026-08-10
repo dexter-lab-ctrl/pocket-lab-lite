@@ -1,0 +1,588 @@
+{
+  "items": [
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Close five Documentation Experience gaps",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Documentation Platform tab",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Executable Task Reference",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Contribution & Review onboarding",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Event encyclopedia",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Release evidence",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Development diagnostic handbook",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "First-class generated threat model",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Production promoted threat posture",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Production Living Knowledgebase",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Dedicated Architecture",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Production incident runbooks",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Production troubleshooting",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Configuration Intelligence",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "API-to-UI trace explorer",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Data lifecycle & privacy map",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "FMEA/resilience catalog",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "SLO/reliability objectives",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "ADR intelligence",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Dependency/software supply-chain inventory",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Security controls catalog",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Developer change simulator",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Ownership/responsibility map",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Validation coverage dashboard",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Upgrade/migration intelligence",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Disaster recovery architecture",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Documentation quality scorecard",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Threat Dragon integration",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Syft/CycloneDX SBOM",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Trivy integration",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "OSV-Scanner correlation",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Grype corroboration",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Dependency-Track optional export",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "OpenSSF Scorecard checks",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "ScanCode licensing",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Gitleaks secrets",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Semgrep Community rules",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Graphviz architecture/flow diagrams",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Event encyclopedia automation",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Task reference automation",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Contribution guidance automation",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Troubleshooting diagnostic-fact automation",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Incident runbook automation",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Failure Mode and Effects Analysis",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Release delta",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Supply-chain change intelligence",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Cosign artifact signing workflow",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "SLSA-style provenance",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Heavy WSL2/CI execution",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Lightweight Termux evidence boundary",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Tool bootstrap/download",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Output normalization",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
+      "requirement": "Page-anatomy enforcement",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    }
+  ],
+  "schema_version": "1.0.0"
+}

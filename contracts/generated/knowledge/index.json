@@ -19119,6 +19119,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/dev/test_dev_scratch_policy.py",
+      "name": "tests/dev/test_dev_scratch_policy.py",
+      "source_refs": [
+        "tests/dev/test_dev_scratch_policy.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/dev/test_pytest_temp_policy.py",
+      "name": "tests/dev/test_pytest_temp_policy.py",
+      "source_refs": [
+        "tests/dev/test_pytest_temp_policy.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/mkdocs.spec.ts",
       "name": "tests/docs/mkdocs.spec.ts",
       "source_refs": [
@@ -19133,6 +19153,26 @@
       "name": "tests/docs/test_documentation_intelligence.py",
       "source_refs": [
         "tests/docs/test_documentation_intelligence.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_enterprise_completion.py",
+      "name": "tests/docs/test_enterprise_completion.py",
+      "source_refs": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_enterprise_documentation.py",
+      "name": "tests/docs/test_enterprise_documentation.py",
+      "source_refs": [
+        "tests/docs/test_enterprise_documentation.py"
       ],
       "type": "test"
     },
@@ -21930,8 +21970,12 @@
         "test:tests/backend/test_workflows.py",
         "test:tests/dev/browser-resolver.test.mjs",
         "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
+        "test:tests/dev/test_dev_scratch_policy.py",
+        "test:tests/dev/test_pytest_temp_policy.py",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_intelligence.py",
+        "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/global-setup.ts",
@@ -22797,8 +22841,12 @@
         "test:tests/backend/test_workflows.py",
         "test:tests/dev/browser-resolver.test.mjs",
         "test:tests/dev/runtime-evidence-sanitizer.test.mjs",
+        "test:tests/dev/test_dev_scratch_policy.py",
+        "test:tests/dev/test_pytest_temp_policy.py",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_intelligence.py",
+        "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/global-setup.ts",
@@ -30303,6 +30351,24 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_enterprise_completion.py": [
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:security-scan",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_living_knowledgebase.py": [
         {
           "source": "component:agent-command-executor",
@@ -37219,6 +37285,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -38593,6 +38663,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -39099,6 +39173,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
         }
@@ -39576,6 +39654,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         }
       ],
@@ -42882,6 +42964,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:1dc23d3f7500e949",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteSecurity.jsx"
       ],
       "id": "rel:1dd6044b7ebdeca8",
@@ -43240,6 +43331,15 @@
       "source": "component:security-coordinator",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2458024253d1b597",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -56186,6 +56286,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:df223000647ff0a7",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:df2e88934477bf1c",
@@ -57672,6 +57781,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:f30805ec41968cb5",
+      "source": "journey:security-scan",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:f318b2456a3ec531",
@@ -58520,9 +58638,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "61861b3c18410567242d0cb83ab9c280c6767685b1c1b54ab3cc1fa781bf4ab5",
+  "source_fingerprint": "589f51dc5082cfd9da5bc553c9852e74eea925dd70428a0f4d8e89ea10d8973a",
   "statistics": {
-    "entity_count": 830,
+    "entity_count": 834,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -58539,14 +58657,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 155,
+      "test": 159,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 1981,
-    "source_count": 191
+    "relation_count": 1985,
+    "source_count": 195
   }
 }

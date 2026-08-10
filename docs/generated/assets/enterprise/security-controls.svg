@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="448" viewBox="0 0 1080 448" role="img">
+<style>.t{font-family:system-ui,sans-serif;fill:#101828}.h{font-size:17px;font-weight:700}.s{font-size:12px}.b{fill:#f8fafc;stroke:#98a2b3}.e{stroke:#667085;stroke-width:1.5}</style>
+<text class="t h" x="24" y="30">Threat/control coverage</text>
+<rect class="b" x="24" y="50" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="73">CTRL-BROWSER-NATS</text>
+<line class="e" x1="444" y1="68" x2="610" y2="68"/>
+<polygon points="610,68 600,62 600,74" fill="#667085"/>
+<rect class="b" x="620" y="50" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="73">browser,messaging-execution → mitigation-source-derived</text>
+<rect class="b" x="24" y="104" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="127">CTRL-BROWSER-SHELL</text>
+<line class="e" x1="444" y1="122" x2="610" y2="122"/>
+<polygon points="610,122 600,116 600,128" fill="#667085"/>
+<rect class="b" x="620" y="104" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="127">browser → mitigation-source-derived</text>
+<rect class="b" x="24" y="158" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="181">CTRL-API-CONTROL</text>
+<line class="e" x1="444" y1="176" x2="610" y2="176"/>
+<polygon points="610,176 600,170 600,182" fill="#667085"/>
+<rect class="b" x="620" y="158" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="181">browser,control-api,messaging-execution → control-observed</text>
+<rect class="b" x="24" y="212" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="235">CTRL-EXECUTION-OWNERS</text>
+<line class="e" x1="444" y1="230" x2="610" y2="230"/>
+<polygon points="610,230 600,224 600,236" fill="#667085"/>
+<rect class="b" x="620" y="212" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="235">messaging-execution,managed-device,server-host → control-observed</text>
+<rect class="b" x="24" y="266" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="289">CTRL-EVIDENCE-SANITIZE</text>
+<line class="e" x1="444" y1="284" x2="610" y2="284"/>
+<polygon points="610,284 600,278 600,290" fill="#667085"/>
+<rect class="b" x="620" y="266" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="289">durable-state,external-release,server-host → control-observed</text>
+<rect class="b" x="24" y="320" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="343">CTRL-EXPLICIT-PROMOTION</text>
+<line class="e" x1="444" y1="338" x2="610" y2="338"/>
+<polygon points="610,338 600,332 600,344" fill="#667085"/>
+<rect class="b" x="620" y="320" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="343">external-release,durable-state,server-host → control-observed</text>
+<rect class="b" x="24" y="374" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="397">CTRL-SUPPLY-CHAIN</text>
+<line class="e" x1="444" y1="392" x2="610" y2="392"/>
+<polygon points="610,392 600,386 600,398" fill="#667085"/>
+<rect class="b" x="620" y="374" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="397">external-release,application-container → control-observed</text>
+</svg>

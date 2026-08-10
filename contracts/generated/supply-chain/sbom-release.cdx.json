@@ -1,0 +1,117 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "name": "/tmp/pocketlab-release-sbom-xvqjdl3c/package-lock.json",
+      "type": "file"
+    },
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "name": "lucide-react",
+      "purl": "pkg:npm/lucide-react@1.17.0",
+      "type": "library",
+      "version": "1.17.0"
+    },
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "name": "pocket-lab-lite",
+      "purl": "pkg:npm/pocket-lab-lite@1.0.0",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "react-dom",
+      "purl": "pkg:npm/react-dom@19.2.7",
+      "type": "library",
+      "version": "19.2.7"
+    },
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "react",
+      "purl": "pkg:npm/react@19.2.7",
+      "type": "library",
+      "version": "19.2.7"
+    },
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "scheduler",
+      "purl": "pkg:npm/scheduler@0.27.0",
+      "type": "library",
+      "version": "0.27.0"
+    },
+    {
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "name": "yaml",
+      "purl": "pkg:npm/yaml@2.9.0",
+      "type": "library",
+      "version": "2.9.0"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "name": "pocket-lab-lite-release",
+      "type": "application"
+    },
+    "properties": [
+      {
+        "name": "pocketlab:evidence-status",
+        "value": "observed-syft"
+      },
+      {
+        "name": "pocketlab:source-generator",
+        "value": "Syft"
+      },
+      {
+        "name": "pocketlab:source-digest",
+        "value": "78e7dad663cce5ce6e9aa7c86efe56f23577070b89f61673d9cee2fc3cd5b1e4"
+      },
+      {
+        "name": "pocketlab:sanitized",
+        "value": "true"
+      },
+      {
+        "name": "pocketlab:release-binding",
+        "value": "not-applicable"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

@@ -1,0 +1,11 @@
+digraph flow {
+  graph [rankdir="LR", bgcolor="transparent", label="Threat/control coverage", labelloc="t"];
+  node [shape="box", style="rounded,filled", fillcolor="#f8fafc"];
+  n0 [label="CTRL-BROWSER-NATS"]; n0 -> m0; m0 [label="browser,messaging-execution → mitigation-source-derived"];
+  n1 [label="CTRL-BROWSER-SHELL"]; n1 -> m1; m1 [label="browser → mitigation-source-derived"];
+  n2 [label="CTRL-API-CONTROL"]; n2 -> m2; m2 [label="browser,control-api,messaging-execution → control-observed"];
+  n3 [label="CTRL-EXECUTION-OWNERS"]; n3 -> m3; m3 [label="messaging-execution,managed-device,server-host → control-observed"];
+  n4 [label="CTRL-EVIDENCE-SANITIZE"]; n4 -> m4; m4 [label="durable-state,external-release,server-host → control-observed"];
+  n5 [label="CTRL-EXPLICIT-PROMOTION"]; n5 -> m5; m5 [label="external-release,durable-state,server-host → control-observed"];
+  n6 [label="CTRL-SUPPLY-CHAIN"]; n6 -> m6; m6 [label="external-release,application-container → control-observed"];
+}

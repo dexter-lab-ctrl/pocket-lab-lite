@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 23e288333abf6ba8a66745abdb34f335aedf6391326c63bb036903c2ca5ed234
+source_fingerprint: 889272cd0ef3710868bd179ac966907dfe14c0a456a01cbcddd4d1ded145f353
 schema_revision: 1
 validation_status: generated
 ---
@@ -41,6 +41,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:dev:frontend:mocked`
 - `lite:dev:logs`
 - `lite:dev:nats`
+- `lite:dev:scratch:check`
+- `lite:dev:scratch:prepare`
 - `lite:dev:status`
 - `lite:dev:up`
 - `lite:dev:worker`
@@ -56,6 +58,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:development:generate`
 - `lite:docs:diagrams:check`
 - `lite:docs:diagrams:generate`
+- `lite:docs:enterprise:check`
+- `lite:docs:enterprise:generate`
 - `lite:docs:events`
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
@@ -80,6 +84,11 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:production:check`
 - `lite:docs:production:generate`
 - `lite:docs:projections`
+- `lite:docs:provenance:generate`
+- `lite:docs:provenance:sign`
+- `lite:docs:provenance:sign-release-set`
+- `lite:docs:provenance:verify`
+- `lite:docs:provenance:verify-release-set`
 - `lite:docs:reason-codes`
 - `lite:docs:recovery`
 - `lite:docs:redaction`
@@ -87,10 +96,19 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:runtime:check`
 - `lite:docs:runtime:generate`
 - `lite:docs:security`
+- `lite:docs:security-tools:check`
+- `lite:docs:security-tools:plan`
+- `lite:docs:security-tools:setup`
+- `lite:docs:security-tools:update`
 - `lite:docs:serve`
 - `lite:docs:services`
 - `lite:docs:sqlite`
 - `lite:docs:sqlite:check`
+- `lite:docs:supply-chain:capture`
+- `lite:docs:supply-chain:check`
+- `lite:docs:supply-chain:dependency-track:export`
+- `lite:docs:supply-chain:promote`
+- `lite:docs:supply-chain:qualify`
 - `lite:docs:sync`
 - `lite:docs:tools:check`
 - `lite:docs:ui`
@@ -164,13 +182,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 
 - `lite:a11y:check` → `lite:test:a11y`
 - `lite:allure` → `lite:validation:evidence`
+- `lite:check` → `lite:dev:scratch:prepare`
+- `lite:check:quick` → `lite:dev:scratch:prepare`
+- `lite:check:release` → `lite:dev:scratch:prepare`
 - `lite:docs:architecture:check` → `lite:docs:architecture:validate`
 - `lite:docs:architecture:generate` → `lite:docs:architecture:icons:check`
 - `lite:docs:architecture:validate` → `lite:docs:architecture:icons:check`
 - `lite:docs:check` → `lite:contracts:check`
+- `lite:docs:check` → `lite:dev:scratch:prepare`
 - `lite:docs:check` → `lite:docs:architecture:check`
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
+- `lite:docs:check` → `lite:docs:enterprise:check`
 - `lite:docs:check` → `lite:docs:health:check`
 - `lite:docs:check` → `lite:docs:intelligence:check`
 - `lite:docs:check` → `lite:docs:knowledge:check`
@@ -183,6 +206,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:architecture:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
+- `lite:docs:generate` → `lite:docs:enterprise:generate`
 - `lite:docs:generate` → `lite:docs:health:generate`
 - `lite:docs:generate` → `lite:docs:intelligence:generate`
 - `lite:docs:generate` → `lite:docs:knowledge:generate`
@@ -192,6 +216,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:runtime:generate`
 - `lite:docs:generate` → `lite:docs:tools:check`
 - `lite:docs:openapi` → `lite:contracts:generate`
+- `lite:docs:serve` → `lite:dev:scratch:prepare`
 - `lite:docs:sync` → `lite:docs:check`
 - `lite:docs:sync` → `lite:docs:generate`
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`
@@ -214,14 +239,24 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:parity:check` → `lite:visual:check`
 - `lite:parity:playwright:live` → `lite:playwright:preflight`
 - `lite:parity:playwright:mocked` → `lite:playwright:preflight`
+- `lite:storybook:screenshots` → `lite:dev:scratch:prepare`
 - `lite:storybook:screenshots` → `lite:playwright:preflight`
+- `lite:test:a11y` → `lite:dev:scratch:prepare`
 - `lite:test:a11y` → `lite:playwright:preflight`
+- `lite:test:backend` → `lite:dev:scratch:prepare`
+- `lite:test:docs` → `lite:dev:scratch:prepare`
 - `lite:test:docs` → `lite:playwright:preflight`
+- `lite:test:e2e:live` → `lite:dev:scratch:prepare`
 - `lite:test:e2e:live` → `lite:playwright:preflight`
+- `lite:test:e2e:mocked` → `lite:dev:scratch:prepare`
 - `lite:test:e2e:mocked` → `lite:playwright:preflight`
+- `lite:test:lighthouse` → `lite:dev:scratch:prepare`
 - `lite:test:lighthouse` → `lite:playwright:preflight`
+- `lite:test:storybook` → `lite:dev:scratch:prepare`
 - `lite:test:storybook` → `lite:playwright:preflight`
+- `lite:test:visual` → `lite:dev:scratch:prepare`
 - `lite:test:visual` → `lite:playwright:preflight`
+- `lite:test:visual:update` → `lite:dev:scratch:prepare`
 - `lite:test:visual:update` → `lite:playwright:preflight`
 - `lite:visual:check` → `lite:test:visual`
 

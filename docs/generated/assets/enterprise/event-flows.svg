@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="4390" viewBox="0 0 1080 4390" role="img">
+<style>.t{font-family:system-ui,sans-serif;fill:#101828}.h{font-size:17px;font-weight:700}.s{font-size:12px}.b{fill:#f8fafc;stroke:#98a2b3}.e{stroke:#667085;stroke-width:1.5}</style>
+<text class="t h" x="24" y="30">Event encyclopedia flow</text>
+<rect class="b" x="24" y="50" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="73">workflow_engine.py</text>
+<line class="e" x1="444" y1="68" x2="610" y2="68"/>
+<polygon points="610,68 600,62 600,74" fill="#667085"/>
+<rect class="b" x="620" y="50" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="73">pocketlab.commands → projection/UI</text>
+<rect class="b" x="24" y="104" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="127">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="122" x2="610" y2="122"/>
+<polygon points="610,122 600,116 600,128" fill="#667085"/>
+<rect class="b" x="620" y="104" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="127">pocketlab.commands.catalog.refresh → projection/UI</text>
+<rect class="b" x="24" y="158" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="181">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="176" x2="610" y2="176"/>
+<polygon points="610,176 600,170 600,182" fill="#667085"/>
+<rect class="b" x="620" y="158" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="181">pocketlab.commands.drift.apply → projection/UI</text>
+<rect class="b" x="24" y="212" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="235">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="230" x2="610" y2="230"/>
+<polygon points="610,230 600,224 600,236" fill="#667085"/>
+<rect class="b" x="620" y="212" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="235">pocketlab.commands.drift.approve → projection/UI</text>
+<rect class="b" x="24" y="266" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="289">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="284" x2="610" y2="284"/>
+<polygon points="610,284 600,278 600,290" fill="#667085"/>
+<rect class="b" x="620" y="266" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="289">pocketlab.commands.drift.ignore → projection/UI</text>
+<rect class="b" x="24" y="320" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="343">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="338" x2="610" y2="338"/>
+<polygon points="610,338 600,332 600,344" fill="#667085"/>
+<rect class="b" x="620" y="320" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="343">pocketlab.commands.drift.preview → projection/UI</text>
+<rect class="b" x="24" y="374" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="397">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="392" x2="610" y2="392"/>
+<polygon points="610,392 600,386 600,398" fill="#667085"/>
+<rect class="b" x="620" y="374" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="397">pocketlab.commands.drift.rescan → projection/UI</text>
+<rect class="b" x="24" y="428" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="451">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="446" x2="610" y2="446"/>
+<polygon points="610,446 600,440 600,452" fill="#667085"/>
+<rect class="b" x="620" y="428" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="451">pocketlab.commands.drift.scan → projection/UI</text>
+<rect class="b" x="24" y="482" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="505">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="500" x2="610" y2="500"/>
+<polygon points="610,500 600,494 600,506" fill="#667085"/>
+<rect class="b" x="620" y="482" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="505">pocketlab.commands.drift.{action} → projection/UI</text>
+<rect class="b" x="24" y="536" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="559">lite_invites.py</text>
+<line class="e" x1="444" y1="554" x2="610" y2="554"/>
+<polygon points="610,554 600,548 600,560" fill="#667085"/>
+<rect class="b" x="620" y="536" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="559">pocketlab.commands.fleet.join → projection/UI</text>
+<rect class="b" x="24" y="590" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="613">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="608" x2="610" y2="608"/>
+<polygon points="610,608 600,602 600,614" fill="#667085"/>
+<rect class="b" x="620" y="590" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="613">pocketlab.commands.fleet.save_tailscale_key → projection/UI</text>
+<rect class="b" x="24" y="644" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="667">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="662" x2="610" y2="662"/>
+<polygon points="610,662 600,656 600,668" fill="#667085"/>
+<rect class="b" x="620" y="644" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="667">pocketlab.commands.health.check → projection/UI</text>
+<rect class="b" x="24" y="698" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="721">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="716" x2="610" y2="716"/>
+<polygon points="610,716 600,710 600,722" fill="#667085"/>
+<rect class="b" x="620" y="698" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="721">pocketlab.commands.lite.app.backup.create → projection/UI</text>
+<rect class="b" x="24" y="752" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="775">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="770" x2="610" y2="770"/>
+<polygon points="610,770 600,764 600,776" fill="#667085"/>
+<rect class="b" x="620" y="752" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="775">pocketlab.commands.lite.app.backup.transfer → projection/UI</text>
+<rect class="b" x="24" y="806" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="829">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="824" x2="610" y2="824"/>
+<polygon points="610,824 600,818 600,830" fill="#667085"/>
+<rect class="b" x="620" y="806" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="829">pocketlab.commands.lite.app.media → projection/UI</text>
+<rect class="b" x="24" y="860" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="883">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="878" x2="610" y2="878"/>
+<polygon points="610,878 600,872 600,884" fill="#667085"/>
+<rect class="b" x="620" y="860" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="883">pocketlab.commands.lite.app.repair → projection/UI</text>
+<rect class="b" x="24" y="914" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="937">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="932" x2="610" y2="932"/>
+<polygon points="610,932 600,926 600,938" fill="#667085"/>
+<rect class="b" x="620" y="914" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="937">pocketlab.commands.lite.app.restore.preview → projection/UI</text>
+<rect class="b" x="24" y="968" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="991">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="986" x2="610" y2="986"/>
+<polygon points="610,986 600,980 600,992" fill="#667085"/>
+<rect class="b" x="620" y="968" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="991">pocketlab.commands.lite.app.safety → projection/UI</text>
+<rect class="b" x="24" y="1022" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1045">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1040" x2="610" y2="1040"/>
+<polygon points="610,1040 600,1034 600,1046" fill="#667085"/>
+<rect class="b" x="620" y="1022" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1045">pocketlab.commands.lite.app.update.check → projection/UI</text>
+<rect class="b" x="24" y="1076" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1099">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1094" x2="610" y2="1094"/>
+<polygon points="610,1094 600,1088 600,1100" fill="#667085"/>
+<rect class="b" x="620" y="1076" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1099">pocketlab.commands.lite.backup.create → projection/UI</text>
+<rect class="b" x="24" y="1130" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1153">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1148" x2="610" y2="1148"/>
+<polygon points="610,1148 600,1142 600,1154" fill="#667085"/>
+<rect class="b" x="620" y="1130" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1153">pocketlab.commands.lite.backup.verify → projection/UI</text>
+<rect class="b" x="24" y="1184" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1207">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1202" x2="610" y2="1202"/>
+<polygon points="610,1202 600,1196 600,1208" fill="#667085"/>
+<rect class="b" x="620" y="1184" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1207">pocketlab.commands.lite.catalog.install → projection/UI</text>
+<rect class="b" x="24" y="1238" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1261">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1256" x2="610" y2="1256"/>
+<polygon points="610,1256 600,1250 600,1262" fill="#667085"/>
+<rect class="b" x="620" y="1238" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1261">pocketlab.commands.lite.database.backup → projection/UI</text>
+<rect class="b" x="24" y="1292" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1315">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1310" x2="610" y2="1310"/>
+<polygon points="610,1310 600,1304 600,1316" fill="#667085"/>
+<rect class="b" x="620" y="1292" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1315">pocketlab.commands.lite.database.backup.verify → projection/UI</text>
+<rect class="b" x="24" y="1346" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1369">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1364" x2="610" y2="1364"/>
+<polygon points="610,1364 600,1358 600,1370" fill="#667085"/>
+<rect class="b" x="620" y="1346" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1369">pocketlab.commands.lite.database.restore → projection/UI</text>
+<rect class="b" x="24" y="1400" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1423">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1418" x2="610" y2="1418"/>
+<polygon points="610,1418 600,1412 600,1424" fill="#667085"/>
+<rect class="b" x="620" y="1400" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1423">pocketlab.commands.lite.database.restore.preview → projection/UI</text>
+<rect class="b" x="24" y="1454" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1477">FastAPI</text>
+<line class="e" x1="444" y1="1472" x2="610" y2="1472"/>
+<polygon points="610,1472 600,1466 600,1478" fill="#667085"/>
+<rect class="b" x="620" y="1454" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1477">pocketlab.commands.lite.device.restart → projection/UI</text>
+<rect class="b" x="24" y="1508" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1531">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1526" x2="610" y2="1526"/>
+<polygon points="610,1526 600,1520 600,1532" fill="#667085"/>
+<rect class="b" x="620" y="1508" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1531">pocketlab.commands.lite.maintenance.checkpoint → projection/UI</text>
+<rect class="b" x="24" y="1562" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1585">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1580" x2="610" y2="1580"/>
+<polygon points="610,1580 600,1574 600,1586" fill="#667085"/>
+<rect class="b" x="620" y="1562" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1585">pocketlab.commands.lite.maintenance.retention → projection/UI</text>
+<rect class="b" x="24" y="1616" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1639">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1634" x2="610" y2="1634"/>
+<polygon points="610,1634 600,1628 600,1640" fill="#667085"/>
+<rect class="b" x="620" y="1616" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1639">pocketlab.commands.lite.restore.apply → projection/UI</text>
+<rect class="b" x="24" y="1670" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1693">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1688" x2="610" y2="1688"/>
+<polygon points="610,1688 600,1682 600,1694" fill="#667085"/>
+<rect class="b" x="620" y="1670" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1693">pocketlab.commands.lite.restore.preview → projection/UI</text>
+<rect class="b" x="24" y="1724" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1747">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1742" x2="610" y2="1742"/>
+<polygon points="610,1742 600,1736 600,1748" fill="#667085"/>
+<rect class="b" x="620" y="1724" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1747">pocketlab.commands.lite.security.app_scan → projection/UI</text>
+<rect class="b" x="24" y="1778" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1801">FastAPI</text>
+<line class="e" x1="444" y1="1796" x2="610" y2="1796"/>
+<polygon points="610,1796 600,1790 600,1802" fill="#667085"/>
+<rect class="b" x="620" y="1778" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1801">pocketlab.commands.lite.security.scan → projection/UI</text>
+<rect class="b" x="24" y="1832" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1855">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="1850" x2="610" y2="1850"/>
+<polygon points="610,1850 600,1844 600,1856" fill="#667085"/>
+<rect class="b" x="620" y="1832" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1855">pocketlab.commands.node → projection/UI</text>
+<rect class="b" x="24" y="1886" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1909">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="1904" x2="610" y2="1904"/>
+<polygon points="610,1904 600,1898 600,1910" fill="#667085"/>
+<rect class="b" x="620" y="1886" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1909">pocketlab.commands.node.all → projection/UI</text>
+<rect class="b" x="24" y="1940" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="1963">fleet.py</text>
+<line class="e" x1="444" y1="1958" x2="610" y2="1958"/>
+<polygon points="610,1958 600,1952 600,1964" fill="#667085"/>
+<rect class="b" x="620" y="1940" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="1963">pocketlab.commands.node.all.{command.replace → projection/UI</text>
+<rect class="b" x="24" y="1994" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2017">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2012" x2="610" y2="2012"/>
+<polygon points="610,2012 600,2006 600,2018" fill="#667085"/>
+<rect class="b" x="620" y="1994" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2017">pocketlab.commands.node.{node_id} → projection/UI</text>
+<rect class="b" x="24" y="2048" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2071">fleet.py</text>
+<line class="e" x1="444" y1="2066" x2="610" y2="2066"/>
+<polygon points="610,2066 600,2060 600,2072" fill="#667085"/>
+<rect class="b" x="620" y="2048" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2071">pocketlab.commands.node.{node_id}.{command.replace → projection/UI</text>
+<rect class="b" x="24" y="2102" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2125">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2120" x2="610" y2="2120"/>
+<polygon points="610,2120 600,2114 600,2126" fill="#667085"/>
+<rect class="b" x="620" y="2102" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2125">pocketlab.commands.node.{normalized_node_id}.agent.restart → proje</text>
+<rect class="b" x="24" y="2156" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2179">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2174" x2="610" y2="2174"/>
+<polygon points="610,2174 600,2168 600,2180" fill="#667085"/>
+<rect class="b" x="620" y="2156" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2179">pocketlab.commands.node.{self.node_id} → projection/UI</text>
+<rect class="b" x="24" y="2210" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2233">action_queue.py</text>
+<line class="e" x1="444" y1="2228" x2="610" y2="2228"/>
+<polygon points="610,2228 600,2222 600,2234" fill="#667085"/>
+<rect class="b" x="620" y="2210" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2233">pocketlab.commands.operation.execute → projection/UI</text>
+<rect class="b" x="24" y="2264" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2287">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2282" x2="610" y2="2282"/>
+<polygon points="610,2282 600,2276 600,2288" fill="#667085"/>
+<rect class="b" x="620" y="2264" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2287">pocketlab.commands.release.apply → projection/UI</text>
+<rect class="b" x="24" y="2318" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2341">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2336" x2="610" y2="2336"/>
+<polygon points="610,2336 600,2330 600,2342" fill="#667085"/>
+<rect class="b" x="620" y="2318" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2341">pocketlab.commands.release.check → projection/UI</text>
+<rect class="b" x="24" y="2372" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2395">action_queue.py</text>
+<line class="e" x1="444" y1="2390" x2="610" y2="2390"/>
+<polygon points="610,2390 600,2384 600,2396" fill="#667085"/>
+<rect class="b" x="620" y="2372" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2395">pocketlab.commands.runbook.approve → projection/UI</text>
+<rect class="b" x="24" y="2426" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2449">action_queue.py</text>
+<line class="e" x1="444" y1="2444" x2="610" y2="2444"/>
+<polygon points="610,2444 600,2438 600,2450" fill="#667085"/>
+<rect class="b" x="620" y="2426" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2449">pocketlab.commands.runbook.execute → projection/UI</text>
+<rect class="b" x="24" y="2480" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2503">action_queue.py</text>
+<line class="e" x1="444" y1="2498" x2="610" y2="2498"/>
+<polygon points="610,2498 600,2492 600,2504" fill="#667085"/>
+<rect class="b" x="620" y="2480" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2503">pocketlab.commands.runbook.reject → projection/UI</text>
+<rect class="b" x="24" y="2534" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2557">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2552" x2="610" y2="2552"/>
+<polygon points="610,2552 600,2546 600,2558" fill="#667085"/>
+<rect class="b" x="620" y="2534" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2557">pocketlab.commands.security.configure_opa → projection/UI</text>
+<rect class="b" x="24" y="2588" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2611">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2606" x2="610" y2="2606"/>
+<polygon points="610,2606 600,2600 600,2612" fill="#667085"/>
+<rect class="b" x="620" y="2588" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2611">pocketlab.commands.security.scan → projection/UI</text>
+<rect class="b" x="24" y="2642" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2665">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2660" x2="610" y2="2660"/>
+<polygon points="610,2660 600,2654 600,2666" fill="#667085"/>
+<rect class="b" x="620" y="2642" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2665">pocketlab.commands.unknown → projection/UI</text>
+<rect class="b" x="24" y="2696" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2719">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2714" x2="610" y2="2714"/>
+<polygon points="610,2714 600,2708 600,2720" fill="#667085"/>
+<rect class="b" x="620" y="2696" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2719">pocketlab.commands.vault.dynamic_secret → projection/UI</text>
+<rect class="b" x="24" y="2750" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2773">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2768" x2="610" y2="2768"/>
+<polygon points="610,2768 600,2762 600,2774" fill="#667085"/>
+<rect class="b" x="620" y="2750" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2773">pocketlab.commands.vault.rotate → projection/UI</text>
+<rect class="b" x="24" y="2804" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2827">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="2822" x2="610" y2="2822"/>
+<polygon points="610,2822 600,2816 600,2828" fill="#667085"/>
+<rect class="b" x="620" y="2804" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2827">pocketlab.events → projection/UI</text>
+<rect class="b" x="24" y="2858" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2881">main.py</text>
+<line class="e" x1="444" y1="2876" x2="610" y2="2876"/>
+<polygon points="610,2876 600,2870 600,2882" fill="#667085"/>
+<rect class="b" x="620" y="2858" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2881">pocketlab.events.api.started → projection/UI</text>
+<rect class="b" x="24" y="2912" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2935">main.py</text>
+<line class="e" x1="444" y1="2930" x2="610" y2="2930"/>
+<polygon points="610,2930 600,2924 600,2936" fill="#667085"/>
+<rect class="b" x="620" y="2912" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2935">pocketlab.events.api.stopped → projection/UI</text>
+<rect class="b" x="24" y="2966" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="2989">domain_commands.py</text>
+<line class="e" x1="444" y1="2984" x2="610" y2="2984"/>
+<polygon points="610,2984 600,2978 600,2990" fill="#667085"/>
+<rect class="b" x="620" y="2966" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="2989">pocketlab.events.catalog.refresh_started → projection/UI</text>
+<rect class="b" x="24" y="3020" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3043">domain_commands.py</text>
+<line class="e" x1="444" y1="3038" x2="610" y2="3038"/>
+<polygon points="610,3038 600,3032 600,3044" fill="#667085"/>
+<rect class="b" x="620" y="3020" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3043">pocketlab.events.catalog.refreshed → projection/UI</text>
+<rect class="b" x="24" y="3074" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3097">nats_bus.py</text>
+<line class="e" x1="444" y1="3092" x2="610" y2="3092"/>
+<polygon points="610,3092 600,3086 600,3098" fill="#667085"/>
+<rect class="b" x="620" y="3074" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3097">pocketlab.events.command.dead_lettered → projection/UI</text>
+<rect class="b" x="24" y="3128" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3151">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3146" x2="610" y2="3146"/>
+<polygon points="610,3146 600,3140 600,3152" fill="#667085"/>
+<rect class="b" x="620" y="3128" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3151">pocketlab.events.command.deferred → projection/UI</text>
+<rect class="b" x="24" y="3182" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3205">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3200" x2="610" y2="3200"/>
+<polygon points="610,3200 600,3194 600,3206" fill="#667085"/>
+<rect class="b" x="620" y="3182" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3205">pocketlab.events.command.failed → projection/UI</text>
+<rect class="b" x="24" y="3236" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3259">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="3254" x2="610" y2="3254"/>
+<polygon points="610,3254 600,3248 600,3260" fill="#667085"/>
+<rect class="b" x="620" y="3236" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3259">pocketlab.events.command.queued → projection/UI</text>
+<rect class="b" x="24" y="3290" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3313">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3308" x2="610" y2="3308"/>
+<polygon points="610,3308 600,3302 600,3314" fill="#667085"/>
+<rect class="b" x="620" y="3290" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3313">pocketlab.events.command.received → projection/UI</text>
+<rect class="b" x="24" y="3344" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3367">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3362" x2="610" y2="3362"/>
+<polygon points="610,3362 600,3356 600,3368" fill="#667085"/>
+<rect class="b" x="620" y="3344" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3367">pocketlab.events.command.retry_scheduled → projection/UI</text>
+<rect class="b" x="24" y="3398" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3421">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3416" x2="610" y2="3416"/>
+<polygon points="610,3416 600,3410 600,3422" fill="#667085"/>
+<rect class="b" x="620" y="3398" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3421">pocketlab.events.command.running → projection/UI</text>
+<rect class="b" x="24" y="3452" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3475">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3470" x2="610" y2="3470"/>
+<polygon points="610,3470 600,3464 600,3476" fill="#667085"/>
+<rect class="b" x="620" y="3452" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3475">pocketlab.events.command.succeeded → projection/UI</text>
+<rect class="b" x="24" y="3506" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3529">pocketlab_worker.py</text>
+<line class="e" x1="444" y1="3524" x2="610" y2="3524"/>
+<polygon points="610,3524 600,3518 600,3530" fill="#667085"/>
+<rect class="b" x="620" y="3506" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3529">pocketlab.events.command.worker_claimed → projection/UI</text>
+<rect class="b" x="24" y="3560" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3583">domain_commands.py</text>
+<line class="e" x1="444" y1="3578" x2="610" y2="3578"/>
+<polygon points="610,3578 600,3572 600,3584" fill="#667085"/>
+<rect class="b" x="620" y="3560" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3583">pocketlab.events.drift.detected → projection/UI</text>
+<rect class="b" x="24" y="3614" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3637">domain_commands.py</text>
+<line class="e" x1="444" y1="3632" x2="610" y2="3632"/>
+<polygon points="610,3632 600,3626 600,3638" fill="#667085"/>
+<rect class="b" x="620" y="3614" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3637">pocketlab.events.drift.previewed → projection/UI</text>
+<rect class="b" x="24" y="3668" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3691">domain_commands.py</text>
+<line class="e" x1="444" y1="3686" x2="610" y2="3686"/>
+<polygon points="610,3686 600,3680 600,3692" fill="#667085"/>
+<rect class="b" x="620" y="3668" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3691">pocketlab.events.drift.scan_completed → projection/UI</text>
+<rect class="b" x="24" y="3722" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3745">domain_commands.py</text>
+<line class="e" x1="444" y1="3740" x2="610" y2="3740"/>
+<polygon points="610,3740 600,3734 600,3746" fill="#667085"/>
+<rect class="b" x="620" y="3722" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3745">pocketlab.events.drift.scan_started → projection/UI</text>
+<rect class="b" x="24" y="3776" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3799">domain_commands.py</text>
+<line class="e" x1="444" y1="3794" x2="610" y2="3794"/>
+<polygon points="610,3794 600,3788 600,3800" fill="#667085"/>
+<rect class="b" x="620" y="3776" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3799">pocketlab.events.drift.{action} → projection/UI</text>
+<rect class="b" x="24" y="3830" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3853">domain_commands.py</text>
+<line class="e" x1="444" y1="3848" x2="610" y2="3848"/>
+<polygon points="610,3848 600,3842 600,3854" fill="#667085"/>
+<rect class="b" x="620" y="3830" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3853">pocketlab.events.drift.{action}_started → projection/UI</text>
+<rect class="b" x="24" y="3884" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3907">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="3902" x2="610" y2="3902"/>
+<polygon points="610,3902 600,3896 600,3908" fill="#667085"/>
+<rect class="b" x="620" y="3884" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3907">pocketlab.events.fleet.bootstrap_blocked → projection/UI</text>
+<rect class="b" x="24" y="3938" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="3961">domain_commands.py</text>
+<line class="e" x1="444" y1="3956" x2="610" y2="3956"/>
+<polygon points="610,3956 600,3950 600,3962" fill="#667085"/>
+<rect class="b" x="620" y="3938" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="3961">pocketlab.events.fleet.config_updated → projection/UI</text>
+<rect class="b" x="24" y="3992" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4015">live_status.py</text>
+<line class="e" x1="444" y1="4010" x2="610" y2="4010"/>
+<polygon points="610,4010 600,4004 600,4016" fill="#667085"/>
+<rect class="b" x="620" y="3992" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4015">pocketlab.events.fleet.device_health_sampled → projection/UI</text>
+<rect class="b" x="24" y="4046" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4069">fleet_registry.py</text>
+<line class="e" x1="444" y1="4064" x2="610" y2="4064"/>
+<polygon points="610,4064 600,4058 600,4070" fill="#667085"/>
+<rect class="b" x="620" y="4046" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4069">pocketlab.events.fleet.device_removed → projection/UI</text>
+<rect class="b" x="24" y="4100" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4123">live_status.py</text>
+<line class="e" x1="444" y1="4118" x2="610" y2="4118"/>
+<polygon points="610,4118 600,4112 600,4124" fill="#667085"/>
+<rect class="b" x="620" y="4100" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4123">pocketlab.events.fleet.health_changed → projection/UI</text>
+<rect class="b" x="24" y="4154" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4177">live_status.py</text>
+<line class="e" x1="444" y1="4172" x2="610" y2="4172"/>
+<polygon points="610,4172 600,4166 600,4178" fill="#667085"/>
+<rect class="b" x="620" y="4154" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4177">pocketlab.events.fleet.health_sampled → projection/UI</text>
+<rect class="b" x="24" y="4208" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4231">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="4226" x2="610" y2="4226"/>
+<polygon points="610,4226 600,4220 600,4232" fill="#667085"/>
+<rect class="b" x="620" y="4208" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4231">pocketlab.events.fleet.invite_accepted → projection/UI</text>
+<rect class="b" x="24" y="4262" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4285">domain_commands.py</text>
+<line class="e" x1="444" y1="4280" x2="610" y2="4280"/>
+<polygon points="610,4280 600,4274 600,4286" fill="#667085"/>
+<rect class="b" x="620" y="4262" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4285">pocketlab.events.fleet.invite_created → projection/UI</text>
+<rect class="b" x="24" y="4316" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="4339">unobserved-in-canonical-AsyncAPI</text>
+<line class="e" x1="444" y1="4334" x2="610" y2="4334"/>
+<polygon points="610,4334 600,4328 600,4340" fill="#667085"/>
+<rect class="b" x="620" y="4316" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="4339">pocketlab.events.fleet.invite_revoked → projection/UI</text>
+</svg>

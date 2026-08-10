@@ -73,21 +73,25 @@ tasks:
 
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'
+    deps: [lite:dev:scratch:prepare]
     cmds:
       - bash scripts/dev/lite/run-gate.sh quick
 
   lite:check:
     desc: Full local Lite gate including backend/frontend, Storybook, mocked browser, redaction, contracts, and strict docs
+    deps: [lite:dev:scratch:prepare]
     cmds:
       - bash scripts/dev/lite/run-gate.sh full
 
   lite:check:release:
     desc: Release qualification gate; requires an explicitly running live Lite stack
+    deps: [lite:dev:scratch:prepare]
     cmds:
       - bash scripts/dev/lite/run-gate.sh release
 
   lite:test:backend:
     desc: Run the focused Lite backend API, Recovery, and Security suites
+    deps: [lite:dev:scratch:prepare]
     cmds:
       - PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py
 

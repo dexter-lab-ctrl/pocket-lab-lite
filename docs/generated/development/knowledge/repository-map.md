@@ -275,8 +275,12 @@ generator_version: 2
 | `tests/backend/test_workflows.py` | test:tests/backend/test_workflows.py |
 | `tests/dev/browser-resolver.test.mjs` | test:tests/dev/browser-resolver.test.mjs |
 | `tests/dev/runtime-evidence-sanitizer.test.mjs` | test:tests/dev/runtime-evidence-sanitizer.test.mjs |
+| `tests/dev/test_dev_scratch_policy.py` | test:tests/dev/test_dev_scratch_policy.py |
+| `tests/dev/test_pytest_temp_policy.py` | test:tests/dev/test_pytest_temp_policy.py |
 | `tests/docs/mkdocs.spec.ts` | test:tests/docs/mkdocs.spec.ts |
 | `tests/docs/test_documentation_intelligence.py` | test:tests/docs/test_documentation_intelligence.py |
+| `tests/docs/test_enterprise_completion.py` | test:tests/docs/test_enterprise_completion.py |
+| `tests/docs/test_enterprise_documentation.py` | test:tests/docs/test_enterprise_documentation.py |
 | `tests/docs/test_living_knowledgebase.py` | test:tests/docs/test_living_knowledgebase.py |
 | `tests/docs/test_operational_health_bridge.py` | test:tests/docs/test_operational_health_bridge.py |
 | `tests/e2e/global-setup.ts` | test:tests/e2e/global-setup.ts |
