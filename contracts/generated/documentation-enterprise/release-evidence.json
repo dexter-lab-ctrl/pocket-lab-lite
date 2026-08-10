@@ -1,0 +1,99 @@
+{
+  "artifacts": {
+    "checksums.txt": {
+      "bytes": null,
+      "sha256": null,
+      "status": "unobserved"
+    },
+    "dist.zip": {
+      "bytes": 1719519,
+      "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f",
+      "status": "observed-local-release-staging"
+    },
+    "release_manifest": {
+      "bytes": null,
+      "sha256": null,
+      "status": "unobserved"
+    }
+  },
+  "backend_identity": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+  "breaking_changes": [],
+  "build_timestamp": "unobserved",
+  "database_migration_level": "unobserved",
+  "device_compatibility": [
+    "Android/Termux ARM64",
+    "ARM64 Ubuntu/proot",
+    "Ubuntu/WSL2 development"
+  ],
+  "evidence_status": "source-and-canonical-evidence",
+  "exact_tag": null,
+  "fingerprints": {
+    "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
+    "asyncapi": "3f24c67cf9bfae51b323f5ec68af435e3fed11670296801c1f785324cdd2f893",
+    "documentation": "ae56e69ec253aeedd19e2395525cd4a84b9ba31624a733d6046255ab54b7f010",
+    "openapi": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
+    "operational_health": "7ff5e9b3c494f1f9c11b8dd790e8a39908bb097ae9a34a30b88ded1605646a1c"
+  },
+  "frontend_version": "1.0.0",
+  "implementation_status": "implemented",
+  "known_limitations": "derive from canonical limitations catalog",
+  "provenance": {
+    "build_type": "pocket-lab-lite/dist-zip-and-documentation-evidence",
+    "builder": {
+      "id": "pocket-lab-lite/wsl2-ci-explicit-release-workflow"
+    },
+    "formal_slsa_level": "not-claimed",
+    "implementation_status": "implemented",
+    "invocation": {
+      "docs_generated_live_runtime": false,
+      "runtime_promotion_implicit": false,
+      "signing_implicit": false
+    },
+    "predicate_type": "https://slsa.dev/provenance/v1",
+    "schema_version": "1.0.0",
+    "signing": {
+      "keyless_preferred": true,
+      "status": "unobserved-until-explicit-sign-command",
+      "workflow": "cosign sign-blob --yes --bundle <bundle> <artifact>"
+    },
+    "source": {
+      "commit": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1",
+      "exact_tag": null,
+      "tree": "107da68fa2792084224a406aa913503b0be8f4e6"
+    },
+    "subjects": [
+      {
+        "bytes": 1719519,
+        "path": "dist.zip",
+        "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
+      },
+      {
+        "bytes": 445352,
+        "path": "contracts/generated/supply-chain/sbom-dev.cdx.json",
+        "sha256": "98d75e33fe9baba608a4cbc808e6274ac75a832e1c38b9cc005ac3361cf4e168"
+      },
+      {
+        "bytes": 2284,
+        "path": "contracts/generated/supply-chain/sbom-release.cdx.json",
+        "sha256": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461"
+      },
+      {
+        "bytes": 791,
+        "path": "contracts/generated/supply-chain/sbom-runtime.cdx.json",
+        "sha256": "aa5df952b7c831f9570df6121d17041b32ae5f3a651aa4646206d4c3cb26947a"
+      }
+    ]
+  },
+  "runtime_baseline_binding": "lite-2026.08.07.3",
+  "sbom_digest": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461",
+  "security_scan_digest": "4c72fe899858b70b7757e6cada313f8c241fa42ee56a1329776d52cadbf7a6a2",
+  "signatures": {
+    "keyless_preferred": true,
+    "status": "unobserved-until-explicit-sign-command",
+    "workflow": "cosign sign-blob --yes --bundle <bundle> <artifact>"
+  },
+  "source_commit": "uncommitted",
+  "status": "release-evidence-model-operational",
+  "tree_hash": "uncommitted",
+  "validation_outcomes": "canonical validation evidence only; never polled live"
+}

@@ -1,0 +1,34 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [],
+  "metadata": {
+    "component": {
+      "name": "pocket-lab-lite-runtime",
+      "type": "application"
+    },
+    "properties": [
+      {
+        "name": "pocketlab:evidence-status",
+        "value": "release-promoted-runtime-baseline"
+      },
+      {
+        "name": "pocketlab:source-generator",
+        "value": "Pocket Lab promoted runtime projection"
+      },
+      {
+        "name": "pocketlab:source-digest",
+        "value": "3f30f7973f91e436726d9de90ca3c2dff933acddfe676f6789681e31b6b11257"
+      },
+      {
+        "name": "pocketlab:sanitized",
+        "value": "true"
+      },
+      {
+        "name": "pocketlab:release-binding",
+        "value": "lite-2026.08.07.3"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

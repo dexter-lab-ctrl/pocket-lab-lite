@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "tool", "source_digest", "summary", "redacted"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "tool": {"type": "string"},
+    "source_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "summary": {"type": "object"},
+    "redacted": {"const": true}
+  },
+  "additionalProperties": false
+}

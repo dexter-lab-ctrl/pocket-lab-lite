@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 23e288333abf6ba8a66745abdb34f335aedf6391326c63bb036903c2ca5ed234
+source_fingerprint: 889272cd0ef3710868bd179ac966907dfe14c0a456a01cbcddd4d1ded145f353
 schema_revision: 1
 validation_status: generated
 ---
@@ -151,6 +151,8 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:dev:frontend:mocked`
 - `lite:dev:logs`
 - `lite:dev:nats`
+- `lite:dev:scratch:check`
+- `lite:dev:scratch:prepare`
 - `lite:dev:status`
 - `lite:dev:up`
 - `lite:dev:worker`
@@ -166,6 +168,8 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:development:generate`
 - `lite:docs:diagrams:check`
 - `lite:docs:diagrams:generate`
+- `lite:docs:enterprise:check`
+- `lite:docs:enterprise:generate`
 - `lite:docs:events`
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
@@ -190,6 +194,11 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:production:check`
 - `lite:docs:production:generate`
 - `lite:docs:projections`
+- `lite:docs:provenance:generate`
+- `lite:docs:provenance:sign`
+- `lite:docs:provenance:sign-release-set`
+- `lite:docs:provenance:verify`
+- `lite:docs:provenance:verify-release-set`
 - `lite:docs:reason-codes`
 - `lite:docs:recovery`
 - `lite:docs:redaction`
@@ -197,10 +206,19 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:runtime:check`
 - `lite:docs:runtime:generate`
 - `lite:docs:security`
+- `lite:docs:security-tools:check`
+- `lite:docs:security-tools:plan`
+- `lite:docs:security-tools:setup`
+- `lite:docs:security-tools:update`
 - `lite:docs:serve`
 - `lite:docs:services`
 - `lite:docs:sqlite`
 - `lite:docs:sqlite:check`
+- `lite:docs:supply-chain:capture`
+- `lite:docs:supply-chain:check`
+- `lite:docs:supply-chain:dependency-track:export`
+- `lite:docs:supply-chain:promote`
+- `lite:docs:supply-chain:qualify`
 - `lite:docs:sync`
 - `lite:docs:tools:check`
 - `lite:docs:ui`

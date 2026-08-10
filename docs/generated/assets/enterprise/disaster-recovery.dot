@@ -1,0 +1,12 @@
+digraph flow {
+  graph [rankdir="LR", bgcolor="transparent", label="Disaster recovery dependency order", labelloc="t"];
+  node [shape="box", style="rounded,filled", fillcolor="#f8fafc"];
+  n0 [label="server phone lost"]; n0 -> m0; m0 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n1 [label="secondary device lost"]; n1 -> m1; m1 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n2 [label="SQLite corrupted"]; n2 -> m2; m2 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n3 [label="NATS unavailable"]; n3 -> m3; m3 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n4 [label="Tailscale unavailable"]; n4 -> m4; m4 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n5 [label="PhotoPrism unavailable"]; n5 -> m5; m5 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n6 [label="bad release"]; n6 -> m6; m6 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+  n7 [label="failed update"]; n7 -> m7; m7 [label="durable state/release identity → FastAPI/Caddy → NATS/worker → agent/supervisor → Tailscale → apps"];
+}

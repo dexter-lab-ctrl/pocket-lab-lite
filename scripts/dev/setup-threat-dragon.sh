@@ -2,10 +2,16 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-IMAGE="${THREAT_DRAGON_IMAGE:-owasp/threat-dragon:stable}"
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64|amd64) DEFAULT_IMAGE="owasp/threat-dragon:v2.6.2" ;;
+  aarch64|arm64) DEFAULT_IMAGE="owasp/threat-dragon:v2.6.2-arm64" ;;
+  *) echo "ERROR: unsupported Threat Dragon developer architecture: $ARCH" >&2; exit 2 ;;
+esac
+IMAGE="${THREAT_DRAGON_IMAGE:-$DEFAULT_IMAGE}"
 CONTAINER="${THREAT_DRAGON_CONTAINER:-pocketlab-threat-dragon}"
 HOST_PORT="${THREAT_DRAGON_PORT:-8082}"
-MODEL_DIR="${POCKETLAB_THREAT_MODEL_DIR:-$ROOT/threat-model}"
+MODEL_DIR="${POCKETLAB_THREAT_MODEL_DIR:-$ROOT/contracts/security}"
 RUNTIME_DIR="${POCKETLAB_THREAT_DRAGON_DIR:-$ROOT/.pocketlab/threat-dragon}"
 ENV_FILE="$RUNTIME_DIR/.env"
 
@@ -35,8 +41,8 @@ command -v openssl >/dev/null 2>&1 || fail "openssl is required to generate Thre
 docker info >/dev/null 2>&1 || fail "Docker is installed but unavailable. Start Docker and check user permissions."
 
 case "$IMAGE" in
-  *:latest)
-    fail "Refusing to use ':latest'. Use owasp/threat-dragon:stable or another pinned non-latest tag."
+  *:latest|*:stable)
+    fail "Refusing mutable Threat Dragon tags. Use the pinned v2.6.2 architecture-specific image or an explicit immutable digest."
     ;;
 esac
 
@@ -44,11 +50,12 @@ mkdir -p "$MODEL_DIR" "$RUNTIME_DIR"
 
 if [ ! -f "$ENV_FILE" ]; then
   echo "Creating Threat Dragon env file: $ENV_FILE"
-  {
-    echo "# Local Pocket Lab Threat Dragon runtime settings."
-    echo "# Do not commit this file. It contains local runtime secrets."
-    echo "# Threat model source-of-truth remains in the repository under threat-model/."
-  } > "$ENV_FILE"
+  cat > "$ENV_FILE" <<'EOF'
+# Local Pocket Lab Threat Dragon runtime settings.
+# Do not commit this file. It contains local runtime secrets.
+# Threat model source-of-truth remains contracts/security/threat-model.json.
+# Threat Dragon is a derived human-review surface only.
+EOF
   chmod 0600 "$ENV_FILE"
 fi
 
@@ -123,7 +130,7 @@ URL: http://localhost:$HOST_PORT
 Container: $CONTAINER
 Image: $IMAGE
 Container port: $CONTAINER_PORT
-Repository threat-model mount: $MODEL_DIR -> /threat-model
+Canonical security-model mount: $MODEL_DIR -> /threat-model
 Runtime data mount: $RUNTIME_DIR -> /data
 
 Docker port mapping:

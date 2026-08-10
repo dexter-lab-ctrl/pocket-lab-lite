@@ -1,0 +1,134 @@
+{
+  "items": [
+    {
+      "canonical": "backup stale",
+      "destinations": [
+        "/generated/production/recovery/",
+        "/generated/production/intelligence/recovery-readiness/"
+      ],
+      "synonyms": [
+        "old backup",
+        "recovery freshness"
+      ]
+    },
+    {
+      "canonical": "device offline",
+      "destinations": [
+        "/generated/production/devices/",
+        "/generated/production/intelligence/fleet-readiness/",
+        "/generated/production/troubleshooting/"
+      ],
+      "synonyms": [
+        "agent unreachable",
+        "fleet problem",
+        "node disconnected"
+      ]
+    },
+    {
+      "canonical": "devices",
+      "destinations": [
+        "/generated/production/devices/",
+        "/generated/production/intelligence/fleet-readiness/"
+      ],
+      "synonyms": [
+        "agent",
+        "fleet",
+        "node",
+        "offline"
+      ]
+    },
+    {
+      "canonical": "operational-health",
+      "destinations": [
+        "/generated/production/intelligence/current-health/",
+        "/generated/development/knowledge/operational-health/"
+      ],
+      "synonyms": [
+        "degraded",
+        "health",
+        "stale",
+        "unavailable"
+      ]
+    },
+    {
+      "canonical": "recovery",
+      "destinations": [
+        "/generated/production/recovery/",
+        "/generated/production/intelligence/recovery-readiness/"
+      ],
+      "synonyms": [
+        "backup",
+        "restore",
+        "restore readiness"
+      ]
+    },
+    {
+      "canonical": "release mismatch",
+      "destinations": [
+        "/generated/production/release/",
+        "/generated/production/intelligence/what-changed/"
+      ],
+      "synonyms": [
+        "installed release mismatch",
+        "runtime release drift"
+      ]
+    },
+    {
+      "canonical": "release-impact",
+      "destinations": [
+        "/generated/production/intelligence/what-changed/"
+      ],
+      "synonyms": [
+        "change impact",
+        "release delta",
+        "what changed"
+      ]
+    },
+    {
+      "canonical": "remote access not ready",
+      "destinations": [
+        "/generated/production/remote-access/",
+        "/generated/production/troubleshooting/"
+      ],
+      "synonyms": [
+        "tailnet problem",
+        "tailscale unavailable"
+      ]
+    },
+    {
+      "canonical": "remote-access",
+      "destinations": [
+        "/generated/production/remote-access/"
+      ],
+      "synonyms": [
+        "remote access not ready",
+        "tailnet",
+        "tailscale"
+      ]
+    },
+    {
+      "canonical": "security",
+      "destinations": [
+        "/generated/production/security/"
+      ],
+      "synonyms": [
+        "lynis",
+        "safety",
+        "safety check",
+        "trivy"
+      ]
+    },
+    {
+      "canonical": "security check stuck",
+      "destinations": [
+        "/generated/production/security/",
+        "/generated/production/troubleshooting/"
+      ],
+      "synonyms": [
+        "scan stuck",
+        "worker safety check"
+      ]
+    }
+  ],
+  "schema_version": "1.0.0"
+}

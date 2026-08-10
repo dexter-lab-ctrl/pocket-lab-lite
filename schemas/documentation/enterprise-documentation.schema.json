@@ -1,0 +1,41 @@
+{
+  "$id": "https://pocketlab.local/schemas/documentation/enterprise-documentation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "generator": {
+      "type": "string"
+    },
+    "implementation_status": {
+      "enum": [
+        "implemented"
+      ],
+      "type": "string"
+    },
+    "items": {
+      "type": "object"
+    },
+    "schema_version": {
+      "enum": [
+        "1.0.0",
+        "2.0.0"
+      ]
+    },
+    "source_commit": {
+      "minLength": 7,
+      "type": "string"
+    },
+    "source_fingerprint": {
+      "pattern": "^[a-f0-9]{64}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "generator",
+    "source_commit",
+    "source_fingerprint",
+    "items"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,302 @@
+{
+  "authority": "promoted/canonical evidence only",
+  "controls_source_derived": 2,
+  "controls_verified": 5,
+  "implementation_status": "implemented",
+  "live_monitoring": false,
+  "promoted_runtime_release": "lite-2026.08.07.3",
+  "security_operational_health": "healthy",
+  "signals": [
+    {
+      "boundary": "application-container",
+      "observed": "healthy",
+      "signal": "apps operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "application-container",
+      "observed": "normalized-evidence-present",
+      "signal": "scanner results",
+      "source": "contracts/generated/supply-chain/automation-summary.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "application-container",
+      "observed": "release-evidence-model-operational",
+      "signal": "release evidence",
+      "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "application-container",
+      "observed": {
+        "healthy": 22,
+        "unvalidated": 4
+      },
+      "signal": "dependency health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "application-container",
+      "observed": "normalized canonical evidence present",
+      "signal": "SBOM/vulnerability evidence",
+      "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "browser",
+      "observed": "degraded",
+      "signal": "home operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "control-api",
+      "observed": "degraded",
+      "signal": "home operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "control-api",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "NATS/JetStream health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "durable-state",
+      "observed": "degraded",
+      "signal": "recovery operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "evidence-stale"
+    },
+    {
+      "boundary": "external-release",
+      "observed": "healthy",
+      "signal": "security operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "external-release",
+      "observed": "normalized-evidence-present",
+      "signal": "scanner results",
+      "source": "contracts/generated/supply-chain/automation-summary.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "external-release",
+      "observed": "release-evidence-model-operational",
+      "signal": "release evidence",
+      "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "external-release",
+      "observed": {
+        "healthy": 22,
+        "unvalidated": 4
+      },
+      "signal": "dependency health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "external-release",
+      "observed": "normalized canonical evidence present",
+      "signal": "SBOM/vulnerability evidence",
+      "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "managed-device",
+      "observed": "healthy",
+      "signal": "devices operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "managed-device",
+      "observed": true,
+      "signal": "Tailscale readiness",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "managed-device",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "node-agent status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "managed-device",
+      "observed": [
+        "unvalidated"
+      ],
+      "signal": "supervisor status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-partial"
+    },
+    {
+      "boundary": "managed-device",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "worker status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": "degraded",
+      "signal": "home operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "NATS/JetStream health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "node-agent status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": [
+        "unvalidated"
+      ],
+      "signal": "supervisor status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-partial"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "worker status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": {
+        "healthy": 22,
+        "unvalidated": 4
+      },
+      "signal": "dependency health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "messaging-execution",
+      "observed": "normalized canonical evidence present",
+      "signal": "SBOM/vulnerability evidence",
+      "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "server-host",
+      "observed": "degraded",
+      "signal": "home operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "server-host",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "NATS/JetStream health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "server-host",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "node-agent status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "server-host",
+      "observed": [
+        "unvalidated"
+      ],
+      "signal": "supervisor status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-partial"
+    },
+    {
+      "boundary": "server-host",
+      "observed": [
+        "healthy"
+      ],
+      "signal": "worker status",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "server-host",
+      "observed": "normalized-evidence-present",
+      "signal": "scanner results",
+      "source": "contracts/generated/supply-chain/automation-summary.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "server-host",
+      "observed": "release-evidence-model-operational",
+      "signal": "release evidence",
+      "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "private-network",
+      "observed": "healthy",
+      "signal": "devices operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    },
+    {
+      "boundary": "private-network",
+      "observed": true,
+      "signal": "Tailscale readiness",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "state": "control-observed"
+    }
+  ],
+  "state_counts": {
+    "control-observed": 31,
+    "control-partial": 3,
+    "evidence-stale": 1
+  },
+  "states": [
+    "control-observed",
+    "control-partial",
+    "control-unvalidated",
+    "mitigation-source-derived",
+    "evidence-stale",
+    "not-applicable"
+  ]
+}

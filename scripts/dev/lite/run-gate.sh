@@ -2,10 +2,15 @@
 set -euo pipefail
 
 TIER="${1:-quick}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+source "$SCRIPT_DIR/dev-scratch.sh"
+pocketlab_dev_scratch_activate "gate-${TIER}"
+
 VALIDATION_DIR="${VALIDATION_DIR:-.pocketlab-dev/validation}"
 PYTHON="${POCKETLAB_DEV_PYTHON:-${PYTHON:-.venv/bin/python}}"
 if [[ ! -x "$PYTHON" ]]; then PYTHON=python3; fi
 mkdir -p "$VALIDATION_DIR/commands"
+printf 'INFO dev scratch: %s\n' "$TMPDIR"
 
 record() {
   local name="$1"; shift

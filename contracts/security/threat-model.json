@@ -1,0 +1,2939 @@
+{
+  "boundaries": [
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "application-container",
+      "label": "Application-container boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "healthy",
+          "signal": "apps operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "normalized-evidence-present",
+          "signal": "scanner results",
+          "source": "contracts/generated/supply-chain/automation-summary.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "release-evidence-model-operational",
+          "signal": "release evidence",
+          "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": {
+            "healthy": 22,
+            "unvalidated": 4
+          },
+          "signal": "dependency health",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "normalized canonical evidence present",
+          "signal": "SBOM/vulnerability evidence",
+          "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "browser",
+      "label": "Browser trust boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "degraded",
+          "signal": "home operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "control-api",
+      "label": "Control API boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "degraded",
+          "signal": "home operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "NATS/JetStream health",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "durable-state",
+      "label": "Durable-state boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "degraded",
+          "signal": "recovery operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "evidence-stale"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device",
+        "external release service"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "external-release",
+      "label": "External release boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "healthy",
+          "signal": "security operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "normalized-evidence-present",
+          "signal": "scanner results",
+          "source": "contracts/generated/supply-chain/automation-summary.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "release-evidence-model-operational",
+          "signal": "release evidence",
+          "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": {
+            "healthy": 22,
+            "unvalidated": 4
+          },
+          "signal": "dependency health",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "normalized canonical evidence present",
+          "signal": "SBOM/vulnerability evidence",
+          "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "managed-device",
+      "label": "Managed-device boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "healthy",
+          "signal": "devices operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": true,
+          "signal": "Tailscale readiness",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "node-agent status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "unvalidated"
+          ],
+          "signal": "supervisor status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-partial"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "worker status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "messaging-execution",
+      "label": "Messaging and execution boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "degraded",
+          "signal": "home operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "NATS/JetStream health",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "node-agent status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "unvalidated"
+          ],
+          "signal": "supervisor status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-partial"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "worker status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": {
+            "healthy": 22,
+            "unvalidated": 4
+          },
+          "signal": "dependency health",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "normalized canonical evidence present",
+          "signal": "SBOM/vulnerability evidence",
+          "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "controls": [
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "server-host",
+      "label": "Server-host boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "degraded",
+          "signal": "home operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "NATS/JetStream health",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "node-agent status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": [
+            "unvalidated"
+          ],
+          "signal": "supervisor status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-partial"
+        },
+        {
+          "observed": [
+            "healthy"
+          ],
+          "signal": "worker status",
+          "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "normalized-evidence-present",
+          "signal": "scanner results",
+          "source": "contracts/generated/supply-chain/automation-summary.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": "release-evidence-model-operational",
+          "signal": "release evidence",
+          "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    },
+    {
+      "actors": [
+        "operator",
+        "Pocket Lab service",
+        "joined device"
+      ],
+      "allowed_flows": [
+        "canonical control-plane paths only"
+      ],
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "controls": [],
+      "data_classifications": [
+        "sanitized operational metadata",
+        "restricted identity/configuration metadata where applicable"
+      ],
+      "data_flows": [
+        "UI → Caddy → FastAPI → NATS/JetStream → worker/agent/supervisor → evidence → FastAPI → UI"
+      ],
+      "entry_points": [
+        "repository-defined API/event/runtime/release flow"
+      ],
+      "forbidden_flows": [
+        "frontend → NATS",
+        "frontend → shell",
+        "documentation generator → live runtime",
+        "raw scanner output → MkDocs"
+      ],
+      "id": "private-network",
+      "label": "Private network and Tailnet boundary",
+      "owner": "architecture/security owner derived from source",
+      "residual_risk": "human review required",
+      "review_status": "human-review-required",
+      "runtime_evidence": [
+        {
+          "observed": "healthy",
+          "signal": "devices operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        },
+        {
+          "observed": true,
+          "signal": "Tailscale readiness",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "state": "control-observed"
+        }
+      ],
+      "secrets_handled": "runtime-owned only; never rendered by Documentation Platform",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "trust_assumptions": [
+        "canonical contracts are reviewed",
+        "promoted runtime evidence is sanitized",
+        "tool evidence is normalized before promotion"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "boundaries": [
+        "browser",
+        "messaging-execution"
+      ],
+      "boundary": [
+        "browser",
+        "messaging-execution"
+      ],
+      "description": "Frontend does not connect directly to NATS.",
+      "freshness": "source-current",
+      "id": "CTRL-BROWSER-NATS",
+      "implementation": [
+        "src/",
+        "pocket-lab-final-structure/runtime/api_fastapi/"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "frontend/control-api",
+      "runtime_evidence": [],
+      "source_refs": [
+        "contracts/generated/knowledge/requirements.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_api.py",
+        "security/static-analysis/pocketlab-architecture.yml"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundaries": [
+        "browser"
+      ],
+      "boundary": [
+        "browser"
+      ],
+      "description": "Frontend does not execute shell commands.",
+      "freshness": "source-current",
+      "id": "CTRL-BROWSER-SHELL",
+      "implementation": [
+        "src/"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "frontend",
+      "runtime_evidence": [],
+      "source_refs": [
+        "contracts/generated/knowledge/requirements.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "security/static-analysis/pocketlab-architecture.yml"
+      ],
+      "threats": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "messaging-execution"
+      ],
+      "boundary": [
+        "browser",
+        "control-api",
+        "messaging-execution"
+      ],
+      "description": "FastAPI remains the frontend-facing control API.",
+      "freshness": "promoted-observation",
+      "id": "CTRL-API-CONTROL",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI",
+      "runtime_evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "status": "control-observed",
+      "tests": [
+        "tests/backend/test_lite_api.py",
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundaries": [
+        "messaging-execution",
+        "managed-device",
+        "server-host"
+      ],
+      "boundary": [
+        "messaging-execution",
+        "managed-device",
+        "server-host"
+      ],
+      "description": "Workers, agents and supervisors own execution and recovery.",
+      "freshness": "promoted-observation",
+      "id": "CTRL-EXECUTION-OWNERS",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/workers/",
+        "pocket-lab-final-structure/runtime/agents/"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "worker/agent/supervisor",
+      "runtime_evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "control-observed",
+      "tests": [
+        "tests/backend/test_lite_worker_recovery.py"
+      ],
+      "threats": [
+        "Tampering",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundaries": [
+        "durable-state",
+        "external-release",
+        "server-host"
+      ],
+      "boundary": [
+        "durable-state",
+        "external-release",
+        "server-host"
+      ],
+      "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
+      "freshness": "2026-08-07T18:04:28Z",
+      "id": "CTRL-EVIDENCE-SANITIZE",
+      "implementation": [
+        "scripts/docs/runtime/",
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "evidence pipeline",
+      "runtime_evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "control-observed",
+      "tests": [
+        "tests/docs/test_enterprise_documentation.py"
+      ],
+      "threats": [
+        "Information Disclosure",
+        "Repudiation"
+      ],
+      "threats_mitigated": [
+        "Information Disclosure",
+        "Repudiation"
+      ]
+    },
+    {
+      "boundaries": [
+        "external-release",
+        "durable-state",
+        "server-host"
+      ],
+      "boundary": [
+        "external-release",
+        "durable-state",
+        "server-host"
+      ],
+      "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
+      "freshness": "2026-08-07T18:04:28Z",
+      "id": "CTRL-EXPLICIT-PROMOTION",
+      "implementation": [
+        "scripts/docs/runtime/promote_termux_runtime.py",
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "developer/CI explicit promotion",
+      "runtime_evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "source_refs": [
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "status": "control-observed",
+      "tests": [
+        "tests/docs/test_enterprise_documentation.py"
+      ],
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure"
+      ]
+    },
+    {
+      "boundaries": [
+        "external-release",
+        "application-container"
+      ],
+      "boundary": [
+        "external-release",
+        "application-container"
+      ],
+      "description": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
+      "freshness": "canonical artifact dependent",
+      "id": "CTRL-SUPPLY-CHAIN",
+      "implementation": [
+        "scripts/dev/lite/documentation_security_tools.py",
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "WSL2/CI security automation",
+      "runtime_evidence": [
+        "contracts/generated/supply-chain/automation-summary.json"
+      ],
+      "source_refs": [
+        "contracts/metadata/documentation-security-tools.json"
+      ],
+      "status": "control-observed",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "threats": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ]
+    }
+  ],
+  "generator": "scripts/docs/enterprise/generate_enterprise_documentation.py",
+  "human_review_required": [
+    "threat relevance",
+    "mitigation adequacy",
+    "residual risk",
+    "risk acceptance",
+    "exceptions"
+  ],
+  "implementation_status": "implemented",
+  "posture": "current-promoted-threat-posture",
+  "posture_rule": "derived only from canonical source plus promoted sanitized runtime/security/release/dependency evidence; never live monitoring",
+  "production_posture": {
+    "authority": "promoted/canonical evidence only",
+    "controls_source_derived": 2,
+    "controls_verified": 5,
+    "implementation_status": "implemented",
+    "live_monitoring": false,
+    "promoted_runtime_release": "lite-2026.08.07.3",
+    "security_operational_health": "healthy",
+    "signals": [
+      {
+        "boundary": "application-container",
+        "observed": "healthy",
+        "signal": "apps operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "application-container",
+        "observed": "normalized-evidence-present",
+        "signal": "scanner results",
+        "source": "contracts/generated/supply-chain/automation-summary.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "application-container",
+        "observed": "release-evidence-model-operational",
+        "signal": "release evidence",
+        "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "application-container",
+        "observed": {
+          "healthy": 22,
+          "unvalidated": 4
+        },
+        "signal": "dependency health",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "application-container",
+        "observed": "normalized canonical evidence present",
+        "signal": "SBOM/vulnerability evidence",
+        "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "browser",
+        "observed": "degraded",
+        "signal": "home operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "control-api",
+        "observed": "degraded",
+        "signal": "home operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "control-api",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "NATS/JetStream health",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "durable-state",
+        "observed": "degraded",
+        "signal": "recovery operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "evidence-stale"
+      },
+      {
+        "boundary": "external-release",
+        "observed": "healthy",
+        "signal": "security operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "external-release",
+        "observed": "normalized-evidence-present",
+        "signal": "scanner results",
+        "source": "contracts/generated/supply-chain/automation-summary.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "external-release",
+        "observed": "release-evidence-model-operational",
+        "signal": "release evidence",
+        "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "external-release",
+        "observed": {
+          "healthy": 22,
+          "unvalidated": 4
+        },
+        "signal": "dependency health",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "external-release",
+        "observed": "normalized canonical evidence present",
+        "signal": "SBOM/vulnerability evidence",
+        "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "managed-device",
+        "observed": "healthy",
+        "signal": "devices operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "managed-device",
+        "observed": true,
+        "signal": "Tailscale readiness",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "managed-device",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "node-agent status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "managed-device",
+        "observed": [
+          "unvalidated"
+        ],
+        "signal": "supervisor status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-partial"
+      },
+      {
+        "boundary": "managed-device",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "worker status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": "degraded",
+        "signal": "home operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "NATS/JetStream health",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "node-agent status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": [
+          "unvalidated"
+        ],
+        "signal": "supervisor status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-partial"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "worker status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": {
+          "healthy": 22,
+          "unvalidated": 4
+        },
+        "signal": "dependency health",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "messaging-execution",
+        "observed": "normalized canonical evidence present",
+        "signal": "SBOM/vulnerability evidence",
+        "source": "contracts/generated/supply-chain/vulnerability-correlation.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "server-host",
+        "observed": "degraded",
+        "signal": "home operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "server-host",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "NATS/JetStream health",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "server-host",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "node-agent status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "server-host",
+        "observed": [
+          "unvalidated"
+        ],
+        "signal": "supervisor status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-partial"
+      },
+      {
+        "boundary": "server-host",
+        "observed": [
+          "healthy"
+        ],
+        "signal": "worker status",
+        "source": "contracts/generated/documentation-intelligence/dependency-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "server-host",
+        "observed": "normalized-evidence-present",
+        "signal": "scanner results",
+        "source": "contracts/generated/supply-chain/automation-summary.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "server-host",
+        "observed": "release-evidence-model-operational",
+        "signal": "release evidence",
+        "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "private-network",
+        "observed": "healthy",
+        "signal": "devices operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      },
+      {
+        "boundary": "private-network",
+        "observed": true,
+        "signal": "Tailscale readiness",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "state": "control-observed"
+      }
+    ],
+    "state_counts": {
+      "control-observed": 31,
+      "control-partial": 3,
+      "evidence-stale": 1
+    },
+    "states": [
+      "control-observed",
+      "control-partial",
+      "control-unvalidated",
+      "mitigation-source-derived",
+      "evidence-stale",
+      "not-applicable"
+    ]
+  },
+  "schema_version": "2.0.0",
+  "source_commit": "uncommitted",
+  "threats": [
+    {
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [],
+      "id": "THR-APPLICATION-CONTAINER-SPOOFING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Application-container boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "id": "THR-APPLICATION-CONTAINER-TAMPERING",
+      "mitigations": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Application-container boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [],
+      "id": "THR-APPLICATION-CONTAINER-REPUDIATION",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Application-container boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "id": "THR-APPLICATION-CONTAINER-INFORMATIOND",
+      "mitigations": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Application-container boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [],
+      "id": "THR-APPLICATION-CONTAINER-DENIALOFSERV",
+      "mitigations": [],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Application-container boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "id": "THR-APPLICATION-CONTAINER-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Application-container boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-BROWSER-SPOOFING",
+      "mitigations": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Browser trust boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-BROWSER-TAMPERING",
+      "mitigations": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Browser trust boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [],
+      "id": "THR-BROWSER-REPUDIATION",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Browser trust boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [],
+      "id": "THR-BROWSER-INFORMATIOND",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Browser trust boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [],
+      "id": "THR-BROWSER-DENIALOFSERV",
+      "mitigations": [],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Browser trust boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-BROWSER-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Browser trust boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-CONTROL-API-SPOOFING",
+      "mitigations": [
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Control API boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-CONTROL-API-TAMPERING",
+      "mitigations": [
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Control API boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [],
+      "id": "THR-CONTROL-API-REPUDIATION",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Control API boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [],
+      "id": "THR-CONTROL-API-INFORMATIOND",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Control API boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [],
+      "id": "THR-CONTROL-API-DENIALOFSERV",
+      "mitigations": [],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Control API boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-CONTROL-API-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Control API boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [],
+      "id": "THR-DURABLE-STATE-SPOOFING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Durable-state boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-DURABLE-STATE-TAMPERING",
+      "mitigations": [
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Durable-state boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-DURABLE-STATE-REPUDIATION",
+      "mitigations": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Durable-state boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-DURABLE-STATE-INFORMATIOND",
+      "mitigations": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Durable-state boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [],
+      "id": "THR-DURABLE-STATE-DENIALOFSERV",
+      "mitigations": [],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Durable-state boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [],
+      "id": "THR-DURABLE-STATE-ELEVATIONOFP",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Durable-state boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "boundary": "external-release",
+      "controls": [],
+      "id": "THR-EXTERNAL-RELEASE-SPOOFING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the External release boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "id": "THR-EXTERNAL-RELEASE-TAMPERING",
+      "mitigations": [
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the External release boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-EXTERNAL-RELEASE-REPUDIATION",
+      "mitigations": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the External release boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "id": "THR-EXTERNAL-RELEASE-INFORMATIOND",
+      "mitigations": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the External release boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "boundary": "external-release",
+      "controls": [],
+      "id": "THR-EXTERNAL-RELEASE-DENIALOFSERV",
+      "mitigations": [],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the External release boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "dist.zip",
+        "SBOM",
+        "release manifest",
+        "provenance"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "id": "THR-EXTERNAL-RELEASE-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the External release boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "boundary": "managed-device",
+      "controls": [],
+      "id": "THR-MANAGED-DEVICE-SPOOFING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Managed-device boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "boundary": "managed-device",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-MANAGED-DEVICE-TAMPERING",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Managed-device boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "boundary": "managed-device",
+      "controls": [],
+      "id": "THR-MANAGED-DEVICE-REPUDIATION",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Managed-device boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "boundary": "managed-device",
+      "controls": [],
+      "id": "THR-MANAGED-DEVICE-INFORMATIOND",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Managed-device boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "boundary": "managed-device",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-MANAGED-DEVICE-DENIALOFSERV",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Managed-device boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "device identity",
+        "agent state",
+        "bootstrap state"
+      ],
+      "boundary": "managed-device",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-MANAGED-DEVICE-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Managed-device boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "THR-MESSAGING-EXECUTION-SPOOFING",
+      "mitigations": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Messaging and execution boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-MESSAGING-EXECUTION-TAMPERING",
+      "mitigations": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Messaging and execution boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [],
+      "id": "THR-MESSAGING-EXECUTION-REPUDIATION",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Messaging and execution boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [],
+      "id": "THR-MESSAGING-EXECUTION-INFORMATIOND",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Messaging and execution boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-MESSAGING-EXECUTION-DENIALOFSERV",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Messaging and execution boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "commands",
+        "events",
+        "durable consumers"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-MESSAGING-EXECUTION-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Messaging and execution boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [],
+      "id": "THR-SERVER-HOST-SPOOFING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Server-host boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-SERVER-HOST-TAMPERING",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Server-host boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-SERVER-HOST-REPUDIATION",
+      "mitigations": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Server-host boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "THR-SERVER-HOST-INFORMATIOND",
+      "mitigations": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Server-host boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-SERVER-HOST-DENIALOFSERV",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Server-host boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Termux runtime",
+        "PM2 services",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "THR-SERVER-HOST-ELEVATIONOFP",
+      "mitigations": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Server-host boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "id": "THR-PRIVATE-NETWORK-SPOOFING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A07 Identification and Authentication Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Spoofing threat affecting the Private network and Tailnet boundary.",
+      "stride": "Spoofing",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "id": "THR-PRIVATE-NETWORK-TAMPERING",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A08 Software and Data Integrity Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Tampering threat affecting the Private network and Tailnet boundary.",
+      "stride": "Tampering",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "id": "THR-PRIVATE-NETWORK-REPUDIATION",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A09 Security Logging and Monitoring Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Repudiation threat affecting the Private network and Tailnet boundary.",
+      "stride": "Repudiation",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "id": "THR-PRIVATE-NETWORK-INFORMATIOND",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control",
+        "OWASP Top 10 A02 Cryptographic Failures"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Information Disclosure threat affecting the Private network and Tailnet boundary.",
+      "stride": "Information Disclosure",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "id": "THR-PRIVATE-NETWORK-DENIALOFSERV",
+      "mitigations": [],
+      "owasp_mappings": [
+        "No direct OWASP Top 10 mapping; availability/resilience control review"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Denial of Service threat affecting the Private network and Tailnet boundary.",
+      "stride": "Denial of Service",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    },
+    {
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "id": "THR-PRIVATE-NETWORK-ELEVATIONOFP",
+      "mitigations": [],
+      "owasp_mappings": [
+        "OWASP Top 10 A01 Broken Access Control"
+      ],
+      "owner": "security/architecture review",
+      "residual_risk": "unvalidated until human review",
+      "review_status": "candidate-human-review-required",
+      "runtime_evidence": [
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "scenario": "Source-derived candidate Elevation of Privilege threat affecting the Private network and Tailnet boundary.",
+      "stride": "Elevation of Privilege",
+      "tests": [
+        "tests/docs/test_enterprise_completion.py"
+      ]
+    }
+  ]
+}

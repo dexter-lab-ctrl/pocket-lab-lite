@@ -71,10 +71,32 @@
     progressObserver.observe(document.body, { childList: true, subtree: true });
   };
 
+  const enhanceAudienceIdentity = () => {
+    const content = document.querySelector('.md-content__inner');
+    if (!content || content.querySelector('.pl-audience-banner')) return;
+    const path = window.location.pathname;
+    const audience = path.includes('/generated/production/') || path.includes('/generated/enterprise/threat-model/') || path.includes('/generated/enterprise/operate/')
+      ? 'production'
+      : path.includes('/generated/development/') || path.includes('/generated/enterprise/engineering/') || path.includes('/generated/enterprise/documentation-platform/')
+        ? 'development'
+        : null;
+    if (!audience) return;
+    const banner = document.createElement('div');
+    banner.className = `pl-audience-banner pl-audience-banner--${audience}`;
+    banner.setAttribute('role', 'note');
+    if (audience === 'production') {
+      banner.innerHTML = '<strong>POCKET LAB LITE · Production Knowledge</strong><small>Operational · evidence-backed · sanitized · release-aware</small>';
+    } else {
+      banner.innerHTML = '<strong>POCKET LAB LITE · Engineering Reference</strong><small>Source-derived · contracts · validation · implementation detail</small>';
+    }
+    content.prepend(banner);
+  };
+
   const enhance = () => {
     observeProgressBars();
     enhanceAccessibility();
     enhanceIntentNavigation();
+    enhanceAudienceIdentity();
   };
 
   if (typeof document$ !== 'undefined') document$.subscribe(enhance);

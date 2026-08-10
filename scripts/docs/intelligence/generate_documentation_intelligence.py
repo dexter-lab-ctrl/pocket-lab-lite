@@ -508,6 +508,8 @@ def render_status_strip(domain: dict[str, Any], experience: dict[str, Any]) -> s
 def render_dependency_page(data: list[dict[str, Any]], experience: dict[str, Any], audience: str) -> str:
     out = frontmatter("Dependency health", "Why each domain is healthy, degraded, or still unvalidated.", audience, "release-promoted")
     out += "# Service and dependency health\n\nOperational health and dependency evidence remain independent: a healthy domain does not silently mark every dependency healthy.\n\n"
+    graph = "dependency-health-production.svg" if audience == "production" else "dependency-health-development.svg"
+    out += f'<div class="pl-generated-diagram">\n\n![Generated dependency health graph](../../assets/enterprise/{graph}){{ loading=lazy }}\n\n</div>\n\n'
     for row in data:
         out += f"## {row['label']}\n\n{render_status_strip(row, experience)}\n"
         if row.get("reason"):

@@ -18,7 +18,32 @@ from pathlib import Path
 from typing import Iterable
 from urllib.parse import quote
 
+
 ROOT = Path(__file__).resolve().parents[3]
+
+# SchemaSpy produces large diagram/table trees. WSL /tmp may be a
+# small tmpfs, so use the shared Pocket Lab development scratch policy.
+_configured_dev_scratch = Path(
+    os.environ.get(
+        "POCKETLAB_DEV_TMPDIR",
+        str(ROOT / ".pocketlab-dev" / "tmp"),
+    )
+).expanduser()
+if not _configured_dev_scratch.is_absolute():
+    _configured_dev_scratch = ROOT / _configured_dev_scratch
+POCKETLAB_DEV_SCRATCH_ROOT = _configured_dev_scratch.resolve()
+
+_configured_schemaspy_tmp = Path(
+    os.environ.get(
+        "POCKETLAB_SCHEMASPY_TMPDIR",
+        str(POCKETLAB_DEV_SCRATCH_ROOT / "schemaspy"),
+    )
+).expanduser()
+if not _configured_schemaspy_tmp.is_absolute():
+    _configured_schemaspy_tmp = ROOT / _configured_schemaspy_tmp
+POCKETLAB_SCHEMASPY_TMP = _configured_schemaspy_tmp.resolve()
+POCKETLAB_SCHEMASPY_TMP.mkdir(parents=True, exist_ok=True)
+
 OUTPUT = ROOT / "docs" / "generated" / "schemaspy"
 SETUP = ROOT / "scripts" / "dev" / "lite" / "setup-documentation-tools.sh"
 PLATFORM_GENERATOR = ROOT / "scripts" / "docs" / "lite" / "generate_platform_catalogs.py"
@@ -720,7 +745,7 @@ def directory_manifest(path: Path) -> list[dict[str, object]]:
 def generate_to(destination: Path) -> None:
     java, schemaspy, sqlite_jdbc = require_tools()
     build_empty_database = load_build_empty_database()
-    with tempfile.TemporaryDirectory(prefix="pocketlab-schemaspy-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="pocketlab-schemaspy-", dir=POCKETLAB_SCHEMASPY_TMP) as temporary:
         temp_root = Path(temporary)
         database = temp_root / "pocketlab-lite-schema.sqlite3"
         raw_output = temp_root / "schemaspy-output"
@@ -849,7 +874,7 @@ def main() -> int:
             f"{OUTPUT.relative_to(ROOT)}"
         )
         return 0
-    with tempfile.TemporaryDirectory(prefix="pocketlab-schemaspy-check-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="pocketlab-schemaspy-check-", dir=POCKETLAB_SCHEMASPY_TMP) as temporary:
         expected = Path(temporary) / "schemaspy"
         generate_to(expected)
         differences = compare_directories(expected, OUTPUT)

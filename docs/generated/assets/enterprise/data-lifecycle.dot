@@ -1,0 +1,13 @@
+digraph flow {
+  graph [rankdir="LR", bgcolor="transparent", label="Data lifecycle and sanitization", labelloc="t"];
+  node [shape="box", style="rounded,filled", fillcolor="#f8fafc"];
+  n0 [label="SQLite durable state"]; n0 -> m0; m0 [label="Pocket Lab SQLite → not copied wholesale into docs; generated projections are bounded"];
+  n1 [label="NATS/JetStream messages"]; n1 -> m1; m1 [label="JetStream only where stream/durability is declared → event/evidence payload redaction rules"];
+  n2 [label="Device identity"]; n2 -> m2; m2 [label="SQLite + device-local environment → tokens/secrets excluded from docs"];
+  n3 [label="Promoted runtime evidence"]; n3 -> m3; m3 [label="contracts/parity/runtime-verification-baseline.json and generated projections → required before promotion"];
+  n4 [label="Logs and audit events"]; n4 -> m4; m4 [label="runtime logs/durable audit store → raw logs never rendered in normal docs"];
+  n5 [label="Backup metadata"]; n5 -> m5; m5 [label="SQLite/manifests/receipts → repository/password/internal paths excluded"];
+  n6 [label="Security scanner evidence"]; n6 -> m6; m6 [label="raw transient .pocketlab-dev then sanitized canonical summaries → raw findings/paths/secrets excluded from docs"];
+  n7 [label="App metadata"]; n7 -> m7; m7 [label="SQLite/app configuration/runtime → credentials/media paths excluded"];
+  n8 [label="Release evidence"]; n8 -> m8; m8 [label="repository + release artifacts → no credentials/private paths"];
+}

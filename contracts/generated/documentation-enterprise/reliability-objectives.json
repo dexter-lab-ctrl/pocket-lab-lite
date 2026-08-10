@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "evidence": "contracts/generated/runtime/domain-operational-health.json",
+      "latest_promoted_observation": "promoted-observation",
+      "objective": "heartbeat freshness",
+      "status": "pass",
+      "target": "Devices canonical freshness threshold"
+    },
+    {
+      "evidence": "promoted Home operational health",
+      "latest_promoted_observation": "degraded",
+      "objective": "API availability expectations",
+      "status": "degraded",
+      "target": "FastAPI/Caddy dependencies observed healthy for normal read/control paths"
+    },
+    {
+      "evidence": "promoted Devices operational health / command evidence when present",
+      "latest_promoted_observation": "unobserved",
+      "objective": "command delivery latency",
+      "status": "unknown",
+      "target": "bounded command-delivery latency is measured only when promoted command timing evidence exists; readiness alone is not treated as latency"
+    },
+    {
+      "evidence": "promoted Devices operational health / supervisor recovery evidence when present",
+      "latest_promoted_observation": "unobserved",
+      "objective": "supervisor recovery time",
+      "status": "unknown",
+      "target": "recovery duration is reported only from promoted supervisor recovery timing evidence"
+    },
+    {
+      "evidence": "promoted operational-health contract",
+      "latest_promoted_observation": "2026-08-07T18:04:28Z",
+      "objective": "runtime evidence freshness",
+      "status": "degraded",
+      "target": "promoted evidence freshness remains explicit per-domain"
+    },
+    {
+      "evidence": "parity/docs.json",
+      "latest_promoted_observation": "verified",
+      "objective": "documentation determinism",
+      "status": "pass",
+      "target": "zero drift on consecutive generator checks"
+    }
+  ]
+}

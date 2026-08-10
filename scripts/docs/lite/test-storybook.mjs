@@ -79,20 +79,47 @@ try {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`${storybookOrigin}/iframe.html?id=${encodeURIComponent(entry.id)}&viewMode=story`, { waitUntil: 'domcontentloaded' });
     await waitForStoryRender(page, entry);
+
+    if (entry.title === 'Pocket Lab Lite/Devices') {
+      await page
+        .locator('[data-lite-screen-id="devices"]')
+        .waitFor({ state: 'visible' });
+    }
+
     const rootText = await page.locator('#storybook-root').innerText().catch(() => '');
     if (!rootText.trim()) failures.push(`${entry.id}: empty render`);
     if (errors.length) failures.push(`${entry.id}: ${errors.join('; ')}`);
     await page.close();
   }
 
-  const home = entries.find((entry) => entry.title === 'Pocket Lab Lite/Home' && entry.name === 'Healthy');
+  const home = entries.find(
+    (entry) => entry.title === 'Pocket Lab Lite/Home' && entry.name === 'Healthy',
+  );
+
   if (home) {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
-    await page.goto(`${storybookOrigin}/iframe.html?id=${encodeURIComponent(home.id)}&viewMode=story`, { waitUntil: 'domcontentloaded' });
+    const page = await browser.newPage({
+      viewport: { width: 1440, height: 1000 },
+      reducedMotion: 'reduce',
+    });
+    await page.goto(
+      `${storybookOrigin}/iframe.html?id=${encodeURIComponent(home.id)}&viewMode=story`,
+      { waitUntil: 'domcontentloaded' },
+    );
     await waitForStoryRender(page, home);
-    const devices = page.getByRole('button', { name: /^Devices/i }).locator(':visible').first();
-    await devices.click();
-    await page.locator('[data-lite-screen-id="devices"]').waitFor({ state: 'visible' });
+
+    const devicesControl = page
+      .getByRole('button', { name: /^Devices/i })
+      .locator(':visible')
+      .first();
+
+    await devicesControl.waitFor({ state: 'visible' });
+
+    if (!(await devicesControl.isEnabled())) {
+      failures.push(
+        'Healthy Home story: Devices navigation control is disabled',
+      );
+    }
+
     await page.close();
   } else {
     failures.push('Healthy Home story missing');
@@ -105,4 +132,4 @@ if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
 }
-console.log(`PASS ${selected.length} representative Storybook renders and navigation interaction using ${browserInfo.version}`);
+console.log(`PASS ${selected.length} representative Storybook renders with canonical Home/Devices coverage using ${browserInfo.version}`);

@@ -1,0 +1,47 @@
+{
+  "build_type": "pocket-lab-lite/dist-zip-and-documentation-evidence",
+  "builder": {
+    "id": "pocket-lab-lite/wsl2-ci-explicit-release-workflow"
+  },
+  "formal_slsa_level": "not-claimed",
+  "implementation_status": "implemented",
+  "invocation": {
+    "docs_generated_live_runtime": false,
+    "runtime_promotion_implicit": false,
+    "signing_implicit": false
+  },
+  "predicate_type": "https://slsa.dev/provenance/v1",
+  "schema_version": "1.0.0",
+  "signing": {
+    "keyless_preferred": true,
+    "status": "unobserved-until-explicit-sign-command",
+    "workflow": "cosign sign-blob --yes --bundle <bundle> <artifact>"
+  },
+  "source": {
+    "commit": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1",
+    "exact_tag": null,
+    "tree": "107da68fa2792084224a406aa913503b0be8f4e6"
+  },
+  "subjects": [
+    {
+      "bytes": 1719519,
+      "path": "dist.zip",
+      "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
+    },
+    {
+      "bytes": 445352,
+      "path": "contracts/generated/supply-chain/sbom-dev.cdx.json",
+      "sha256": "98d75e33fe9baba608a4cbc808e6274ac75a832e1c38b9cc005ac3361cf4e168"
+    },
+    {
+      "bytes": 2284,
+      "path": "contracts/generated/supply-chain/sbom-release.cdx.json",
+      "sha256": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461"
+    },
+    {
+      "bytes": 791,
+      "path": "contracts/generated/supply-chain/sbom-runtime.cdx.json",
+      "sha256": "aa5df952b7c831f9570df6121d17041b32ae5f3a651aa4646206d4c3cb26947a"
+    }
+  ]
+}

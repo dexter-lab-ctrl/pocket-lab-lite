@@ -1,0 +1,424 @@
+{
+  "boundaries": [
+    {
+      "id": "application-container",
+      "name": "Application-container boundary"
+    },
+    {
+      "id": "browser",
+      "name": "Browser trust boundary"
+    },
+    {
+      "id": "control-api",
+      "name": "Control API boundary"
+    },
+    {
+      "id": "durable-state",
+      "name": "Durable-state boundary"
+    },
+    {
+      "id": "external-release",
+      "name": "External release boundary"
+    },
+    {
+      "id": "managed-device",
+      "name": "Managed-device boundary"
+    },
+    {
+      "id": "messaging-execution",
+      "name": "Messaging and execution boundary"
+    },
+    {
+      "id": "server-host",
+      "name": "Server-host boundary"
+    },
+    {
+      "id": "private-network",
+      "name": "Private network and Tailnet boundary"
+    }
+  ],
+  "canonical_source": false,
+  "review_note": "Derived Threat Dragon-compatible review projection; residual risk and acceptance remain human-reviewed in canonical Pocket Lab metadata.",
+  "schema_version": "1.0.0",
+  "source": "contracts/security/threat-model.json",
+  "threats": [
+    {
+      "boundary": "application-container",
+      "category": "Spoofing",
+      "id": "THR-APPLICATION-CONTAINER-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Application-container boundary."
+    },
+    {
+      "boundary": "application-container",
+      "category": "Tampering",
+      "id": "THR-APPLICATION-CONTAINER-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Application-container boundary."
+    },
+    {
+      "boundary": "application-container",
+      "category": "Repudiation",
+      "id": "THR-APPLICATION-CONTAINER-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Application-container boundary."
+    },
+    {
+      "boundary": "application-container",
+      "category": "Information Disclosure",
+      "id": "THR-APPLICATION-CONTAINER-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Application-container boundary."
+    },
+    {
+      "boundary": "application-container",
+      "category": "Denial of Service",
+      "id": "THR-APPLICATION-CONTAINER-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Application-container boundary."
+    },
+    {
+      "boundary": "application-container",
+      "category": "Elevation of Privilege",
+      "id": "THR-APPLICATION-CONTAINER-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Application-container boundary."
+    },
+    {
+      "boundary": "browser",
+      "category": "Spoofing",
+      "id": "THR-BROWSER-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Browser trust boundary."
+    },
+    {
+      "boundary": "browser",
+      "category": "Tampering",
+      "id": "THR-BROWSER-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Browser trust boundary."
+    },
+    {
+      "boundary": "browser",
+      "category": "Repudiation",
+      "id": "THR-BROWSER-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Browser trust boundary."
+    },
+    {
+      "boundary": "browser",
+      "category": "Information Disclosure",
+      "id": "THR-BROWSER-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Browser trust boundary."
+    },
+    {
+      "boundary": "browser",
+      "category": "Denial of Service",
+      "id": "THR-BROWSER-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Browser trust boundary."
+    },
+    {
+      "boundary": "browser",
+      "category": "Elevation of Privilege",
+      "id": "THR-BROWSER-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Browser trust boundary."
+    },
+    {
+      "boundary": "control-api",
+      "category": "Spoofing",
+      "id": "THR-CONTROL-API-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Control API boundary."
+    },
+    {
+      "boundary": "control-api",
+      "category": "Tampering",
+      "id": "THR-CONTROL-API-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Control API boundary."
+    },
+    {
+      "boundary": "control-api",
+      "category": "Repudiation",
+      "id": "THR-CONTROL-API-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Control API boundary."
+    },
+    {
+      "boundary": "control-api",
+      "category": "Information Disclosure",
+      "id": "THR-CONTROL-API-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Control API boundary."
+    },
+    {
+      "boundary": "control-api",
+      "category": "Denial of Service",
+      "id": "THR-CONTROL-API-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Control API boundary."
+    },
+    {
+      "boundary": "control-api",
+      "category": "Elevation of Privilege",
+      "id": "THR-CONTROL-API-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Control API boundary."
+    },
+    {
+      "boundary": "durable-state",
+      "category": "Spoofing",
+      "id": "THR-DURABLE-STATE-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Durable-state boundary."
+    },
+    {
+      "boundary": "durable-state",
+      "category": "Tampering",
+      "id": "THR-DURABLE-STATE-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Durable-state boundary."
+    },
+    {
+      "boundary": "durable-state",
+      "category": "Repudiation",
+      "id": "THR-DURABLE-STATE-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Durable-state boundary."
+    },
+    {
+      "boundary": "durable-state",
+      "category": "Information Disclosure",
+      "id": "THR-DURABLE-STATE-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Durable-state boundary."
+    },
+    {
+      "boundary": "durable-state",
+      "category": "Denial of Service",
+      "id": "THR-DURABLE-STATE-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Durable-state boundary."
+    },
+    {
+      "boundary": "durable-state",
+      "category": "Elevation of Privilege",
+      "id": "THR-DURABLE-STATE-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Durable-state boundary."
+    },
+    {
+      "boundary": "external-release",
+      "category": "Spoofing",
+      "id": "THR-EXTERNAL-RELEASE-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the External release boundary."
+    },
+    {
+      "boundary": "external-release",
+      "category": "Tampering",
+      "id": "THR-EXTERNAL-RELEASE-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the External release boundary."
+    },
+    {
+      "boundary": "external-release",
+      "category": "Repudiation",
+      "id": "THR-EXTERNAL-RELEASE-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the External release boundary."
+    },
+    {
+      "boundary": "external-release",
+      "category": "Information Disclosure",
+      "id": "THR-EXTERNAL-RELEASE-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the External release boundary."
+    },
+    {
+      "boundary": "external-release",
+      "category": "Denial of Service",
+      "id": "THR-EXTERNAL-RELEASE-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the External release boundary."
+    },
+    {
+      "boundary": "external-release",
+      "category": "Elevation of Privilege",
+      "id": "THR-EXTERNAL-RELEASE-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the External release boundary."
+    },
+    {
+      "boundary": "managed-device",
+      "category": "Spoofing",
+      "id": "THR-MANAGED-DEVICE-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Managed-device boundary."
+    },
+    {
+      "boundary": "managed-device",
+      "category": "Tampering",
+      "id": "THR-MANAGED-DEVICE-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Managed-device boundary."
+    },
+    {
+      "boundary": "managed-device",
+      "category": "Repudiation",
+      "id": "THR-MANAGED-DEVICE-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Managed-device boundary."
+    },
+    {
+      "boundary": "managed-device",
+      "category": "Information Disclosure",
+      "id": "THR-MANAGED-DEVICE-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Managed-device boundary."
+    },
+    {
+      "boundary": "managed-device",
+      "category": "Denial of Service",
+      "id": "THR-MANAGED-DEVICE-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Managed-device boundary."
+    },
+    {
+      "boundary": "managed-device",
+      "category": "Elevation of Privilege",
+      "id": "THR-MANAGED-DEVICE-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Managed-device boundary."
+    },
+    {
+      "boundary": "messaging-execution",
+      "category": "Spoofing",
+      "id": "THR-MESSAGING-EXECUTION-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Messaging and execution boundary."
+    },
+    {
+      "boundary": "messaging-execution",
+      "category": "Tampering",
+      "id": "THR-MESSAGING-EXECUTION-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Messaging and execution boundary."
+    },
+    {
+      "boundary": "messaging-execution",
+      "category": "Repudiation",
+      "id": "THR-MESSAGING-EXECUTION-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Messaging and execution boundary."
+    },
+    {
+      "boundary": "messaging-execution",
+      "category": "Information Disclosure",
+      "id": "THR-MESSAGING-EXECUTION-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Messaging and execution boundary."
+    },
+    {
+      "boundary": "messaging-execution",
+      "category": "Denial of Service",
+      "id": "THR-MESSAGING-EXECUTION-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Messaging and execution boundary."
+    },
+    {
+      "boundary": "messaging-execution",
+      "category": "Elevation of Privilege",
+      "id": "THR-MESSAGING-EXECUTION-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Messaging and execution boundary."
+    },
+    {
+      "boundary": "server-host",
+      "category": "Spoofing",
+      "id": "THR-SERVER-HOST-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Server-host boundary."
+    },
+    {
+      "boundary": "server-host",
+      "category": "Tampering",
+      "id": "THR-SERVER-HOST-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Server-host boundary."
+    },
+    {
+      "boundary": "server-host",
+      "category": "Repudiation",
+      "id": "THR-SERVER-HOST-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Server-host boundary."
+    },
+    {
+      "boundary": "server-host",
+      "category": "Information Disclosure",
+      "id": "THR-SERVER-HOST-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Server-host boundary."
+    },
+    {
+      "boundary": "server-host",
+      "category": "Denial of Service",
+      "id": "THR-SERVER-HOST-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Server-host boundary."
+    },
+    {
+      "boundary": "server-host",
+      "category": "Elevation of Privilege",
+      "id": "THR-SERVER-HOST-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Server-host boundary."
+    },
+    {
+      "boundary": "private-network",
+      "category": "Spoofing",
+      "id": "THR-PRIVATE-NETWORK-SPOOFING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Spoofing threat affecting the Private network and Tailnet boundary."
+    },
+    {
+      "boundary": "private-network",
+      "category": "Tampering",
+      "id": "THR-PRIVATE-NETWORK-TAMPERING",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Tampering threat affecting the Private network and Tailnet boundary."
+    },
+    {
+      "boundary": "private-network",
+      "category": "Repudiation",
+      "id": "THR-PRIVATE-NETWORK-REPUDIATION",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Repudiation threat affecting the Private network and Tailnet boundary."
+    },
+    {
+      "boundary": "private-network",
+      "category": "Information Disclosure",
+      "id": "THR-PRIVATE-NETWORK-INFORMATIOND",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Information Disclosure threat affecting the Private network and Tailnet boundary."
+    },
+    {
+      "boundary": "private-network",
+      "category": "Denial of Service",
+      "id": "THR-PRIVATE-NETWORK-DENIALOFSERV",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Denial of Service threat affecting the Private network and Tailnet boundary."
+    },
+    {
+      "boundary": "private-network",
+      "category": "Elevation of Privilege",
+      "id": "THR-PRIVATE-NETWORK-ELEVATIONOFP",
+      "status": "candidate-human-review-required",
+      "title": "Source-derived candidate Elevation of Privilege threat affecting the Private network and Tailnet boundary."
+    }
+  ]
+}

@@ -13,7 +13,7 @@ tasks:
 
   lite:test:storybook:
     desc: Build Storybook and run Lite inventory plus browser interaction checks
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run build-storybook
       - '{{.PYTHON}} scripts/docs/lite/generate_docs.py check-storybook'
@@ -21,42 +21,42 @@ tasks:
 
   lite:storybook:screenshots:
     desc: Capture canonical Lite Storybook screenshots with the verified browser resolver
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - node scripts/docs/lite/capture-storybook.mjs
 
   lite:test:e2e:mocked:
     desc: Run mocked Lite integration tests on desktop and mobile Chromium
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:e2e:mocked
 
   lite:test:e2e:live:
     desc: Run read-only live integration tests against Caddy/FastAPI; requires LITE_E2E_LIVE=1
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:e2e:live
 
   lite:test:a11y:
     desc: Run Playwright Axe checks for every Lite tab at mobile and desktop widths
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:a11y
 
   lite:test:visual:
     desc: Run canonical Lite visual regression screenshots against committed baselines
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:visual
 
   lite:test:visual:update:
     desc: Create or deliberately refresh canonical Lite visual baselines for review
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:visual:update
 
   lite:test:lighthouse:
     desc: Run the existing development-PC Lighthouse PWA gate
-    deps: [lite:playwright:preflight]
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - bash scripts/dev/check-lighthouse.sh

@@ -456,3 +456,41 @@
 @media (prefers-reduced-motion: reduce) {
   .pl-coverage-meter > span { transition: none; }
 }
+
+/* Enterprise Documentation Platform audience identity and generated diagram surfaces. */
+.pl-audience-banner {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 1rem;
+  padding: .65rem .85rem;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: var(--pl-surface-muted);
+  font-size: .72rem;
+}
+.pl-audience-banner {
+  /* Keep this identity strip independent from Material palette state.
+     Instant navigation can briefly mix persisted palette attributes/tokens; a
+     self-contained high-contrast surface prevents that transition from
+     producing light-on-light or dark-on-dark text. */
+  background: #111a2e;
+  color: #f8fafc;
+}
+.pl-audience-banner > strong {
+  color: #ffffff !important;
+  font-size: .75rem;
+  letter-spacing: .02em;
+}
+.pl-audience-banner > small {
+  color: #dbe4f0 !important;
+}
+.pl-audience-banner--production { border-inline-start: .22rem solid var(--pl-success); }
+.pl-audience-banner--development { border-inline-start: .22rem solid var(--md-accent-fg-color); }
+.pl-generated-diagram { max-width: 100%; overflow-x: auto; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-md); padding: .5rem; }
+.pl-generated-diagram img, .pl-generated-diagram svg { max-width: none; min-width: min(100%, 42rem); height: auto; }
+@media screen and (max-width: 44.9844em) {
+  .pl-audience-banner { align-items: flex-start; flex-direction: column; gap: .2rem; }
+  .pl-generated-diagram { margin-inline: -.25rem; }
+}

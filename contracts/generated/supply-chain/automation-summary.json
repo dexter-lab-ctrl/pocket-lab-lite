@@ -1,0 +1,81 @@
+{
+  "artifacts": {
+    "license-inventory.json": "0ccf94e79261e5bc21091a150d213af44f2c6f96d8a8099e3e1c7ccb5f270fa9",
+    "sbom-dev.cdx.json": "98d75e33fe9baba608a4cbc808e6274ac75a832e1c38b9cc005ac3361cf4e168",
+    "sbom-release.cdx.json": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461",
+    "sbom-runtime.cdx.json": "aa5df952b7c831f9570df6121d17041b32ae5f3a651aa4646206d4c3cb26947a",
+    "scorecard-checks.json": "b7f001c015b7c827db7331b76f634f23d3ef231e81c33ed8db762d1574fb525a",
+    "security-analysis.json": "4c72fe899858b70b7757e6cada313f8c241fa42ee56a1329776d52cadbf7a6a2",
+    "vulnerability-correlation.json": "97d903cb8f6a36a9dcea23951f4c5da079837fc1a6d917bc950a19890067ca2a"
+  },
+  "capture_manifest_sha256": "eacbd447b1bb90759e16d2efe37640321797c53c42fecc35d01dab23b8964dd6",
+  "implementation_status": "implemented",
+  "raw_output_canonical": false,
+  "run_id": "manual-20260809T195830Z-1790260",
+  "runtime_capture_performed": false,
+  "runtime_source": "contracts/parity/runtime-verification-baseline.json",
+  "schema_version": "1.0.0",
+  "source_commit": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1",
+  "tool_statuses": [
+    {
+      "exit_code": 0,
+      "status": "completed",
+      "tool": "syft"
+    },
+    {
+      "exit_code": 0,
+      "status": "completed",
+      "tool": "syft"
+    },
+    {
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "tool": "trivy"
+    },
+    {
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "tool": "trivy"
+    },
+    {
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "tool": "osv-scanner"
+    },
+    {
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "tool": "osv-scanner"
+    },
+    {
+      "exit_code": 0,
+      "status": "completed",
+      "tool": "grype"
+    },
+    {
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "tool": "gitleaks"
+    },
+    {
+      "exit_code": 0,
+      "status": "completed",
+      "tool": "gitleaks"
+    },
+    {
+      "exit_code": 0,
+      "status": "completed",
+      "tool": "semgrep"
+    },
+    {
+      "exit_code": 2,
+      "status": "findings-or-tool-nonzero",
+      "tool": "scancode"
+    },
+    {
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "tool": "scorecard"
+    }
+  ]
+}
