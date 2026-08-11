@@ -16,11 +16,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Workflow | Task count |
 | --- | --- |
 | Development loop | 50 |
-| Documentation loop | 45 |
+| Documentation loop | 46 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 24 |
-| Security-analysis loop | 7 |
-| Release loop | 14 |
+| Runtime-evidence loop | 23 |
+| Security-analysis loop | 8 |
+| Release loop | 16 |
 | Recovery-diagnostics loop | 6 |
 
 ## `default`
@@ -2106,21 +2106,21 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 ## `lite:docs:supply-chain:capture`
 
-**Purpose:** Explicitly run heavy WSL2/CI SBOM, vulnerability, secret, static-analysis, licensing and Scorecard capture into transient .pocketlab-dev evidence; never invoked by docs generation
+**Purpose:** Run a bounded local/CI diagnostic supply-chain capture into transient .pocketlab-dev evidence; never invoked by docs generation and never treated as release qualification by itself
 
 **Audience:** developer
 
-**Dependencies:** None
+**Dependencies:** lite:dev:scratch:prepare
 
 **Aliases:** None
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}}`
+- `bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/docs/enterprise/supply_chain_automation.py
+**Inputs:** scripts/dev/lite/dev-scratch.sh, scripts/docs/enterprise/supply_chain_automation.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -2128,9 +2128,9 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
 
-**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
 
-**Related tasks:** None
+**Related tasks:** lite:dev:scratch:prepare
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 
@@ -2243,7 +2243,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 ## `lite:docs:supply-chain:qualify`
 
-**Purpose:** Explicitly run heavy WSL2/CI supply-chain capture, normalize/promote sanitized evidence, and validate canonical outputs in one operator-invoked workflow
+**Purpose:** Dispatch the canonical release qualification to GitHub Actions; does not run heavy scanners inside VS Code/WSL interactively
 
 **Audience:** developer
 
@@ -2254,26 +2254,34 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Commands:**
 
 - `set -euo pipefail
-run_dir=".pocketlab-dev/documentation-security/runs/manual-$(date -u +%Y%m%dT%H%M%SZ)-$$"
-history_arg=""
-if [ -n "{{.INCLUDE_GIT_HISTORY}}" ]; then history_arg="--include-git-history"; fi
-{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir "$run_dir" $history_arg
-{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir "$run_dir"
-{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check
-printf 'Canonical supply-chain evidence promoted from %s\n' "$run_dir"
+command -v gh >/dev/null 2>&1 || { echo "ERROR gh CLI is required for canonical release qualification" >&2; exit 2; }
+test "$(git branch --show-current)" = "main" || { echo "ERROR canonical release qualification must be dispatched from main" >&2; exit 2; }
+test -z "$(git status --porcelain)" || { echo "ERROR working tree must be clean before release qualification" >&2; exit 2; }
+git fetch origin main
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo "ERROR local main must exactly match origin/main" >&2; exit 2; }
+history="false"
+if [ -n "{{.INCLUDE_GIT_HISTORY}}" ]; then history="true"; fi
+deep_license="false"
+if [ -n "{{.DEEP_LICENSE_SCAN}}" ]; then deep_license="true"; fi
+gh workflow run docs-security-supply-chain.yml --ref main \
+  -f include_git_history="$history" \
+  -f deep_license_scan="$deep_license"
+printf 'PASS canonical release qualification dispatched to GitHub Actions for %s\n' "$(git rev-parse HEAD)"
+printf 'Use: gh run list --workflow docs-security-supply-chain.yml --branch main --limit 5\n'
+printf 'Inspect the selected run with the one-shot command: gh run view <run-id>.\n'
 `
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/docs/enterprise/supply_chain_automation.py
+**Inputs:** origin/main
 
-**Outputs:** .pocketlab-dev/documentation-security/runs/manual-
+**Outputs:** No explicit file outputs discovered
 
 **Generated artifacts:** None discovered
 
-**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=True; promotes evidence=True
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
 
-**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
 
 **Related tasks:** None
 
@@ -2282,6 +2290,119 @@ printf 'Canonical supply-chain evidence promoted from %s\n' "$run_dir"
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:docs:supply-chain:qualify`
+
+## `lite:docs:supply-chain:qualify:local`
+
+**Purpose:** Explicit local diagnostic qualification for development only; canonical release qualification remains CI-owned
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare
+
+**Aliases:** None
+
+**Commands:**
+
+- `set -euo pipefail
+run_dir=".pocketlab-dev/documentation-security/runs/local-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+history_arg=""
+if [ -n "{{.INCLUDE_GIT_HISTORY}}" ]; then history_arg="--include-git-history"; fi
+bash scripts/dev/lite/dev-scratch.sh run security-tools -- \
+  {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir "$run_dir" $history_arg
+{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir "$run_dir"
+{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check
+printf 'Local diagnostic supply-chain evidence promoted from %s; this is not canonical release qualification.\n' "$run_dir"
+`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/dev-scratch.sh, scripts/docs/enterprise/supply_chain_automation.py
+
+**Outputs:** .pocketlab-dev/documentation-security/runs/local-
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=True; promotes evidence=True
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:supply-chain:qualify:local`
+
+## `lite:docs:supply-chain:resume`
+
+**Purpose:** Resume an interrupted bounded supply-chain capture from its validated checkpoint without rerunning successful scanner steps
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare
+
+**Aliases:** None
+
+**Commands:**
+
+- `test -n "{{.RUN_DIR}}" || (echo "RUN_DIR is required" >&2; exit 2)`
+- `bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir {{.RUN_DIR}} --resume {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/dev-scratch.sh, scripts/docs/enterprise/supply_chain_automation.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
+
+**Related tasks:** lite:dev:scratch:prepare
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:supply-chain:resume`
+
+## `lite:docs:supply-chain:status`
+
+**Purpose:** Show checkpointed per-scanner progress and the last sanitized failure classification for a transient supply-chain run
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `test -n "{{.RUN_DIR}}" || (echo "RUN_DIR is required" >&2; exit 2)`
+- `{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py status --run-dir {{.RUN_DIR}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/enterprise/supply_chain_automation.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:supply-chain:status`
 
 ## `lite:docs:sync`
 

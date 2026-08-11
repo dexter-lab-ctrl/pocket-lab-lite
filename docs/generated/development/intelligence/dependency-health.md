@@ -10,11 +10,7 @@ confidence: release-promoted
 
 Operational health and dependency evidence remain independent: a healthy domain does not silently mark every dependency healthy.
 
-<div class="pl-generated-diagram">
-
-![Generated dependency health graph](../../assets/enterprise/dependency-health-development.svg){ loading=lazy }
-
-</div>
+<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/dependency-health-development.svg" alt="Generated dependency health graph" loading="lazy"><figcaption>Promoted dependency-state relationships; source paths and renderer directives are never shown as page content.</figcaption></figure>
 
 ## Apps
 

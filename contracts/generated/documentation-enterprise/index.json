@@ -1926,7 +1926,7 @@
           "scripts/dev/lite/run-playwright-mocked.sh",
           "scripts/test/parity/promote_runtime_verification.py",
           "tasks/Taskfile.parity.yml",
-          "tests/parity/test_runtime_verification_promotion.py"
+          "tests/dev/test_frontend_resource_policy.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -5903,6 +5903,31 @@
       },
       {
         "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_ALLOW_LOCAL_SCANCODE",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/docs/enterprise/supply_chain_automation.py",
+          "tests/docs/test_supply_chain_runner_hardening.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "repository tooling"
         ],
         "affects_release": false,
@@ -7766,30 +7791,29 @@
       },
       {
         "affected_components": [
-          "documentation",
           "repository tooling"
         ],
         "affects_release": false,
-        "affects_runtime": false,
+        "affects_runtime": true,
         "default": "source-defined/unvalidated",
         "name": "POCKETLAB_DEV_TMPDIR",
-        "owner": "documentation tooling",
+        "owner": "repository tooling",
         "purpose": "Documentation/developer automation configuration",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
         ],
         "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "restart_required": "source-dependent",
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          ".github/workflows/docs-security-supply-chain.yml",
           "Taskfile.yml",
           "conftest.py",
           "playwright.docs.config.ts",
           "scripts/dev/lite/dev-scratch.sh",
-          "scripts/dev/lite/documentation_security_tools.py",
-          "scripts/docs/sqlite/generate_schemaspy.py"
+          "scripts/dev/lite/documentation_security_tools.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -8879,6 +8903,54 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_FRONTEND_MIN_MEMORY_MIB",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/frontend-resource-preflight.sh",
+          "tests/dev/test_frontend_resource_policy.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_FRONTEND_MIN_SCRATCH_GIB",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/frontend-resource-preflight.sh",
+          "tests/dev/test_frontend_resource_policy.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -19715,6 +19787,84 @@
         "affects_release": false,
         "affects_runtime": false,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SCANCODE_MIN_RUNTIME_MEM_MIB",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/docs-security-supply-chain.yml",
+          "scripts/docs/enterprise/supply_chain_automation.py",
+          "tests/docs/test_supply_chain_runner_hardening.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SCANCODE_MIN_RUNTIME_SWAP_MIB",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/docs-security-supply-chain.yml",
+          "scripts/docs/enterprise/supply_chain_automation.py",
+          "tests/docs/test_supply_chain_runner_hardening.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SCANCODE_PROCESSES",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/docs-security-supply-chain.yml",
+          "scripts/docs/enterprise/supply_chain_automation.py",
+          "tests/docs/test_supply_chain_runner_hardening.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_SCHEMASPY_JAR",
         "owner": "documentation tooling",
         "purpose": "Documentation/developer automation configuration",
@@ -20628,6 +20778,149 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB_SCANCODE",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/docs-security-supply-chain.yml",
+          "scripts/docs/enterprise/supply_chain_automation.py",
+          "tests/docs/test_supply_chain_runner_hardening.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SUPPLY_CHAIN_MIN_SCRATCH_GIB",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/docs-security-supply-chain.yml",
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SUPPLY_CHAIN_MIN_SWAP_FREE_MIB_SCANCODE",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SUPPLY_CHAIN_PROGRESS_SECONDS",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "documentation"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SUPPLY_CHAIN_TIMEOUT_",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/docs/enterprise/supply_chain_automation.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -32787,20 +33080,228 @@
       "implementation_status": "implemented",
       "status": "no-comparable-verified-prior-release",
       "supply_chain_change": {
+        "baseline_readiness": {
+          "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
+          "candidate_count": 0,
+          "head": "19d54e0bb84226f355865c32c6decee8ce010083",
+          "head_tree": "558c73981dcbf0f0d4d65ee623f06fe658d1be6c",
+          "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+          "selected_baseline": null,
+          "status": "not-ready"
+        },
+        "current_snapshot": {
+          "capture_complete": true,
+          "evidence_status": "promoted-canonical",
+          "implementation_status": "implemented",
+          "licenses": {
+            "deep_source_license_coverage": {
+              "claim": "deep source-level license/copyright analysis is not claimed",
+              "provider": "scancode",
+              "provider_status": "not-run",
+              "requested": false,
+              "required": false,
+              "status": "not-run"
+            },
+            "package_license_coverage": {
+              "authority": "syft+trivy",
+              "note": "Trivy standard license scanning is required; zero license findings do not imply that every file contained recognizable license evidence.",
+              "required": true,
+              "sources": [
+                "syft",
+                "trivy"
+              ],
+              "status": "observed",
+              "syft_component_count": 2366,
+              "trivy_license_finding_count": 31,
+              "trivy_license_scanner": "executed-standard"
+            },
+            "package_rows": 2366,
+            "trivy_license_rows": 26
+          },
+          "live_capture_performed": false,
+          "qualification_surface": "local-or-ci-diagnostic",
+          "raw_scanner_output_included": false,
+          "repository_posture": {
+            "checks": [
+              {
+                "blocking": false,
+                "name": "Branch-Protection",
+                "reason": "scorecard-provider-unsupported-request-type",
+                "score": null,
+                "status": "provider-unavailable"
+              },
+              {
+                "blocking": true,
+                "name": "Dangerous-Workflow",
+                "reason": "recorded-by-scorecard",
+                "score": 10,
+                "status": "observed"
+              },
+              {
+                "blocking": false,
+                "name": "Maintained",
+                "reason": "scorecard-provider-unsupported-request-type",
+                "score": null,
+                "status": "provider-unavailable"
+              },
+              {
+                "blocking": true,
+                "name": "Pinned-Dependencies",
+                "reason": "recorded-by-scorecard",
+                "score": 2,
+                "status": "observed"
+              },
+              {
+                "blocking": false,
+                "name": "Signed-Releases",
+                "reason": "scorecard-provider-unsupported-request-type",
+                "score": null,
+                "status": "provider-unavailable"
+              },
+              {
+                "blocking": true,
+                "name": "Token-Permissions",
+                "reason": "recorded-by-scorecard",
+                "score": 0,
+                "status": "observed"
+              }
+            ],
+            "observed_count": 3,
+            "provider": "openssf-scorecard",
+            "provider_unavailable_count": 3,
+            "status": "observed-with-provider-limitations"
+          },
+          "run_id": "scorecard-compatible-20260811T100353Z",
+          "sbom": {
+            "dev_components": 2366,
+            "release_components": 7,
+            "runtime_components": 0
+          },
+          "schema_version": "1.0.0",
+          "security": {
+            "gitleaks_finding_count": 1035,
+            "semgrep_finding_count": 0,
+            "trivy_counts": {}
+          },
+          "source_commit": "19d54e0bb84226f355865c32c6decee8ce010083",
+          "source_refs": [
+            "contracts/generated/supply-chain/automation-summary.json",
+            "contracts/generated/supply-chain/sbom-dev.cdx.json",
+            "contracts/generated/supply-chain/sbom-release.cdx.json",
+            "contracts/generated/supply-chain/sbom-runtime.cdx.json",
+            "contracts/generated/supply-chain/vulnerability-correlation.json",
+            "contracts/generated/supply-chain/license-inventory.json",
+            "contracts/generated/supply-chain/security-analysis.json",
+            "contracts/generated/supply-chain/scorecard-checks.json"
+          ],
+          "tool_coverage": [
+            {
+              "duration_seconds": 0.671,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "gitleaks-release",
+              "tool": "gitleaks"
+            },
+            {
+              "duration_seconds": 13.184,
+              "exit_code": 1,
+              "status": "findings-or-tool-nonzero",
+              "step_id": "gitleaks-worktree",
+              "tool": "gitleaks"
+            },
+            {
+              "duration_seconds": 5.45,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "grype-sbom-dev",
+              "tool": "grype"
+            },
+            {
+              "duration_seconds": 5.133,
+              "exit_code": 1,
+              "status": "findings-or-tool-nonzero",
+              "step_id": "osv-sbom-dev",
+              "tool": "osv-scanner"
+            },
+            {
+              "duration_seconds": 70.248,
+              "exit_code": 1,
+              "status": "findings-or-tool-nonzero",
+              "step_id": "osv-source",
+              "tool": "osv-scanner"
+            },
+            {
+              "duration_seconds": 7.34,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "scorecard",
+              "tool": "scorecard"
+            },
+            {
+              "duration_seconds": 4.932,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "semgrep",
+              "tool": "semgrep"
+            },
+            {
+              "duration_seconds": 129.844,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "syft-dev",
+              "tool": "syft"
+            },
+            {
+              "duration_seconds": 2.173,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "syft-release",
+              "tool": "syft"
+            },
+            {
+              "duration_seconds": 0.419,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "trivy-sbom-dev",
+              "tool": "trivy"
+            },
+            {
+              "duration_seconds": 73.047,
+              "exit_code": 0,
+              "status": "completed",
+              "step_id": "trivy-source",
+              "tool": "trivy"
+            }
+          ],
+          "vulnerabilities": {
+            "evidence_status": "observed",
+            "finding_count": 580,
+            "scanner_disagreement_is_failure": false
+          }
+        },
         "dependencies_added": [],
         "dependencies_removed": [],
         "evidence_status": "not-comparable",
+        "historical_comparison": {
+          "from": null,
+          "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+          "status": "not-comparable",
+          "to": "current-source"
+        },
         "implementation_status": "implemented",
         "license_classification_changes": [],
         "new_licenses": [],
         "new_vulnerabilities": [],
         "removed_licenses": [],
         "resolved_vulnerabilities": [],
+        "rule": "scanner disagreement is represented, never converted automatically into a release failure; no historical delta is fabricated without a verified prior release",
+        "scanner_history_comparable": false,
+        "schema_version": "1.1.0",
         "status": "no-comparable-verified-prior-release",
         "upstream_posture_changes": [],
         "versions_changed": []
       },
-      "to": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1"
+      "to": "19d54e0bb84226f355865c32c6decee8ce010083"
     },
     "release_evidence": {
       "artifacts": {
@@ -32834,7 +33335,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "3f24c67cf9bfae51b323f5ec68af435e3fed11670296801c1f785324cdd2f893",
-        "documentation": "ae56e69ec253aeedd19e2395525cd4a84b9ba31624a733d6046255ab54b7f010",
+        "documentation": "04108759be6e9aa5eb23d4e0eda9ced6617e776160da68c63884d45ac95262db",
         "openapi": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
         "operational_health": "7ff5e9b3c494f1f9c11b8dd790e8a39908bb097ae9a34a30b88ded1605646a1c"
       },
@@ -32889,8 +33390,8 @@
         ]
       },
       "runtime_baseline_binding": "lite-2026.08.07.3",
-      "sbom_digest": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461",
-      "security_scan_digest": "4c72fe899858b70b7757e6cada313f8c241fa42ee56a1329776d52cadbf7a6a2",
+      "sbom_digest": "a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33",
+      "security_scan_digest": "896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f",
       "signatures": {
         "keyless_preferred": true,
         "status": "unobserved-until-explicit-sign-command",
@@ -34328,15 +34829,223 @@
       ]
     },
     "supply_chain_change": {
+      "baseline_readiness": {
+        "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
+        "candidate_count": 0,
+        "head": "19d54e0bb84226f355865c32c6decee8ce010083",
+        "head_tree": "558c73981dcbf0f0d4d65ee623f06fe658d1be6c",
+        "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+        "selected_baseline": null,
+        "status": "not-ready"
+      },
+      "current_snapshot": {
+        "capture_complete": true,
+        "evidence_status": "promoted-canonical",
+        "implementation_status": "implemented",
+        "licenses": {
+          "deep_source_license_coverage": {
+            "claim": "deep source-level license/copyright analysis is not claimed",
+            "provider": "scancode",
+            "provider_status": "not-run",
+            "requested": false,
+            "required": false,
+            "status": "not-run"
+          },
+          "package_license_coverage": {
+            "authority": "syft+trivy",
+            "note": "Trivy standard license scanning is required; zero license findings do not imply that every file contained recognizable license evidence.",
+            "required": true,
+            "sources": [
+              "syft",
+              "trivy"
+            ],
+            "status": "observed",
+            "syft_component_count": 2366,
+            "trivy_license_finding_count": 31,
+            "trivy_license_scanner": "executed-standard"
+          },
+          "package_rows": 2366,
+          "trivy_license_rows": 26
+        },
+        "live_capture_performed": false,
+        "qualification_surface": "local-or-ci-diagnostic",
+        "raw_scanner_output_included": false,
+        "repository_posture": {
+          "checks": [
+            {
+              "blocking": false,
+              "name": "Branch-Protection",
+              "reason": "scorecard-provider-unsupported-request-type",
+              "score": null,
+              "status": "provider-unavailable"
+            },
+            {
+              "blocking": true,
+              "name": "Dangerous-Workflow",
+              "reason": "recorded-by-scorecard",
+              "score": 10,
+              "status": "observed"
+            },
+            {
+              "blocking": false,
+              "name": "Maintained",
+              "reason": "scorecard-provider-unsupported-request-type",
+              "score": null,
+              "status": "provider-unavailable"
+            },
+            {
+              "blocking": true,
+              "name": "Pinned-Dependencies",
+              "reason": "recorded-by-scorecard",
+              "score": 2,
+              "status": "observed"
+            },
+            {
+              "blocking": false,
+              "name": "Signed-Releases",
+              "reason": "scorecard-provider-unsupported-request-type",
+              "score": null,
+              "status": "provider-unavailable"
+            },
+            {
+              "blocking": true,
+              "name": "Token-Permissions",
+              "reason": "recorded-by-scorecard",
+              "score": 0,
+              "status": "observed"
+            }
+          ],
+          "observed_count": 3,
+          "provider": "openssf-scorecard",
+          "provider_unavailable_count": 3,
+          "status": "observed-with-provider-limitations"
+        },
+        "run_id": "scorecard-compatible-20260811T100353Z",
+        "sbom": {
+          "dev_components": 2366,
+          "release_components": 7,
+          "runtime_components": 0
+        },
+        "schema_version": "1.0.0",
+        "security": {
+          "gitleaks_finding_count": 1035,
+          "semgrep_finding_count": 0,
+          "trivy_counts": {}
+        },
+        "source_commit": "19d54e0bb84226f355865c32c6decee8ce010083",
+        "source_refs": [
+          "contracts/generated/supply-chain/automation-summary.json",
+          "contracts/generated/supply-chain/sbom-dev.cdx.json",
+          "contracts/generated/supply-chain/sbom-release.cdx.json",
+          "contracts/generated/supply-chain/sbom-runtime.cdx.json",
+          "contracts/generated/supply-chain/vulnerability-correlation.json",
+          "contracts/generated/supply-chain/license-inventory.json",
+          "contracts/generated/supply-chain/security-analysis.json",
+          "contracts/generated/supply-chain/scorecard-checks.json"
+        ],
+        "tool_coverage": [
+          {
+            "duration_seconds": 0.671,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "gitleaks-release",
+            "tool": "gitleaks"
+          },
+          {
+            "duration_seconds": 13.184,
+            "exit_code": 1,
+            "status": "findings-or-tool-nonzero",
+            "step_id": "gitleaks-worktree",
+            "tool": "gitleaks"
+          },
+          {
+            "duration_seconds": 5.45,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "grype-sbom-dev",
+            "tool": "grype"
+          },
+          {
+            "duration_seconds": 5.133,
+            "exit_code": 1,
+            "status": "findings-or-tool-nonzero",
+            "step_id": "osv-sbom-dev",
+            "tool": "osv-scanner"
+          },
+          {
+            "duration_seconds": 70.248,
+            "exit_code": 1,
+            "status": "findings-or-tool-nonzero",
+            "step_id": "osv-source",
+            "tool": "osv-scanner"
+          },
+          {
+            "duration_seconds": 7.34,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "scorecard",
+            "tool": "scorecard"
+          },
+          {
+            "duration_seconds": 4.932,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "semgrep",
+            "tool": "semgrep"
+          },
+          {
+            "duration_seconds": 129.844,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "syft-dev",
+            "tool": "syft"
+          },
+          {
+            "duration_seconds": 2.173,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "syft-release",
+            "tool": "syft"
+          },
+          {
+            "duration_seconds": 0.419,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "trivy-sbom-dev",
+            "tool": "trivy"
+          },
+          {
+            "duration_seconds": 73.047,
+            "exit_code": 0,
+            "status": "completed",
+            "step_id": "trivy-source",
+            "tool": "trivy"
+          }
+        ],
+        "vulnerabilities": {
+          "evidence_status": "observed",
+          "finding_count": 580,
+          "scanner_disagreement_is_failure": false
+        }
+      },
       "dependencies_added": [],
       "dependencies_removed": [],
       "evidence_status": "not-comparable",
+      "historical_comparison": {
+        "from": null,
+        "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+        "status": "not-comparable",
+        "to": "current-source"
+      },
       "implementation_status": "implemented",
       "license_classification_changes": [],
       "new_licenses": [],
       "new_vulnerabilities": [],
       "removed_licenses": [],
       "resolved_vulnerabilities": [],
+      "rule": "scanner disagreement is represented, never converted automatically into a release failure; no historical delta is fabricated without a verified prior release",
+      "scanner_history_comparable": false,
+      "schema_version": "1.1.0",
       "status": "no-comparable-verified-prior-release",
       "upstream_posture_changes": [],
       "versions_changed": []
@@ -73327,12 +74036,14 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}}"
+          "bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}"
         ],
-        "dependencies": [],
+        "dependencies": [
+          "lite:dev:scratch:prepare"
+        ],
         "environment": [],
         "example_invocation": "task lite:docs:supply-chain:capture",
-        "expected_runtime_class": "bounded",
+        "expected_runtime_class": "heavy-dev",
         "failure_modes": [
           "dependency task failure",
           "missing required local tool or evidence",
@@ -73341,26 +74052,29 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
+          "scripts/dev/lite/dev-scratch.sh",
           "scripts/docs/enterprise/supply_chain_automation.py"
         ],
         "name": "lite:docs:supply-chain:capture",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Explicitly run heavy WSL2/CI SBOM, vulnerability, secret, static-analysis, licensing and Scorecard capture into transient .pocketlab-dev evidence; never invoked by docs generation",
-        "related_tasks": [],
+        "purpose": "Run a bounded local/CI diagnostic supply-chain capture into transient .pocketlab-dev evidence; never invoked by docs generation and never treated as release qualification by itself",
+        "related_tasks": [
+          "lite:dev:scratch:prepare"
+        ],
         "repository_mutation": false,
         "requires_termux": false,
-        "requires_wsl2": false,
+        "requires_wsl2": true,
         "runtime_mutation": false,
         "safe_local": true,
         "side_effects": {
-          "network_or_external_tools": false,
+          "network_or_external_tools": true,
           "repository_mutation": false,
           "runtime_mutation": false
         },
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "not-a-validation-task",
-        "workflow_group": "Runtime-evidence loop"
+        "workflow_group": "Security-analysis loop"
       },
       {
         "aliases": [],
@@ -73486,9 +74200,9 @@
       {
         "aliases": [],
         "audience": "developer",
-        "captures_runtime": true,
+        "captures_runtime": false,
         "commands": [
-          "set -euo pipefail\nrun_dir=\".pocketlab-dev/documentation-security/runs/manual-$(date -u +%Y%m%dT%H%M%SZ)-$$\"\nhistory_arg=\"\"\nif [ -n \"{{.INCLUDE_GIT_HISTORY}}\" ]; then history_arg=\"--include-git-history\"; fi\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir \"$run_dir\" $history_arg\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir \"$run_dir\"\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check\nprintf 'Canonical supply-chain evidence promoted from %s\\n' \"$run_dir\"\n"
+          "set -euo pipefail\ncommand -v gh >/dev/null 2>&1 || { echo \"ERROR gh CLI is required for canonical release qualification\" >&2; exit 2; }\ntest \"$(git branch --show-current)\" = \"main\" || { echo \"ERROR canonical release qualification must be dispatched from main\" >&2; exit 2; }\ntest -z \"$(git status --porcelain)\" || { echo \"ERROR working tree must be clean before release qualification\" >&2; exit 2; }\ngit fetch origin main\ntest \"$(git rev-parse HEAD)\" = \"$(git rev-parse origin/main)\" || { echo \"ERROR local main must exactly match origin/main\" >&2; exit 2; }\nhistory=\"false\"\nif [ -n \"{{.INCLUDE_GIT_HISTORY}}\" ]; then history=\"true\"; fi\ndeep_license=\"false\"\nif [ -n \"{{.DEEP_LICENSE_SCAN}}\" ]; then deep_license=\"true\"; fi\ngh workflow run docs-security-supply-chain.yml --ref main \\\n  -f include_git_history=\"$history\" \\\n  -f deep_license_scan=\"$deep_license\"\nprintf 'PASS canonical release qualification dispatched to GitHub Actions for %s\\n' \"$(git rev-parse HEAD)\"\nprintf 'Use: gh run list --workflow docs-security-supply-chain.yml --branch main --limit 5\\n'\nprintf 'Inspect the selected run with the one-shot command: gh run view <run-id>.\\n'\n"
         ],
         "dependencies": [],
         "environment": [],
@@ -73502,15 +74216,60 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/docs/enterprise/supply_chain_automation.py"
+          "origin/main"
         ],
         "name": "lite:docs:supply-chain:qualify",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Dispatch the canonical release qualification to GitHub Actions; does not run heavy scanners inside VS Code/WSL interactively",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": true,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": true,
+        "commands": [
+          "set -euo pipefail\nrun_dir=\".pocketlab-dev/documentation-security/runs/local-$(date -u +%Y%m%dT%H%M%SZ)-$$\"\nhistory_arg=\"\"\nif [ -n \"{{.INCLUDE_GIT_HISTORY}}\" ]; then history_arg=\"--include-git-history\"; fi\nbash scripts/dev/lite/dev-scratch.sh run security-tools -- \\\n  {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir \"$run_dir\" $history_arg\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir \"$run_dir\"\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check\nprintf 'Local diagnostic supply-chain evidence promoted from %s; this is not canonical release qualification.\\n' \"$run_dir\"\n"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:docs:supply-chain:qualify:local",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/dev-scratch.sh",
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "name": "lite:docs:supply-chain:qualify:local",
         "outputs": [
-          ".pocketlab-dev/documentation-security/runs/manual-"
+          ".pocketlab-dev/documentation-security/runs/local-"
         ],
         "promotes_evidence": true,
-        "purpose": "Explicitly run heavy WSL2/CI supply-chain capture, normalize/promote sanitized evidence, and validate canonical outputs in one operator-invoked workflow",
-        "related_tasks": [],
+        "purpose": "Explicit local diagnostic qualification for development only; canonical release qualification remains CI-owned",
+        "related_tasks": [
+          "lite:dev:scratch:prepare"
+        ],
         "repository_mutation": true,
         "requires_termux": false,
         "requires_wsl2": false,
@@ -73523,7 +74282,94 @@
         },
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "test -n \"{{.RUN_DIR}}\" || (echo \"RUN_DIR is required\" >&2; exit 2)",
+          "bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir {{.RUN_DIR}} --resume {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:docs:supply-chain:resume",
+        "expected_runtime_class": "heavy-dev",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/dev-scratch.sh",
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "name": "lite:docs:supply-chain:resume",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Resume an interrupted bounded supply-chain capture from its validated checkpoint without rerunning successful scanner steps",
+        "related_tasks": [
+          "lite:dev:scratch:prepare"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": true,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": true,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
         "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "test -n \"{{.RUN_DIR}}\" || (echo \"RUN_DIR is required\" >&2; exit 2)",
+          "{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py status --run-dir {{.RUN_DIR}}"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:supply-chain:status",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/enterprise/supply_chain_automation.py"
+        ],
+        "name": "lite:docs:supply-chain:status",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Show checkpointed per-scanner progress and the last sanitized failure classification for a transient supply-chain run",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
       },
       {
         "aliases": [],
@@ -81584,5 +82430,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "b41bcad75bf6159e0422e1fcc522ebb307367f09dda317e580576549a92b5d3d"
+  "source_fingerprint": "85498034b14d1548481ae22092b0f92d5f675597a858017a7c2a36bdfc87842e"
 }

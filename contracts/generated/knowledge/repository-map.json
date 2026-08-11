@@ -2668,6 +2668,12 @@
     },
     {
       "entities": [
+        "test:tests/dev/test_frontend_resource_policy.py"
+      ],
+      "source": "tests/dev/test_frontend_resource_policy.py"
+    },
+    {
+      "entities": [
         "test:tests/dev/test_pytest_temp_policy.py"
       ],
       "source": "tests/dev/test_pytest_temp_policy.py"
@@ -2683,6 +2689,12 @@
         "test:tests/docs/test_documentation_intelligence.py"
       ],
       "source": "tests/docs/test_documentation_intelligence.py"
+    },
+    {
+      "entities": [
+        "test:tests/docs/test_documentation_presentation_polish.py"
+      ],
+      "source": "tests/docs/test_documentation_presentation_polish.py"
     },
     {
       "entities": [
@@ -2707,6 +2719,12 @@
         "test:tests/docs/test_operational_health_bridge.py"
       ],
       "source": "tests/docs/test_operational_health_bridge.py"
+    },
+    {
+      "entities": [
+        "test:tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "source": "tests/docs/test_supply_chain_runner_hardening.py"
     },
     {
       "entities": [
@@ -2841,6 +2859,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "589f51dc5082cfd9da5bc553c9852e74eea925dd70428a0f4d8e89ea10d8973a"
+    "source_fingerprint": "1f41293e8226e899f026da1ff0e435d1a002328f8b67a89f4e156ec61b3e306a"
   }
 }

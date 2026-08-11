@@ -90,6 +90,7 @@ Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, an
 - related_to: `pocketlab.events.command.queued`
 - related_to: `pocketlab.events.command.succeeded`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

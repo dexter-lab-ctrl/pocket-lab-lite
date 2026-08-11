@@ -77,6 +77,7 @@ Promotes a verified staged PWA atomically and keeps the previous release availab
 - protected_by: `Server-host boundary`
 - verified_by: `tests/backend/test_lite_native_release.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

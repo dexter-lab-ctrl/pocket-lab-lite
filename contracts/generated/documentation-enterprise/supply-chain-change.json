@@ -1,13 +1,221 @@
 {
+  "baseline_readiness": {
+    "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
+    "candidate_count": 0,
+    "head": "19d54e0bb84226f355865c32c6decee8ce010083",
+    "head_tree": "558c73981dcbf0f0d4d65ee623f06fe658d1be6c",
+    "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+    "selected_baseline": null,
+    "status": "not-ready"
+  },
+  "current_snapshot": {
+    "capture_complete": true,
+    "evidence_status": "promoted-canonical",
+    "implementation_status": "implemented",
+    "licenses": {
+      "deep_source_license_coverage": {
+        "claim": "deep source-level license/copyright analysis is not claimed",
+        "provider": "scancode",
+        "provider_status": "not-run",
+        "requested": false,
+        "required": false,
+        "status": "not-run"
+      },
+      "package_license_coverage": {
+        "authority": "syft+trivy",
+        "note": "Trivy standard license scanning is required; zero license findings do not imply that every file contained recognizable license evidence.",
+        "required": true,
+        "sources": [
+          "syft",
+          "trivy"
+        ],
+        "status": "observed",
+        "syft_component_count": 2366,
+        "trivy_license_finding_count": 31,
+        "trivy_license_scanner": "executed-standard"
+      },
+      "package_rows": 2366,
+      "trivy_license_rows": 26
+    },
+    "live_capture_performed": false,
+    "qualification_surface": "local-or-ci-diagnostic",
+    "raw_scanner_output_included": false,
+    "repository_posture": {
+      "checks": [
+        {
+          "blocking": false,
+          "name": "Branch-Protection",
+          "reason": "scorecard-provider-unsupported-request-type",
+          "score": null,
+          "status": "provider-unavailable"
+        },
+        {
+          "blocking": true,
+          "name": "Dangerous-Workflow",
+          "reason": "recorded-by-scorecard",
+          "score": 10,
+          "status": "observed"
+        },
+        {
+          "blocking": false,
+          "name": "Maintained",
+          "reason": "scorecard-provider-unsupported-request-type",
+          "score": null,
+          "status": "provider-unavailable"
+        },
+        {
+          "blocking": true,
+          "name": "Pinned-Dependencies",
+          "reason": "recorded-by-scorecard",
+          "score": 2,
+          "status": "observed"
+        },
+        {
+          "blocking": false,
+          "name": "Signed-Releases",
+          "reason": "scorecard-provider-unsupported-request-type",
+          "score": null,
+          "status": "provider-unavailable"
+        },
+        {
+          "blocking": true,
+          "name": "Token-Permissions",
+          "reason": "recorded-by-scorecard",
+          "score": 0,
+          "status": "observed"
+        }
+      ],
+      "observed_count": 3,
+      "provider": "openssf-scorecard",
+      "provider_unavailable_count": 3,
+      "status": "observed-with-provider-limitations"
+    },
+    "run_id": "scorecard-compatible-20260811T100353Z",
+    "sbom": {
+      "dev_components": 2366,
+      "release_components": 7,
+      "runtime_components": 0
+    },
+    "schema_version": "1.0.0",
+    "security": {
+      "gitleaks_finding_count": 1035,
+      "semgrep_finding_count": 0,
+      "trivy_counts": {}
+    },
+    "source_commit": "19d54e0bb84226f355865c32c6decee8ce010083",
+    "source_refs": [
+      "contracts/generated/supply-chain/automation-summary.json",
+      "contracts/generated/supply-chain/sbom-dev.cdx.json",
+      "contracts/generated/supply-chain/sbom-release.cdx.json",
+      "contracts/generated/supply-chain/sbom-runtime.cdx.json",
+      "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "contracts/generated/supply-chain/license-inventory.json",
+      "contracts/generated/supply-chain/security-analysis.json",
+      "contracts/generated/supply-chain/scorecard-checks.json"
+    ],
+    "tool_coverage": [
+      {
+        "duration_seconds": 0.671,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "gitleaks-release",
+        "tool": "gitleaks"
+      },
+      {
+        "duration_seconds": 13.184,
+        "exit_code": 1,
+        "status": "findings-or-tool-nonzero",
+        "step_id": "gitleaks-worktree",
+        "tool": "gitleaks"
+      },
+      {
+        "duration_seconds": 5.45,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "grype-sbom-dev",
+        "tool": "grype"
+      },
+      {
+        "duration_seconds": 5.133,
+        "exit_code": 1,
+        "status": "findings-or-tool-nonzero",
+        "step_id": "osv-sbom-dev",
+        "tool": "osv-scanner"
+      },
+      {
+        "duration_seconds": 70.248,
+        "exit_code": 1,
+        "status": "findings-or-tool-nonzero",
+        "step_id": "osv-source",
+        "tool": "osv-scanner"
+      },
+      {
+        "duration_seconds": 7.34,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "scorecard",
+        "tool": "scorecard"
+      },
+      {
+        "duration_seconds": 4.932,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "semgrep",
+        "tool": "semgrep"
+      },
+      {
+        "duration_seconds": 129.844,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "syft-dev",
+        "tool": "syft"
+      },
+      {
+        "duration_seconds": 2.173,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "syft-release",
+        "tool": "syft"
+      },
+      {
+        "duration_seconds": 0.419,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "trivy-sbom-dev",
+        "tool": "trivy"
+      },
+      {
+        "duration_seconds": 73.047,
+        "exit_code": 0,
+        "status": "completed",
+        "step_id": "trivy-source",
+        "tool": "trivy"
+      }
+    ],
+    "vulnerabilities": {
+      "evidence_status": "observed",
+      "finding_count": 580,
+      "scanner_disagreement_is_failure": false
+    }
+  },
   "dependencies_added": [],
   "dependencies_removed": [],
   "evidence_status": "not-comparable",
+  "historical_comparison": {
+    "from": null,
+    "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+    "status": "not-comparable",
+    "to": "current-source"
+  },
   "implementation_status": "implemented",
   "license_classification_changes": [],
   "new_licenses": [],
   "new_vulnerabilities": [],
   "removed_licenses": [],
   "resolved_vulnerabilities": [],
+  "rule": "scanner disagreement is represented, never converted automatically into a release failure; no historical delta is fabricated without a verified prior release",
+  "scanner_history_comparable": false,
+  "schema_version": "1.1.0",
   "status": "no-comparable-verified-prior-release",
   "upstream_posture_changes": [],
   "versions_changed": []

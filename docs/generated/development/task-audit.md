@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 889272cd0ef3710868bd179ac966907dfe14c0a456a01cbcddd4d1ded145f353
+source_fingerprint: 18caace6e01082e333a32b2c31fb94a1333652ed9d344655925cca3b106b30f9
 schema_revision: 1
 validation_status: generated
 ---
@@ -219,6 +219,9 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:supply-chain:dependency-track:export`
 - `lite:docs:supply-chain:promote`
 - `lite:docs:supply-chain:qualify`
+- `lite:docs:supply-chain:qualify:local`
+- `lite:docs:supply-chain:resume`
+- `lite:docs:supply-chain:status`
 - `lite:docs:sync`
 - `lite:docs:tools:check`
 - `lite:docs:ui`

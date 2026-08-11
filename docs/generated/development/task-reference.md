@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 889272cd0ef3710868bd179ac966907dfe14c0a456a01cbcddd4d1ded145f353
+source_fingerprint: 18caace6e01082e333a32b2c31fb94a1333652ed9d344655925cca3b106b30f9
 schema_revision: 1
 validation_status: generated
 ---
@@ -109,6 +109,9 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:supply-chain:dependency-track:export`
 - `lite:docs:supply-chain:promote`
 - `lite:docs:supply-chain:qualify`
+- `lite:docs:supply-chain:qualify:local`
+- `lite:docs:supply-chain:resume`
+- `lite:docs:supply-chain:status`
 - `lite:docs:sync`
 - `lite:docs:tools:check`
 - `lite:docs:ui`
@@ -217,6 +220,9 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:tools:check`
 - `lite:docs:openapi` → `lite:contracts:generate`
 - `lite:docs:serve` → `lite:dev:scratch:prepare`
+- `lite:docs:supply-chain:capture` → `lite:dev:scratch:prepare`
+- `lite:docs:supply-chain:qualify:local` → `lite:dev:scratch:prepare`
+- `lite:docs:supply-chain:resume` → `lite:dev:scratch:prepare`
 - `lite:docs:sync` → `lite:docs:check`
 - `lite:docs:sync` → `lite:docs:generate`
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`

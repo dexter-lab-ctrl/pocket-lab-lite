@@ -6,6 +6,14 @@
     "unknown",
     "manual-review"
   ],
+  "deep_source_license_coverage": {
+    "claim": "deep source-level license/copyright analysis is not claimed",
+    "provider": "scancode",
+    "provider_status": "not-run",
+    "requested": false,
+    "required": false,
+    "status": "not-run"
+  },
   "implementation_status": "implemented",
   "items": [
     {
@@ -21873,7 +21881,256 @@
       "version": "4.1.0"
     }
   ],
-  "policy": "classification is deterministic evidence triage only; license approval, exceptions and legal interpretation remain human-maintained",
+  "package_license_coverage": {
+    "authority": "syft+trivy",
+    "note": "Trivy standard license scanning is required; zero license findings do not imply that every file contained recognizable license evidence.",
+    "required": true,
+    "sources": [
+      "syft",
+      "trivy"
+    ],
+    "status": "observed",
+    "syft_component_count": 2366,
+    "trivy_license_finding_count": 31,
+    "trivy_license_scanner": "executed-standard"
+  },
+  "policy": "Syft plus Trivy are the required package-license authority. ScanCode is optional deep-source enrichment; absence or failure never fabricates deep coverage and never blocks required qualification.",
   "scancode_detected_expressions": [],
-  "schema_version": "1.0.0"
+  "schema_version": "1.1.0",
+  "trivy_detected_licenses": [
+    {
+      "classification": "permissive",
+      "license": "Apache-2.0",
+      "occurrences": 1,
+      "package": "dexie",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "ISC",
+      "occurrences": 2,
+      "package": "lucide-react",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "ISC",
+      "occurrences": 2,
+      "package": "yaml",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@react-spring/animated",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@react-spring/core",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@react-spring/rafz",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@react-spring/shared",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@react-spring/types",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@react-spring/web",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@tanstack/query-core",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@tanstack/react-query",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@tanstack/react-virtual",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@tanstack/virtual-core",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@types/react",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@use-gesture/core",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@use-gesture/react",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "@xstate/react",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "csstype",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "immer",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 2,
+      "package": "react",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 2,
+      "package": "react-dom",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 2,
+      "package": "scheduler",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "use-isomorphic-layout-effect",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "use-sync-external-store",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "xstate",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    },
+    {
+      "classification": "permissive",
+      "license": "MIT",
+      "occurrences": 1,
+      "package": "zustand",
+      "severity": "LOW",
+      "source": "trivy",
+      "trivy_category": "notice"
+    }
+  ]
 }

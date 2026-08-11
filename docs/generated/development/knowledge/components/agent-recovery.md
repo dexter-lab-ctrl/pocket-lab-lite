@@ -100,6 +100,7 @@ Separates running-but-disconnected recovery from stopped-agent recovery and expo
 - verified_by: `tests/backend/test_lite_devices_durable_enrollment.py`
 - verified_by: `tests/backend/test_lite_devices_production_readiness.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

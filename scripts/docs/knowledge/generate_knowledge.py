@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import json
 import os
 import re
@@ -939,13 +940,28 @@ def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) 
     for c in components:
         outputs[DEV / f"components/{c['id'].split(':',1)[1]}.md"] = render_component_page(c, indexes, graph)
 
-    journey_rows = []
-    journey_sections = []
+    journey_cards = []
     for j in exports["journeys"]:
         uses, used_by = backlinks(j["id"], indexes, graph)
-        journey_rows.append((j["name"], j.get("domain"), len(j.get("components", [])), len(j.get("routes", [])), j.get("confidence")))
-        journey_sections.append(f"## {j['name']}\n\n**Flow:** user action → UI/query → FastAPI → durable state or NATS → worker/agent/supervisor → evidence/projection → UI.\n\n**Verified components:** {', '.join('`'+x+'`' for x in j.get('components', [])) or 'none declared'}\n\n**Verified API routes:** {', '.join('`'+x+'`' for x in j.get('routes', [])) or 'none'}\n\n**Graph links:** {', '.join(uses) or 'none'}\n\n**Sources:** {', '.join('`'+x+'`' for x in j.get('source_refs', []))}\n")
-    outputs[DEV / "journeys.md"] = frontmatter("How Pocket Lab works", "Generated end-to-end journey knowledge from verified repository sources.") + "# How Pocket Lab works\n\n" + md_table(["Journey", "Domain", "Components", "APIs", "Confidence"], journey_rows) + "\n" + "\n".join(journey_sections)
+        stages = ["User action", "UI / query", "FastAPI", "State or NATS", "Worker / agent / supervisor", "Evidence / projection", "UI"]
+        journey_components = j.get("components", []) or []
+        routes = j.get("routes", []) or []
+        sources = j.get("source_refs", []) or []
+        card = '<article class="pl-journey-card">'
+        card += f'<div class="pl-card-head"><div><span class="pl-card-kicker">{html.escape(str(j.get("domain") or "platform"))}</span><h2>{html.escape(str(j["name"]))}</h2></div><span class="pl-state-pill">{html.escape(str(j.get("confidence") or "unvalidated"))}</span></div>'
+        card += '<div class="pl-journey-flow">' + ''.join(f'<div><span>{idx}</span><strong>{html.escape(stage)}</strong></div>' for idx, stage in enumerate(stages, 1)) + '</div>'
+        card += '<div class="pl-fact-grid">'
+        card += f'<div class="pl-fact"><span>Components</span><strong>{len(journey_components)}</strong></div>'
+        card += f'<div class="pl-fact"><span>API routes</span><strong>{len(routes)}</strong></div>'
+        card += f'<div class="pl-fact"><span>Graph links</span><strong>{len(uses)}</strong></div>'
+        card += '</div>'
+        card += '<details class="pl-disclosure pl-disclosure--compact"><summary>Verified implementation details</summary><div class="pl-detail-list">'
+        card += '<div class="pl-detail-row"><div><strong>Components</strong></div><div><span class="pl-chip-list">' + ''.join(f'<code class="pl-chip pl-chip--code">{html.escape(str(x))}</code>' for x in journey_components) + '</span></div></div>'
+        card += '<div class="pl-detail-row"><div><strong>API routes</strong></div><div><span class="pl-chip-list">' + ''.join(f'<code class="pl-chip pl-chip--code">{html.escape(str(x))}</code>' for x in routes) + '</span></div></div>'
+        card += '<div class="pl-detail-row"><div><strong>Sources</strong></div><div><span class="pl-chip-list">' + ''.join(f'<code class="pl-chip pl-chip--code">{html.escape(str(x))}</code>' for x in sources) + '</span></div></div>'
+        card += '</div></details></article>'
+        journey_cards.append(card)
+    outputs[DEV / "journeys.md"] = frontmatter("How Pocket Lab works", "Generated end-to-end journey knowledge from verified repository sources.") + "# How Pocket Lab works\n\n<div class=\"pl-page-lede\"><strong>Follow real Pocket Lab workflows end to end.</strong><p>Each journey shows the control-plane path first, then keeps verified components, routes and source references available on demand.</p></div>\n\n<div class=\"pl-journey-grid\">\n" + "\n".join(journey_cards) + "\n</div>\n"
 
     api_ui = exports["api-ui-index"]
     api_rows = []
@@ -959,7 +975,23 @@ def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) 
     outputs[DEV / "reason-codes.md"] = frontmatter("Reason-code encyclopedia", "Canonical reason-code semantics with operational links.") + "# Reason-code encyclopedia\n\n" + md_table(["Code", "Domain", "Meaning", "Severity", "Retryable", "Terminal", "User interpretation"], ((f"`{r['name']}`", r.get("domain"), r.get("description"), r.get("severity"), r.get("retryable"), r.get("terminal"), r.get("user_interpretation")) for r in exports["reason-codes"]))
     outputs[DEV / "decisions.md"] = frontmatter("Architecture decisions", "Structured ADRs seeded only from verified repository architecture.") + "# Architecture decisions\n\n" + "\n".join(f"## {a['name']}\n\n**Status:** {a.get('status')}\n\n**Decision:** {a.get('description')}\n\n**Context:** {a.get('context')}\n\n**Alternatives:** {', '.join(a.get('alternatives') or [])}\n\n**Trade-offs:** {', '.join(a.get('trade_offs') or [])}\n\n**Consequences:** {', '.join(a.get('consequences') or [])}\n" for a in exports["adrs"])
     outputs[DEV / "ownership.md"] = frontmatter("Ownership encyclopedia", "System/subsystem ownership without personal names.") + "# Ownership encyclopedia\n\n" + md_table(["Component", "Owner", "Execution", "Data", "Recovery", "Runtime"], ((c["name"], c.get("owner"), c.get("execution_owner"), c.get("data_owner"), c.get("recovery_owner"), c.get("runtime_owner")) for c in components)) + "\n## Reverse owner lookup\n\n" + md_table(["Owner role", "Resources"], exports["ownership"].items())
-    outputs[DEV / "repository-map.md"] = frontmatter("Repository map", "Reverse source lookup from files to knowledge entities.") + "# Repository map\n\n" + md_table(["Source", "Knowledge entities"], ((f"`{x['source']}`", x["entities"]) for x in exports["repository-map"]))
+    repo_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for item in exports["repository-map"]:
+        source = str(item.get("source") or "")
+        group = source.split("/", 1)[0] if "/" in source else source or "root"
+        repo_groups[group].append(item)
+    repo_body = '# Repository map\n\n<div class="pl-page-lede"><strong>Start with a repository area, then drill into exact source ownership.</strong><p>This is a reverse lookup from source paths to generated knowledge entities. It is source-derived and does not expose local filesystem prefixes.</p></div>\n\n'
+    repo_body += '<div class="pl-repo-summary">' + ''.join(f'<div><span>{html.escape(group)}</span><strong>{len(items)}</strong><small>mapped sources</small></div>' for group, items in sorted(repo_groups.items())) + '</div>\n\n'
+    for group, items in sorted(repo_groups.items()):
+        repo_body += f'## {html.escape(group)}\n\n<div class="pl-repository-grid">\n'
+        for item in items:
+            entities = item.get("entities") or []
+            repo_body += '<article class="pl-repository-card">'
+            repo_body += f'<code>{html.escape(str(item.get("source") or "—"))}</code>'
+            repo_body += f'<div class="pl-chip-list">' + ''.join(f'<span class="pl-chip">{html.escape(str(x))}</span>' for x in entities) + '</div>'
+            repo_body += '</article>\n'
+        repo_body += '</div>\n\n'
+    outputs[DEV / "repository-map.md"] = frontmatter("Repository map", "Reverse source lookup from files to knowledge entities.") + repo_body
     outputs[DEV / "runtime-topology.md"] = frontmatter("Runtime topology", "Sanitized promoted runtime topology projections.", "release-promoted") + "# Runtime topology\n\nThis page uses the existing promoted runtime contracts. It never reads arbitrary `.pocketlab-dev` captures.\n\n" + md_table(["Projection", "Source", "Confidence"], ((x["name"], x["source_refs"], x["confidence"]) for x in exports["runtime-topology"]))
     outputs[DEV / "releases.md"] = frontmatter("Release knowledge", "Release knowledge from verified canonical release metadata and promoted runtime binding.", "release-promoted") + "# Release knowledge\n\n" + md_table(["Release", "Source commit", "Promoted", "Parity", "Manifest"], ((r["name"], r.get("source_commit"), r.get("promoted_at"), r.get("runtime_parity_status"), r.get("release_manifest_status")) for r in exports["releases"])) + "\n## What changed?\n\n" + md_table(["From", "To", "Status", "Note"], ((x.get("from"), x.get("to"), x.get("status"), x.get("note")) for x in exports["release-changes"]))
     for release in exports["releases"]:

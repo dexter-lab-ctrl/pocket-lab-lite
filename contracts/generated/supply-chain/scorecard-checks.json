@@ -1,5 +1,68 @@
 {
-  "checks": [],
-  "schema_version": "1.0.0",
-  "status": "unobserved"
+  "checks": [
+    {
+      "blocking": false,
+      "claim": "control posture is not inferred from unavailable Scorecard evidence",
+      "name": "Branch-Protection",
+      "provider": "openssf-scorecard",
+      "reason": "scorecard-provider-unsupported-request-type",
+      "score": null,
+      "status": "provider-unavailable"
+    },
+    {
+      "name": "Dangerous-Workflow",
+      "provider": "openssf-scorecard",
+      "reason": "recorded-by-scorecard",
+      "score": 10,
+      "status": "observed"
+    },
+    {
+      "blocking": false,
+      "claim": "control posture is not inferred from unavailable Scorecard evidence",
+      "name": "Maintained",
+      "provider": "openssf-scorecard",
+      "reason": "scorecard-provider-unsupported-request-type",
+      "score": null,
+      "status": "provider-unavailable"
+    },
+    {
+      "name": "Pinned-Dependencies",
+      "provider": "openssf-scorecard",
+      "reason": "recorded-by-scorecard",
+      "score": 2,
+      "status": "observed"
+    },
+    {
+      "blocking": false,
+      "claim": "control posture is not inferred from unavailable Scorecard evidence",
+      "name": "Signed-Releases",
+      "provider": "openssf-scorecard",
+      "reason": "scorecard-provider-unsupported-request-type",
+      "score": null,
+      "status": "provider-unavailable"
+    },
+    {
+      "name": "Token-Permissions",
+      "provider": "openssf-scorecard",
+      "reason": "recorded-by-scorecard",
+      "score": 0,
+      "status": "observed"
+    }
+  ],
+  "compatible_checks": [
+    "Pinned-Dependencies",
+    "Dangerous-Workflow",
+    "Token-Permissions"
+  ],
+  "policy": "Compatible Scorecard repository checks are required evidence. Provider-unavailable checks remain first-class controls but are non-blocking and never receive fabricated scores or pass claims.",
+  "provider": "openssf-scorecard",
+  "provider_mode": "github-repository",
+  "provider_unavailable_checks": [
+    "Branch-Protection",
+    "Signed-Releases",
+    "Maintained"
+  ],
+  "provider_unavailable_reason": "scorecard-provider-unsupported-request-type",
+  "schema_version": "1.1.0",
+  "status": "observed-with-provider-limitations"
 }

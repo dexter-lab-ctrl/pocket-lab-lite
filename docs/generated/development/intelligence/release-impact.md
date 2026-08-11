@@ -27,10 +27,5 @@ confidence: release-promoted
 
 **Platform Capabilities:** implemented 6, not-applicable 15, unvalidated 7, verified 7
 
-<details class="pl-disclosure"><summary>Technical delta payload</summary>
-
-| Added | Changed | Removed |
-| --- | --- | --- |
-| — | — | — |
-
-</details>
+<details class="pl-disclosure pl-technical-panel"><summary><span>Technical delta payload</span><small>Exact machine-oriented change sets</small></summary>
+<div class="pl-technical-grid"><section><span class="pl-card-kicker">Added</span><strong>0</strong><div class="pl-code-stack"><span class="pl-muted">No entries</span></div></section><section><span class="pl-card-kicker">Changed</span><strong>0</strong><div class="pl-code-stack"><span class="pl-muted">No entries</span></div></section><section><span class="pl-card-kicker">Removed</span><strong>0</strong><div class="pl-code-stack"><span class="pl-muted">No entries</span></div></section></div></details>

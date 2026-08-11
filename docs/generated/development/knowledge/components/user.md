@@ -58,6 +58,7 @@ Uses Pocket Lab Lite through the browser.
 - verified_by: `tests/backend/test_lite_premium_tab_polish.py`
 - verified_by: `tests/backend/test_lite_security_f3_summary_contract.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

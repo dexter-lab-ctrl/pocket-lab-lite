@@ -9,48 +9,18 @@ confidence: generated
 
 # Search aliases
 
-This generated page gives MkDocs search deterministic synonym text without modifying Material internals.
+<div class="pl-page-lede"><strong>Find the canonical page using the words people actually type.</strong><p>Aliases enrich MkDocs search deterministically without modifying Material internals. Every alias maps back to canonical documentation destinations.</p></div>
 
-## backup stale
-
-Aliases: old backup, recovery freshness. Destinations: /generated/production/recovery/, /generated/production/intelligence/recovery-readiness/.
-
-## device offline
-
-Aliases: agent unreachable, fleet problem, node disconnected. Destinations: /generated/production/devices/, /generated/production/intelligence/fleet-readiness/, /generated/production/troubleshooting/.
-
-## devices
-
-Aliases: agent, fleet, node, offline. Destinations: /generated/production/devices/, /generated/production/intelligence/fleet-readiness/.
-
-## operational-health
-
-Aliases: degraded, health, stale, unavailable. Destinations: /generated/production/intelligence/current-health/, /generated/development/knowledge/operational-health/.
-
-## recovery
-
-Aliases: backup, restore, restore readiness. Destinations: /generated/production/recovery/, /generated/production/intelligence/recovery-readiness/.
-
-## release mismatch
-
-Aliases: installed release mismatch, runtime release drift. Destinations: /generated/production/release/, /generated/production/intelligence/what-changed/.
-
-## release-impact
-
-Aliases: change impact, release delta, what changed. Destinations: /generated/production/intelligence/what-changed/.
-
-## remote access not ready
-
-Aliases: tailnet problem, tailscale unavailable. Destinations: /generated/production/remote-access/, /generated/production/troubleshooting/.
-
-## remote-access
-
-Aliases: remote access not ready, tailnet, tailscale. Destinations: /generated/production/remote-access/.
-
-## security
-
-Aliases: lynis, safety, safety check, trivy. Destinations: /generated/production/security/.
-
-## security check stuck
-
-Aliases: scan stuck, worker safety check. Destinations: /generated/production/security/, /generated/production/troubleshooting/.
+<div class="pl-alias-grid">
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>backup stale</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">old backup</span><span class="pl-chip">recovery freshness</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/recovery/</code><code>/generated/production/intelligence/recovery-readiness/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>device offline</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">agent unreachable</span><span class="pl-chip">fleet problem</span><span class="pl-chip">node disconnected</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/devices/</code><code>/generated/production/intelligence/fleet-readiness/</code><code>/generated/production/troubleshooting/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>devices</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">agent</span><span class="pl-chip">fleet</span><span class="pl-chip">node</span><span class="pl-chip">offline</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/devices/</code><code>/generated/production/intelligence/fleet-readiness/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>operational-health</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">degraded</span><span class="pl-chip">health</span><span class="pl-chip">stale</span><span class="pl-chip">unavailable</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/intelligence/current-health/</code><code>/generated/development/knowledge/operational-health/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>recovery</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">backup</span><span class="pl-chip">restore</span><span class="pl-chip">restore readiness</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/recovery/</code><code>/generated/production/intelligence/recovery-readiness/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>release mismatch</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">installed release mismatch</span><span class="pl-chip">runtime release drift</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/release/</code><code>/generated/production/intelligence/what-changed/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>release-impact</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">change impact</span><span class="pl-chip">release delta</span><span class="pl-chip">what changed</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/intelligence/what-changed/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>remote access not ready</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">tailnet problem</span><span class="pl-chip">tailscale unavailable</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/remote-access/</code><code>/generated/production/troubleshooting/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>remote-access</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">remote access not ready</span><span class="pl-chip">tailnet</span><span class="pl-chip">tailscale</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/remote-access/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>security</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">lynis</span><span class="pl-chip">safety</span><span class="pl-chip">safety check</span><span class="pl-chip">trivy</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/security/</code></div></article>
+<article class="pl-alias-card"><span class="pl-card-kicker">Canonical term</span><h2>security check stuck</h2><h3>Search aliases</h3><div class="pl-chip-list"><span class="pl-chip">scan stuck</span><span class="pl-chip">worker safety check</span></div><h3>Destinations</h3><div class="pl-code-stack"><code>/generated/production/security/</code><code>/generated/production/troubleshooting/</code></div></article>
+</div>

@@ -509,7 +509,7 @@ def render_dependency_page(data: list[dict[str, Any]], experience: dict[str, Any
     out = frontmatter("Dependency health", "Why each domain is healthy, degraded, or still unvalidated.", audience, "release-promoted")
     out += "# Service and dependency health\n\nOperational health and dependency evidence remain independent: a healthy domain does not silently mark every dependency healthy.\n\n"
     graph = "dependency-health-production.svg" if audience == "production" else "dependency-health-development.svg"
-    out += f'<div class="pl-generated-diagram">\n\n![Generated dependency health graph](../../assets/enterprise/{graph}){{ loading=lazy }}\n\n</div>\n\n'
+    out += f'<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/{graph}" alt="Generated dependency health graph" loading="lazy"><figcaption>Promoted dependency-state relationships; source paths and renderer directives are never shown as page content.</figcaption></figure>\n\n'
     for row in data:
         out += f"## {row['label']}\n\n{render_status_strip(row, experience)}\n"
         if row.get("reason"):
@@ -530,9 +530,18 @@ def render_release_page(data: dict[str, Any], audience: str) -> str:
     out += "\n## Current release snapshot\n\n"
     for name, counts in data["current_snapshot"].items():
         out += f"**{name.replace('-', ' ').replace('_', ' ').title()}:** " + ", ".join(f"{k} {v}" for k, v in counts.items()) + "\n\n"
-    out += "<details class=\"pl-disclosure\"><summary>Technical delta payload</summary>\n\n"
-    out += table(["Added", "Changed", "Removed"], [(data.get("added", []), data.get("changed", []), data.get("removed", []))])
-    out += "\n</details>\n"
+    out += '<details class="pl-disclosure pl-technical-panel"><summary><span>Technical delta payload</span><small>Exact machine-oriented change sets</small></summary>\n'
+    out += '<div class="pl-technical-grid">'
+    for label, key in (("Added", "added"), ("Changed", "changed"), ("Removed", "removed")):
+        values = data.get(key, []) or []
+        out += f'<section><span class="pl-card-kicker">{label}</span><strong>{len(values)}</strong><div class="pl-code-stack">'
+        if values:
+            for value in values:
+                out += f'<code>{html.escape(str(value))}</code>'
+        else:
+            out += '<span class="pl-muted">No entries</span>'
+        out += '</div></section>'
+    out += '</div></details>\n'
     return out
 
 
@@ -569,9 +578,13 @@ def render_lineage_page(rows: list[dict[str, Any]], audience: str) -> str:
         out += f'<div><strong>Promoted runtime baseline</strong><span>{row["release_tag"]}</span></div><span aria-hidden="true">→</span>'
         out += f'<div><strong>Operational-health projection</strong><span>{row["claim"]}</span></div><span aria-hidden="true">→</span>'
         out += '<div><strong>Documentation intelligence</strong><span>deterministic view</span></div></div>\n\n'
-        out += "<details class=\"pl-disclosure\"><summary>Technical provenance</summary>\n\n"
-        out += table(["Field", "Value"], [("Source commit", row["source_commit"]), ("Promoted at", row["promoted_at"]), ("Generator", row["generator"]), ("Evidence comparisons", row["evidence_comparisons"])])
-        out += "\n</details>\n\n"
+        out += '<details class="pl-disclosure pl-technical-panel"><summary><span>Technical provenance</span><small>Release-bound evidence lineage</small></summary>\n<div class="pl-provenance-grid">'
+        for label, value in (("Source commit", row["source_commit"]), ("Promoted at", row["promoted_at"]), ("Generator", row["generator"]), ("Evidence comparisons", row["evidence_comparisons"])):
+            rendered = html.escape(str(value))
+            if label in {"Source commit", "Generator"}:
+                rendered = f"<code>{rendered}</code>"
+            out += f'<div><span>{label}</span><strong>{rendered}</strong></div>'
+        out += '</div></details>\n\n'
     return out
 
 

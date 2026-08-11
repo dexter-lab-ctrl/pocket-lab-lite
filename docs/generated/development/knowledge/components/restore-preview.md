@@ -83,6 +83,7 @@ Builds a non-destructive preview, requires explicit confirmation, creates a chec
 - uses: `POST /api/lite/recovery/restore`
 - uses: `POST /api/lite/recovery/restore/preview`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

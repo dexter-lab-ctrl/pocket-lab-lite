@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 889272cd0ef3710868bd179ac966907dfe14c0a456a01cbcddd4d1ded145f353
+source_fingerprint: 18caace6e01082e333a32b2c31fb94a1333652ed9d344655925cca3b106b30f9
 schema_revision: 1
 validation_status: generated
 ---
@@ -75,8 +75,10 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `NATS_URL`
 - `PLAYWRIGHT_BROWSER_REPORT`
 - `PLAYWRIGHT_REPORT`
+- `PLAYWRIGHT_SCRATCH`
 - `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`
 - `POCKETLAB_ACTIVE_CODE_SCAN_EXCLUDES`
+- `POCKETLAB_ALLOW_LOCAL_SCANCODE`
 - `POCKETLAB_API_TOKEN`
 - `POCKETLAB_API_URL`
 - `POCKETLAB_AUDIT`
@@ -108,6 +110,8 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_FLAKES_WORKERS`
 - `POCKETLAB_FLAKE_ROUNDS`
 - `POCKETLAB_FLAKE_WORKERS`
+- `POCKETLAB_FRONTEND_MIN_MEMORY_MIB`
+- `POCKETLAB_FRONTEND_MIN_SCRATCH_GIB`
 - `POCKETLAB_GATE_ACTIVE_FRESHNESS_CONVERGENCE_SECONDS`
 - `POCKETLAB_GATE_API_READY_TIMEOUT_SECONDS`
 - `POCKETLAB_GATE_BASE_URL`
@@ -269,10 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_S6_GATE_SQLITE`
 - `POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS`
 - `POCKETLAB_S7_GATE_BASE_URL`
-- `POCKETLAB_S7_GATE_PYTHON`
-- `POCKETLAB_S7_GATE_REPORT`
-- `POCKETLAB_S7_GATE_SKIP_PARITY`
-- `POCKETLAB_S8_GATE_ALLOW_FAILED_RESTORE`
 
 ## Process roles
 

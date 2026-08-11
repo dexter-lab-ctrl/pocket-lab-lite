@@ -905,6 +905,24 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "PLAYWRIGHT_SCRATCH",
+      "production": false,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/frontend-resource-preflight.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD",
       "production": false,
       "required": false,
@@ -1403,6 +1421,24 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_ALLOW_LOCAL_SCANCODE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -2818,6 +2854,7 @@
         "Taskfile.yml",
         "scripts/dev/lite/dev-scratch.sh",
         "scripts/dev/lite/documentation_security_tools.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
         "scripts/docs/sqlite/generate_schemaspy.py"
       ],
       "safe_default": "$REPO_ROOT/.pocketlab-dev/tmp",
@@ -3646,6 +3683,42 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py"
       ],
       "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_FRONTEND_MIN_MEMORY_MIB",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/frontend-resource-preflight.sh"
+      ],
+      "safe_default": "2048",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_FRONTEND_MIN_SCRATCH_GIB",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/frontend-resource-preflight.sh"
+      ],
+      "safe_default": "5",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -11941,6 +12014,60 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_SCANCODE_MIN_RUNTIME_MEM_MIB",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SCANCODE_MIN_RUNTIME_SWAP_MIB",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SCANCODE_PROCESSES",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_SCHEMASPY_JAR",
       "production": true,
       "required": false,
@@ -12648,6 +12775,114 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB_SCANCODE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_SCRATCH_GIB",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_SWAP_FREE_MIB_SCANCODE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SUPPLY_CHAIN_PROGRESS_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SUPPLY_CHAIN_TIMEOUT_",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -14545,7 +14780,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "6d050a9f699a39606dfa86d0704ede78a9789201ce99c1f308931c72c5346fc0",
+    "aggregate_fingerprint": "b526b05ef26065a3e21fe4c5b7414c2325d13ec3838ce943d46f2476ea95cd44",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -14757,8 +14992,9 @@
       "scripts/dev/lite/check-contracts.sh": "a62c37cc391390c74010ae4ebbda691e3598a93cb004c66c555d1b9fca9566e3",
       "scripts/dev/lite/check-documentation-security-tools.sh": "31a14f3d0fe1c3faa26b912be9623f2fc76a0d4d0bafd602fa7ba8c3aec62da1",
       "scripts/dev/lite/dev-scratch.sh": "60f59291ed3f615f553ae1c0647c1029732c3c00074254d5e01e07f29f5b6255",
+      "scripts/dev/lite/frontend-resource-preflight.sh": "74eed4341ce0a1c191c4e65f41984a14eb2aead2e8a19f63c0c090bac216a7f5",
       "scripts/dev/lite/run-gate.sh": "8c0ee4015a9f604da6c7715313ea287674e07a9ad59c8b2419129ad63bba3198",
-      "scripts/dev/lite/run-playwright-mocked.sh": "0a20feb1edc0cc96d07506d08948669c22256f9427964f739e93dba754fc98c8",
+      "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
       "scripts/dev/lite/serve-docs.sh": "d3026ce84c5d83efc8b3e9e39e175961587a961800f09a1eaeb738b6fa4e5927",
       "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
       "scripts/dev/lite/setup-check.sh": "ec8e18dd798bccef6094e562cd357cd6447a43f883537b1b7e4dac84d0238485",

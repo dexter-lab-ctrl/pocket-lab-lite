@@ -6075,7 +6075,15 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:platform",
           "type": "verified_by"
         },
         {
@@ -7309,6 +7317,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/dev/test_frontend_resource_policy.py": [
+        {
+          "source": "component:browser",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/mkdocs.spec.ts": [
         {
           "source": "component:lite-api",
@@ -7378,6 +7392,300 @@
         },
         {
           "source": "reason:service_unavailable",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_documentation_presentation_polish.py": [
+        {
+          "source": "component:agent-command-executor",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:agent-recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:agent-signals",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:agent-supervisor",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:api-domain-surfaces",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:api-guards",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:api-read-surfaces",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-catalog",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-lifecycle-worker",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-recovery-update",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-workflow-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:atomic-promotion",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:backup-engine",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:bounded-reconciliation",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:browser",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:checkpoints-retention",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:command-lifecycle",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:completion-evidence",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:device-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:frontend-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:github-release",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:invite-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:lan",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:last-known-good",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:media-app-health",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-jetstream",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:node-agent",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:post-switch-health",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:prepared-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:projection-subprocesses",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:proot-ubuntu",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:recovery-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-artifacts",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-staging",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-subprocess",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:remote-readiness",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:restore-preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:retirement-database-recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:scanner-adapters",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:security-coordinator",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:security-profiles",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:security-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:sqlite",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:tailscale",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:tailscaled",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:user",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:worker",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:workflow-execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:platform",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:release",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:device-reconnect",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restart-agent",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-01",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-02",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-03",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-04",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-05",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-06",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-07",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-08",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-09",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-10",
           "type": "verified_by"
         }
       ],
@@ -8036,6 +8344,16 @@
         },
         {
           "source": "reason:worker_start_timeout",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_supply_chain_runner_hardening.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -10717,6 +11035,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -10815,6 +11137,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -10905,6 +11231,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -10951,6 +11281,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -10990,6 +11324,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11047,6 +11385,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11082,6 +11424,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11132,6 +11478,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11313,6 +11663,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11352,6 +11706,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11397,6 +11755,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11428,6 +11790,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11505,6 +11871,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11551,6 +11921,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11594,6 +11968,14 @@
         },
         {
           "target": "test:tests/backend/test_release_process_isolation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/dev/test_frontend_resource_policy.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11655,6 +12037,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11686,6 +12072,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11755,6 +12145,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11786,6 +12180,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11828,6 +12226,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11917,6 +12319,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -11936,6 +12342,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -11962,6 +12372,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12007,6 +12421,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12026,6 +12444,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12068,6 +12490,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12229,6 +12655,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12256,6 +12686,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12309,6 +12743,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12352,6 +12790,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12441,6 +12883,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12496,6 +12942,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12557,6 +13007,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12600,6 +13054,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12653,6 +13111,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12695,6 +13157,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12718,6 +13184,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12827,6 +13297,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12869,6 +13343,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -12888,6 +13366,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -12961,6 +13443,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13007,6 +13493,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13038,6 +13528,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -13076,6 +13570,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -13125,6 +13623,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13171,6 +13673,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13214,6 +13720,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -13291,6 +13801,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13318,6 +13832,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -13352,6 +13870,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -13397,6 +13919,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13439,6 +13965,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13473,6 +14003,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13504,6 +14038,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -13689,6 +14227,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -13740,6 +14282,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -14303,6 +14849,10 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
@@ -14312,6 +14862,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_intelligence.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -14889,11 +15443,19 @@
           "type": "owns"
         },
         {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
         {
           "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -15254,6 +15816,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -15865,6 +16431,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -16177,6 +16747,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -16410,6 +16984,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -16737,6 +17315,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -16836,6 +17418,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
           "type": "verified_by"
         },
         {
@@ -16954,6 +17540,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
           "type": "verified_by"
         }
       ],
@@ -17455,6 +18045,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -17462,6 +18056,10 @@
       "requirement:architecture-02": [
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -17475,6 +18073,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -17482,6 +18084,10 @@
       "requirement:architecture-04": [
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -17495,6 +18101,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -17502,6 +18112,10 @@
       "requirement:architecture-06": [
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -17515,6 +18129,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -17522,6 +18140,10 @@
       "requirement:architecture-08": [
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -17535,6 +18157,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -17542,6 +18168,10 @@
       "requirement:architecture-10": [
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
         {
@@ -17717,6 +18347,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "589f51dc5082cfd9da5bc553c9852e74eea925dd70428a0f4d8e89ea10d8973a"
+    "source_fingerprint": "1f41293e8226e899f026da1ff0e435d1a002328f8b67a89f4e156ec61b3e306a"
   }
 }

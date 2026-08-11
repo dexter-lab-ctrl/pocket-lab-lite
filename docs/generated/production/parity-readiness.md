@@ -1,5 +1,6 @@
 ---
 title: "Projection parity readiness"
+description: "Current repository-derived and promoted-runtime evidence for Pocket Lab Lite backend-to-frontend projection parity."
 generated: true
 audience: production
 status: ready-with-accepted-limitations
@@ -7,6 +8,8 @@ source_revision: repository-source
 semantic_fingerprint: 44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c
 generator: scripts/docs/parity/generate_parity.py
 ---
+
+<div class="pl-page-meta"><span class="pl-status pl-status--verified">Source-derived</span><span class="pl-status pl-status--ready-with-accepted-limitations">Ready With Accepted Limitations</span></div>
 
 # Projection parity readiness
 

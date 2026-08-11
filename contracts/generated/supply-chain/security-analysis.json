@@ -4,7 +4,7 @@
       "gitleaks-release.json",
       "gitleaks-worktree.json"
     ],
-    "finding_count": 329,
+    "finding_count": 1035,
     "redacted": true
   },
   "raw_findings_included": false,
