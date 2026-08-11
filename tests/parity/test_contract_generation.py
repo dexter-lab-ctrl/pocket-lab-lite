@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import jsonschema
@@ -43,12 +44,12 @@ def _generated_bytes() -> dict[str, bytes]:
 
 
 def test_parity_generation_is_two_run_byte_deterministic() -> None:
-    subprocess.run(["python3", str(GENERATOR), "generate"], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, str(GENERATOR), "generate"], cwd=ROOT, check=True)
     first = _generated_bytes()
-    subprocess.run(["python3", str(GENERATOR), "generate"], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, str(GENERATOR), "generate"], cwd=ROOT, check=True)
     second = _generated_bytes()
     assert first == second
-    subprocess.run(["python3", str(GENERATOR), "check"], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, str(GENERATOR), "check"], cwd=ROOT, check=True)
 
 
 def test_model_and_generated_contracts_validate_and_share_fingerprint() -> None:
@@ -124,4 +125,4 @@ def test_storybook_and_playwright_sources_are_linked_to_every_registry_scenario(
         assert scenario["id"] in stories
 
 def test_generated_documentation_has_no_drift() -> None:
-    subprocess.run(["python3", str(GENERATOR), "check"], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, str(GENERATOR), "check"], cwd=ROOT, check=True)
