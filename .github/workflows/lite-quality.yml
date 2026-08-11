@@ -35,11 +35,24 @@ jobs:
         with:
           version: '3.50.0'
           repo-token: ${{ github.token }}
-      - name: Install locked development dependencies
+      - name: Install development and Lite API runtime dependencies
         run: |
           python -m venv .venv
-          .venv/bin/python -m pip install --upgrade-strategy only-if-needed -r requirements-dev.txt
+          .venv/bin/python -m pip install \
+            --upgrade-strategy only-if-needed \
+            -r requirements-dev.txt \
+            -r pocket-lab-final-structure/runtime/requirements.txt
           npm ci
+      - name: Verify Lite API Python imports
+        run: |
+          .venv/bin/python - <<'PY'
+          import fastapi
+          import pydantic
+          import nats
+          import yaml
+
+          print("PASS FastAPI/runtime imports are available")
+          PY
       - name: Install pinned documentation and parity tools
         run: |
           bash scripts/dev/lite/setup-documentation-tools.sh --install-missing
