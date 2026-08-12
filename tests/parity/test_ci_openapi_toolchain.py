@@ -120,3 +120,26 @@ def test_ci_installs_playwright_managed_chromium_for_browser_tests() -> None:
     assert npm_ci_index < browser_install_index
     assert browser_install_index < storybook_index
 
+def test_supply_chain_ci_installs_documentation_python_dependencies() -> None:
+    workflow = Path(
+        ".github/workflows/docs-security-supply-chain.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "-r requirements-docs.txt" in workflow
+    assert "Verify documentation Python dependencies" in workflow
+    assert "import jsonschema" in workflow
+    assert "import yaml" in workflow
+
+    install_index = workflow.index(
+        "-r requirements-docs.txt"
+    )
+    verify_index = workflow.index(
+        "Verify documentation Python dependencies"
+    )
+    capture_index = workflow.index(
+        "Capture transient supply-chain evidence"
+    )
+
+    assert install_index < verify_index
+    assert verify_index < capture_index
+
