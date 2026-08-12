@@ -36,8 +36,8 @@
       "name": "Apps",
       "observation_summary": {
         "mapped": 4,
-        "match": 14,
-        "mismatch": 0,
+        "match": 12,
+        "mismatch": 2,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
@@ -56,7 +56,7 @@
         "implementation_status": "implemented",
         "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
-        "runtime_parity": "verified-with-mapped-presentation",
+        "runtime_parity": "drift-detected",
         "runtime_status": "observed"
       },
       "type": "domain"
@@ -432,7 +432,7 @@
       "status_dimensions": {
         "capability_status": "implemented",
         "confidence": "release-promoted",
-        "degraded_reason": "service_unavailable",
+        "degraded_reason": "read_degraded",
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
@@ -725,9 +725,9 @@
       ],
       "name": "Backup & Restore",
       "observation_summary": {
-        "mapped": 8,
-        "match": 33,
-        "mismatch": 0,
+        "mapped": 5,
+        "match": 27,
+        "mismatch": 9,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
@@ -746,7 +746,7 @@
         "implementation_status": "implemented",
         "operational_health": "degraded",
         "readiness": "degraded",
-        "runtime_parity": "verified-with-mapped-presentation",
+        "runtime_parity": "drift-detected",
         "runtime_status": "observed"
       },
       "type": "domain"
@@ -1175,6 +1175,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7f43bce9c41038abb183db8e82aa7572a101ff206b28d13d760ad1b172a7a6e9"
+    "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a"
   }
 }

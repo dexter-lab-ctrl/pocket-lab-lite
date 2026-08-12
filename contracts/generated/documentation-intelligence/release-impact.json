@@ -15,8 +15,9 @@
         "verified": 7
       },
       "semantic_parity": {
+        "needs-review": 2,
         "partial": 2,
-        "verified": 5
+        "verified": 3
       }
     },
     "dimensions": [
@@ -60,10 +61,10 @@
     "from_release": null,
     "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
     "removed": [],
-    "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+    "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
     "status": "no-comparable-verified-prior-release",
-    "to_release": "lite-2026.08.07.3"
+    "to_release": "lite-2026.08.12.2"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "679c2d50f9d5003e65282015e0e631549f680a1dd8ba54e7c97aa0f28c922cc2"
+  "source_fingerprint": "5ae6ab389ff9aea4fb5fa23ba43939b0d715b7d2bbaffdbf49b38ab3ca325457"
 }

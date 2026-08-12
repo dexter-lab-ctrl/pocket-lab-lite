@@ -16,7 +16,7 @@
       "status": "unobserved"
     }
   },
-  "backend_identity": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+  "backend_identity": "a6e4abc37ee9cca62c27286c556607ff3e740561",
   "breaking_changes": [],
   "build_timestamp": "unobserved",
   "database_migration_level": "unobserved",
@@ -30,9 +30,9 @@
   "fingerprints": {
     "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
     "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-    "documentation": "340e4b5bf0252a37a6b1fad32b9b6934f4e803f3cdadd0235c44a924b0bcc1b9",
+    "documentation": "30a9e7d29b4520d7a57a05327dd8aae0f858806e6853919b4d9db03f6e9cca62",
     "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
-    "operational_health": "9452114239d1581cff4febc0b8a07930018ee4d71d458efb6090ca5b78bba1c1"
+    "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",
@@ -84,7 +84,7 @@
       }
     ]
   },
-  "runtime_baseline_binding": "lite-2026.08.07.3",
+  "runtime_baseline_binding": "lite-2026.08.12.2",
   "sbom_digest": "a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33",
   "security_scan_digest": "896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f",
   "signatures": {

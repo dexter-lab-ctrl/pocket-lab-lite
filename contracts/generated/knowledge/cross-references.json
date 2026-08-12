@@ -2647,7 +2647,7 @@
           "type": "owns"
         }
       ],
-      "release:lite-2026.08.07.3": [
+      "release:lite-2026.08.12.2": [
         {
           "source": "domain:apps",
           "type": "observed_by"
@@ -7388,10 +7388,6 @@
         },
         {
           "source": "reason:projection_too_old",
-          "type": "verified_by"
-        },
-        {
-          "source": "reason:service_unavailable",
           "type": "verified_by"
         }
       ],
@@ -14313,7 +14309,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -14525,7 +14521,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -14969,7 +14965,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -15011,7 +15007,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -15541,7 +15537,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -15843,7 +15839,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -15951,7 +15947,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -17881,10 +17877,6 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/docs/test_documentation_intelligence.py",
-          "type": "verified_by"
-        },
-        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -18347,6 +18339,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7f43bce9c41038abb183db8e82aa7572a101ff206b28d13d760ad1b172a7a6e9"
+    "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a"
   }
 }

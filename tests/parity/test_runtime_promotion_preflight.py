@@ -96,6 +96,55 @@ def test_missing_local_tag_is_a_safe_repair_boundary():
     assert callable(module.recompute_comparison)
 
 
+def test_preflight_allows_truthful_runtime_drift(
+    tmp_path,
+    monkeypatch,
+):
+    module = load_module()
+
+    comparison = {
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc",
+        "status": "needs-review",
+        "domains": [
+            {
+                "id": "apps",
+                "implementation_status": "implemented",
+                "runtime_parity": "drift-detected",
+                "comparison_summary": {
+                    "mapped": 0,
+                    "match": 10,
+                    "mismatch": 2,
+                    "not_applicable": 0,
+                    "not_observed": 0,
+                    "unsupported": 0,
+                },
+            }
+        ],
+    }
+
+    normalized = tmp_path / "runtime-comparison.json"
+
+    import json
+
+    normalized.write_text(
+        json.dumps(comparison),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        module,
+        "NORMALIZED",
+        normalized,
+    )
+
+    module.verify_comparison(
+        "lite-2026.08.12.2",
+        "a6e4abc",
+        ["apps"],
+    )
+
+
 def test_preflight_never_has_runtime_write_api_logic():
     text = SCRIPT.read_text(encoding="utf-8")
 

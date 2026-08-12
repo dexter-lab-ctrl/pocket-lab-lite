@@ -5,13 +5,13 @@
       "artifact_checksum": null,
       "confidence": "release-promoted",
       "domain": "release",
-      "id": "release:lite-2026.08.07.3",
-      "name": "lite-2026.08.07.3",
-      "promoted_at": "2026-08-07T18:04:28Z",
+      "id": "release:lite-2026.08.12.2",
+      "name": "lite-2026.08.12.2",
+      "promoted_at": "2026-08-12T16:00:40Z",
       "release_manifest_status": "unvalidated",
-      "runtime_parity_status": "partial",
+      "runtime_parity_status": "needs-review",
       "sanitized": true,
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "source_refs": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -24,6 +24,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7f43bce9c41038abb183db8e82aa7572a101ff206b28d13d760ad1b172a7a6e9"
+    "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a"
   }
 }

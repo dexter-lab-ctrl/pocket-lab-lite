@@ -15,7 +15,7 @@ This page explains the current release evidence and change surface without confl
 
 ## Release evidence
 
-Source/release/runtime identities remain separate. Current source commit: `uncommitted`; runtime binding: `lite-2026.08.07.3`.
+Source/release/runtime identities remain separate. Current source commit: `uncommitted`; runtime binding: `lite-2026.08.12.2`.
 
 ## Release delta
 

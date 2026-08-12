@@ -23,7 +23,7 @@ confidence: release-promoted
 
 **Operational Health:** degraded 2, healthy 3, unvalidated 2
 
-**Semantic Parity:** partial 2, verified 5
+**Semantic Parity:** needs-review 2, partial 2, verified 3
 
 **Platform Capabilities:** implemented 6, not-applicable 15, unvalidated 7, verified 7
 

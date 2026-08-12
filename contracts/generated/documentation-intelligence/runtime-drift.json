@@ -153,8 +153,8 @@
     "semantic_drift_independent": [
       {
         "domain": "apps",
-        "mismatch_count": 0,
-        "runtime_parity": "verified-with-mapped-presentation"
+        "mismatch_count": 2,
+        "runtime_parity": "drift-detected"
       },
       {
         "domain": "devices",
@@ -173,8 +173,8 @@
       },
       {
         "domain": "recovery",
-        "mismatch_count": 0,
-        "runtime_parity": "verified-with-mapped-presentation"
+        "mismatch_count": 9,
+        "runtime_parity": "drift-detected"
       },
       {
         "domain": "rules",
@@ -191,5 +191,5 @@
     "unresolved_mismatches": []
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "679c2d50f9d5003e65282015e0e631549f680a1dd8ba54e7c97aa0f28c922cc2"
+  "source_fingerprint": "5ae6ab389ff9aea4fb5fa23ba43939b0d715b7d2bbaffdbf49b38ab3ca325457"
 }

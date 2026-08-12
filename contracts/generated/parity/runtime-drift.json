@@ -3,17 +3,46 @@
     {
       "comparison_summary": {
         "mapped": 4,
-        "match": 14,
-        "mismatch": 0,
+        "match": 12,
+        "mismatch": 2,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
       "id": "apps",
       "label": "Apps",
-      "mismatches": [],
-      "runtime_parity": "verified-with-mapped-presentation",
-      "runtime_status": "verified"
+      "mismatches": [
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
+          "id": "apps-open-capability",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
+          "id": "apps-open-capability",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-mobile",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        }
+      ],
+      "runtime_parity": "drift-detected",
+      "runtime_status": "needs-review"
     },
     {
       "comparison_summary": {
@@ -62,18 +91,193 @@
     },
     {
       "comparison_summary": {
-        "mapped": 8,
-        "match": 33,
-        "mismatch": 0,
+        "mapped": 5,
+        "match": 27,
+        "mismatch": 9,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
       "id": "recovery",
       "label": "Backup & Restore",
-      "mismatches": [],
-      "runtime_parity": "verified-with-mapped-presentation",
-      "runtime_status": "verified"
+      "mismatches": [
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "count": 3,
+            "fingerprint": "85983b20b3f04376",
+            "type": "object"
+          },
+          "boundary": "desktop-mobile",
+          "explanation": "desktop and mobile semantic surfaces differ",
+          "frontend_value": {
+            "count": 3,
+            "fingerprint": "ac2e16ca135717b1",
+            "type": "object"
+          },
+          "id": "desktop-mobile-semantic-agreement",
+          "implementation_status": "implemented",
+          "operator": "set-equality",
+          "project": "cross-viewport",
+          "required": true,
+          "result": "mismatch",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
+          "id": "recovery-historical-preview-safety",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": 13,
+          "boundary": "live-api-live-ui",
+          "explanation": "values are not exactly equal",
+          "frontend_value": 0,
+          "id": "recovery-history-count",
+          "implementation_status": "implemented",
+          "operator": "exact",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "dcc95f8c7fd34049",
+            "length": 43,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "normalized values differ",
+          "frontend_value": {
+            "fingerprint": "12ae32cb1ec02d01",
+            "length": 0,
+            "present": false,
+            "type": "string"
+          },
+          "id": "recovery-last-restore-identity",
+          "implementation_status": "implemented",
+          "operator": "identity-match",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "7093fda846e50b26",
+            "length": 9,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend presentation is outside the allowlisted mapping",
+          "frontend_value": {
+            "fingerprint": "fec406eaa6e192a7",
+            "length": 20,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-last-restore-status",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": {
+            "fingerprint": "9385db4dd1fdd328",
+            "length": 40,
+            "present": true,
+            "type": "string"
+          },
+          "boundary": "live-api-live-ui",
+          "explanation": "normalized values differ",
+          "frontend_value": {
+            "fingerprint": "12ae32cb1ec02d01",
+            "length": 0,
+            "present": false,
+            "type": "string"
+          },
+          "id": "recovery-latest-backup-identity",
+          "implementation_status": "implemented",
+          "operator": "identity-match",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend presentation is outside the allowlisted mapping",
+          "frontend_value": {
+            "fingerprint": "af6e51b96d63e106",
+            "length": 33,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-stale-semantics",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "frontend presentation is outside the allowlisted mapping",
+          "frontend_value": {
+            "fingerprint": "af6e51b96d63e106",
+            "length": 33,
+            "present": true,
+            "type": "string"
+          },
+          "id": "recovery-summary-presentation",
+          "implementation_status": "implemented",
+          "operator": "intentional-presentation-map",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "high"
+        },
+        {
+          "accepted_limitation": false,
+          "backend_value": true,
+          "boundary": "live-api-live-ui",
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
+          "id": "recovery-write-safety",
+          "implementation_status": "implemented",
+          "operator": "boolean-equivalence",
+          "project": "live-desktop",
+          "required": true,
+          "result": "mismatch",
+          "severity": "critical"
+        }
+      ],
+      "runtime_parity": "drift-detected",
+      "runtime_status": "needs-review"
     },
     {
       "comparison_summary": {

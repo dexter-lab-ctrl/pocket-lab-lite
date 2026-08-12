@@ -22,7 +22,7 @@ Release evidence keeps source, release artifacts, promoted runtime evidence, SBO
 | Source commit | uncommitted |
 | Tree | uncommitted |
 | Exact tag | unobserved |
-| Runtime baseline binding | lite-2026.08.07.3 |
+| Runtime baseline binding | lite-2026.08.12.2 |
 | Migration level | unobserved |
 | SBOM digest | a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33 |
 | Security scan digest | 896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f |

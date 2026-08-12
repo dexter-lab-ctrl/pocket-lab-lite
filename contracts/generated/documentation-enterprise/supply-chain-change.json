@@ -2,8 +2,8 @@
   "baseline_readiness": {
     "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
     "candidate_count": 0,
-    "head": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376",
-    "head_tree": "ffbe6bab8724d62e760ccd55b7564e7dac3104e4",
+    "head": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+    "head_tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
     "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
     "selected_baseline": null,
     "status": "not-ready"

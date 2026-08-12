@@ -33,10 +33,10 @@ Configuration/runtime drift, semantic parity, and operational health are separat
 
 | Domain | Parity | Mismatches |
 | --- | --- | --- |
-| apps | verified-with-mapped-presentation | 0 |
+| apps | drift-detected | 2 |
 | devices | verified-with-mapped-presentation | 0 |
 | home | verified-with-mapped-presentation | 0 |
 | identity | partial | 0 |
-| recovery | verified-with-mapped-presentation | 0 |
+| recovery | drift-detected | 9 |
 | rules | partial | 0 |
 | security | verified-with-mapped-presentation | 0 |
