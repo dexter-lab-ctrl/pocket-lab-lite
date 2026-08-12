@@ -97,3 +97,26 @@ def test_ci_reports_openapi_toolchain_provenance():
         "provenance recorded"
         in workflow
     )
+
+def test_ci_installs_playwright_managed_chromium_for_browser_tests() -> None:
+    workflow = Path(
+        ".github/workflows/lite-quality.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "Install Playwright Chromium" in workflow
+    assert (
+        "npx playwright install --with-deps chromium"
+        in workflow
+    )
+
+    npm_ci_index = workflow.index("npm ci")
+    browser_install_index = workflow.index(
+        "npx playwright install --with-deps chromium"
+    )
+    storybook_index = workflow.index(
+        "task lite:test:storybook"
+    )
+
+    assert npm_ci_index < browser_install_index
+    assert browser_install_index < storybook_index
+
