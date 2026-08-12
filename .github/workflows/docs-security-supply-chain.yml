@@ -69,10 +69,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python -m pip install             --upgrade-strategy only-if-needed             -r requirements-docs.txt
           scripts/dev/lite/setup-documentation-tools.sh --install-missing
           scripts/dev/lite/setup-documentation-security-tools.sh --install-missing
           scripts/dev/lite/check-documentation-security-tools.sh
           echo "${POCKETLAB_DOC_SECURITY_TOOL_ROOT}/bin" >> "$GITHUB_PATH"
+
+      - name: Verify documentation Python dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from importlib.metadata import version
+
+          import jsonschema
+          import yaml
+
+          print("PASS documentation Python dependencies")
+          print(f"jsonschema={version('jsonschema')}")
+          print(f"PyYAML={version('PyYAML')}")
+          PY
 
       - name: Prepare disk-backed supply-chain scratch
         shell: bash
