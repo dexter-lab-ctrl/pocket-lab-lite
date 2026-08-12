@@ -33106,8 +33106,8 @@
         "baseline_readiness": {
           "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
           "candidate_count": 0,
-          "head": "63d8d85c5132a562b5c4f46444f6221396493691",
-          "head_tree": "f6481bf826956922d0f6d5baf7ba35a21e20ec46",
+          "head": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376",
+          "head_tree": "ffbe6bab8724d62e760ccd55b7564e7dac3104e4",
           "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33324,7 +33324,7 @@
         "upstream_posture_changes": [],
         "versions_changed": []
       },
-      "to": "63d8d85c5132a562b5c4f46444f6221396493691"
+      "to": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376"
     },
     "release_evidence": {
       "artifacts": {
@@ -34855,8 +34855,8 @@
       "baseline_readiness": {
         "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
         "candidate_count": 0,
-        "head": "63d8d85c5132a562b5c4f46444f6221396493691",
-        "head_tree": "f6481bf826956922d0f6d5baf7ba35a21e20ec46",
+        "head": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376",
+        "head_tree": "ffbe6bab8724d62e760ccd55b7564e7dac3104e4",
         "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
         "selected_baseline": null,
         "status": "not-ready"
