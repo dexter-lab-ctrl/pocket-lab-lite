@@ -14,7 +14,7 @@ generator_version: 2
 
 <div class="pl-page-lede"><strong>Start with a repository area, then drill into exact source ownership.</strong><p>This is a reverse lookup from source paths to generated knowledge entities. It is source-derived and does not expose local filesystem prefixes.</p></div>
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>20</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>77</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>20</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>159</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>20</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>77</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>20</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>160</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -341,6 +341,7 @@ generator_version: 2
 <article class="pl-repository-card"><code>tests/nats/test_subject_permissions.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/nats/test_subject_permissions.py</span></div></article>
 <article class="pl-repository-card"><code>tests/parity/test_api_contract_fences.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_api_contract_fences.py</span></div></article>
 <article class="pl-repository-card"><code>tests/parity/test_backup_recovery_parity.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_backup_recovery_parity.py</span></div></article>
+<article class="pl-repository-card"><code>tests/parity/test_ci_openapi_toolchain.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_ci_openapi_toolchain.py</span></div></article>
 <article class="pl-repository-card"><code>tests/parity/test_contract_generation.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_contract_generation.py</span></div></article>
 <article class="pl-repository-card"><code>tests/parity/test_guardrails.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_guardrails.py</span></div></article>
 <article class="pl-repository-card"><code>tests/parity/test_intelligent_runtime_parity.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_intelligent_runtime_parity.py</span></div></article>
