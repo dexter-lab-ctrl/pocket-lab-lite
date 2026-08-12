@@ -33083,8 +33083,8 @@
         "baseline_readiness": {
           "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
           "candidate_count": 0,
-          "head": "19d54e0bb84226f355865c32c6decee8ce010083",
-          "head_tree": "558c73981dcbf0f0d4d65ee623f06fe658d1be6c",
+          "head": "4b2124d6c737844010d03eb0f232495cc4b3257a",
+          "head_tree": "7065a0da1bf5825543c6d3b85f788a50a189290d",
           "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33301,7 +33301,7 @@
         "upstream_posture_changes": [],
         "versions_changed": []
       },
-      "to": "19d54e0bb84226f355865c32c6decee8ce010083"
+      "to": "4b2124d6c737844010d03eb0f232495cc4b3257a"
     },
     "release_evidence": {
       "artifacts": {
@@ -33335,7 +33335,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "3f24c67cf9bfae51b323f5ec68af435e3fed11670296801c1f785324cdd2f893",
-        "documentation": "04108759be6e9aa5eb23d4e0eda9ced6617e776160da68c63884d45ac95262db",
+        "documentation": "028da2d6cc113de8ddef0307651269b56eccc96d24e5a0f33f51f59bc722a0ea",
         "openapi": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
         "operational_health": "7ff5e9b3c494f1f9c11b8dd790e8a39908bb097ae9a34a30b88ded1605646a1c"
       },
@@ -34832,8 +34832,8 @@
       "baseline_readiness": {
         "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
         "candidate_count": 0,
-        "head": "19d54e0bb84226f355865c32c6decee8ce010083",
-        "head_tree": "558c73981dcbf0f0d4d65ee623f06fe658d1be6c",
+        "head": "4b2124d6c737844010d03eb0f232495cc4b3257a",
+        "head_tree": "7065a0da1bf5825543c6d3b85f788a50a189290d",
         "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
         "selected_baseline": null,
         "status": "not-ready"
@@ -82430,5 +82430,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "85498034b14d1548481ae22092b0f92d5f675597a858017a7c2a36bdfc87842e"
+  "source_fingerprint": "0337d16d9eb36c464a16f5a64549811ceee27d4d51e6f732752acbff473e4c57"
 }
