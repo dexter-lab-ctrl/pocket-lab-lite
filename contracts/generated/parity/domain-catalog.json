@@ -20,8 +20,8 @@
       ],
       "comparison_summary": {
         "mapped": 4,
-        "match": 14,
-        "mismatch": 0,
+        "match": 12,
+        "mismatch": 2,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
@@ -148,8 +148,8 @@
       ],
       "observation_fingerprints": {
         "backend": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f",
-        "live_desktop": "df6b50586d7b1bb3477b780774b62c06643cef7ecf1f3ecf2dfd70ff964a5f6a",
-        "live_mobile": "4958e17e91f9badbc11bc2f92418b70c2e6ac96b4bafb729930fd8b2bcf5597b",
+        "live_desktop": "e2e72f1331b4a930992384474af1f61737fd7605ddfe55bccdde144ad74d5b26",
+        "live_mobile": "e2e72f1331b4a930992384474af1f61737fd7605ddfe55bccdde144ad74d5b26",
         "termux": "3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f"
       },
       "query_keys": [
@@ -169,8 +169,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend contains the backend meaning",
           "frontend_value": {
-            "fingerprint": "d04e474368acd69a",
-            "length": 597,
+            "fingerprint": "5d35439deb186c78",
+            "length": 566,
             "present": true,
             "type": "string"
           },
@@ -193,8 +193,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend contains the backend meaning",
           "frontend_value": {
-            "fingerprint": "c4bc33ae2468c1a0",
-            "length": 495,
+            "fingerprint": "5d35439deb186c78",
+            "length": 566,
             "present": true,
             "type": "string"
           },
@@ -246,28 +246,28 @@
           "accepted_limitation": false,
           "backend_value": true,
           "boundary": "live-api-live-ui",
-          "explanation": "boolean meaning matches",
-          "frontend_value": true,
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
           "id": "apps-open-capability",
           "implementation_status": "implemented",
           "operator": "boolean-equivalence",
           "project": "live-desktop",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
           "accepted_limitation": false,
           "backend_value": true,
           "boundary": "live-api-live-ui",
-          "explanation": "boolean meaning matches",
-          "frontend_value": true,
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
           "id": "apps-open-capability",
           "implementation_status": "implemented",
           "operator": "boolean-equivalence",
           "project": "live-mobile",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -281,8 +281,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "d04e474368acd69a",
-            "length": 597,
+            "fingerprint": "5d35439deb186c78",
+            "length": 566,
             "present": true,
             "type": "string"
           },
@@ -305,8 +305,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "c4bc33ae2468c1a0",
-            "length": 495,
+            "fingerprint": "5d35439deb186c78",
+            "length": 566,
             "present": true,
             "type": "string"
           },
@@ -328,8 +328,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "d04e474368acd69a",
-            "length": 597,
+            "fingerprint": "5d35439deb186c78",
+            "length": 566,
             "present": true,
             "type": "string"
           },
@@ -351,8 +351,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "c4bc33ae2468c1a0",
-            "length": 495,
+            "fingerprint": "5d35439deb186c78",
+            "length": 566,
             "present": true,
             "type": "string"
           },
@@ -525,8 +525,8 @@
           "severity": "high"
         }
       ],
-      "runtime_parity": "verified-with-mapped-presentation",
-      "runtime_status": "verified",
+      "runtime_parity": "drift-detected",
+      "runtime_status": "needs-review",
       "selector": "selectPhotoPrismManageView",
       "selectors": [
         "selectLiteCatalogAppSummary",
@@ -607,7 +607,7 @@
           "severity": "critical"
         }
       ],
-      "status": "verified",
+      "status": "needs-review",
       "storybook_coverage": "verified",
       "storybook_exports": [
         "src/lite/LiteCatalog.stories.jsx"
@@ -744,8 +744,8 @@
       ],
       "observation_fingerprints": {
         "backend": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59",
-        "live_desktop": "cc5114fba12a156ecd4740f01066da7df5bdab5815d5d34832ab989e54d69bcf",
-        "live_mobile": "cc5114fba12a156ecd4740f01066da7df5bdab5815d5d34832ab989e54d69bcf",
+        "live_desktop": "15b8ae6de23aa40f84aed1dec0371330df320983acc4be6ddd2fdf9520b5afcc",
+        "live_mobile": "15b8ae6de23aa40f84aed1dec0371330df320983acc4be6ddd2fdf9520b5afcc",
         "termux": "ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59"
       },
       "query_keys": [
@@ -781,8 +781,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1facf68e3d9849b3",
-            "length": 3657,
+            "fingerprint": "1591d19bc4069a30",
+            "length": 3658,
             "present": true,
             "type": "string"
           },
@@ -800,8 +800,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1facf68e3d9849b3",
-            "length": 3657,
+            "fingerprint": "1591d19bc4069a30",
+            "length": 3658,
             "present": true,
             "type": "string"
           },
@@ -823,8 +823,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "1facf68e3d9849b3",
-            "length": 3657,
+            "fingerprint": "1591d19bc4069a30",
+            "length": 3658,
             "present": true,
             "type": "string"
           },
@@ -846,8 +846,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "1facf68e3d9849b3",
-            "length": 3657,
+            "fingerprint": "1591d19bc4069a30",
+            "length": 3658,
             "present": true,
             "type": "string"
           },
@@ -898,8 +898,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1facf68e3d9849b3",
-            "length": 3657,
+            "fingerprint": "1591d19bc4069a30",
+            "length": 3658,
             "present": true,
             "type": "string"
           },
@@ -922,8 +922,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "1facf68e3d9849b3",
-            "length": 3657,
+            "fingerprint": "1591d19bc4069a30",
+            "length": 3658,
             "present": true,
             "type": "string"
           },
@@ -1295,10 +1295,10 @@
         "tests/e2e/lite-mocked.spec.ts"
       ],
       "observation_fingerprints": {
-        "backend": "287501051ac06842caeb9ee568a21f958ac5b96fbf3d46dc5c1403ac2cfaed58",
-        "live_desktop": "f5ff4bae71b295c3e257b2f110efc6bc42ab4a9be05848b2f1f5bd7b8e30d638",
-        "live_mobile": "f5ff4bae71b295c3e257b2f110efc6bc42ab4a9be05848b2f1f5bd7b8e30d638",
-        "termux": "287501051ac06842caeb9ee568a21f958ac5b96fbf3d46dc5c1403ac2cfaed58"
+        "backend": "2e59fe76f849ce759cc62c407e2cdc68964332b9bae5cb29e8987ef9f0c1d248",
+        "live_desktop": "daf5634217a1f4931cb2e4671c0be0c1544bee5a26bcd71bc160f0b3d60b85ea",
+        "live_mobile": "daf5634217a1f4931cb2e4671c0be0c1544bee5a26bcd71bc160f0b3d60b85ea",
+        "termux": "2e59fe76f849ce759cc62c407e2cdc68964332b9bae5cb29e8987ef9f0c1d248"
       },
       "query_keys": [
         "liteQueryKeys.status",
@@ -1309,14 +1309,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 3,
-            "fingerprint": "af7b1962f5637607",
+            "fingerprint": "7e351167196afb42",
             "type": "object"
           },
           "boundary": "desktop-mobile",
           "explanation": "desktop and mobile expose the same headings, status labels, and actions",
           "frontend_value": {
             "count": 3,
-            "fingerprint": "af7b1962f5637607",
+            "fingerprint": "7e351167196afb42",
             "type": "object"
           },
           "id": "desktop-mobile-semantic-agreement",
@@ -1333,7 +1333,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "percentage formatting is equivalent",
           "frontend_value": {
-            "fingerprint": "fcb967d288677d0b",
+            "fingerprint": "84fcbacc2863058a",
             "length": 13,
             "present": true,
             "type": "string"
@@ -1352,7 +1352,7 @@
           "boundary": "live-api-live-ui",
           "explanation": "percentage formatting is equivalent",
           "frontend_value": {
-            "fingerprint": "fcb967d288677d0b",
+            "fingerprint": "84fcbacc2863058a",
             "length": 13,
             "present": true,
             "type": "string"
@@ -1376,8 +1376,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "dd727d7bc39ecc9d",
-            "length": 1841,
+            "fingerprint": "f9ae20236e061d4d",
+            "length": 1859,
             "present": true,
             "type": "string"
           },
@@ -1400,8 +1400,8 @@
           "boundary": "live-api-live-ui",
           "explanation": "frontend uses an allowlisted semantic presentation",
           "frontend_value": {
-            "fingerprint": "dd727d7bc39ecc9d",
-            "length": 1841,
+            "fingerprint": "f9ae20236e061d4d",
+            "length": 1859,
             "present": true,
             "type": "string"
           },
@@ -1417,14 +1417,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 7,
-            "fingerprint": "287501051ac06842",
+            "fingerprint": "2e59fe76f849ce75",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "dd727d7bc39ecc9d",
-            "length": 1841,
+            "fingerprint": "f9ae20236e061d4d",
+            "length": 1859,
             "present": true,
             "type": "string"
           },
@@ -1440,14 +1440,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 7,
-            "fingerprint": "287501051ac06842",
+            "fingerprint": "2e59fe76f849ce75",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "dd727d7bc39ecc9d",
-            "length": 1841,
+            "fingerprint": "f9ae20236e061d4d",
+            "length": 1859,
             "present": true,
             "type": "string"
           },
@@ -1503,10 +1503,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 4483,
+          "backend_value": 4714,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 256.0",
-          "frontend_value": 4483,
+          "frontend_value": 4714,
           "id": "home-termux-memory_usage_mb",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -1541,10 +1541,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": false,
+          "backend_value": true,
           "boundary": "live-api-live-termux",
           "explanation": "values are exactly equal",
-          "frontend_value": false,
+          "frontend_value": true,
           "id": "home-termux-read_degraded",
           "implementation_status": "implemented",
           "operator": "exact",
@@ -1583,10 +1583,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 135709,
+          "backend_value": 134783,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 64.0",
-          "frontend_value": 135709,
+          "frontend_value": 134783,
           "id": "home-termux-storage_free_mb",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -2135,9 +2135,9 @@
         "database-restore-table"
       ],
       "comparison_summary": {
-        "mapped": 8,
-        "match": 33,
-        "mismatch": 0,
+        "mapped": 5,
+        "match": 27,
+        "mismatch": 9,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
@@ -2365,10 +2365,10 @@
         "tests/e2e/lite-parity.spec.ts"
       ],
       "observation_fingerprints": {
-        "backend": "a96527f61620b17013226d83fb5a820cc1f3aaa882e2e017193f6561da49e9f1",
-        "live_desktop": "e41919cef09f08feeede72b6efebbd8bdeca1639517c60206b24a96e671545ac",
-        "live_mobile": "e41919cef09f08feeede72b6efebbd8bdeca1639517c60206b24a96e671545ac",
-        "termux": "3daeff5942bf80057bf3326d81425fdb965b78ca9c2b33e18f81861eb64e8ffe"
+        "backend": "494b6c44757e3ea1ed3de8e0eb4c941142fd49473f6fda78fdae88d855daf301",
+        "live_desktop": "f5b9b82c38397708c671b03aa68f5947d514f3a6ed07a22b8953c6d13de53b39",
+        "live_mobile": "97db123da33a13b865fcef3ea3693e435ba0e9e4022cb97c41a8c0deea809fa6",
+        "termux": "5523dadde5186a6ab511470fc58ef6ee8158cb11ec7b4afc00f8c683b37f9c57"
       },
       "query_keys": [
         "liteQueryKeys.recoverySummary",
@@ -2380,11 +2380,11 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 3,
-            "fingerprint": "ac2e16ca135717b1",
+            "fingerprint": "85983b20b3f04376",
             "type": "object"
           },
           "boundary": "desktop-mobile",
-          "explanation": "desktop and mobile expose the same headings, status labels, and actions",
+          "explanation": "desktop and mobile semantic surfaces differ",
           "frontend_value": {
             "count": 3,
             "fingerprint": "ac2e16ca135717b1",
@@ -2395,21 +2395,21 @@
           "operator": "set-equality",
           "project": "cross-viewport",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "high"
         },
         {
           "accepted_limitation": false,
           "backend_value": true,
           "boundary": "live-api-live-ui",
-          "explanation": "boolean meaning matches",
-          "frontend_value": true,
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
           "id": "recovery-historical-preview-safety",
           "implementation_status": "implemented",
           "operator": "boolean-equivalence",
           "project": "live-desktop",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -2430,14 +2430,14 @@
           "accepted_limitation": false,
           "backend_value": 13,
           "boundary": "live-api-live-ui",
-          "explanation": "values are exactly equal",
-          "frontend_value": 13,
+          "explanation": "values are not exactly equal",
+          "frontend_value": 0,
           "id": "recovery-history-count",
           "implementation_status": "implemented",
           "operator": "exact",
           "project": "live-desktop",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "high"
         },
         {
@@ -2463,11 +2463,11 @@
             "type": "string"
           },
           "boundary": "live-api-live-ui",
-          "explanation": "normalized values match",
+          "explanation": "normalized values differ",
           "frontend_value": {
-            "fingerprint": "dcc95f8c7fd34049",
-            "length": 43,
-            "present": true,
+            "fingerprint": "12ae32cb1ec02d01",
+            "length": 0,
+            "present": false,
             "type": "string"
           },
           "id": "recovery-last-restore-identity",
@@ -2475,7 +2475,7 @@
           "operator": "identity-match",
           "project": "live-desktop",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -2511,10 +2511,10 @@
             "type": "string"
           },
           "boundary": "live-api-live-ui",
-          "explanation": "frontend uses an allowlisted semantic presentation",
+          "explanation": "frontend presentation is outside the allowlisted mapping",
           "frontend_value": {
-            "fingerprint": "0b2c5f63ff609383",
-            "length": 8,
+            "fingerprint": "fec406eaa6e192a7",
+            "length": 20,
             "present": true,
             "type": "string"
           },
@@ -2523,7 +2523,7 @@
           "operator": "intentional-presentation-map",
           "project": "live-desktop",
           "required": true,
-          "result": "mapped",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -2559,11 +2559,11 @@
             "type": "string"
           },
           "boundary": "live-api-live-ui",
-          "explanation": "normalized values match",
+          "explanation": "normalized values differ",
           "frontend_value": {
-            "fingerprint": "9385db4dd1fdd328",
-            "length": 40,
-            "present": true,
+            "fingerprint": "12ae32cb1ec02d01",
+            "length": 0,
+            "present": false,
             "type": "string"
           },
           "id": "recovery-latest-backup-identity",
@@ -2571,7 +2571,7 @@
           "operator": "identity-match",
           "project": "live-desktop",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -2602,14 +2602,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 20,
-            "fingerprint": "a96527f61620b170",
+            "fingerprint": "494b6c44757e3ea1",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "58a099df685478a3",
-            "length": 1010,
+            "fingerprint": "fc113c5112e477db",
+            "length": 785,
             "present": true,
             "type": "string"
           },
@@ -2625,14 +2625,14 @@
           "accepted_limitation": false,
           "backend_value": {
             "count": 20,
-            "fingerprint": "a96527f61620b170",
+            "fingerprint": "494b6c44757e3ea1",
             "type": "object"
           },
           "boundary": "live-api-live-ui",
           "explanation": "frontend observation remains sanitized",
           "frontend_value": {
-            "fingerprint": "58a099df685478a3",
-            "length": 1010,
+            "fingerprint": "3610bbc422681b88",
+            "length": 1011,
             "present": true,
             "type": "string"
           },
@@ -2648,10 +2648,10 @@
           "accepted_limitation": false,
           "backend_value": true,
           "boundary": "live-api-live-ui",
-          "explanation": "frontend uses an allowlisted semantic presentation",
+          "explanation": "frontend presentation is outside the allowlisted mapping",
           "frontend_value": {
-            "fingerprint": "974e2ef73ef3f876",
-            "length": 36,
+            "fingerprint": "af6e51b96d63e106",
+            "length": 33,
             "present": true,
             "type": "string"
           },
@@ -2660,7 +2660,7 @@
           "operator": "intentional-presentation-map",
           "project": "live-desktop",
           "required": true,
-          "result": "mapped",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -2734,10 +2734,10 @@
           "accepted_limitation": false,
           "backend_value": true,
           "boundary": "live-api-live-ui",
-          "explanation": "frontend uses an allowlisted semantic presentation",
+          "explanation": "frontend presentation is outside the allowlisted mapping",
           "frontend_value": {
-            "fingerprint": "974e2ef73ef3f876",
-            "length": 36,
+            "fingerprint": "af6e51b96d63e106",
+            "length": 33,
             "present": true,
             "type": "string"
           },
@@ -2746,7 +2746,7 @@
           "operator": "intentional-presentation-map",
           "project": "live-desktop",
           "required": true,
-          "result": "mapped",
+          "result": "mismatch",
           "severity": "high"
         },
         {
@@ -3004,10 +3004,10 @@
         },
         {
           "accepted_limitation": false,
-          "backend_value": 141714,
+          "backend_value": 366442,
           "boundary": "live-api-live-termux",
           "explanation": "numeric delta is within 15000.0",
-          "frontend_value": 147224,
+          "frontend_value": 373122,
           "id": "recovery-termux-projection_age_ms",
           "implementation_status": "implemented",
           "operator": "numeric-tolerance",
@@ -3172,14 +3172,14 @@
           "accepted_limitation": false,
           "backend_value": true,
           "boundary": "live-api-live-ui",
-          "explanation": "boolean meaning matches",
-          "frontend_value": true,
+          "explanation": "boolean meaning differs or is not recognized",
+          "frontend_value": false,
           "id": "recovery-write-safety",
           "implementation_status": "implemented",
           "operator": "boolean-equivalence",
           "project": "live-desktop",
           "required": true,
-          "result": "match",
+          "result": "mismatch",
           "severity": "critical"
         },
         {
@@ -3197,8 +3197,8 @@
           "severity": "critical"
         }
       ],
-      "runtime_parity": "verified-with-mapped-presentation",
-      "runtime_status": "verified",
+      "runtime_parity": "drift-detected",
+      "runtime_status": "needs-review",
       "selector": "selectRecoveryScreenView",
       "selectors": [
         "selectRecoverySummaryView",
@@ -3347,7 +3347,7 @@
           "severity": "critical"
         }
       ],
-      "status": "verified",
+      "status": "needs-review",
       "storybook_coverage": "verified",
       "storybook_exports": [
         "src/lite/LiteRecoveryParity.stories.jsx"

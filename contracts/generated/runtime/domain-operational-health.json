@@ -40,12 +40,12 @@
       "freshness_age_seconds": null,
       "freshness_threshold_seconds": 60,
       "implementation_status": "implemented",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "reason": null,
       "runtime_status": "observed",
-      "semantic_parity": "verified-with-mapped-presentation",
+      "semantic_parity": "drift-detected",
       "severity": "info",
       "source": {
         "evidence_comparisons": [
@@ -94,7 +94,7 @@
       "freshness_age_seconds": null,
       "freshness_threshold_seconds": 60,
       "implementation_status": "implemented",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "reason": null,
@@ -132,9 +132,9 @@
         },
         {
           "comparison_id": "home-termux-read_degraded",
-          "health_effect": "healthy",
-          "observed_value": false,
-          "reason": null
+          "health_effect": "degraded",
+          "observed_value": true,
+          "reason": "read_degraded"
         }
       ],
       "evidence_status": "release-promoted",
@@ -142,10 +142,10 @@
       "freshness_age_seconds": null,
       "freshness_threshold_seconds": 60,
       "implementation_status": "implemented",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "degraded",
       "readiness": "degraded",
-      "reason": "service_unavailable",
+      "reason": "read_degraded",
       "runtime_status": "observed",
       "semantic_parity": "verified-with-mapped-presentation",
       "severity": "warning",
@@ -169,7 +169,7 @@
       "freshness_age_seconds": null,
       "freshness_threshold_seconds": null,
       "implementation_status": "partial",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "unvalidated",
       "readiness": "partial",
       "reason": null,
@@ -215,21 +215,21 @@
         {
           "comparison_id": "recovery-termux-projection_age_ms",
           "health_effect": "stale",
-          "observed_value": 141.714,
+          "observed_value": 366.442,
           "reason": "projection_too_old"
         }
       ],
       "evidence_status": "release-promoted",
       "freshness": "stale",
-      "freshness_age_seconds": 141.714,
+      "freshness_age_seconds": 366.442,
       "freshness_threshold_seconds": 60,
       "implementation_status": "implemented",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "degraded",
       "readiness": "degraded",
       "reason": "projection_too_old",
       "runtime_status": "observed",
-      "semantic_parity": "verified-with-mapped-presentation",
+      "semantic_parity": "drift-detected",
       "severity": "warning",
       "source": {
         "evidence_comparisons": [
@@ -253,7 +253,7 @@
       "freshness_age_seconds": null,
       "freshness_threshold_seconds": null,
       "implementation_status": "partial",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "unvalidated",
       "readiness": "partial",
       "reason": null,
@@ -290,7 +290,7 @@
       "freshness_age_seconds": null,
       "freshness_threshold_seconds": 300,
       "implementation_status": "implemented",
-      "observed_at": "2026-08-07T18:04:28Z",
+      "observed_at": "2026-08-12T16:00:39Z",
       "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "reason": null,
@@ -308,7 +308,7 @@
       "write_safety": "guarded-by-scanner-readiness"
     }
   },
-  "observed_at": "2026-08-07T18:04:28Z",
+  "observed_at": "2026-08-12T16:00:39Z",
   "platform_capabilities": [
     {
       "capability": "app_host",
@@ -884,12 +884,12 @@
       "status": "verified"
     }
   ],
-  "promoted_at": "2026-08-07T18:04:28Z",
-  "release_tag": "lite-2026.08.07.3",
-  "runtime_baseline_status": "partial",
+  "promoted_at": "2026-08-12T16:00:40Z",
+  "release_tag": "lite-2026.08.12.2",
+  "runtime_baseline_status": "needs-review",
   "sanitized": true,
   "schema_revision": 1,
   "schema_version": "1.0.0",
-  "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
-  "source_fingerprint": "102af7b895de7924d73db684e24d4c5fff18e96de2cfe976b93899492c1cb34d"
+  "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+  "source_fingerprint": "5bea10ca81de273080e27259af3021185b417fb81303fc0b3575a7650fadb1e4"
 }

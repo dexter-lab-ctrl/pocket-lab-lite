@@ -15,7 +15,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Repository | Fixture | Mock browser | Live API | Live UI | Live Termux | Runtime parity | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified | partial | verified | observed | observed | observed | verified-with-mapped-presentation | verified |
+| verified | partial | verified | observed | observed | observed | drift-detected | needs-review |
 
 ## 2. Repository-backed flow
 
@@ -117,8 +117,10 @@ Different user-facing wording or formatting is not drift when an allowlisted det
 
 | Comparison | Boundary | Severity | Project | Explanation |
 | --- | --- | --- | --- | --- |
+| apps-open-capability | live-api-live-ui | critical | live-desktop | boolean meaning differs or is not recognized |
+| apps-open-capability | live-api-live-ui | critical | live-mobile | boolean meaning differs or is not recognized |
 
-No promoted semantic drift is recorded for this domain.
+Drift is valid review evidence; this page does not authorize changing backend or frontend behavior automatically.
 
 ## 15. Accepted limitations
 
@@ -136,16 +138,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
-| backend-apps | 5f5cedc369a4bbc38b52f7a994be8fb82e46c5643b14fe81bc22f96ab56f5d19 |
-| browser-apps-live-desktop | 6a59fa3f2e70df318cd818d26421407839149580484866cfe4c858c3bed9ff6c |
-| browser-apps-live-mobile | 101800d592450d249a4851e6ebd3223669d9aa58208c7439d4ac12daec7f7ce8 |
+| backend-apps | f0d029d8c758adcd81e688c93b2a6db4d550643d7cb197b60c87e9a2cdd39b48 |
+| browser-apps-live-desktop | 9c69f9760647c5dfd81620b9baa3e4adad65c8bb835feb48add682f7242b035f |
+| browser-apps-live-mobile | 9ace18e0f911984ca9ec2a65997d345dd0dfea9c36063fb0a240de175c5ce14e |
 | observation-backend | 3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f |
-| observation-live_desktop | df6b50586d7b1bb3477b780774b62c06643cef7ecf1f3ecf2dfd70ff964a5f6a |
-| observation-live_mobile | 4958e17e91f9badbc11bc2f92418b70c2e6ac96b4bafb729930fd8b2bcf5597b |
+| observation-live_desktop | e2e72f1331b4a930992384474af1f61737fd7605ddfe55bccdde144ad74d5b26 |
+| observation-live_mobile | e2e72f1331b4a930992384474af1f61737fd7605ddfe55bccdde144ad74d5b26 |
 | observation-termux | 3e5efbd03159faa6048d3e9dc183c40defe19db8c4922b6946ea8419d4a6253f |
-| playwright-report | 3c90b4b00cb31ad64c1f64a47913ac11fc9582100ffcc5068e280cb4a5b668ef |
-| runtime-comparison | 274f3a0d3e13986672c2462abf778101f86584679ce20e05dfe78a54f01d3140 |
-| termux-apps | 7643fa6627c32fe30c2e4c8e1204f76367f61f1d15178d625dfe85dd5c532723 |
+| playwright-report | 2327e3f46af50c663807512084239fcbb26650df0147e09767f07dfb1a685e53 |
+| runtime-comparison | 405b5ac408de70bf3055afffd62c5dcd5475c107ac9e56548c18fe17b7b31347 |
+| termux-apps | 835e9f5a2ceecbc6276b4e59394ba4810b173e8c50f941ff10c9dfd576ea028b |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -153,7 +155,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 2.0.0 | lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | 2026-08-07T18:04:28Z |
+| 2.0.0 | lite-2026.08.12.2 | a6e4abc37ee9cca62c27286c556607ff3e740561 | 2026-08-12T16:00:40Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 
@@ -190,4 +192,4 @@ Missing, failed, stale, or unavailable evidence is classified separately from dr
 
 | Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed | Not applicable |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified-with-mapped-presentation | verified | 14 | 4 | 0 | 0 | 0 | 0 |
+| drift-detected | needs-review | 12 | 4 | 2 | 0 | 0 | 0 |

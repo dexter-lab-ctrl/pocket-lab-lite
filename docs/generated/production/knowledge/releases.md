@@ -14,4 +14,4 @@ generator_version: 2
 
 | Release | Source | Runtime parity | Manifest status |
 | --- | --- | --- | --- |
-| lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | partial | unvalidated |
+| lite-2026.08.12.2 | a6e4abc37ee9cca62c27286c556607ff3e740561 | needs-review | unvalidated |

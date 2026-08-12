@@ -56,17 +56,17 @@
     },
     "implemented_domains": 5,
     "partial_domains": 2,
-    "promoted_at": "2026-08-07T18:04:28Z",
+    "promoted_at": "2026-08-12T16:00:40Z",
     "recovery": {
       "overall": "degraded",
       "readiness": "degraded",
       "reason": "projection_too_old"
     },
     "release_impact_status": "no-comparable-verified-prior-release",
-    "release_tag": "lite-2026.08.07.3",
-    "runtime_baseline_status": "partial",
-    "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7"
+    "release_tag": "lite-2026.08.12.2",
+    "runtime_baseline_status": "needs-review",
+    "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "679c2d50f9d5003e65282015e0e631549f680a1dd8ba54e7c97aa0f28c922cc2"
+  "source_fingerprint": "5ae6ab389ff9aea4fb5fa23ba43939b0d715b7d2bbaffdbf49b38ab3ca325457"
 }

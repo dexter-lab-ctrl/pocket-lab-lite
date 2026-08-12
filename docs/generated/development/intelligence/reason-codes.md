@@ -13,7 +13,7 @@ confidence: generated
 | Code | Domains | Meaning | Next action |
 | --- | --- | --- | --- |
 | projection_too_old | recovery | The last committed projection is too old for a safe write. | Capture fresh sanitized runtime evidence and explicitly promote it before claiming current readiness. |
-| service_unavailable | home | A required backend service is unavailable. | Inspect the owning dependency/readiness evidence and recover through the backend-owned path. |
+| read_degraded | home | A safe last-known read is shown while refresh is unavailable. | Inspect the owning dependency/readiness evidence and recover through the backend-owned path. |
 
 ## Canonical registry
 

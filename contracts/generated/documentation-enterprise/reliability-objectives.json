@@ -30,7 +30,7 @@
     },
     {
       "evidence": "promoted operational-health contract",
-      "latest_promoted_observation": "2026-08-07T18:04:28Z",
+      "latest_promoted_observation": "2026-08-12T16:00:40Z",
       "objective": "runtime evidence freshness",
       "status": "degraded",
       "target": "promoted evidence freshness remains explicit per-domain"

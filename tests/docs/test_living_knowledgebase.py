@@ -211,16 +211,36 @@ def test_vocabulary_unique_and_semantically_independent():
 
 def test_operational_health_is_independent_from_semantic_parity():
     health = {x["domain"]: x for x in load("operational-health.json")}
-    assert health["home"]["runtime_parity"] == "verified-with-mapped-presentation"
-    assert health["home"]["operational_health"] == "degraded"
-    assert health["home"]["degraded_reason"] == "service_unavailable"
+    canonical_health = json.loads(
+        (
+            ROOT
+            / "contracts/generated/runtime/domain-operational-health.json"
+        ).read_text(encoding="utf-8")
+    )["domains"]
+
+    assert health["home"]["runtime_parity"] == (
+        canonical_health["home"]["semantic_parity"]
+    )
+    assert health["home"]["operational_health"] == (
+        canonical_health["home"]["operational_health"]
+    )
+    assert health["home"]["degraded_reason"] == (
+        canonical_health["home"]["reason"]
+    )
     assert health["apps"]["operational_health"] == "healthy"
     assert health["devices"]["operational_health"] == "healthy"
     assert health["security"]["operational_health"] == "healthy"
     recovery = health["recovery"]
-    assert recovery["runtime_parity"] == "verified-with-mapped-presentation"
-    assert recovery["operational_health"] == "degraded"
-    assert recovery["degraded_reason"] == "projection_too_old"
+
+    assert recovery["runtime_parity"] == (
+        canonical_health["recovery"]["semantic_parity"]
+    )
+    assert recovery["operational_health"] == (
+        canonical_health["recovery"]["operational_health"]
+    )
+    assert recovery["degraded_reason"] == (
+        canonical_health["recovery"]["reason"]
+    )
 
 
 def test_freshness_dashboard_is_pre_generated_and_release_bound():

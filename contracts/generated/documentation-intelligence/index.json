@@ -58,16 +58,16 @@
       },
       "implemented_domains": 5,
       "partial_domains": 2,
-      "promoted_at": "2026-08-07T18:04:28Z",
+      "promoted_at": "2026-08-12T16:00:40Z",
       "recovery": {
         "overall": "degraded",
         "readiness": "degraded",
         "reason": "projection_too_old"
       },
       "release_impact_status": "no-comparable-verified-prior-release",
-      "release_tag": "lite-2026.08.07.3",
-      "runtime_baseline_status": "partial",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7"
+      "release_tag": "lite-2026.08.12.2",
+      "runtime_baseline_status": "needs-review",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
     },
     "dependency_health": [
       {
@@ -117,7 +117,7 @@
         "label": "Apps",
         "operational_health": "healthy",
         "reason": null,
-        "semantic_parity": "verified-with-mapped-presentation"
+        "semantic_parity": "drift-detected"
       },
       {
         "dependencies": [
@@ -222,7 +222,7 @@
         "freshness": "promoted-observation",
         "label": "Home",
         "operational_health": "degraded",
-        "reason": "service_unavailable",
+        "reason": "read_degraded",
         "semantic_parity": "verified-with-mapped-presentation"
       },
       {
@@ -284,7 +284,7 @@
         "label": "Backup & Restore",
         "operational_health": "degraded",
         "reason": "projection_too_old",
-        "semantic_parity": "verified-with-mapped-presentation"
+        "semantic_parity": "drift-detected"
       },
       {
         "dependencies": [],
@@ -428,7 +428,7 @@
           "dimension": "semantic-parity",
           "domain": "apps",
           "evidenced": true,
-          "status": "verified-with-mapped-presentation"
+          "status": "drift-detected"
         },
         {
           "dimension": "operational-health",
@@ -644,7 +644,7 @@
           "dimension": "semantic-parity",
           "domain": "recovery",
           "evidenced": true,
-          "status": "verified-with-mapped-presentation"
+          "status": "drift-detected"
         },
         {
           "dimension": "operational-health",
@@ -799,9 +799,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Apps",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -821,9 +821,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Devices",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -842,9 +842,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Home",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -860,9 +860,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Identity",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -883,9 +883,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Backup & Restore",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -901,9 +901,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Rules",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -921,9 +921,9 @@
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
         "label": "Security",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
-        "promoted_at": "2026-08-07T18:04:28Z",
-        "release_tag": "lite-2026.08.07.3",
-        "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+        "promoted_at": "2026-08-12T16:00:40Z",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
         "sources": [
           "contracts/parity/runtime-verification-baseline.json",
           "contracts/parity/parity-model.json",
@@ -2096,7 +2096,9 @@
         "http_status": 200,
         "meaning": "A safe last-known read is shown while refresh is unavailable.",
         "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
-        "observed_in_current_health": [],
+        "observed_in_current_health": [
+          "home"
+        ],
         "retryable": true,
         "severity": "warning",
         "terminal": false,
@@ -2132,9 +2134,7 @@
         "http_status": 503,
         "meaning": "A required backend service is unavailable.",
         "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
-        "observed_in_current_health": [
-          "home"
-        ],
+        "observed_in_current_health": [],
         "retryable": true,
         "severity": "warning",
         "terminal": false,
@@ -2234,7 +2234,7 @@
           "value": 13
         }
       ],
-      "freshness_age_seconds": 141.714,
+      "freshness_age_seconds": 366.442,
       "freshness_threshold_seconds": 60,
       "next_action": "Refresh and explicitly promote runtime evidence before a guarded restore write.",
       "overall": "degraded",
@@ -2242,9 +2242,9 @@
       "reason": "projection_too_old"
     },
     "release": {
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7"
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
     },
     "release_impact": {
       "added": [],
@@ -2262,8 +2262,9 @@
           "verified": 7
         },
         "semantic_parity": {
+          "needs-review": 2,
           "partial": 2,
-          "verified": 5
+          "verified": 3
         }
       },
       "dimensions": [
@@ -2307,9 +2308,9 @@
       "from_release": null,
       "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
       "removed": [],
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "status": "no-comparable-verified-prior-release",
-      "to_release": "lite-2026.08.07.3"
+      "to_release": "lite-2026.08.12.2"
     },
     "runtime_drift": {
       "configuration_runtime": [
@@ -2465,8 +2466,8 @@
       "semantic_drift_independent": [
         {
           "domain": "apps",
-          "mismatch_count": 0,
-          "runtime_parity": "verified-with-mapped-presentation"
+          "mismatch_count": 2,
+          "runtime_parity": "drift-detected"
         },
         {
           "domain": "devices",
@@ -2485,8 +2486,8 @@
         },
         {
           "domain": "recovery",
-          "mismatch_count": 0,
-          "runtime_parity": "verified-with-mapped-presentation"
+          "mismatch_count": 9,
+          "runtime_parity": "drift-detected"
         },
         {
           "domain": "rules",
@@ -3195,5 +3196,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "679c2d50f9d5003e65282015e0e631549f680a1dd8ba54e7c97aa0f28c922cc2"
+  "source_fingerprint": "5ae6ab389ff9aea4fb5fa23ba43939b0d715b7d2bbaffdbf49b38ab3ca325457"
 }

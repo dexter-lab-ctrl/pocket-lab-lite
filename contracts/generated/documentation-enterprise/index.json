@@ -33106,8 +33106,8 @@
         "baseline_readiness": {
           "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
           "candidate_count": 0,
-          "head": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376",
-          "head_tree": "ffbe6bab8724d62e760ccd55b7564e7dac3104e4",
+          "head": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+          "head_tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
           "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33324,7 +33324,7 @@
         "upstream_posture_changes": [],
         "versions_changed": []
       },
-      "to": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376"
+      "to": "a6e4abc37ee9cca62c27286c556607ff3e740561"
     },
     "release_evidence": {
       "artifacts": {
@@ -33344,7 +33344,7 @@
           "status": "unobserved"
         }
       },
-      "backend_identity": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "backend_identity": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "breaking_changes": [],
       "build_timestamp": "unobserved",
       "database_migration_level": "unobserved",
@@ -33358,9 +33358,9 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "340e4b5bf0252a37a6b1fad32b9b6934f4e803f3cdadd0235c44a924b0bcc1b9",
+        "documentation": "30a9e7d29b4520d7a57a05327dd8aae0f858806e6853919b4d9db03f6e9cca62",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
-        "operational_health": "9452114239d1581cff4febc0b8a07930018ee4d71d458efb6090ca5b78bba1c1"
+        "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -33412,7 +33412,7 @@
           }
         ]
       },
-      "runtime_baseline_binding": "lite-2026.08.07.3",
+      "runtime_baseline_binding": "lite-2026.08.12.2",
       "sbom_digest": "a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33",
       "security_scan_digest": "896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f",
       "signatures": {
@@ -33456,7 +33456,7 @@
       },
       {
         "evidence": "promoted operational-health contract",
-        "latest_promoted_observation": "2026-08-07T18:04:28Z",
+        "latest_promoted_observation": "2026-08-12T16:00:40Z",
         "objective": "runtime evidence freshness",
         "status": "degraded",
         "target": "promoted evidence freshness remains explicit per-domain"
@@ -34350,7 +34350,7 @@
           "server-host"
         ],
         "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
-        "freshness": "2026-08-07T18:04:28Z",
+        "freshness": "2026-08-12T16:00:40Z",
         "id": "CTRL-EVIDENCE-SANITIZE",
         "implementation": [
           "scripts/docs/runtime/",
@@ -34389,7 +34389,7 @@
           "server-host"
         ],
         "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
-        "freshness": "2026-08-07T18:04:28Z",
+        "freshness": "2026-08-12T16:00:40Z",
         "id": "CTRL-EXPLICIT-PROMOTION",
         "implementation": [
           "scripts/docs/runtime/promote_termux_runtime.py",
@@ -34855,8 +34855,8 @@
       "baseline_readiness": {
         "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
         "candidate_count": 0,
-        "head": "54d4205ed4d25b1ebc942fb688c73edc1c1bb376",
-        "head_tree": "ffbe6bab8724d62e760ccd55b7564e7dac3104e4",
+        "head": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "head_tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
         "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
         "selected_baseline": null,
         "status": "not-ready"
@@ -79146,7 +79146,7 @@
             "server-host"
           ],
           "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
-          "freshness": "2026-08-07T18:04:28Z",
+          "freshness": "2026-08-12T16:00:40Z",
           "id": "CTRL-EVIDENCE-SANITIZE",
           "implementation": [
             "scripts/docs/runtime/",
@@ -79185,7 +79185,7 @@
             "server-host"
           ],
           "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
-          "freshness": "2026-08-07T18:04:28Z",
+          "freshness": "2026-08-12T16:00:40Z",
           "id": "CTRL-EXPLICIT-PROMOTION",
           "implementation": [
             "scripts/docs/runtime/promote_termux_runtime.py",
@@ -79271,7 +79271,7 @@
         "controls_verified": 5,
         "implementation_status": "implemented",
         "live_monitoring": false,
-        "promoted_runtime_release": "lite-2026.08.07.3",
+        "promoted_runtime_release": "lite-2026.08.12.2",
         "security_operational_health": "healthy",
         "signals": [
           {
@@ -82453,5 +82453,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "478bb1357c30993ed2261106fc30e977771ce2def9e58948d93aff0c03840816"
+  "source_fingerprint": "2f6fa65eaab0bec04ffa0fb3e408471c8c24239299e67e0614d817ce53aee492"
 }

@@ -16,7 +16,7 @@ Operational health and dependency evidence remain independent: a healthy domain 
 
 <div class="pl-status-strip" role="group" aria-label="Current evidence status">
 <div><span>Health</span><span class="pl-intel-status pl-intel-status--healthy"><span aria-hidden="true">●</span> healthy</span></div>
-<div><span>Parity</span><span class="pl-intel-status pl-intel-status--verified"><span aria-hidden="true">✓</span> verified</span></div>
+<div><span>Parity</span><span class="pl-intel-status pl-intel-status--drift-detected"><span aria-hidden="true">○</span> drift-detected</span></div>
 <div><span>Evidence</span><span class="pl-intel-status pl-intel-status--verified"><span aria-hidden="true">✓</span> verified</span></div>
 <div><span>Freshness</span><span class="pl-intel-status pl-intel-status--verified"><span aria-hidden="true">✓</span> verified</span></div>
 </div>
@@ -55,7 +55,7 @@ Operational health and dependency evidence remain independent: a healthy domain 
 <div><span>Freshness</span><span class="pl-intel-status pl-intel-status--verified"><span aria-hidden="true">✓</span> verified</span></div>
 </div>
 
-**Current reason:** `service_unavailable`
+**Current reason:** `read_degraded`
 
 | Dependency | State | Evidence | Why |
 | --- | --- | --- | --- |
@@ -82,7 +82,7 @@ Operational health and dependency evidence remain independent: a healthy domain 
 
 <div class="pl-status-strip" role="group" aria-label="Current evidence status">
 <div><span>Health</span><span class="pl-intel-status pl-intel-status--degraded"><span aria-hidden="true">▲</span> degraded</span></div>
-<div><span>Parity</span><span class="pl-intel-status pl-intel-status--verified"><span aria-hidden="true">✓</span> verified</span></div>
+<div><span>Parity</span><span class="pl-intel-status pl-intel-status--drift-detected"><span aria-hidden="true">○</span> drift-detected</span></div>
 <div><span>Evidence</span><span class="pl-intel-status pl-intel-status--verified"><span aria-hidden="true">✓</span> verified</span></div>
 <div><span>Freshness</span><span class="pl-intel-status pl-intel-status--stale"><span aria-hidden="true">◷</span> stale</span></div>
 </div>

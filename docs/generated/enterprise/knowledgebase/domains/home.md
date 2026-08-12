@@ -38,7 +38,7 @@ Release/promoted evidence status: **release-promoted**.
 
 ## Known limitations
 
-service_unavailable
+read_degraded
 
 ## Recovery
 

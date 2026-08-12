@@ -135,16 +135,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
-| backend-security | 42d9731d1f395cdf77f999977fe26962bd308be6b797031dd098be21b95402c7 |
-| browser-security-live-desktop | fac421963da9606a5c555942c9ce1d9298adf14f93236f77c6ab252587c8a8fc |
-| browser-security-live-mobile | a15134e08b0198ff6127bec07419db139b529d9bf01e7468f2bf52b352e2dba7 |
+| backend-security | c937cdf1042a194b3073ba26a98753357a421792a8bf1d8281b1a189493f3bca |
+| browser-security-live-desktop | bf8fde1d75eece3d7357b1e516bc272aae1a81984a73766d5d8b4a70d076b4d6 |
+| browser-security-live-mobile | 9f9d06ba2c4027474317ecbdccb34e73fd60f13d8347bae3daab071ca382c22d |
 | observation-backend | 3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b |
 | observation-live_desktop | 8b761a10768ddf086f221851152dc79cd274b06f057165e6a85b25d18fab7d7e |
 | observation-live_mobile | 8b761a10768ddf086f221851152dc79cd274b06f057165e6a85b25d18fab7d7e |
 | observation-termux | 3b2cae7b3fcde01bdc94c7486e9be517a0f2119b760d4570baf1525fc7ba251b |
-| playwright-report | 3c90b4b00cb31ad64c1f64a47913ac11fc9582100ffcc5068e280cb4a5b668ef |
-| runtime-comparison | 274f3a0d3e13986672c2462abf778101f86584679ce20e05dfe78a54f01d3140 |
-| termux-security | ed286a0279b65a250521e47ee3d35b1cbcd44328dd97c894273c35ae5947a06f |
+| playwright-report | 2327e3f46af50c663807512084239fcbb26650df0147e09767f07dfb1a685e53 |
+| runtime-comparison | 405b5ac408de70bf3055afffd62c5dcd5475c107ac9e56548c18fe17b7b31347 |
+| termux-security | f34b40ccfdbdcd4d85ce150b9b2d8bd3db9666d771409e08a140a1280ce3d228 |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -152,7 +152,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 2.0.0 | lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | 2026-08-07T18:04:28Z |
+| 2.0.0 | lite-2026.08.12.2 | a6e4abc37ee9cca62c27286c556607ff3e740561 | 2026-08-12T16:00:40Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 

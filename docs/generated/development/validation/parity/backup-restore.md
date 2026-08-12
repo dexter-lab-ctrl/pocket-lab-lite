@@ -15,7 +15,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Repository | Fixture | Mock browser | Live API | Live UI | Live Termux | Runtime parity | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified | verified | verified | observed | observed | observed | verified-with-mapped-presentation | verified |
+| verified | verified | verified | observed | observed | observed | drift-detected | needs-review |
 
 ## 2. Repository-backed flow
 
@@ -149,8 +149,17 @@ Different user-facing wording or formatting is not drift when an allowlisted det
 
 | Comparison | Boundary | Severity | Project | Explanation |
 | --- | --- | --- | --- | --- |
+| desktop-mobile-semantic-agreement | desktop-mobile | high | cross-viewport | desktop and mobile semantic surfaces differ |
+| recovery-historical-preview-safety | live-api-live-ui | critical | live-desktop | boolean meaning differs or is not recognized |
+| recovery-history-count | live-api-live-ui | high | live-desktop | values are not exactly equal |
+| recovery-last-restore-identity | live-api-live-ui | critical | live-desktop | normalized values differ |
+| recovery-last-restore-status | live-api-live-ui | critical | live-desktop | frontend presentation is outside the allowlisted mapping |
+| recovery-latest-backup-identity | live-api-live-ui | critical | live-desktop | normalized values differ |
+| recovery-stale-semantics | live-api-live-ui | critical | live-desktop | frontend presentation is outside the allowlisted mapping |
+| recovery-summary-presentation | live-api-live-ui | high | live-desktop | frontend presentation is outside the allowlisted mapping |
+| recovery-write-safety | live-api-live-ui | critical | live-desktop | boolean meaning differs or is not recognized |
 
-No promoted semantic drift is recorded for this domain.
+Drift is valid review evidence; this page does not authorize changing backend or frontend behavior automatically.
 
 ## 15. Accepted limitations
 
@@ -170,16 +179,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
-| backend-recovery | ee2a9432628e536e608cca41f9555cf192468678ed0105e8b750d0f93c01b115 |
-| browser-recovery-live-desktop | 535a000a0ede63430c72c3ff3e742a18be973d0b852a88e750ffffa6067f5f4e |
-| browser-recovery-live-mobile | 7dffe0f31107d8f16ae8bf8dc31dc58575be72fa7587ec9949d6e512fc190caa |
-| observation-backend | a96527f61620b17013226d83fb5a820cc1f3aaa882e2e017193f6561da49e9f1 |
-| observation-live_desktop | e41919cef09f08feeede72b6efebbd8bdeca1639517c60206b24a96e671545ac |
-| observation-live_mobile | e41919cef09f08feeede72b6efebbd8bdeca1639517c60206b24a96e671545ac |
-| observation-termux | 3daeff5942bf80057bf3326d81425fdb965b78ca9c2b33e18f81861eb64e8ffe |
-| playwright-report | 3c90b4b00cb31ad64c1f64a47913ac11fc9582100ffcc5068e280cb4a5b668ef |
-| runtime-comparison | 274f3a0d3e13986672c2462abf778101f86584679ce20e05dfe78a54f01d3140 |
-| termux-recovery | fb0d75aaeed367ea7f902e1059011dab5511b0b51ef41d0516ec97858ef3b47a |
+| backend-recovery | 2a294575a10d0218269a4b3046687e1c3d9b9492b6e9c89606929a45296e4303 |
+| browser-recovery-live-desktop | edb56c9b4f8b7da510c3b066bdf71281567499d39964e693eb6429cec15f7281 |
+| browser-recovery-live-mobile | 19a1dad5d991a1bdeaeb317656957fd24ff74f2ed59f087049647e611179541b |
+| observation-backend | 494b6c44757e3ea1ed3de8e0eb4c941142fd49473f6fda78fdae88d855daf301 |
+| observation-live_desktop | f5b9b82c38397708c671b03aa68f5947d514f3a6ed07a22b8953c6d13de53b39 |
+| observation-live_mobile | 97db123da33a13b865fcef3ea3693e435ba0e9e4022cb97c41a8c0deea809fa6 |
+| observation-termux | 5523dadde5186a6ab511470fc58ef6ee8158cb11ec7b4afc00f8c683b37f9c57 |
+| playwright-report | 2327e3f46af50c663807512084239fcbb26650df0147e09767f07dfb1a685e53 |
+| runtime-comparison | 405b5ac408de70bf3055afffd62c5dcd5475c107ac9e56548c18fe17b7b31347 |
+| termux-recovery | d8079d077e1a6510daa8e80bde23ff4f9b25b24d518d4c05f4ced1d4417ba913 |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -187,7 +196,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 2.0.0 | lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | 2026-08-07T18:04:28Z |
+| 2.0.0 | lite-2026.08.12.2 | a6e4abc37ee9cca62c27286c556607ff3e740561 | 2026-08-12T16:00:40Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 
@@ -224,4 +233,4 @@ Missing, failed, stale, or unavailable evidence is classified separately from dr
 
 | Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed | Not applicable |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified-with-mapped-presentation | verified | 33 | 8 | 0 | 0 | 0 | 0 |
+| drift-detected | needs-review | 27 | 5 | 9 | 0 | 0 | 0 |

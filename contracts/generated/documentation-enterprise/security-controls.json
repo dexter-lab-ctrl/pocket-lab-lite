@@ -164,7 +164,7 @@
         "server-host"
       ],
       "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
-      "freshness": "2026-08-07T18:04:28Z",
+      "freshness": "2026-08-12T16:00:40Z",
       "id": "CTRL-EVIDENCE-SANITIZE",
       "implementation": [
         "scripts/docs/runtime/",
@@ -203,7 +203,7 @@
         "server-host"
       ],
       "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
-      "freshness": "2026-08-07T18:04:28Z",
+      "freshness": "2026-08-12T16:00:40Z",
       "id": "CTRL-EXPLICIT-PROMOTION",
       "implementation": [
         "scripts/docs/runtime/promote_termux_runtime.py",

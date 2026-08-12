@@ -13,9 +13,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Apps",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -35,9 +35,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Devices",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -56,9 +56,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Home",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -74,9 +74,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Identity",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -97,9 +97,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Backup & Restore",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -115,9 +115,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Rules",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -135,9 +135,9 @@
       "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
       "label": "Security",
       "projection": "contracts/generated/runtime/domain-operational-health.json",
-      "promoted_at": "2026-08-07T18:04:28Z",
-      "release_tag": "lite-2026.08.07.3",
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "promoted_at": "2026-08-12T16:00:40Z",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "sources": [
         "contracts/parity/runtime-verification-baseline.json",
         "contracts/parity/parity-model.json",
@@ -147,5 +147,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "679c2d50f9d5003e65282015e0e631549f680a1dd8ba54e7c97aa0f28c922cc2"
+  "source_fingerprint": "5ae6ab389ff9aea4fb5fa23ba43939b0d715b7d2bbaffdbf49b38ab3ca325457"
 }

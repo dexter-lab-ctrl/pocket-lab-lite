@@ -15,4 +15,14 @@ A semantic mismatch is valid promoted evidence. It indicates that observed backe
 
 | Domain | Mapping | Severity | Finding |
 | --- | --- | --- | --- |
-| None | None | None | No promoted semantic mismatch; runtime may still be unvalidated. |
+| Apps | apps-open-capability | critical | boolean meaning differs or is not recognized |
+| Apps | apps-open-capability | critical | boolean meaning differs or is not recognized |
+| Backup & Restore | desktop-mobile-semantic-agreement | high | desktop and mobile semantic surfaces differ |
+| Backup & Restore | recovery-historical-preview-safety | critical | boolean meaning differs or is not recognized |
+| Backup & Restore | recovery-history-count | high | values are not exactly equal |
+| Backup & Restore | recovery-last-restore-identity | critical | normalized values differ |
+| Backup & Restore | recovery-last-restore-status | critical | frontend presentation is outside the allowlisted mapping |
+| Backup & Restore | recovery-latest-backup-identity | critical | normalized values differ |
+| Backup & Restore | recovery-stale-semantics | critical | frontend presentation is outside the allowlisted mapping |
+| Backup & Restore | recovery-summary-presentation | high | frontend presentation is outside the allowlisted mapping |
+| Backup & Restore | recovery-write-safety | critical | boolean meaning differs or is not recognized |

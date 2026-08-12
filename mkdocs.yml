@@ -126,7 +126,7 @@ nav:
           - Releases:
               - Overview: generated/production/knowledge/releases.md
               # BEGIN GENERATED KNOWLEDGE RELEASE NAV: production
-              - lite-2026.08.07.3: generated/production/knowledge/releases/lite-2026-08-07-3.md
+              - lite-2026.08.12.2: generated/production/knowledge/releases/lite-2026-08-12-2.md
               # END GENERATED KNOWLEDGE RELEASE NAV: production
           - Supported platforms: generated/production/knowledge/supported-platforms.md
           - Security model: generated/production/knowledge/security.md
@@ -363,7 +363,7 @@ nav:
           - Releases and changes:
               - Overview: generated/development/knowledge/releases.md
               # BEGIN GENERATED KNOWLEDGE RELEASE NAV: development
-              - lite-2026.08.07.3: generated/development/knowledge/releases/lite-2026-08-07-3.md
+              - lite-2026.08.12.2: generated/development/knowledge/releases/lite-2026-08-12-2.md
               # END GENERATED KNOWLEDGE RELEASE NAV: development
           - Limitations and incidents: generated/development/knowledge/limitations-incidents.md
           - Troubleshooting: generated/development/knowledge/troubleshooting.md

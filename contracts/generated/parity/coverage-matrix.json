@@ -11,9 +11,9 @@
       "live_termux_coverage": "observed",
       "live_ui_coverage": "observed",
       "mocked_playwright_coverage": "verified",
-      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_parity": "drift-detected",
       "source_coverage": "verified",
-      "status": "verified",
+      "status": "needs-review",
       "storybook_coverage": "verified",
       "vertical_slice": false
     },
@@ -80,9 +80,9 @@
       "live_termux_coverage": "observed",
       "live_ui_coverage": "observed",
       "mocked_playwright_coverage": "verified",
-      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_parity": "drift-detected",
       "source_coverage": "verified",
-      "status": "verified",
+      "status": "needs-review",
       "storybook_coverage": "verified",
       "vertical_slice": true
     },

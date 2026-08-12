@@ -8365,8 +8365,8 @@
       "name": "Apps",
       "observation_summary": {
         "mapped": 4,
-        "match": 14,
-        "mismatch": 0,
+        "match": 12,
+        "mismatch": 2,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
@@ -8385,7 +8385,7 @@
         "implementation_status": "implemented",
         "operational_health": "healthy",
         "readiness": "ready-with-guardrails",
-        "runtime_parity": "verified-with-mapped-presentation",
+        "runtime_parity": "drift-detected",
         "runtime_status": "observed"
       },
       "type": "domain"
@@ -8761,7 +8761,7 @@
       "status_dimensions": {
         "capability_status": "implemented",
         "confidence": "release-promoted",
-        "degraded_reason": "service_unavailable",
+        "degraded_reason": "read_degraded",
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
         "implementation_status": "implemented",
@@ -9054,9 +9054,9 @@
       ],
       "name": "Backup & Restore",
       "observation_summary": {
-        "mapped": 8,
-        "match": 33,
-        "mismatch": 0,
+        "mapped": 5,
+        "match": 27,
+        "mismatch": 9,
         "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
@@ -9075,7 +9075,7 @@
         "implementation_status": "implemented",
         "operational_health": "degraded",
         "readiness": "degraded",
-        "runtime_parity": "verified-with-mapped-presentation",
+        "runtime_parity": "drift-detected",
         "runtime_status": "observed"
       },
       "type": "domain"
@@ -11033,13 +11033,13 @@
       "artifact_checksum": null,
       "confidence": "release-promoted",
       "domain": "release",
-      "id": "release:lite-2026.08.07.3",
-      "name": "lite-2026.08.07.3",
-      "promoted_at": "2026-08-07T18:04:28Z",
+      "id": "release:lite-2026.08.12.2",
+      "name": "lite-2026.08.12.2",
+      "promoted_at": "2026-08-12T16:00:40Z",
       "release_manifest_status": "unvalidated",
-      "runtime_parity_status": "partial",
+      "runtime_parity_status": "needs-review",
       "sanitized": true,
-      "source_commit": "ee0038e92d2c2ce2658cd3832d858425aeb399e7",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "source_refs": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -21732,7 +21732,7 @@
         "journey:release-update",
         "journey:rollback",
         "reason:release_projection_unavailable",
-        "release:lite-2026.08.07.3",
+        "release:lite-2026.08.12.2",
         "subject:pocketlab.commands.release.apply",
         "subject:pocketlab.commands.release.check",
         "subject:pocketlab.events.release.applied",
@@ -22484,7 +22484,7 @@
         "reason:worker_start_timeout"
       ],
       "release": [
-        "release:lite-2026.08.07.3"
+        "release:lite-2026.08.12.2"
       ],
       "requirement": [
         "requirement:architecture-01",
@@ -25677,7 +25677,7 @@
           "type": "owns"
         }
       ],
-      "release:lite-2026.08.07.3": [
+      "release:lite-2026.08.12.2": [
         {
           "source": "domain:apps",
           "type": "observed_by"
@@ -30418,10 +30418,6 @@
         },
         {
           "source": "reason:projection_too_old",
-          "type": "verified_by"
-        },
-        {
-          "source": "reason:service_unavailable",
           "type": "verified_by"
         }
       ],
@@ -37343,7 +37339,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -37555,7 +37551,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -37999,7 +37995,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -38041,7 +38037,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -38571,7 +38567,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -38873,7 +38869,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -38981,7 +38977,7 @@
           "type": "affected_by"
         },
         {
-          "target": "release:lite-2026.08.07.3",
+          "target": "release:lite-2026.08.12.2",
           "type": "observed_by"
         },
         {
@@ -40911,10 +40907,6 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/docs/test_documentation_intelligence.py",
-          "type": "verified_by"
-        },
-        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -42063,6 +42055,15 @@
     },
     {
       "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:0817be8727001ccb",
+      "source": "domain:identity",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:08311511201a6392",
@@ -42909,6 +42910,15 @@
     },
     {
       "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:141d79b35f2d2d44",
+      "source": "domain:rules",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:143b6096a81a0279",
@@ -43197,15 +43207,6 @@
       "source": "requirement:architecture-07",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:178db9474df07f86",
-      "source": "domain:apps",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
     },
     {
       "evidence": [
@@ -45321,6 +45322,15 @@
       "source": "requirement:architecture-09",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:342dbf5415c8fd6c",
+      "source": "domain:security",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -47845,15 +47855,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:5908b9df1fd2eab2",
-      "source": "domain:devices",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:591c4edff5f8ff05",
@@ -48180,15 +48181,6 @@
       "source": "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:5d8425ad91bae68e",
-      "source": "domain:identity",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
     },
     {
       "evidence": [
@@ -49283,6 +49275,15 @@
     },
     {
       "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:6c8a9a221de49d4c",
+      "source": "domain:home",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:6c91625ad7e147fb",
@@ -50234,15 +50235,6 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-1",
       "type": "affected_by"
-    },
-    {
-      "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:795f9511f8a6328d",
-      "source": "domain:security",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
     },
     {
       "evidence": [
@@ -52070,15 +52062,6 @@
       "source": "component:completion-evidence",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:934568ac31cf02a9",
-      "source": "domain:home",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
     },
     {
       "evidence": [
@@ -54319,15 +54302,6 @@
     },
     {
       "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:b2ad71795b029536",
-      "source": "domain:rules",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
-    },
-    {
-      "evidence": [
         "tests/docs/test_supply_chain_runner_hardening.py"
       ],
       "id": "rel:b2dd94e61273981c",
@@ -55330,6 +55304,15 @@
       "source": "component:app-lifecycle-worker",
       "target": "subject:pocketlab.commands.node",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:c05baadc3cbb796a",
+      "source": "domain:devices",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -56381,15 +56364,6 @@
     },
     {
       "evidence": [
-        "tests/docs/test_documentation_intelligence.py"
-      ],
-      "id": "rel:cec424e21ab1d4fa",
-      "source": "reason:service_unavailable",
-      "target": "test:tests/docs/test_documentation_intelligence.py",
-      "type": "verified_by"
-    },
-    {
-      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:ceca29dba2549aaa",
@@ -56830,6 +56804,15 @@
       "source": "ui:litereleaseupdatecard",
       "target": "api:post:/api/lite/release/apply",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:d58bf797089bb896",
+      "source": "domain:recovery",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
     },
     {
       "evidence": [
@@ -57837,15 +57820,6 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_premium_tab_polish.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "contracts/parity/runtime-verification-baseline.json"
-      ],
-      "id": "rel:e336aec58c5c5e3c",
-      "source": "domain:recovery",
-      "target": "release:lite-2026.08.07.3",
-      "type": "observed_by"
     },
     {
       "evidence": [
@@ -59047,6 +59021,15 @@
     },
     {
       "evidence": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "id": "rel:f1be0ecfa4b379b5",
+      "source": "domain:apps",
+      "target": "release:lite-2026.08.12.2",
+      "type": "observed_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteSecurity.jsx"
       ],
       "id": "rel:f1e874a963f6ba57",
@@ -60030,7 +60013,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "7f43bce9c41038abb183db8e82aa7572a101ff206b28d13d760ad1b172a7a6e9",
+  "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a",
   "statistics": {
     "entity_count": 839,
     "entity_type_counts": {
@@ -60056,7 +60039,7 @@
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2063,
+    "relation_count": 2062,
     "source_count": 200
   }
 }

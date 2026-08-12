@@ -135,16 +135,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
-| backend-devices | 3fa2b766af03b4d9c8717b6a01640c783149c7755b0343e0d0c6c2d84d98f375 |
-| browser-devices-live-desktop | 7de3fb6d83032bae763e1c3c6de84c730ed85e110e862f0cde5548e1c2ba9689 |
-| browser-devices-live-mobile | 3933a37e6f57d0bdaf40c3135924f2f95f98d8d96d05d97bc7cfc94d4c51d79a |
+| backend-devices | 39024d3771336bdd66b204e677b84ca3ae83b1872f7ceca37e2fa8b7d03c6378 |
+| browser-devices-live-desktop | 084f7cbf1c7285767cce1688a09a99cd0ad9c7a1950a4eda0f48538eade2305f |
+| browser-devices-live-mobile | 367c23ea0fb004f1f42b62895d53c8f142984ed5cb0b0fc9ea68234406f6e374 |
 | observation-backend | ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59 |
-| observation-live_desktop | cc5114fba12a156ecd4740f01066da7df5bdab5815d5d34832ab989e54d69bcf |
-| observation-live_mobile | cc5114fba12a156ecd4740f01066da7df5bdab5815d5d34832ab989e54d69bcf |
+| observation-live_desktop | 15b8ae6de23aa40f84aed1dec0371330df320983acc4be6ddd2fdf9520b5afcc |
+| observation-live_mobile | 15b8ae6de23aa40f84aed1dec0371330df320983acc4be6ddd2fdf9520b5afcc |
 | observation-termux | ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59 |
-| playwright-report | 3c90b4b00cb31ad64c1f64a47913ac11fc9582100ffcc5068e280cb4a5b668ef |
-| runtime-comparison | 274f3a0d3e13986672c2462abf778101f86584679ce20e05dfe78a54f01d3140 |
-| termux-devices | fea9735c6059b755c09b7304b8b56dbfda6dfac7fed21a46265e0cff1fc6d791 |
+| playwright-report | 2327e3f46af50c663807512084239fcbb26650df0147e09767f07dfb1a685e53 |
+| runtime-comparison | 405b5ac408de70bf3055afffd62c5dcd5475c107ac9e56548c18fe17b7b31347 |
+| termux-devices | 43cf186a56f6ce41488ec91d00aa059dfd8e1c1845d1ad62ec5a4fccca9d311a |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -152,7 +152,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 2.0.0 | lite-2026.08.07.3 | ee0038e92d2c2ce2658cd3832d858425aeb399e7 | 2026-08-07T18:04:28Z |
+| 2.0.0 | lite-2026.08.12.2 | a6e4abc37ee9cca62c27286c556607ff3e740561 | 2026-08-12T16:00:40Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 

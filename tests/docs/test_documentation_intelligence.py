@@ -111,8 +111,20 @@ def test_limitations_reason_codes_and_scenarios_are_source_grounded():
     data = intelligence()
     categories = {x["category"] for x in data["limitations"]}
     assert {"accepted-limitation", "known-gap", "unsupported-operation"} <= categories
-    active_reasons = {x["code"] for x in data["reason_codes"] if x["observed_in_current_health"]}
-    assert {"service_unavailable", "projection_too_old"} <= active_reasons
+    active_reasons = {
+        x["code"]
+        for x in data["reason_codes"]
+        if x["observed_in_current_health"]
+    }
+
+    operational_health = load(OP_HEALTH)
+    expected_active_reasons = {
+        row["reason"]
+        for row in operational_health["domains"].values()
+        if row.get("reason") is not None
+    }
+
+    assert active_reasons == expected_active_reasons
     assert any(x["id"] == "add-device" for x in data["scenarios"])
     assert all(x["guardrail"] for x in data["scenarios"])
 

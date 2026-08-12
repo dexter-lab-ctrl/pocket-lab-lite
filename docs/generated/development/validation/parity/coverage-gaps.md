@@ -14,11 +14,11 @@ generator: scripts/docs/parity/generate_parity.py
 | Domain | Status | Runtime parity | Known gaps |
 | --- | --- | --- | --- |
 | Home | verified | verified-with-mapped-presentation | Live runtime semantic evidence remains explicit and release-bound. |
-| Apps | verified | verified-with-mapped-presentation | Application-owned media indexing is not a Pocket Lab parity authority. |
+| Apps | needs-review | drift-detected | Application-owned media indexing is not a Pocket Lab parity authority. |
 | Devices | verified | verified-with-mapped-presentation | Per-device profile fields remain partial when the agent has not published them. |
 | Security | verified | verified-with-mapped-presentation | A missing scanner is runtime-unavailable, not semantic drift. |
 | Identity | partial | partial | The current tab is direct-rendered and has no dedicated selector layer.; Identity guard and protected server-host projections are not fully implemented. |
 | Rules | partial | partial | Per-rule identity and execution history are planned, not present in the current API. |
-| Backup & Restore | verified | verified-with-mapped-presentation | Live Termux and live browser semantic capture remain explicit; missing capture is not drift. |
+| Backup & Restore | needs-review | drift-detected | Live Termux and live browser semantic capture remain explicit; missing capture is not drift. |
 
 Repository-derived contracts exist for all seven tabs. Successful, mapped, drifted, partial, failed, stale, unavailable, unsupported, and accepted-limitation outcomes remain distinct.

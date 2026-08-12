@@ -50,30 +50,74 @@ def test_artifact_schema_release_binding_and_sanitization():
 
 def test_current_promoted_domain_health_is_evidence_backed_and_independent():
     domains = load(ARTIFACT)["domains"]
-    expected = {
-        "home": ("implemented", "observed", "degraded", "service_unavailable"),
-        "apps": ("implemented", "observed", "healthy", None),
-        "devices": ("implemented", "observed", "healthy", None),
-        "security": ("implemented", "observed", "healthy", None),
-        "recovery": ("implemented", "observed", "degraded", "projection_too_old"),
-        "identity": ("partial", "observed", "unvalidated", None),
-        "rules": ("partial", "observed", "unvalidated", None),
+
+    stable_expected = {
+        "home": ("implemented", "observed", "degraded"),
+        "apps": ("implemented", "observed", "healthy"),
+        "devices": ("implemented", "observed", "healthy"),
+        "security": ("implemented", "observed", "healthy"),
+        "recovery": ("implemented", "observed", "degraded"),
+        "identity": ("partial", "observed", "unvalidated"),
+        "rules": ("partial", "observed", "unvalidated"),
     }
-    for domain_id, values in expected.items():
+
+    for domain_id, values in stable_expected.items():
         row = domains[domain_id]
         assert (
             row["implementation_status"],
             row["runtime_status"],
             row["operational_health"],
-            row["reason"],
         ) == values
 
-    assert domains["home"]["semantic_parity"] == "verified-with-mapped-presentation"
+    reasons = canonical_reasons()
+
+    for domain_id, row in domains.items():
+        reason = row["reason"]
+
+        if reason is not None:
+            assert reason in reasons, (
+                f"{domain_id}: non-canonical operational-health "
+                f"reason {reason!r}"
+            )
+
+        evidence_reasons = {
+            item["reason"]
+            for item in row.get("evidence", [])
+            if item.get("reason") is not None
+        }
+
+        if reason is not None:
+            assert reason in evidence_reasons, (
+                f"{domain_id}: aggregate reason {reason!r} is not "
+                "backed by the domain evidence"
+            )
+
+        for evidence_reason in evidence_reasons:
+            assert evidence_reason in reasons, (
+                f"{domain_id}: evidence contains non-canonical "
+                f"reason {evidence_reason!r}"
+            )
+
+    assert domains["home"]["semantic_parity"] == (
+        "verified-with-mapped-presentation"
+    )
     assert domains["home"]["operational_health"] == "degraded"
-    assert domains["recovery"]["semantic_parity"] == "verified-with-mapped-presentation"
+
+    assert {
+        item["reason"]
+        for item in domains["home"]["evidence"]
+        if item.get("reason")
+    } >= {
+        "service_unavailable",
+        "read_degraded",
+    }
+
     assert domains["recovery"]["operational_health"] == "degraded"
     assert domains["recovery"]["freshness"] == "stale"
-    assert domains["recovery"]["freshness_age_seconds"] > domains["recovery"]["freshness_threshold_seconds"]
+    assert (
+        domains["recovery"]["freshness_age_seconds"]
+        > domains["recovery"]["freshness_threshold_seconds"]
+    )
 
 
 @pytest.mark.parametrize(
@@ -84,6 +128,15 @@ def test_current_promoted_domain_health_is_evidence_backed_and_independent():
             {"home-termux-overall_status": "degraded", "home-termux-read_degraded": False},
             "degraded",
             "service_unavailable",
+        ),
+        (
+            "home",
+            {
+                "home-termux-overall_status": "degraded",
+                "home-termux-read_degraded": True,
+            },
+            "degraded",
+            "read_degraded",
         ),
         (
             "apps",

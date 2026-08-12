@@ -4,7 +4,7 @@
   "controls_verified": 5,
   "implementation_status": "implemented",
   "live_monitoring": false,
-  "promoted_runtime_release": "lite-2026.08.07.3",
+  "promoted_runtime_release": "lite-2026.08.12.2",
   "security_operational_health": "healthy",
   "signals": [
     {

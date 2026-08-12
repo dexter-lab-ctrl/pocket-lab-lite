@@ -10,7 +10,7 @@
       "operational_health": "healthy",
       "readiness": "ready-with-guardrails",
       "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
-      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_parity": "drift-detected",
       "runtime_status": "observed",
       "source_of_truth": [
         "contracts/generated/runtime/domain-operational-health.json",
@@ -39,7 +39,7 @@
       "user_impact": "Writes remain subject to backend freshness and readiness guards; semantic parity is reported separately."
     },
     {
-      "degraded_reason": "service_unavailable",
+      "degraded_reason": "read_degraded",
       "domain": "home",
       "evidence_status": "release-promoted",
       "freshness": "promoted-observation",
@@ -86,7 +86,7 @@
       "operational_health": "degraded",
       "readiness": "degraded",
       "recommended_operator_action": "Follow the linked troubleshooting path when operational health is degraded.",
-      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_parity": "drift-detected",
       "runtime_status": "observed",
       "source_of_truth": [
         "contracts/generated/runtime/domain-operational-health.json",
@@ -140,6 +140,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7f43bce9c41038abb183db8e82aa7572a101ff206b28d13d760ad1b172a7a6e9"
+    "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a"
   }
 }
