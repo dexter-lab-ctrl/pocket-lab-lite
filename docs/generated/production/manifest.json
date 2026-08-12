@@ -31,10 +31,10 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "524c11955227829d4b152c7f6bc67b57661a74548bd8f0f4d4f37c7fddcaf632",
+  "source_fingerprint": "1753ddb100cc5a6f530412ab9d1df05ef9e57bde0639fc426ae5b7bf6ecfbc11",
   "source_fingerprints": {
-    ".github/workflows/docs-security-supply-chain.yml": "b0d07b8ef4290f89768e8c3c7c7e2015f5ccce030256881242b8db3d35fa0861",
-    ".github/workflows/lite-quality.yml": "484baa05bc0525ef2c0ef68d67215e8f580c1bebaae95db0e048af3982513ba3",
+    ".github/workflows/docs-security-supply-chain.yml": "47fe82dbfe9c84df2118beb09d7956ddc9863432120a6bb9e19da5f4770bc38f",
+    ".github/workflows/lite-quality.yml": "77d19c4cbe3b6607fb6e1c491e4f4b149941a36aa8eb58239aeaaeb2d3f2e27e",
     ".github/workflows/release-dist.yml": "80f86c31e76d5b3924829b42c8a19e8dff2aac84e35983bacd8d3ff7a9d0d48e",
     ".storybook/main.js": "1ce5636bf52c4e6f059bc5131295af8a829d1a0f0529a0974ae7f6cf5f0bea4c",
     ".storybook/preview.jsx": "3b978c26ff6f84126392cdb310301dde696e4d9a8e2426d944d8ffad8203b67f",
