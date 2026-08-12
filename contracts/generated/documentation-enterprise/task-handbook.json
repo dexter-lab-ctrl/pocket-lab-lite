@@ -4367,7 +4367,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py"
+        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py"
       ],
       "dependencies": [
         "lite:dev:scratch:prepare"

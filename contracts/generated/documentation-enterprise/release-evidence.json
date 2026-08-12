@@ -29,10 +29,10 @@
   "exact_tag": null,
   "fingerprints": {
     "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
-    "asyncapi": "3f24c67cf9bfae51b323f5ec68af435e3fed11670296801c1f785324cdd2f893",
-    "documentation": "318d7cd5a8c82574ff60dfd3bf53db8f7df39191ab749e20aaf79add899590c2",
-    "openapi": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
-    "operational_health": "7ff5e9b3c494f1f9c11b8dd790e8a39908bb097ae9a34a30b88ded1605646a1c"
+    "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
+    "documentation": "2a68d482b5f7235d27e2ef42d910ac705b3208e10c91c28f88762841e0ac2458",
+    "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
+    "operational_health": "9452114239d1581cff4febc0b8a07930018ee4d71d458efb6090ca5b78bba1c1"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",

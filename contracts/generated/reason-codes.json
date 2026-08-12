@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "0bd3928f2a44a07ae9d9114d8a9b03b324fc1c51f4c19a5480a3ced2104d61cf",
+    "aggregate_fingerprint": "44aaaa9318aa30c69930f7d2b076892bd395af4d08913e049dcf181941469a98",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -97,7 +97,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_storage_faults.py": "41bea79d33cf41b184235ccdd9c825b42c717eb82c3287dee5ae9bd58fc1972e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_storage_guard.py": "57b16f747bd3643add6c5351acb83e34c374af6e0778fca7f71a51c1fd27a9e2",
       "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py": "ec004e6970fc322899dcbca6c4604fbbd3abec40e1f8441772e3c530ccd17766",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py": "b9202da223dfdc704f33c2e46bdf51084dab8cb93db3a95f74177a065c40dce6",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py": "c2e9da8bfe8ef40d0c666cea3e719db6705937bcad26997d99e267b393ee94ac",
       "pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py": "a9c9fa966eaf4c4109c8fedd00836c044e2057234d3cdcc8b8a84cdd724e419e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py": "a51d5763bbc2d1b201b017fe05ddd1737bf05f7a5a769ec0d66b8991285e90fe",
       "pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py": "239a8c90868ec2ca121d823eddeb5e8f5b4d825fbebfdbc616be5992a1336ace",

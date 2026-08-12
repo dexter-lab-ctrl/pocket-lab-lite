@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: c1b5dca770afa5c8deac6b940d7c7257c0360baa0a5fa339afbdb86a70d4334a
+source_fingerprint: 177df7d4470d35e90fa7e3772f5f5fd9ae8bf1890e6411a5c6f53fae999750ee
 schema_revision: 1
 validation_status: generated
 ---
@@ -513,6 +513,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_NATS_DURABLE_STALE_SECONDS` | configuration | 15 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_EVENT_FANOUT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
 | `POCKETLAB_NATS_HEALTH_URL` | configuration | http://127.0.0.1:8222/healthz | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
+| `POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_JETSTREAM` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_MAX_OUTSTANDING_PINGS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_NAME` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |

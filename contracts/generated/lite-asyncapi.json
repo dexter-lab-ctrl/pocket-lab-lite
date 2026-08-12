@@ -16,9 +16,9 @@
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:540",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:643",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:695",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:717",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1174",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:251",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
@@ -893,7 +893,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:30",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:461"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:483"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -978,7 +978,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1084"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1106"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1408,7 +1408,7 @@
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:732"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "x-pocketlab-stream": "incomplete"
     },

@@ -136,7 +136,9 @@ def export_openapi() -> dict[str, Any]:
         if path.startswith("/api/lite/") or path in {"/health", "/ready"}
     }
     schema.setdefault("info", {})["x-pocketlab-audience"] = "development-contract"
-    schema["info"]["x-pocketlab-source-commit"] = source_commit()
+    # Keep the canonical OpenAPI contract independent of volatile build
+    # provenance such as SOURCE_COMMIT. Exact commit provenance belongs in
+    # generated documentation/evidence metadata, not in contract bytes.
     return schema
 
 

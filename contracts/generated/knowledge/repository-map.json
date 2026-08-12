@@ -2818,6 +2818,12 @@
     },
     {
       "entities": [
+        "test:tests/parity/test_openapi_generation_determinism.py"
+      ],
+      "source": "tests/parity/test_openapi_generation_determinism.py"
+    },
+    {
+      "entities": [
         "test:tests/parity/test_planned_runtime_parity_policy.py"
       ],
       "source": "tests/parity/test_planned_runtime_parity_policy.py"
@@ -2865,6 +2871,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "91e341dd0efa266697313e1480e5b649376d595ff606151de52405b054dafc12"
+    "source_fingerprint": "e176395b84f95e63a0917e0a074a4d7edff5d72ef073903c6798dddf949aa609"
   }
 }

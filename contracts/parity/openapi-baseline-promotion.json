@@ -1,14 +1,20 @@
 {
   "approved_change_classes": [
-    "document HTTP 400 for the conditional profile=app security-profile request"
+    "remove volatile SOURCE_COMMIT metadata from canonical OpenAPI bytes so equivalent API contracts are deterministic across local, CI, and release environments"
   ],
-  "previous_sha256": "d64bf6747d53f117b60837903dd71469d89d99e4a9e06e327c0c4791284f1ffa",
-  "promoted_sha256": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
+  "baseline": "contracts/parity/openapi-baseline.json",
+  "contract": "contracts/generated/lite-openapi.json",
+  "previous_sha256": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
+  "promoted_sha256": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
+  "sanitized": true,
+  "schema_version": "1.0.0",
   "security_review": {
     "documents_500": false,
     "raw_secrets_included": false,
     "runtime_routes_removed": false,
     "write_operations_added": false
   },
-  "status": "promoted"
+  "source_revision": "repository-source",
+  "status": "promoted",
+  "validation_status": "locally-reviewed-metadata-only"
 }
