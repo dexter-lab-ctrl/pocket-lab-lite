@@ -126,12 +126,17 @@ def test_supply_chain_ci_installs_documentation_python_dependencies() -> None:
     ).read_text(encoding="utf-8")
 
     assert "-r requirements-docs.txt" in workflow
+    assert "-r requirements-dev.txt" in workflow
     assert "Verify documentation Python dependencies" in workflow
     assert "import jsonschema" in workflow
+    assert "import pytest" in workflow
     assert "import yaml" in workflow
 
     install_index = workflow.index(
         "-r requirements-docs.txt"
+    )
+    dev_install_index = workflow.index(
+        "-r requirements-dev.txt"
     )
     verify_index = workflow.index(
         "Verify documentation Python dependencies"
@@ -140,6 +145,7 @@ def test_supply_chain_ci_installs_documentation_python_dependencies() -> None:
         "Capture transient supply-chain evidence"
     )
 
-    assert install_index < verify_index
+    assert install_index < dev_install_index
+    assert dev_install_index < verify_index
     assert verify_index < capture_index
 

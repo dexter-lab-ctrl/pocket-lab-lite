@@ -69,7 +69,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install             --upgrade-strategy only-if-needed             -r requirements-docs.txt
+          python -m pip install \
+            --upgrade-strategy only-if-needed \
+            -r requirements-docs.txt \
+            -r requirements-dev.txt
           scripts/dev/lite/setup-documentation-tools.sh --install-missing
           scripts/dev/lite/setup-documentation-security-tools.sh --install-missing
           scripts/dev/lite/check-documentation-security-tools.sh
@@ -83,11 +86,13 @@ jobs:
           from importlib.metadata import version
 
           import jsonschema
+          import pytest
           import yaml
 
           print("PASS documentation Python dependencies")
           print(f"jsonschema={version('jsonschema')}")
           print(f"PyYAML={version('PyYAML')}")
+          print(f"pytest={version('pytest')}")
           PY
 
       - name: Prepare disk-backed supply-chain scratch
