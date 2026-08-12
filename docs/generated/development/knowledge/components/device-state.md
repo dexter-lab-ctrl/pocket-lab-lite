@@ -84,6 +84,7 @@ Retains enrolled devices across connectivity loss and separates durable enrollme
 - protected_by: `Durable-state boundary`
 - recovers_with: `Device joining, waiting, or repairing`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

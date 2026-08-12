@@ -8,9 +8,18 @@ on:
         required: false
         default: false
         type: boolean
+      deep_license_scan:
+        description: Opt into non-blocking ScanCode deep source-license/copyright enrichment
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
+
+concurrency:
+  group: pocketlab-docs-security-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   qualify:
@@ -18,16 +27,42 @@ jobs:
     timeout-minutes: 90
     env:
       POCKETLAB_DOC_SECURITY_TOOL_ROOT: ${{ github.workspace }}/.pocketlab-dev/tools/documentation-security
+      POCKETLAB_DEV_TMPDIR: ${{ github.workspace }}/.pocketlab-dev/tmp
+      POCKETLAB_SUPPLY_CHAIN_MIN_SCRATCH_GIB: '5'
+      POCKETLAB_SCANCODE_PROCESSES: '2'
+      POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB_SCANCODE: '3072'
+      POCKETLAB_SCANCODE_MIN_RUNTIME_MEM_MIB: '1536'
+      POCKETLAB_SCANCODE_MIN_RUNTIME_SWAP_MIB: '256'
       GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_AUTH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout complete history
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Verify canonical qualification source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" != "branch" || "${GITHUB_REF_NAME}" != "main" ]]; then
+            echo "ERROR canonical supply-chain qualification must be dispatched with --ref main" >&2
+            exit 2
+          fi
+          git fetch origin main --force
+          origin_main="$(git rev-parse origin/main)"
+          if [[ "${GITHUB_SHA}" != "$origin_main" ]]; then
+            echo "ERROR qualification source commit must exactly match origin/main" >&2
+            exit 2
+          fi
+          test -z "$(git status --porcelain)"
+
+      - name: Set up Python for scanner compatibility
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
+          # Heavy documentation/security scanners intentionally run on Python 3.12.
+          # Application/docs quality CI remains on Python 3.14.4; do not unify these
+          # runtimes until the scanner portfolio has been qualified on the newer ABI.
           python-version: '3.12'
 
       - name: Install pinned documentation tooling
@@ -39,6 +74,12 @@ jobs:
           scripts/dev/lite/check-documentation-security-tools.sh
           echo "${POCKETLAB_DOC_SECURITY_TOOL_ROOT}/bin" >> "$GITHUB_PATH"
 
+      - name: Prepare disk-backed supply-chain scratch
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/dev/lite/dev-scratch.sh check security-tools
+
       - name: Capture transient supply-chain evidence
         id: capture
         shell: bash
@@ -46,19 +87,44 @@ jobs:
           set -euo pipefail
           run_dir="${GITHUB_WORKSPACE}/.pocketlab-dev/documentation-security/runs/ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           mkdir -p "$(dirname "$run_dir")"
+          echo "run_dir=$run_dir" >> "$GITHUB_OUTPUT"
           history_arg=()
           if [[ "${{ inputs.include_git_history }}" == "true" ]]; then
             history_arg+=(--include-git-history)
           fi
-          python3 scripts/docs/enterprise/supply_chain_automation.py capture \
-            --run-dir "$run_dir" "${history_arg[@]}"
-          echo "run_dir=$run_dir" >> "$GITHUB_OUTPUT"
+          deep_license_arg=()
+          if [[ "${{ inputs.deep_license_scan }}" == "true" ]]; then
+            deep_license_arg+=(--enable-scancode)
+          fi
+          bash scripts/dev/lite/dev-scratch.sh run security-tools -- \
+            python3 scripts/docs/enterprise/supply_chain_automation.py capture \
+              --release-qualification \
+              --run-dir "$run_dir" "${history_arg[@]}" "${deep_license_arg[@]}"
+
+      - name: Show capture checkpoint on failure
+        if: failure() && steps.capture.outputs.run_dir != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/docs/enterprise/supply_chain_automation.py status \
+            --run-dir "${{ steps.capture.outputs.run_dir }}" \
+            --json-output "${{ steps.capture.outputs.run_dir }}/capture-diagnostics.json" || true
+
+      - name: Upload sanitized capture diagnostics on failure
+        if: failure() && steps.capture.outputs.run_dir != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pocketlab-supply-chain-failure-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: ${{ steps.capture.outputs.run_dir }}/capture-diagnostics.json
 
       - name: Explicitly normalize and promote sanitized evidence
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/docs/enterprise/supply_chain_automation.py promote \
+            --require-release-qualification \
             --run-dir "${{ steps.capture.outputs.run_dir }}"
           python3 scripts/docs/enterprise/supply_chain_automation.py check
 
@@ -86,10 +152,11 @@ jobs:
             contracts/generated/supply-chain contracts/generated/documentation-enterprise docs/generated/enterprise
 
       - name: Upload sanitized qualification evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pocketlab-docs-security-supply-chain-${{ github.run_id }}
           if-no-files-found: error
+          retention-days: 30
           path: |
             contracts/generated/supply-chain/
             contracts/generated/release-provenance.json

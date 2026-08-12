@@ -80,6 +80,7 @@ Stores canonical app current/action lifecycle and workflow command/current/event
 - protected_by: `Durable-state boundary`
 - recovers_with: `App installation failure`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

@@ -175,6 +175,19 @@ class PocketLabEventBus:
         self.connect_timeout = float(
             os.environ.get("POCKETLAB_NATS_CONNECT_TIMEOUT", "1.5")
         )
+        # Foreground API requests must never wait indefinitely for an initial
+        # NATS connection.  The NATS client may keep reconnecting indefinitely
+        # after a successful connection, but establishing connectivity for a
+        # request is bounded so Lite writes fail closed with HTTP 503.
+        self.initial_connect_deadline = max(
+            0.25,
+            float(
+                os.environ.get(
+                    "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE",
+                    "3.0",
+                )
+            ),
+        )
         self.nc: Optional[NATS] = None
         self.js: Optional[JetStreamContext] = None
         self.connected = False
@@ -418,7 +431,16 @@ class PocketLabEventBus:
                     if self.tls_cert and self.tls_key:
                         context.load_cert_chain(self.tls_cert, self.tls_key)
                     connect_kwargs["tls"] = context
-                self.nc = await nats.connect(**connect_kwargs)
+                try:
+                    self.nc = await asyncio.wait_for(
+                        nats.connect(**connect_kwargs),
+                        timeout=self.initial_connect_deadline,
+                    )
+                except asyncio.TimeoutError as exc:
+                    raise RuntimeError(
+                        "NATS initial connection deadline exceeded "
+                        f"after {self.initial_connect_deadline:.2f}s"
+                    ) from exc
                 self.connected = True
                 self.fallback_reason = ""
                 if self.jetstream_enabled:

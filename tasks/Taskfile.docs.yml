@@ -318,22 +318,59 @@ tasks:
       - bash scripts/dev/lite/check-documentation-security-tools.sh
 
   lite:docs:supply-chain:capture:
-    desc: Explicitly run heavy WSL2/CI SBOM, vulnerability, secret, static-analysis, licensing and Scorecard capture into transient .pocketlab-dev evidence; never invoked by docs generation
+    desc: Run a bounded local/CI diagnostic supply-chain capture into transient .pocketlab-dev evidence; never invoked by docs generation and never treated as release qualification by itself
+    deps: [lite:dev:scratch:prepare]
     cmds:
-      - '{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}}'
+      - 'bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}'
 
-  lite:docs:supply-chain:qualify:
-    desc: Explicitly run heavy WSL2/CI supply-chain capture, normalize/promote sanitized evidence, and validate canonical outputs in one operator-invoked workflow
+  lite:docs:supply-chain:resume:
+    desc: Resume an interrupted bounded supply-chain capture from its validated checkpoint without rerunning successful scanner steps
+    deps: [lite:dev:scratch:prepare]
+    cmds:
+      - 'test -n "{{.RUN_DIR}}" || (echo "RUN_DIR is required" >&2; exit 2)'
+      - 'bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir {{.RUN_DIR}} --resume {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}'
+
+  lite:docs:supply-chain:status:
+    desc: Show checkpointed per-scanner progress and the last sanitized failure classification for a transient supply-chain run
+    cmds:
+      - 'test -n "{{.RUN_DIR}}" || (echo "RUN_DIR is required" >&2; exit 2)'
+      - '{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py status --run-dir {{.RUN_DIR}}'
+
+  lite:docs:supply-chain:qualify:local:
+    desc: Explicit local diagnostic qualification for development only; canonical release qualification remains CI-owned
+    deps: [lite:dev:scratch:prepare]
     cmds:
       - |
         set -euo pipefail
-        run_dir=".pocketlab-dev/documentation-security/runs/manual-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+        run_dir=".pocketlab-dev/documentation-security/runs/local-$(date -u +%Y%m%dT%H%M%SZ)-$$"
         history_arg=""
         if [ -n "{{.INCLUDE_GIT_HISTORY}}" ]; then history_arg="--include-git-history"; fi
-        {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir "$run_dir" $history_arg
+        bash scripts/dev/lite/dev-scratch.sh run security-tools -- \
+          {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir "$run_dir" $history_arg
         {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir "$run_dir"
         {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check
-        printf 'Canonical supply-chain evidence promoted from %s\n' "$run_dir"
+        printf 'Local diagnostic supply-chain evidence promoted from %s; this is not canonical release qualification.\n' "$run_dir"
+
+  lite:docs:supply-chain:qualify:
+    desc: Dispatch the canonical release qualification to GitHub Actions; does not run heavy scanners inside VS Code/WSL interactively
+    cmds:
+      - |
+        set -euo pipefail
+        command -v gh >/dev/null 2>&1 || { echo "ERROR gh CLI is required for canonical release qualification" >&2; exit 2; }
+        test "$(git branch --show-current)" = "main" || { echo "ERROR canonical release qualification must be dispatched from main" >&2; exit 2; }
+        test -z "$(git status --porcelain)" || { echo "ERROR working tree must be clean before release qualification" >&2; exit 2; }
+        git fetch origin main
+        test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo "ERROR local main must exactly match origin/main" >&2; exit 2; }
+        history="false"
+        if [ -n "{{.INCLUDE_GIT_HISTORY}}" ]; then history="true"; fi
+        deep_license="false"
+        if [ -n "{{.DEEP_LICENSE_SCAN}}" ]; then deep_license="true"; fi
+        gh workflow run docs-security-supply-chain.yml --ref main \
+          -f include_git_history="$history" \
+          -f deep_license_scan="$deep_license"
+        printf 'PASS canonical release qualification dispatched to GitHub Actions for %s\n' "$(git rev-parse HEAD)"
+        printf 'Use: gh run list --workflow docs-security-supply-chain.yml --branch main --limit 5\n'
+        printf 'Inspect the selected run with the one-shot command: gh run view <run-id>.\n'
 
   lite:docs:supply-chain:promote:
     desc: Explicitly normalize and promote a reviewed WSL2/CI supply-chain capture into sanitized canonical CycloneDX/security contracts

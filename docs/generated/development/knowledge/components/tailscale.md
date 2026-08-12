@@ -79,6 +79,7 @@ Provides private Tailnet connectivity and HTTPS identity without becoming a brow
 - recovers_with: `Tailscale unavailable`
 - uses: `GET /api/lite/remote-access/readiness`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

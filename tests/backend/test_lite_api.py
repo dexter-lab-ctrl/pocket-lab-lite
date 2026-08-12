@@ -255,15 +255,27 @@ def test_lite_read_summary_endpoints_registered():
 
 
 def test_lite_write_endpoints_fail_closed_or_queue_without_local_fallback():
+    import time
+
     checks = [
         ("/api/lite/security/scan", {"scope": "local"}),
         ("/api/lite/fleet/add-device", {"role": "compute", "hostname": "test-node"}),
         ("/api/lite/recovery/backup", {"dry_run": True}),
     ]
+
     for path, body in checks:
+        started = time.monotonic()
         response = client().post(path, json=body)
-        assert response.status_code in {200, 202, 403, 503}, path
+        elapsed = time.monotonic() - started
+
+        assert response.status_code in {200, 202, 403, 409, 503, 507}, path
         assert "local fallback" not in response.text.lower()
+
+        assert elapsed < 10.0, (
+            f"{path} took {elapsed:.2f}s; "
+            "Lite writes must queue or fail closed promptly "
+            "when NATS is unavailable"
+        )
 
 
 def test_lite_restore_requires_confirmation():

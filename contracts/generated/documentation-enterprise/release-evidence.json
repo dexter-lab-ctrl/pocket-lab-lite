@@ -29,10 +29,10 @@
   "exact_tag": null,
   "fingerprints": {
     "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
-    "asyncapi": "3f24c67cf9bfae51b323f5ec68af435e3fed11670296801c1f785324cdd2f893",
-    "documentation": "ae56e69ec253aeedd19e2395525cd4a84b9ba31624a733d6046255ab54b7f010",
-    "openapi": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
-    "operational_health": "7ff5e9b3c494f1f9c11b8dd790e8a39908bb097ae9a34a30b88ded1605646a1c"
+    "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
+    "documentation": "2a68d482b5f7235d27e2ef42d910ac705b3208e10c91c28f88762841e0ac2458",
+    "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
+    "operational_health": "9452114239d1581cff4febc0b8a07930018ee4d71d458efb6090ca5b78bba1c1"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",
@@ -85,8 +85,8 @@
     ]
   },
   "runtime_baseline_binding": "lite-2026.08.07.3",
-  "sbom_digest": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461",
-  "security_scan_digest": "4c72fe899858b70b7757e6cada313f8c241fa42ee56a1329776d52cadbf7a6a2",
+  "sbom_digest": "a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33",
+  "security_scan_digest": "896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f",
   "signatures": {
     "keyless_preferred": true,
     "status": "unobserved-until-explicit-sign-command",

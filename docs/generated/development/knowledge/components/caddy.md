@@ -84,6 +84,7 @@ Serves the PWA and routes /api/lite/* and managed app paths without exposing bac
 - verified_by: `tests/backend/test_lite_device_system_profile.py`
 - verified_by: `tests/backend/test_lite_security_s6_frontend_contract.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

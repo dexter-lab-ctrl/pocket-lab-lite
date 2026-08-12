@@ -85,6 +85,7 @@ Presents backend-owned app lifecycle and safe action readiness, including same-o
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_app_runtime_reconciliation.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 - verified_by: `tests/e2e/lite-test-helpers.ts`
 

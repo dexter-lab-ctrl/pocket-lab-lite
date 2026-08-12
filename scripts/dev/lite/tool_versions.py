@@ -16,9 +16,21 @@ COMMANDS = {
     "java": ["java", "-version"],
     "task": ["task", "--version"],
     "chrome": ["/usr/bin/google-chrome", "--version"],
-    "playwright": ["npx", "--no-install", "playwright", "--version"],
-    "storybook": ["npx", "--no-install", "storybook", "--version"],
-    "redocly": ["npx", "--no-install", "redocly", "--version"],
+    "playwright": [
+        "node",
+        "-p",
+        "require('./node_modules/@playwright/test/package.json').version",
+    ],
+    "storybook": [
+        "node",
+        "-p",
+        "require('./node_modules/storybook/package.json').version",
+    ],
+    "redocly": [
+        "node",
+        "-p",
+        "require('./node_modules/@redocly/cli/package.json').version",
+    ],
     "mkdocs": [".venv/bin/python", "-m", "mkdocs", "--version"],
 }
 EXPECTED = {

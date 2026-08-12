@@ -471,7 +471,7 @@
         "scripts/dev/lite/run-playwright-mocked.sh",
         "scripts/test/parity/promote_runtime_verification.py",
         "tasks/Taskfile.parity.yml",
-        "tests/parity/test_runtime_verification_promotion.py"
+        "tests/dev/test_frontend_resource_policy.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -4448,6 +4448,31 @@
     },
     {
       "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_ALLOW_LOCAL_SCANCODE",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "repository tooling"
       ],
       "affects_release": false,
@@ -6311,30 +6336,29 @@
     },
     {
       "affected_components": [
-        "documentation",
         "repository tooling"
       ],
       "affects_release": false,
-      "affects_runtime": false,
+      "affects_runtime": true,
       "default": "source-defined/unvalidated",
       "name": "POCKETLAB_DEV_TMPDIR",
-      "owner": "documentation tooling",
+      "owner": "repository tooling",
       "purpose": "Documentation/developer automation configuration",
       "related_troubleshooting": [
         "Development Troubleshooting",
         "Production Troubleshooting"
       ],
       "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "restart_required": "source-dependent",
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        ".github/workflows/docs-security-supply-chain.yml",
         "Taskfile.yml",
         "conftest.py",
         "playwright.docs.config.ts",
         "scripts/dev/lite/dev-scratch.sh",
-        "scripts/dev/lite/documentation_security_tools.py",
-        "scripts/docs/sqlite/generate_schemaspy.py"
+        "scripts/dev/lite/documentation_security_tools.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -7424,6 +7448,54 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_FRONTEND_MIN_MEMORY_MIB",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/frontend-resource-preflight.sh",
+        "tests/dev/test_frontend_resource_policy.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_FRONTEND_MIN_SCRATCH_GIB",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/frontend-resource-preflight.sh",
+        "tests/dev/test_frontend_resource_policy.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -14413,6 +14485,29 @@
     },
     {
       "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE",
+      "owner": "FastAPI/runtime",
+      "purpose": "NATS/JetStream connection or runtime configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "FastAPI",
         "bootstrap/runtime"
       ],
@@ -18260,6 +18355,84 @@
       "affects_release": false,
       "affects_runtime": false,
       "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SCANCODE_MIN_RUNTIME_MEM_MIB",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        ".github/workflows/docs-security-supply-chain.yml",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SCANCODE_MIN_RUNTIME_SWAP_MIB",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        ".github/workflows/docs-security-supply-chain.yml",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SCANCODE_PROCESSES",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        ".github/workflows/docs-security-supply-chain.yml",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
       "name": "POCKETLAB_SCHEMASPY_JAR",
       "owner": "documentation tooling",
       "purpose": "Documentation/developer automation configuration",
@@ -19173,6 +19346,149 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB_SCANCODE",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        ".github/workflows/docs-security-supply-chain.yml",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_SCRATCH_GIB",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        ".github/workflows/docs-security-supply-chain.yml",
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SUPPLY_CHAIN_MIN_SWAP_FREE_MIB_SCANCODE",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SUPPLY_CHAIN_PROGRESS_SECONDS",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "documentation"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SUPPLY_CHAIN_TIMEOUT_",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

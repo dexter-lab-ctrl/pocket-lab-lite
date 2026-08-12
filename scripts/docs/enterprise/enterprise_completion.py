@@ -490,8 +490,121 @@ def dependency_introduced(root: Path, baseline_tag: str | None, ecosystem: str, 
     return "present-in-baseline"
 
 
+def supply_chain_current_snapshot(root: Path) -> dict[str, Any]:
+    """Project promoted canonical supply-chain evidence without reading transient scanner output."""
+    supply_root = root / "contracts/generated/supply-chain"
+    automation = read_json(supply_root / "automation-summary.json", {}) or {}
+    sbom_dev = read_json(supply_root / "sbom-dev.cdx.json", {}) or {}
+    sbom_release = read_json(supply_root / "sbom-release.cdx.json", {}) or {}
+    sbom_runtime = read_json(supply_root / "sbom-runtime.cdx.json", {}) or {}
+    vulnerabilities = read_json(supply_root / "vulnerability-correlation.json", {}) or {}
+    licenses = read_json(supply_root / "license-inventory.json", {}) or {}
+    security = read_json(supply_root / "security-analysis.json", {}) or {}
+    scorecard = read_json(supply_root / "scorecard-checks.json", {}) or {}
+
+    tool_rows = []
+    for item in automation.get("tool_statuses", []) if isinstance(automation, dict) else []:
+        if not isinstance(item, dict):
+            continue
+        tool_rows.append({
+            "step_id": str(item.get("step_id") or item.get("tool") or "unobserved"),
+            "tool": str(item.get("tool") or item.get("step_id") or "unobserved"),
+            "status": str(item.get("status") or "unobserved"),
+            "exit_code": item.get("exit_code"),
+            "duration_seconds": item.get("duration_seconds"),
+        })
+
+    scorecard_rows = []
+    for item in scorecard.get("checks", []) if isinstance(scorecard, dict) else []:
+        if not isinstance(item, dict) or not item.get("name"):
+            continue
+        scorecard_rows.append({
+            "name": str(item.get("name")),
+            "status": str(item.get("status") or "unobserved"),
+            "score": item.get("score"),
+            "reason": str(item.get("reason") or "unobserved"),
+            "blocking": bool(item.get("blocking", True)),
+        })
+
+    gitleaks = security.get("gitleaks") if isinstance(security, dict) else {}
+    semgrep = security.get("semgrep") if isinstance(security, dict) else {}
+    trivy_security = security.get("trivy") if isinstance(security, dict) else {}
+    package_coverage = licenses.get("package_license_coverage") if isinstance(licenses, dict) else {}
+    deep_coverage = licenses.get("deep_source_license_coverage") if isinstance(licenses, dict) else {}
+    vuln_items = vulnerabilities.get("items", []) if isinstance(vulnerabilities, dict) else []
+
+    source_refs = [
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/supply-chain/sbom-dev.cdx.json",
+        "contracts/generated/supply-chain/sbom-release.cdx.json",
+        "contracts/generated/supply-chain/sbom-runtime.cdx.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json",
+        "contracts/generated/supply-chain/license-inventory.json",
+        "contracts/generated/supply-chain/security-analysis.json",
+        "contracts/generated/supply-chain/scorecard-checks.json",
+    ]
+    present = [ref for ref in source_refs if (root / ref).exists()]
+    return {
+        "schema_version": "1.0.0",
+        "implementation_status": "implemented",
+        "evidence_status": "promoted-canonical" if bool(automation.get("capture_complete")) else "partial-or-unobserved",
+        "run_id": automation.get("run_id") or "unobserved",
+        "source_commit": automation.get("source_commit") or "unobserved",
+        "qualification_surface": automation.get("qualification_surface") or "unobserved",
+        "capture_complete": bool(automation.get("capture_complete")),
+        "sbom": {
+            "dev_components": len(sbom_dev.get("components", []) or []) if isinstance(sbom_dev, dict) else 0,
+            "release_components": len(sbom_release.get("components", []) or []) if isinstance(sbom_release, dict) else 0,
+            "runtime_components": len(sbom_runtime.get("components", []) or []) if isinstance(sbom_runtime, dict) else 0,
+        },
+        "vulnerabilities": {
+            "evidence_status": vulnerabilities.get("evidence_status") or vulnerabilities.get("status") or "unobserved",
+            "finding_count": len(vuln_items or []) if isinstance(vuln_items, list) else 0,
+            "scanner_disagreement_is_failure": bool(vulnerabilities.get("scanner_disagreement_is_failure", False)),
+        },
+        "licenses": {
+            "package_license_coverage": package_coverage if isinstance(package_coverage, dict) else {},
+            "deep_source_license_coverage": deep_coverage if isinstance(deep_coverage, dict) else {},
+            "package_rows": len(licenses.get("items", []) or []) if isinstance(licenses, dict) else 0,
+            "trivy_license_rows": len(licenses.get("trivy_detected_licenses", []) or []) if isinstance(licenses, dict) else 0,
+        },
+        "security": {
+            "gitleaks_finding_count": (gitleaks or {}).get("finding_count", 0) if isinstance(gitleaks, dict) else 0,
+            "semgrep_finding_count": (semgrep or {}).get("finding_count", 0) if isinstance(semgrep, dict) else 0,
+            "trivy_counts": (trivy_security or {}).get("counts", {}) if isinstance(trivy_security, dict) else {},
+        },
+        "repository_posture": {
+            "status": (scorecard.get("status") or "unobserved") if isinstance(scorecard, dict) else "unobserved",
+            "provider": (scorecard.get("provider") or "openssf-scorecard") if isinstance(scorecard, dict) else "openssf-scorecard",
+            "checks": sorted(scorecard_rows, key=lambda x: x["name"]),
+            "observed_count": sum(1 for x in scorecard_rows if x["status"] == "observed"),
+            "provider_unavailable_count": sum(1 for x in scorecard_rows if x["status"] == "provider-unavailable"),
+        },
+        "tool_coverage": sorted(tool_rows, key=lambda x: x["step_id"]),
+        "source_refs": present,
+        "raw_scanner_output_included": False,
+        "live_capture_performed": False,
+    }
+
+
+def supply_chain_baseline_readiness(root: Path) -> dict[str, Any]:
+    baseline = current_release_baseline(root)
+    selected = baseline.get("baseline") if isinstance(baseline, dict) else None
+    return {
+        "status": "ready" if isinstance(selected, dict) else "not-ready",
+        "candidate_count": int(baseline.get("candidate_count") or 0) if isinstance(baseline, dict) else 0,
+        "selected_baseline": selected,
+        "head": baseline.get("head") if isinstance(baseline, dict) else None,
+        "head_tree": baseline.get("head_tree") if isinstance(baseline, dict) else None,
+        "baseline_policy": baseline.get("baseline_policy") if isinstance(baseline, dict) else "verified canonical release baseline required",
+        "reason": "comparable verified prior release selected" if isinstance(selected, dict) else "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+    }
+
+
 def supply_chain_change(inventory: dict[str,Any], root: Path, baseline_tag: str | None) -> dict[str, Any]:
-    empty={"implementation_status":"implemented","evidence_status":"not-comparable","status":"no-comparable-verified-prior-release","dependencies_added":[],"dependencies_removed":[],"versions_changed":[],"new_vulnerabilities":[],"resolved_vulnerabilities":[],"new_licenses":[],"removed_licenses":[],"license_classification_changes":[],"upstream_posture_changes":[]}
+    snapshot = supply_chain_current_snapshot(root)
+    readiness = supply_chain_baseline_readiness(root)
+    empty={"schema_version":"1.1.0","implementation_status":"implemented","evidence_status":"not-comparable","status":"no-comparable-verified-prior-release","current_snapshot":snapshot,"baseline_readiness":readiness,"historical_comparison":{"status":"not-comparable","from":None,"to":"current-source","reason":readiness["reason"]},"dependencies_added":[],"dependencies_removed":[],"versions_changed":[],"new_vulnerabilities":[],"resolved_vulnerabilities":[],"new_licenses":[],"removed_licenses":[],"license_classification_changes":[],"upstream_posture_changes":[],"scanner_history_comparable":False,"rule":"scanner disagreement is represented, never converted automatically into a release failure; no historical delta is fabricated without a verified prior release"}
     if not baseline_tag:
         return empty
     current={(x["ecosystem"],x["name"]):x["version"] for x in inventory["dependencies"] if x["ecosystem"] in {"npm","PyPI"}}
@@ -529,7 +642,7 @@ def supply_chain_change(inventory: dict[str,Any], root: Path, baseline_tag: str 
     oscore,cscore=scores(old_score),scores(cur_score)
     upstream=[{"check":name,"from":oscore.get(name),"to":score} for name,score in sorted(cscore.items()) if name in oscore and oscore[name]!=score]
     comparable_scanners=bool(old_v or old_l or old_score)
-    return {"implementation_status":"implemented","evidence_status":"source-comparable; normalized scanner/license/upstream deltas only when historical canonical artifacts exist","status":"comparable","from":baseline_tag,"to":"current-source","dependencies_added":added,"dependencies_removed":removed,"versions_changed":changed,"new_vulnerabilities":[{"id":x,"classification":"new-vulnerability"} for x in sorted(cur_ids-old_ids)] if old_v else [],"resolved_vulnerabilities":[{"id":x,"classification":"resolved-vulnerability"} for x in sorted(old_ids-cur_ids)] if old_v else [],"new_licenses":[{"license":x,"classification":"new-license"} for x in sorted(cur_lic-old_lic)] if old_l else [],"removed_licenses":[{"license":x} for x in sorted(old_lic-cur_lic)] if old_l else [],"license_classification_changes":[],"upstream_posture_changes":upstream if old_score else [],"scanner_history_comparable":comparable_scanners,"rule":"scanner disagreement is represented, never converted automatically into a release failure"}
+    return {"schema_version":"1.1.0","implementation_status":"implemented","evidence_status":"source-comparable; normalized scanner/license/upstream deltas only when historical canonical artifacts exist","status":"comparable","current_snapshot":snapshot,"baseline_readiness":readiness,"historical_comparison":{"status":"comparable","from":baseline_tag,"to":"current-source","reason":"verified canonical prior-release baseline selected"},"from":baseline_tag,"to":"current-source","dependencies_added":added,"dependencies_removed":removed,"versions_changed":changed,"new_vulnerabilities":[{"id":x,"classification":"new-vulnerability"} for x in sorted(cur_ids-old_ids)] if old_v else [],"resolved_vulnerabilities":[{"id":x,"classification":"resolved-vulnerability"} for x in sorted(old_ids-cur_ids)] if old_v else [],"new_licenses":[{"license":x,"classification":"new-license"} for x in sorted(cur_lic-old_lic)] if old_l else [],"removed_licenses":[{"license":x} for x in sorted(old_lic-cur_lic)] if old_l else [],"license_classification_changes":[],"upstream_posture_changes":upstream if old_score else [],"scanner_history_comparable":comparable_scanners,"rule":"scanner disagreement is represented, never converted automatically into a release failure; historical deltas require verified canonical evidence"}
 
 
 def threat_model(root: Path, supply: dict[str,Any], release: dict[str,Any], deps: list[dict[str,Any]]) -> dict[str,Any]:
@@ -885,6 +998,214 @@ def flow_svg(title:str, rows:list[tuple[str,str]])->str:
     out.append('</svg>'); return "\n".join(out)+"\n"
 
 
+def render_supply_chain_change_page(change: dict[str, Any], *, table: Callable[..., str]) -> str:
+    snapshot = change.get("current_snapshot") if isinstance(change, dict) else {}
+    snapshot = snapshot if isinstance(snapshot, dict) else {}
+    readiness = change.get("baseline_readiness") if isinstance(change, dict) else {}
+    readiness = readiness if isinstance(readiness, dict) else {}
+    sbom = snapshot.get("sbom") if isinstance(snapshot.get("sbom"), dict) else {}
+    vulns = snapshot.get("vulnerabilities") if isinstance(snapshot.get("vulnerabilities"), dict) else {}
+    licenses = snapshot.get("licenses") if isinstance(snapshot.get("licenses"), dict) else {}
+    security = snapshot.get("security") if isinstance(snapshot.get("security"), dict) else {}
+    posture = snapshot.get("repository_posture") if isinstance(snapshot.get("repository_posture"), dict) else {}
+    package_cov = licenses.get("package_license_coverage") if isinstance(licenses.get("package_license_coverage"), dict) else {}
+    deep_cov = licenses.get("deep_source_license_coverage") if isinstance(licenses.get("deep_source_license_coverage"), dict) else {}
+
+    current_rows = [
+        ["Capture status", "complete" if snapshot.get("capture_complete") else "partial/unobserved"],
+        ["Run ID", snapshot.get("run_id") or "unobserved"],
+        ["Source commit", snapshot.get("source_commit") or "unobserved"],
+        ["Qualification surface", snapshot.get("qualification_surface") or "unobserved"],
+        ["Development SBOM components", sbom.get("dev_components", 0)],
+        ["Release SBOM components", sbom.get("release_components", 0)],
+        ["Runtime SBOM components", sbom.get("runtime_components", 0)],
+        ["Vulnerability evidence", f"{vulns.get('evidence_status', 'unobserved')} ({vulns.get('finding_count', 0)} normalized findings)"],
+        ["Package-license coverage", f"{package_cov.get('status', 'unobserved')} via {package_cov.get('authority', 'unobserved')}"],
+        ["Package rows", licenses.get("package_rows", 0)],
+        ["Trivy license rows", licenses.get("trivy_license_rows", 0)],
+        ["Deep source-license coverage", deep_cov.get("status", "unobserved")],
+        ["Gitleaks findings", security.get("gitleaks_finding_count", 0)],
+        ["Semgrep findings", security.get("semgrep_finding_count", 0)],
+        ["Scorecard posture", posture.get("status", "unobserved")],
+    ]
+    tool_rows = [[x.get("step_id"), x.get("status"), x.get("exit_code"), x.get("duration_seconds")] for x in snapshot.get("tool_coverage", []) if isinstance(x, dict)]
+    posture_rows = [[x.get("name"), x.get("status"), x.get("score"), x.get("reason")] for x in posture.get("checks", []) if isinstance(x, dict)]
+    selected = readiness.get("selected_baseline") if isinstance(readiness.get("selected_baseline"), dict) else None
+    baseline_rows = [
+        ["Readiness", readiness.get("status") or "not-ready"],
+        ["Verified candidates", readiness.get("candidate_count", 0)],
+        ["Selected baseline", selected.get("tag") if selected else "none"],
+        ["Selected commit", selected.get("commit") if selected else "none"],
+        ["Policy", readiness.get("baseline_policy") or "verified canonical prior release required"],
+        ["Reason", readiness.get("reason") or "not-comparable"],
+    ]
+
+    body = "# Supply-chain Change Intelligence\n\n"
+    body += "Current promoted evidence and historical change are intentionally separate authorities. This page never reads transient scanner output and never fabricates an N-1 delta.\n\n"
+    body += "## Current promoted snapshot\n\n" + table(["Signal", "Value"], current_rows) + "\n"
+    body += "### Tool coverage\n\n" + (table(["Step", "Status", "Exit", "Duration (s)"], tool_rows) if tool_rows else "No promoted tool-status evidence is available.\n") + "\n"
+    body += "### Repository posture\n\n" + (table(["Control", "Status", "Score", "Reason"], posture_rows) if posture_rows else "No promoted Scorecard posture is available.\n") + "\n"
+    body += "## Baseline readiness\n\n" + table(["Signal", "Value"], baseline_rows) + "\n"
+    body += "## Historical comparison\n\n"
+    if change.get("status") != "comparable":
+        body += "!!! info \"No comparable verified prior release\"\n    Current promoted supply-chain evidence is available, but no verified N-1 canonical release baseline satisfies the tag + commit + tree + ancestry policy. Dependency, vulnerability, license, and upstream deltas therefore remain explicitly not comparable.\n\n"
+        empty_note = "Historical comparison unavailable until a verified canonical prior-release baseline exists.\n"
+        body += "### Dependencies added\n\n" + empty_note + "\n"
+        body += "### Dependencies removed\n\n" + empty_note + "\n"
+        body += "### Versions changed\n\n" + empty_note + "\n"
+        body += "### Vulnerability changes\n\n" + empty_note + "\n"
+        body += "### License changes\n\n" + empty_note + "\n"
+        body += "### Upstream posture changes\n\n" + empty_note + "\n"
+        return body
+
+    body += f"Compared **{change.get('from')}** → **{change.get('to', 'current-source')}** using verified canonical evidence.\n\n"
+    body += "### Dependencies added\n\n" + (table(["Ecosystem", "Name", "Version"], [[x.get("ecosystem"), x.get("name"), x.get("version")] for x in change.get("dependencies_added", [])]) if change.get("dependencies_added") else "No dependency additions observed.\n") + "\n"
+    body += "### Dependencies removed\n\n" + (table(["Ecosystem", "Name", "Version"], [[x.get("ecosystem"), x.get("name"), x.get("version")] for x in change.get("dependencies_removed", [])]) if change.get("dependencies_removed") else "No dependency removals observed.\n") + "\n"
+    body += "### Versions changed\n\n" + (table(["Ecosystem", "Name", "From", "To"], [[x.get("ecosystem"), x.get("name"), x.get("from"), x.get("to")] for x in change.get("versions_changed", [])]) if change.get("versions_changed") else "No dependency version changes observed.\n") + "\n"
+    body += "### Vulnerability changes\n\n"
+    body += (table(["Direction", "ID"], [["new", x.get("id")] for x in change.get("new_vulnerabilities", [])] + [["resolved", x.get("id")] for x in change.get("resolved_vulnerabilities", [])]) if change.get("new_vulnerabilities") or change.get("resolved_vulnerabilities") else "No comparable vulnerability changes observed, or the historical canonical vulnerability artifact is unavailable.\n") + "\n"
+    body += "### License changes\n\n"
+    body += (table(["Direction", "License"], [["new", x.get("license")] for x in change.get("new_licenses", [])] + [["removed", x.get("license")] for x in change.get("removed_licenses", [])]) if change.get("new_licenses") or change.get("removed_licenses") else "No comparable license changes observed, or the historical canonical license artifact is unavailable.\n") + "\n"
+    body += "### Upstream posture changes\n\n"
+    body += (table(["Check", "From", "To"], [[x.get("check"), x.get("from"), x.get("to")] for x in change.get("upstream_posture_changes", [])]) if change.get("upstream_posture_changes") else "No comparable upstream posture changes observed, or the historical canonical Scorecard artifact is unavailable.\n") + "\n"
+    body += "Scanner disagreement remains evidence, not an automatic release failure.\n"
+    return body
+
+
+def _html_text(value: Any, fallback: str = "—") -> str:
+    if value is None or value == "":
+        return fallback
+    if isinstance(value, bool):
+        value = "yes" if value else "no"
+    if isinstance(value, (list, tuple, set)):
+        value = ", ".join(str(x) for x in value) if value else fallback
+    return html.escape(str(value))
+
+
+def _chip_list(values: Iterable[Any], *, code: bool = False, empty: str = "None recorded") -> str:
+    cleaned = [str(x).strip() for x in values if str(x).strip()]
+    if not cleaned:
+        return f'<span class="pl-chip pl-chip--muted">{html.escape(empty)}</span>'
+    cls = "pl-chip pl-chip--code" if code else "pl-chip"
+    return '<span class="pl-chip-list">' + "".join(f'<span class="{cls}">{html.escape(x)}</span>' for x in cleaned) + "</span>"
+
+
+def _fact(label: str, value: Any, *, code: bool = False) -> str:
+    rendered = _html_text(value)
+    if code and rendered != "—":
+        rendered = f"<code>{rendered}</code>"
+    return f'<div class="pl-fact"><span>{html.escape(label)}</span><strong>{rendered}</strong></div>'
+
+
+def render_production_troubleshooting(rows: list[dict[str, Any]]) -> str:
+    body = "# Production Troubleshooting\n\n"
+    body += '<div class="pl-page-lede"><strong>Diagnose first. Repair second.</strong><p>Start from the visible symptom, use read-only checks, and open the linked runbook before any mutating action. Commands remain classified so the page never turns into an unsafe copy/paste wall.</p></div>\n\n'
+    body += '<div class="pl-troubleshooting-grid">\n'
+    for row in rows:
+        body += '<article class="pl-troubleshooting-card">'
+        body += f'<div class="pl-card-kicker">Symptom</div><h2>{_html_text(row.get("title"))}</h2>'
+        body += f'<p class="pl-card-lead">{_html_text(row.get("symptom"))}</p>'
+        body += '<div class="pl-fact-grid">'
+        body += _fact("Impact", row.get("impact")) + _fact("Interpretation", row.get("interpretation"))
+        body += '</div>'
+        checks = row.get("safe_checks") or []
+        body += '<h3>Safe checks</h3><div class="pl-command-stack">'
+        for check in checks:
+            cmd = check.get("command") if isinstance(check, dict) else check
+            body += f'<div class="pl-command"><code>{_html_text(cmd)}</code></div>'
+        body += '</div>'
+        body += '<details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list">'
+        body += f'<div class="pl-detail-row"><div><strong>Expected result</strong></div><div>{_html_text(row.get("expected_result"))}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>{_html_text(row.get("next_diagnostic_step"))}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Do not act when</strong></div><div>{_chip_list(row.get("when_not_to_act") or [])}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>{_html_text(row.get("related_runbook"))}</code></div></div>'
+        body += '</div></details></article>\n'
+    body += '</div>\n'
+    return body
+
+
+def render_adr_intelligence_page(adr: dict[str, Any]) -> str:
+    entities = adr.get("entities") or []
+    body = "# ADR Intelligence\n\n"
+    body += '<div class="pl-page-lede"><strong>Decisions, not just documents.</strong><p>Each architecture decision is presented with status, rationale, consequences and operational implications so reviewers can understand why the system is shaped this way.</p></div>\n\n'
+    body += '<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/adr-relationships.svg" alt="ADR relationship graph" loading="lazy"><figcaption>Relationship view across source-derived architecture decisions.</figcaption></figure>\n\n'
+    body += '<div class="pl-adr-grid">\n'
+    for row in entities:
+        title = row.get("name") or row.get("id")
+        body += '<article class="pl-adr-card">'
+        body += f'<div class="pl-card-head"><div><span class="pl-card-kicker">Architecture decision</span><h2>{_html_text(title)}</h2></div><span class="pl-state-pill">{_html_text(row.get("status"))}</span></div>'
+        body += f'<p class="pl-card-lead">{_html_text(row.get("context"))}</p>'
+        body += '<div class="pl-fact-grid">'
+        body += _fact("Selected approach", row.get("selected_approach") or row.get("decision"))
+        body += _fact("Reason", row.get("reason"))
+        body += '</div>'
+        body += f'<h3>Consequences</h3>{_chip_list(row.get("consequences") or [])}'
+        body += f'<h3>Trade-offs</h3>{_chip_list(row.get("trade_offs") or [])}'
+        body += '<details class="pl-disclosure pl-disclosure--compact"><summary>Security, runtime and provenance</summary><div class="pl-detail-list">'
+        body += f'<div class="pl-detail-row"><div><strong>Alternatives</strong></div><div>{_chip_list(row.get("alternatives") or [])}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Security implications</strong></div><div>{_chip_list(row.get("security_implications") or [])}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Runtime implications</strong></div><div>{_chip_list(row.get("runtime_implications") or [])}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Source</strong></div><div>{_chip_list(row.get("source_refs") or [], code=True)}</div></div>'
+        body += '</div></details></article>\n'
+    body += '</div>\n'
+    return body
+
+
+def render_api_ui_trace_page(rows: list[dict[str, Any]]) -> str:
+    body = "# API-to-UI Trace Explorer\n\n"
+    body += '<div class="pl-page-lede"><strong>Follow an action end to end.</strong><p>Trace user intent through UI ownership, FastAPI, messaging or execution, and the evidence that projects the result back to the interface.</p></div>\n\n'
+    body += '<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/api-ui-trace.svg" alt="API to UI relationship graph" loading="lazy"><figcaption>High-level relationship view; each trace below keeps exact source and evidence details on demand.</figcaption></figure>\n\n'
+    body += '<div class="pl-trace-grid">\n'
+    for row in rows:
+        apis = [f"{x.get('method')} {x.get('path')}" for x in row.get("api") or [] if isinstance(x, dict)]
+        ui = row.get("ui_component") or row.get("frontend") or []
+        handlers = row.get("fastapi_handler") or row.get("backend_handler") or []
+        events = row.get("nats_or_event") or row.get("events") or []
+        body += '<article class="pl-trace-card">'
+        body += f'<span class="pl-card-kicker">Action trace</span><h2>{_html_text(row.get("action"))}</h2>'
+        stages = [
+            ("UI", ", ".join(str(x) for x in ui) or "unobserved"),
+            ("API", ", ".join(apis) or "unobserved"),
+            ("Handler", ", ".join(str(x) for x in handlers) or "unobserved"),
+            ("Execution", str(row.get("worker_agent_supervisor") or row.get("execution_owner") or "unobserved")),
+            ("Projection", str(row.get("frontend_projection") or row.get("evidence") or "unobserved")),
+        ]
+        body += '<div class="pl-trace-flow">' + ''.join(f'<div><span>{html.escape(label)}</span><strong>{html.escape(value)}</strong></div>' for label, value in stages) + '</div>'
+        body += '<details class="pl-disclosure pl-disclosure--compact"><summary>Events, failures, tests and evidence</summary><div class="pl-detail-list">'
+        body += f'<div class="pl-detail-row"><div><strong>NATS / events</strong></div><div>{_chip_list(events, code=True)}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Reason / failure states</strong></div><div>{_html_text(row.get("error_reason_codes") or row.get("failure_states"))}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Tests</strong></div><div>{_chip_list(row.get("tests") or [], code=True)}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Source files</strong></div><div>{_chip_list(row.get("source_files") or [], code=True)}</div></div>'
+        body += '</div></details></article>\n'
+    body += '</div>\n'
+    return body
+
+
+def render_event_encyclopedia_page(rows: list[dict[str, Any]]) -> str:
+    body = "# Event encyclopedia\n\n"
+    body += '<div class="pl-page-lede"><strong>Understand the event contract before chasing a message.</strong><p>Subjects, owners, delivery semantics and UI consequences are separated so event flow remains auditable without exposing credentials or live broker state.</p></div>\n\n'
+    body += '## Event flow model\n\n<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/event-flows.svg" alt="Event flow model" loading="lazy"><figcaption>Source-derived publisher → subject → consumer relationships.</figcaption></figure>\n\n'
+    body += '<div class="pl-event-grid">\n'
+    for row in rows:
+        body += '<article class="pl-event-card">'
+        body += f'<div class="pl-card-head"><div><span class="pl-card-kicker">{_html_text(row.get("domain"))}</span><h2><code>{_html_text(row.get("nats_subject"))}</code></h2></div><span class="pl-state-pill">{_html_text(row.get("lifecycle"))}</span></div>'
+        body += '<div class="pl-fact-grid">'
+        body += _fact("Publisher", row.get("publisher")) + _fact("Consumers", row.get("consumers"))
+        body += _fact("Durability", row.get("durability")) + _fact("Replay", row.get("replay"))
+        body += '</div>'
+        body += f'<h3>Delivery semantics</h3>{_chip_list([row.get("ordering"), row.get("idempotency"), row.get("acknowledgment")])}'
+        body += '<details class="pl-disclosure pl-disclosure--compact"><summary>Schema, failure handling and evidence</summary><div class="pl-detail-list">'
+        body += f'<div class="pl-detail-row"><div><strong>Schema</strong></div><div><code>{_html_text(row.get("schema"))}</code></div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Failure handling</strong></div><div>{_html_text(row.get("failure_handling"))}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Audit implications</strong></div><div>{_html_text(row.get("audit_implications"))}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>UI state</strong></div><div>{_html_text(row.get("ui_state"))}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Tests</strong></div><div>{_chip_list(row.get("tests") or [], code=True, empty="No exact source-derived test link")}</div></div>'
+        body += f'<div class="pl-detail-row"><div><strong>Ownership</strong></div><div>{_chip_list(row.get("source_owner") or [], code=True)} <span class="pl-muted">runtime: {_html_text(row.get("runtime_owner"))}</span></div></div>'
+        body += '</div></details></article>\n'
+    body += '</div>\n'
+    return body
+
+
 def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmatter:Callable[...,str], table:Callable[...,str], deps:list[dict[str,Any]], base_config:list[dict[str,Any]], supply:dict[str,Any]) -> tuple[dict[str,Any],dict[Path,str]]:
     doc=root/"docs/generated/enterprise"; out=root/"contracts/generated/documentation-enterprise"; diagrams=root/"docs/generated/assets/enterprise"
     delta=release_delta(root); tasks=task_handbook(root); events=event_encyclopedia(root); baseline=(delta.get("from") or {}).get("tag") if isinstance(delta.get("from"),dict) else None
@@ -913,10 +1234,10 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
         return "\n".join(line.rstrip() for line in rendered.splitlines())+"\n"
     outputs[doc/"engineering/task-reference.md"]=page("Task Reference","Executable engineering handbook generated from Taskfiles.","development","# Task Reference — executable engineering handbook\n\n## Workflow map\n\nTasks remain source-derived; commands are documented but never executed by this page.\n\n"+table(["Workflow","Task count"],[[g,sum(1 for x in tasks if x['workflow_group']==g)] for g in ["Development loop","Documentation loop","API-validation loop","Runtime-evidence loop","Security-analysis loop","Release loop","Recovery-diagnostics loop"]])+"\n"+"\n".join(f"## `{x['name']}`\n\n**Purpose:** {x['purpose']}\n\n**Audience:** {x['audience']}\n\n**Dependencies:** {', '.join(x['dependencies']) or 'None'}\n\n**Aliases:** {', '.join(x['aliases']) or 'None'}\n\n**Commands:**\n\n"+"\n".join(f"- `{c}`" for c in x['commands'])+f"\n\n**Environment:** {', '.join(x['environment']) or 'None source-discovered'}\n\n**Inputs:** {', '.join(x['inputs']) or 'No explicit file inputs discovered'}\n\n**Outputs:** {', '.join(x['outputs']) or 'No explicit file outputs discovered'}\n\n**Generated artifacts:** {', '.join(x['generated_artifacts']) or 'None discovered'}\n\n**Side effects:** repository mutation={x['repository_mutation']}; runtime mutation={x['runtime_mutation']}; captures runtime={x['captures_runtime']}; promotes evidence={x['promotes_evidence']}\n\n**Runtime:** requires Termux={x['requires_termux']}; requires WSL2={x['requires_wsl2']}; safe local={x['safe_local']}; class={x['expected_runtime_class']}\n\n**Related tasks:** {', '.join(x['related_tasks']) or 'None'}\n\n**Failure modes:** {', '.join(x['failure_modes'])}\n\n**Validation outcome:** {x['validation_outcome']}\n\n**Example:** `{x['example_invocation']}`\n" for x in tasks),"handbook")
     outputs[doc/"engineering/contribution-review.md"]=page("Contribution & Review","Developer onboarding from setup through release review.","development","# Contribution & Review — developer onboarding\n\n## Before coding\nInspect ownership, contracts, current generated state and architecture boundaries.\n\n## During implementation\nChange canonical source, not generated artifacts. Keep execution backend-owned and evidence sanitized.\n\n## Testing\nUse Change Impact Advisor plus focused tests, then the normal gates.\n\n## Documentation\nRegenerate deterministic outputs; MkDocs never captures/promotes runtime.\n\n## Evidence\nCapture runtime/security evidence only through explicit bounded workflows.\n\n## Before commit\nRun `git diff --check`, relevant tests and generated checks.\n\n## PR review\nReview source, contracts, generated delta, security implications and evidence status.\n\n## Merge\nMerge only validated source + generated outputs; keep `main` clean.\n\n## Release\nUse the existing annotated date tag + `dist.zip` workflow; release/runtime promotion remain distinct.\n\n## Change-type matrix\n\n"+table(["Change type","Contracts/tests/docs/evidence","Security review"],[[x["change_type"],f"{x['contracts']}; {x['tests']}; {x['documentation']}; {x['evidence']}",x['security_review']] for x in contrib]),"handbook")
-    outputs[doc/"engineering/events.md"]=page("Events","Event encyclopedia generated from canonical AsyncAPI metadata.","development","# Event encyclopedia\n\n## Event-flow model\n\n![Event flow](../../assets/enterprise/event-flows.svg){ loading=lazy }\n\n"+"\n".join(f"## `{x['nats_subject']}`\n\n**Domain:** {x['domain']}  \n**Publisher:** {', '.join(x['publisher'])}  \n**Consumers:** {', '.join(x['consumers'])}  \n**Schema:** {x['schema']}  \n**Lifecycle:** {x['lifecycle']}  \n**Durability / replay:** {x['durability']} / {x['replay']}  \n**Ordering:** {x['ordering']}  \n**Idempotency:** {x['idempotency']}  \n**Acknowledgment:** {x['acknowledgment']}  \n**Failure handling:** {x['failure_handling']}  \n**Audit:** {x['audit_implications']}  \n**UI state:** {x['ui_state']}  \n**Tests:** {', '.join(x['tests']) or 'No exact source-derived test link'}  \n**Source/runtime owner:** {', '.join(x['source_owner'])} / {x['runtime_owner']}\n" for x in events),"handbook")
+    outputs[doc/"engineering/events.md"]=page("Events","Event encyclopedia generated from canonical AsyncAPI metadata.","development",render_event_encyclopedia_page(events),"handbook")
     outputs[doc/"engineering/release-evidence.md"]=page("Release Evidence","Source/release/runtime/SBOM/provenance evidence without unsupported claims.","development","# Release Evidence\n\n## Summary\n\nRelease evidence keeps source, release artifacts, promoted runtime evidence, SBOM/security evidence and signatures as separate authorities. Missing evidence remains unobserved.\n\n## Release evidence\n\n### Identity\n\n"+table(["Field","Value"],[["Source commit",release['source_commit']],["Tree",release['tree_hash']],["Exact tag",release['exact_tag'] or 'unobserved'],["Runtime baseline binding",release['runtime_baseline_binding']],["Migration level",release['database_migration_level']],["SBOM digest",release['sbom_digest'] or 'unobserved'],["Security scan digest",release['security_scan_digest'] or 'unobserved']])+"\n### Artifacts\n\n"+table(["Artifact","Status","SHA-256"],[[k,v['status'],v['sha256']] for k,v in release['artifacts'].items()])+"\n## Release delta\n\n**"+delta['status']+"**. The multidimensional engine compares only a verified canonical prior release; otherwise every dimension fails closed as not-comparable.\n\n## Compatibility\n\n"+", ".join(release['device_compatibility'])+". Runtime/agent/config compatibility is further constrained by the Upgrade & Migration projection when a comparable release exists.\n\n## Validation outcomes\n\nCanonical recorded validation only; this page does not poll GitHub Actions or runtime.\n\n## Known limitations\n\n"+str(release['known_limitations'])+". GitHub asset presence is never claimed without verified release evidence.\n\n## Provenance\n\nCosign signing and SLSA-style provenance workflows are implemented but remain unobserved until explicitly run. No formal SLSA level is claimed.\n","release")
     outputs[doc/"engineering/troubleshooting.md"]=page("Development Troubleshooting","Diagnostic handbook with command safety classification.","development","# Development Troubleshooting — diagnostic handbook\n\n"+"\n".join(f"## {x['title']}\n\n### Symptom\n{x['symptom']}\n\n### Interpretation\n{x['interpretation']}\n\n### Causes\n- {x['likely_causes'][0]}\n\n### Safe checks\n"+table(["Command","Safety"],[[c['command'],c['class']] for c in x['safe_checks']])+f"\n### Expected result\n{x['expected_result']}\n\n### Next diagnostic step\n{x['next_diagnostic_step']}\n\n### Repair options\n{x['repair_options']}\n\n### Verification\n{x['verification']}\n\n### Rollback\n{x['rollback']}\n\n### Do not do\n"+"\n".join(f"- {v}" for v in x['do_not_do'])+"\n\n### Evidence\n"+"\n".join(f"- {v}" for v in x['evidence_to_preserve'])+"\n" for x in trouble),"troubleshooting")
-    outputs[doc/"operate/troubleshooting.md"]=page("Production Troubleshooting","Plain-language production diagnostic companion with safe progressive disclosure.","production","# Production Troubleshooting\n\nStart with symptoms and read-only checks. Open the linked runbook before repair. Technical commands remain classified.\n\n"+"\n".join(f"## {x['title']}\n\n**Symptom:** {x['symptom']}  \n**Impact:** {x['impact']}  \n**Interpretation:** {x['interpretation']}  \n**Safe checks:** {', '.join(c['command'] for c in x['safe_checks'])}  \n**Expected result:** {x['expected_result']}  \n**Next:** {x['next_diagnostic_step']}  \n**Do not act when:** {', '.join(x['when_not_to_act'])}  \n**Runbook:** `{x['related_runbook']}`\n" for x in trouble),"troubleshooting")
+    outputs[doc/"operate/troubleshooting.md"]=page("Production Troubleshooting","Plain-language production diagnostic companion with safe progressive disclosure.","production",render_production_troubleshooting(trouble),"troubleshooting")
     outputs[doc/"operate/incident-runbooks.md"]=page("Production Incident Runbooks","Operator-safe incident decision support generated from canonical diagnostics.","production","# Production Incident Runbooks\n\n"+"\n".join(f"## {x['title']}\n\n### Trigger\n{x['trigger']}\n\n### Impact\n{x['impact']}\n\n### Urgency\n{x['urgency']}\n\n### User-visible symptom\n{x['symptom']}\n\n### Known evidence\n"+"\n".join(f"- {v}" for v in x['known_evidence'])+"\n\n### Safe checks\n"+table(["Command","Class"],[[c['command'],c['class']] for c in x['safe_checks']])+f"\n### Expected output\n{x['expected_result']}\n\n### Decision tree\n"+"\n".join(f"1. {v}" for v in x['decision_tree'])+f"\n\n### Recovery\n{x['repair_options']}\n\n### Verification\n{x['verification']}\n\n### Rollback\n{x['rollback']}\n\n### When not to act\n"+"\n".join(f"- {v}" for v in x['when_not_to_act'])+"\n\n### Evidence to preserve\n"+"\n".join(f"- {v}" for v in x['evidence_to_preserve'])+f"\n\n### Escalation\n{x['escalation']}\n" for x in trouble),"runbook")
     for x in trouble:
         slug=re.sub(r"[^a-z0-9]+","-",x['scenario'].lower()).strip("-")
@@ -928,11 +1249,11 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
         body=f"# {b['label']}\n\n## Boundary\n{b['label']}\n\n## Assets\n"+"\n".join(f"- {x}" for x in b['assets'])+"\n\n## Actors\n"+"\n".join(f"- {x}" for x in b['actors'])+"\n\n## Entry points\n"+"\n".join(f"- {x}" for x in b['entry_points'])+"\n\n## Data flows\n"+"\n".join(f"- {x}" for x in b['data_flows'])+"\n\n## Allowed flows\n"+"\n".join(f"- {x}" for x in b['allowed_flows'])+"\n\n## Forbidden flows\n"+"\n".join(f"- {x}" for x in b['forbidden_flows'])+"\n\n## Threats\n"+table(["STRIDE","Scenario","OWASP mapping","Controls"],[[x['stride'],x['scenario'],x['owasp_mappings'],x['controls']] for x in bt])+"\n## Controls\n"+"\n".join(f"- `{x}`" for x in b['controls'])+"\n\n## Runtime evidence\n"+table(["Signal","State","Source"],[[x['signal'],x['state'],x['source']] for x in b['runtime_evidence']])+f"\n## Residual risk\n{b['residual_risk']}\n\n## Review status\n{b['review_status']}\n"
         outputs[doc/"threat-model"/f"{b['id']}.md"]=page(b['label'],f"Generated STRIDE threat model for {b['label']}.","production",body,"threat-model")
     outputs[doc/"reference/configuration.md"]=page("Configuration Intelligence","Source-derived sanitized configuration catalog.","development","# Configuration Intelligence\n\nNo runtime secret values are read or rendered.\n\n"+table(["Name","Purpose","Owner","Default","Required","Secret?","Scope","Restart","Release","Runtime","Validation"],[[x['name'],x['purpose'],x['owner'],x['default'],x['required'],x['secret'],x['runtime_scope'],x['restart_required'],x['affects_release'],x['affects_runtime'],x['validation']] for x in config]))
-    outputs[doc/"reference/api-ui-trace.md"]=page("API-to-UI Trace Explorer","Source-derived UI → API → execution → evidence traces.","development","# API-to-UI Trace Explorer\n\n![API/UI trace](../../assets/enterprise/api-ui-trace.svg){ loading=lazy }\n\n"+"\n".join(f"## {x['action']}\n\n**UI:** {', '.join(x['ui_component'])}  \n**API:** {', '.join(e['method']+' '+e['path'] for e in x['api'])}  \n**FastAPI handler:** {', '.join(x['fastapi_handler'])}  \n**NATS/event:** {', '.join(x['nats_or_event'])}  \n**Execution:** {x['worker_agent_supervisor']}  \n**Projection:** {x['frontend_projection']}  \n**Reason codes:** {x['error_reason_codes']}  \n**Tests:** {', '.join(x['tests'])}  \n**Evidence:** {x['evidence']}\n" for x in traces))
+    outputs[doc/"reference/api-ui-trace.md"]=page("API-to-UI Trace Explorer","Source-derived UI → API → execution → evidence traces.","development",render_api_ui_trace_page(traces))
     outputs[doc/"reference/data-lifecycle.md"]=page("Data Lifecycle & Privacy Map","Storage, retention, sanitization, exposure and deletion intelligence.","production","# Data Lifecycle & Privacy Map\n\n![Data lifecycle](../../assets/enterprise/data-lifecycle.svg){ loading=lazy }\n\n"+table(["Category","Storage","Retention","Sanitization","Access","Network exposure","Backup","Deletion","Privacy risk"],[[x['category'],x['storage'],x['retention'],x['sanitization'],x['access'],x['network_exposure'],x['backup_behavior'],x['deletion_behavior'],x['privacy_risk']] for x in privacy]))
     outputs[doc/"reference/fmea.md"]=page("Failure-mode & Resilience Catalog","Categorical FMEA with source-derived detection/recovery and no invented numeric RPN.","development","# Failure-mode & Resilience Catalog / FMEA\n\n"+table(["Component","Failure mode","Detection","Impact","Automatic recovery","Manual recovery","Severity","Occurrence","Detectability","Residual risk"],[[x['component'],x['failure_mode'],x['detection'],x['user_impact'],x['automatic_recovery'],x['manual_recovery'],x['severity'],x['occurrence'],x['detectability'],x['residual_risk']] for x in fm]))
     outputs[doc/"reference/reliability.md"]=page("Reliability Objectives","SLO-style engineering objectives from promoted evidence; not live monitoring.","production","# Reliability Objectives — not live monitoring\n\n"+table(["Objective","Target","Latest promoted observation","Status","Evidence"],[[x['objective'],x['target'],x['latest_promoted_observation'],x['status'],x['evidence']] for x in slo]))
-    outputs[doc/"reference/adr-intelligence.md"]=page("ADR Intelligence","Architecture decisions with consequences, security/runtime implications and relationship graph.","development","# ADR Intelligence\n\n![ADR relationships](../../assets/enterprise/adr-relationships.svg){ loading=lazy }\n\n"+"\n".join(f"## {x.get('name') or x.get('id')}\n\n**Status:** {x.get('status')}  \n**Context:** {x.get('context')}  \n**Alternatives:** {', '.join(x.get('alternatives') or [])}  \n**Consequences:** {', '.join(x.get('consequences') or [])}  \n**Trade-offs:** {', '.join(x.get('trade_offs') or [])}  \n**Security implications:** {', '.join(x.get('security_implications') or [])}  \n**Runtime implications:** {', '.join(x.get('runtime_implications') or [])}  \n**Source:** {', '.join(x.get('source_refs') or [])}\n" for x in adr['entities']))
+    outputs[doc/"reference/adr-intelligence.md"]=page("ADR Intelligence","Architecture decisions with consequences, security/runtime implications and relationship graph.","development",render_adr_intelligence_page(adr))
     outputs[doc/"reference/supply-chain.md"]=page("Software Supply Chain","Source dependency inventory plus explicit WSL2/CI normalized security/SBOM evidence.","development","# Software Supply Chain\n\n## Automation boundary\n\nHeavy tools run only through explicit WSL2/CI tasks. MkDocs never invokes them. Existing Termux Trivy remains bounded and runtime-owned.\n\n## Inventory\n\n"+table(["Name","Version","Ecosystem","Direct?","Purpose","Runtime/dev","License","Release introduced"],[[x['name'],x['version'],x['ecosystem'],x['direct'],x['purpose'],x['runtime_or_dev'],x['license'],x['release_introduced']] for x in inventory['dependencies'][:350]])+"\n## Canonical promoted tool artifacts\n\n"+table(["Artifact","Present"],[[name,(root/'contracts/generated/supply-chain'/name).exists()] for name in ["sbom-dev.cdx.json","sbom-release.cdx.json","sbom-runtime.cdx.json","vulnerability-correlation.json","license-inventory.json","security-analysis.json","scorecard-checks.json"]])+"\n## Optional Dependency-Track\n\n`task lite:docs:supply-chain:dependency-track:export` stages canonical CycloneDX files for optional import. Documentation never depends on a live Dependency-Track service.\n")
     outputs[doc/"reference/security-controls.md"]=page("Security Controls","Threat → control → source/tests/runtime evidence traceability.","development","# Security Controls Catalog\n\n![Security controls](../../assets/enterprise/security-controls.svg){ loading=lazy }\n\n"+table(["Control","Description","Boundaries","Threats","Implementation","Tests","Runtime evidence","Status","Freshness","Owner"],[[x['id'],x['description'],x['boundaries'],x['threats'],x['implementation'],x['tests'],x['runtime_evidence'],x['status'],x['freshness'],x['owner']] for x in controls]))
     outputs[doc/"reference/change-advisor.md"]=page("Change Impact Advisor","Deterministic source-path change simulation without executing changes.","development","# Change Impact Advisor\n\nThis advisor predicts consequences; it never mutates source/runtime. Inputs: "+", ".join(advisor['inputs'])+". Algorithm: "+advisor['algorithm']+".\n\n"+table(["Changed path","Potential impacts","Tests/tasks","Generated artifacts","Reviews","Security"],[[x['path_prefix'],x['potential_impacts'],x['recommended_tests_tasks'],x['generated_artifacts'],x['required_reviews'],x['security_review']] for x in advisor['rules']]))
@@ -941,7 +1262,7 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
     outputs[doc/"reference/upgrade-migration.md"]=page("Upgrade & Migration Intelligence","Release-comparable upgrade, migration, compatibility, rollback and backup guidance.","production","# Upgrade & Migration Intelligence\n\n"+table(["Field","Value"],[["From",upgrade['from_release'] or 'not-comparable'],["To",upgrade['to_release']],["Database migrations",upgrade['database_migrations']],["Agent compatibility",upgrade['agent_compatibility']],["Runtime changes",upgrade['runtime_changes']],["Backup requirement",upgrade['backup_requirement']],["API breaking changes",upgrade['breaking_api_changes']],["Config changes",upgrade['config_changes']],["Rollback",upgrade['rollback']],["Verification",upgrade['verification']]]))
     outputs[doc/"reference/disaster-recovery.md"]=page("Disaster Recovery Architecture","Scenario-specific survivability, dependency order, recovery and verification.","production","# Disaster Recovery Architecture\n\n![Disaster recovery dependency order](../../assets/enterprise/disaster-recovery.svg){ loading=lazy }\n\n"+table(["Scenario","Survives","Lost","Recoverability","Dependency order","Evidence","Verification","Rollback"],[[x['scenario'],x['what_survives'],x['what_is_lost'],x['recoverability'],x['dependency_order'],x['required_evidence'],x['verification'],x['rollback']] for x in disaster]))
     outputs[doc/"reference/documentation-quality.md"]=page("Documentation Quality Scorecard","Categorical documentation coverage derived from generated/canonical evidence.","development","# Documentation Quality Scorecard\n\n"+table(["Domain","Architecture","API","Events","Runbook","Threat","Health","Evidence","Troubleshooting","Release","Ownership","Quality"],[[x['domain'],x['architecture_documented'],x['api_documented'],x['events_documented'],x['runbook_present'],x['threat_model_present'],x['operational_health_modeled'],x['evidence_coverage'],x['troubleshooting'],x['release_impact'],x['ownership'],x['quality']] for x in quality]))
-    outputs[doc/"reference/supply-chain-change.md"]=page("Supply-chain Change Intelligence","Release-to-release dependency/vulnerability/license/upstream comparison.","development","# Supply-chain Change Intelligence\n\n**Status:** "+supply_change['status']+"\n\n## Dependencies added\n\n"+table(["Ecosystem","Name","Version"],[[x['ecosystem'],x['name'],x['version']] for x in supply_change['dependencies_added']])+"\n## Dependencies removed\n\n"+table(["Ecosystem","Name","Version"],[[x['ecosystem'],x['name'],x['version']] for x in supply_change['dependencies_removed']])+"\n## Versions changed\n\n"+table(["Ecosystem","Name","From","To"],[[x['ecosystem'],x['name'],x['from'],x['to']] for x in supply_change['versions_changed']])+"\n## Vulnerability/license/upstream evidence\n\nThese deltas use normalized canonical scanner evidence when comparable baseline artifacts exist; absence remains explicit.\n")
+    outputs[doc/"reference/supply-chain-change.md"]=page("Supply-chain Change Intelligence","Current promoted supply-chain snapshot, tool coverage, repository posture, baseline readiness and verified release-to-release deltas.","development",render_supply_chain_change_page(supply_change, table=table))
     outputs[doc/"release/index.md"]=page("Release","Release evidence, full multidimensional delta, supply-chain change, upgrade and provenance.","production","# Release\n\n## Summary\n\nThis page explains the current release evidence and change surface without conflating source HEAD, promoted runtime, GitHub publication, signatures or scanner evidence.\n\n## Release evidence\n\nSource/release/runtime identities remain separate. Current source commit: `"+str(release['source_commit'])+"`; runtime binding: `"+str(release['runtime_baseline_binding'])+"`.\n\n## Release delta\n\nStatus: **"+delta['status']+"**. From **"+str((delta.get('from') or {}).get('tag') if isinstance(delta.get('from'),dict) else 'not-comparable')+"** to **HEAD**.\n\n"+table(["Dimension","Classification","From digest","To digest"],[[x['dimension'],x['classification'],x.get('from_digest'),x.get('to_digest')] for x in delta['dimensions']])+"\n## Compatibility\n\nSupported targets: "+", ".join(release['device_compatibility'])+". Upgrade compatibility remains evidence-bound and is generated only from a comparable release baseline.\n\n## Validation outcomes\n\n"+str(release['validation_outcomes'])+". No continuous CI/runtime polling occurs here.\n\n## Supply-chain change\n\nSupply-chain change is embedded in the Release Delta machine contract and rendered here from the same canonical comparison: dependencies, versions, vulnerabilities, licenses and upstream posture remain evidence-scoped and fail closed when historical scanner evidence is unavailable.\n\n## Known limitations\n\n"+str(release['known_limitations'])+". Local or GitHub release assets remain unobserved unless explicitly verified.\n\n## Provenance\n\nCosign signing is explicit. SLSA-style provenance is generated without claiming a formal SLSA level.\n","release")
 
     event_rows=[]

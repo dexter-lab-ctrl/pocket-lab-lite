@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "832ac3ec234633c422ccc5a4e442aeca8833fdab596d53d47748ed0542c06162",
+    "aggregate_fingerprint": "8b9242129e27bdacca7c346a6db5caada0802305d13a8c8d078844869537ac43",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -14,7 +14,7 @@
       "scripts/dev/lite/har_tool.py": "593c19a5821dd4b8dbec0ecb29e33c4a2d120c6a799a64e7f67e76c76a7ec091",
       "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
-      "tests/backend/test_lite_api.py": "72435225f246aa9cd01f66e97a303c97263d140ab6dbb5601f842f0f1c9b5361",
+      "tests/backend/test_lite_api.py": "a0a113a08ee4a4f2c1f789a053b9a6953cef1132014c1aaea5b490a431885525",
       "tests/backend/test_lite_security.py": "5b94f748a2b89a2a4468e47a2598d57bd71a9f2c938b8f4e8ddc3b5ea8c5583a"
     },
     "validation_state": "generated"

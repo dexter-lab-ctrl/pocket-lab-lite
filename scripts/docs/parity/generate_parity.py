@@ -304,18 +304,33 @@ def markdown_table(headers: list[str], rows: Iterable[Iterable[Any]]) -> str:
     return "\n".join(output)
 
 
-def frontmatter(title: str, digest: str, status: str = "generated") -> str:
-    return (
-        "---\n"
-        f"title: {json.dumps(title)}\n"
-        "generated: true\n"
-        "audience: development\n"
-        f"status: {status}\n"
-        "source_revision: repository-source\n"
-        f"semantic_fingerprint: {digest}\n"
-        "generator: scripts/docs/parity/generate_parity.py\n"
-        "---\n\n"
+def frontmatter(
+    title: str,
+    digest: str,
+    status: str = "generated",
+    *,
+    audience: str = "development",
+    description: str | None = None,
+) -> str:
+    lines = [
+        "---",
+        f"title: {json.dumps(title)}",
+    ]
+    if description:
+        lines.append(f"description: {json.dumps(description)}")
+    lines.extend(
+        [
+            "generated: true",
+            f"audience: {audience}",
+            f"status: {status}",
+            "source_revision: repository-source",
+            f"semantic_fingerprint: {digest}",
+            "generator: scripts/docs/parity/generate_parity.py",
+            "---",
+            "",
+        ]
     )
+    return "\n".join(lines) + "\n"
 
 
 def status_note() -> str:
@@ -701,7 +716,23 @@ def all_outputs(model: dict[str, Any]) -> dict[Path, str]:
     semantic_results = {d.get("runtime_parity", "unvalidated") for d in model["domains"]}
     all_semantic_verified = bool(semantic_results) and semantic_results <= {"verified", "verified-with-mapped-presentation"}
     production_status = "needs-review" if overall == "needs-review" else ("verified" if all_semantic_verified else "ready-with-accepted-limitations")
-    prod = frontmatter("Projection parity readiness", digest, production_status).replace("audience: development", "audience: production")
+    prod = frontmatter(
+        "Projection parity readiness",
+        digest,
+        production_status,
+        audience="production",
+        description=(
+            "Current repository-derived and promoted-runtime evidence for "
+            "Pocket Lab Lite backend-to-frontend projection parity."
+        ),
+    )
+    prod += (
+        f'<div class="pl-page-meta">'
+        f'<span class="pl-status pl-status--verified">Source-derived</span>'
+        f'<span class="pl-status pl-status--{production_status}">'
+        f'{production_status.replace("-", " ").title()}'
+        f'</span></div>\n\n'
+    )
     prod += "# Projection parity readiness\n\nPocket Lab Lite has deterministic repository-derived parity contracts for Home, Apps, Devices, Security, Identity, Rules, and Backup & Restore. Runtime capture remains explicit, read-only, sanitized, and independent of ordinary documentation generation.\n\n"
     prod += markdown_table(["Domain", "Repository", "Live API", "Live UI", "Live Termux", "Semantic parity"], ((d["label"], d["status"], d.get("live_api_coverage", "unvalidated"), d.get("live_ui_coverage", "unvalidated"), d.get("live_termux_coverage", "unvalidated"), d.get("runtime_parity", "unvalidated")) for d in model["domains"]))
     prod += "\n\nA promoted drift result is a review signal, not a documentation failure and not permission to change application behavior automatically.\n"

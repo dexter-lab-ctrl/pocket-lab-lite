@@ -24,8 +24,8 @@ Release evidence keeps source, release artifacts, promoted runtime evidence, SBO
 | Exact tag | unobserved |
 | Runtime baseline binding | lite-2026.08.07.3 |
 | Migration level | unobserved |
-| SBOM digest | 42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461 |
-| Security scan digest | 4c72fe899858b70b7757e6cada313f8c241fa42ee56a1329776d52cadbf7a6a2 |
+| SBOM digest | a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33 |
+| Security scan digest | 896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f |
 
 ### Artifacts
 

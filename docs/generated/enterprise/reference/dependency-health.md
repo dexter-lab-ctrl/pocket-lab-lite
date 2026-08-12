@@ -9,14 +9,13 @@ confidence: generated
 
 # Dependency Health
 
-A domain state never silently promotes a child dependency to healthy. Unknown evidence remains unvalidated.
+<div class="pl-page-lede"><strong>Trace degradation without leaking implementation paths.</strong><p>Domain health and child dependency evidence stay independent. The diagram is rendered as a contained asset; local filesystem prefixes and Markdown renderer directives are never emitted as visible content.</p></div>
 
-<div class="pl-generated-diagram">
+<div class="pl-kpi-grid"><div class="pl-kpi"><span>Healthy</span><strong>22</strong><small>dependency observations</small></div><div class="pl-kpi"><span>Unvalidated</span><strong>4</strong><small>dependency observations</small></div></div>
 
-![Detailed dependency health](../../assets/enterprise/dependency-health-development.svg){ loading=lazy }
+<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/dependency-health-development.svg" alt="Detailed dependency health" loading="lazy"><figcaption>Promoted dependency relationships and evidence authority.</figcaption></figure>
 
-</div>
-
+<div class="pl-wide-data">
 | Domain | Dependency | State | Evidence authority | Blocking | Root cause |
 | --- | --- | --- | --- | --- | --- |
 | Apps | Caddy | healthy | verified-runtime-baseline | no | Runtime baseline reports healthy. |
@@ -45,3 +44,4 @@ A domain state never silently promotes a child dependency to healthy. Unknown ev
 | Security | worker | healthy | verified-runtime-baseline | yes | Runtime baseline reports online. |
 | Security | Lynis | unvalidated | source-derived | no | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
 | Security | Trivy | unvalidated | source-derived | no | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
+</div>

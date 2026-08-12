@@ -2525,12 +2525,14 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}}"
+        "bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture {{if .RUN_DIR}}--run-dir {{.RUN_DIR}}{{end}} {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "lite:dev:scratch:prepare"
+      ],
       "environment": [],
       "example_invocation": "task lite:docs:supply-chain:capture",
-      "expected_runtime_class": "bounded",
+      "expected_runtime_class": "heavy-dev",
       "failure_modes": [
         "dependency task failure",
         "missing required local tool or evidence",
@@ -2539,26 +2541,29 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
+        "scripts/dev/lite/dev-scratch.sh",
         "scripts/docs/enterprise/supply_chain_automation.py"
       ],
       "name": "lite:docs:supply-chain:capture",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Explicitly run heavy WSL2/CI SBOM, vulnerability, secret, static-analysis, licensing and Scorecard capture into transient .pocketlab-dev evidence; never invoked by docs generation",
-      "related_tasks": [],
+      "purpose": "Run a bounded local/CI diagnostic supply-chain capture into transient .pocketlab-dev evidence; never invoked by docs generation and never treated as release qualification by itself",
+      "related_tasks": [
+        "lite:dev:scratch:prepare"
+      ],
       "repository_mutation": false,
       "requires_termux": false,
-      "requires_wsl2": false,
+      "requires_wsl2": true,
       "runtime_mutation": false,
       "safe_local": true,
       "side_effects": {
-        "network_or_external_tools": false,
+        "network_or_external_tools": true,
         "repository_mutation": false,
         "runtime_mutation": false
       },
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "not-a-validation-task",
-      "workflow_group": "Runtime-evidence loop"
+      "workflow_group": "Security-analysis loop"
     },
     {
       "aliases": [],
@@ -2684,9 +2689,9 @@
     {
       "aliases": [],
       "audience": "developer",
-      "captures_runtime": true,
+      "captures_runtime": false,
       "commands": [
-        "set -euo pipefail\nrun_dir=\".pocketlab-dev/documentation-security/runs/manual-$(date -u +%Y%m%dT%H%M%SZ)-$$\"\nhistory_arg=\"\"\nif [ -n \"{{.INCLUDE_GIT_HISTORY}}\" ]; then history_arg=\"--include-git-history\"; fi\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir \"$run_dir\" $history_arg\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir \"$run_dir\"\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check\nprintf 'Canonical supply-chain evidence promoted from %s\\n' \"$run_dir\"\n"
+        "set -euo pipefail\ncommand -v gh >/dev/null 2>&1 || { echo \"ERROR gh CLI is required for canonical release qualification\" >&2; exit 2; }\ntest \"$(git branch --show-current)\" = \"main\" || { echo \"ERROR canonical release qualification must be dispatched from main\" >&2; exit 2; }\ntest -z \"$(git status --porcelain)\" || { echo \"ERROR working tree must be clean before release qualification\" >&2; exit 2; }\ngit fetch origin main\ntest \"$(git rev-parse HEAD)\" = \"$(git rev-parse origin/main)\" || { echo \"ERROR local main must exactly match origin/main\" >&2; exit 2; }\nhistory=\"false\"\nif [ -n \"{{.INCLUDE_GIT_HISTORY}}\" ]; then history=\"true\"; fi\ndeep_license=\"false\"\nif [ -n \"{{.DEEP_LICENSE_SCAN}}\" ]; then deep_license=\"true\"; fi\ngh workflow run docs-security-supply-chain.yml --ref main \\\n  -f include_git_history=\"$history\" \\\n  -f deep_license_scan=\"$deep_license\"\nprintf 'PASS canonical release qualification dispatched to GitHub Actions for %s\\n' \"$(git rev-parse HEAD)\"\nprintf 'Use: gh run list --workflow docs-security-supply-chain.yml --branch main --limit 5\\n'\nprintf 'Inspect the selected run with the one-shot command: gh run view <run-id>.\\n'\n"
       ],
       "dependencies": [],
       "environment": [],
@@ -2700,15 +2705,60 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/docs/enterprise/supply_chain_automation.py"
+        "origin/main"
       ],
       "name": "lite:docs:supply-chain:qualify",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Dispatch the canonical release qualification to GitHub Actions; does not run heavy scanners inside VS Code/WSL interactively",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": true,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": true,
+      "commands": [
+        "set -euo pipefail\nrun_dir=\".pocketlab-dev/documentation-security/runs/local-$(date -u +%Y%m%dT%H%M%SZ)-$$\"\nhistory_arg=\"\"\nif [ -n \"{{.INCLUDE_GIT_HISTORY}}\" ]; then history_arg=\"--include-git-history\"; fi\nbash scripts/dev/lite/dev-scratch.sh run security-tools -- \\\n  {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir \"$run_dir\" $history_arg\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py promote --run-dir \"$run_dir\"\n{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py check\nprintf 'Local diagnostic supply-chain evidence promoted from %s; this is not canonical release qualification.\\n' \"$run_dir\"\n"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:docs:supply-chain:qualify:local",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/dev-scratch.sh",
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "name": "lite:docs:supply-chain:qualify:local",
       "outputs": [
-        ".pocketlab-dev/documentation-security/runs/manual-"
+        ".pocketlab-dev/documentation-security/runs/local-"
       ],
       "promotes_evidence": true,
-      "purpose": "Explicitly run heavy WSL2/CI supply-chain capture, normalize/promote sanitized evidence, and validate canonical outputs in one operator-invoked workflow",
-      "related_tasks": [],
+      "purpose": "Explicit local diagnostic qualification for development only; canonical release qualification remains CI-owned",
+      "related_tasks": [
+        "lite:dev:scratch:prepare"
+      ],
       "repository_mutation": true,
       "requires_termux": false,
       "requires_wsl2": false,
@@ -2721,7 +2771,94 @@
       },
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "test -n \"{{.RUN_DIR}}\" || (echo \"RUN_DIR is required\" >&2; exit 2)",
+        "bash scripts/dev/lite/dev-scratch.sh run security-tools -- {{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py capture --run-dir {{.RUN_DIR}} --resume {{if .INCLUDE_GIT_HISTORY}}--include-git-history{{end}} {{if .SCANNER}}--only {{.SCANNER}}{{end}} {{if .ENABLE_SCANCODE}}--enable-scancode{{end}}"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:docs:supply-chain:resume",
+      "expected_runtime_class": "heavy-dev",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/dev-scratch.sh",
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "name": "lite:docs:supply-chain:resume",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Resume an interrupted bounded supply-chain capture from its validated checkpoint without rerunning successful scanner steps",
+      "related_tasks": [
+        "lite:dev:scratch:prepare"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": true,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": true,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
       "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "test -n \"{{.RUN_DIR}}\" || (echo \"RUN_DIR is required\" >&2; exit 2)",
+        "{{.PYTHON}} scripts/docs/enterprise/supply_chain_automation.py status --run-dir {{.RUN_DIR}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:supply-chain:status",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/enterprise/supply_chain_automation.py"
+      ],
+      "name": "lite:docs:supply-chain:status",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Show checkpointed per-scanner progress and the last sanitized failure classification for a transient supply-chain run",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Documentation loop"
     },
     {
       "aliases": [],
@@ -4230,7 +4367,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py"
+        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py"
       ],
       "dependencies": [
         "lite:dev:scratch:prepare"

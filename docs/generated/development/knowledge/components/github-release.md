@@ -67,6 +67,7 @@ Publishes the verified Lite release manifest, checksums, and dist.zip assets for
 - protected_by: `External release boundary`
 - protected_by: `External release boundary`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3d84ac24a2fc3f279f4b8347e22ae051e061ec77a9170c0350d373d3c8b08c9b
+source_fingerprint: 177df7d4470d35e90fa7e3772f5f5fd9ae8bf1890e6411a5c6f53fae999750ee
 schema_revision: 1
 validation_status: generated
 ---
@@ -72,6 +72,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `NATS_USER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh |
 | `PLAYWRIGHT_BROWSER_REPORT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/check-wsl-ubuntu-dev.sh |
 | `PLAYWRIGHT_REPORT` | configuration | source-defined or empty | no | component-dependent | scripts/test/parity/promote_runtime_verification.py |
+| `PLAYWRIGHT_SCRATCH` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/frontend-resource-preflight.sh |
 | `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/setup.sh |
 | `POCKETLAB_ACTIVE_CODE_SCAN_EXCLUDES` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-iac.sh |
 | `POCKETLAB_ADAPTIVE_EVENT_LOOP_CRITICAL_MS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/adaptive_runtime.py |
@@ -100,6 +101,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_AGENT_TELEMETRY_SECONDS` | configuration | 20 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py |
 | `POCKETLAB_AGENT_TOKEN` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_ALLOW_INPROCESS_EXECUTION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py |
+| `POCKETLAB_ALLOW_LOCAL_SCANCODE` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
 | `POCKETLAB_ALLOW_LOCAL_WRITE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py, pocket-lab-final-structure/runtime/tests/test_observability_status.py |
 | `POCKETLAB_ALLOW_SIMULATED_ZTP` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
 | `POCKETLAB_ALLOW_TAILSCALE_API` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
@@ -174,7 +176,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_DEV_PYTHON` | configuration | $ROOT/.venv/bin/python | yes | component-dependent | Taskfile.yml, scripts/dev/lite/check-contracts.sh, scripts/dev/lite/run-gate.sh, scripts/dev/lite/run-playwright-mocked.sh, scripts/dev/lite/serve-docs.sh, scripts/dev/lite/setup-architecture-icons.sh, scripts/test/parity/run_oasdiff.sh, scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
 | `POCKETLAB_DEV_SCRATCH_NAMESPACE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/dev-scratch.sh |
 | `POCKETLAB_DEV_SCRATCH_ROOT` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/sqlite/generate_schemaspy.py |
-| `POCKETLAB_DEV_TMPDIR` | configuration | $REPO_ROOT/.pocketlab-dev/tmp | yes | component-dependent | Taskfile.yml, scripts/dev/lite/dev-scratch.sh, scripts/dev/lite/documentation_security_tools.py, scripts/docs/sqlite/generate_schemaspy.py |
+| `POCKETLAB_DEV_TMPDIR` | configuration | $REPO_ROOT/.pocketlab-dev/tmp | yes | component-dependent | Taskfile.yml, scripts/dev/lite/dev-scratch.sh, scripts/dev/lite/documentation_security_tools.py, scripts/docs/enterprise/supply_chain_automation.py, scripts/docs/sqlite/generate_schemaspy.py |
 | `POCKETLAB_DISABLE_FLEET_AGENT` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_DISABLE_RELEASE_UPDATER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
 | `POCKETLAB_DISABLE_WORKER` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
@@ -220,6 +222,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_FLEET_SERVER_SUPERVISOR_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py |
 | `POCKETLAB_FLEET_STALE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py |
 | `POCKETLAB_FLEET_SUPERVISOR_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py |
+| `POCKETLAB_FRONTEND_MIN_MEMORY_MIB` | configuration | 2048 | yes | component-dependent | scripts/dev/lite/frontend-resource-preflight.sh |
+| `POCKETLAB_FRONTEND_MIN_SCRATCH_GIB` | configuration | 5 | yes | component-dependent | scripts/dev/lite/frontend-resource-preflight.sh |
 | `POCKETLAB_GATE_ACTIVE_FRESHNESS_CONVERGENCE_SECONDS` | configuration | 6 | yes | component-dependent | scripts/dev/check-lite-production-gate-server-phone.sh |
 | `POCKETLAB_GATE_API_READY_TIMEOUT_SECONDS` | configuration | 120 | yes | component-dependent | scripts/dev/check-lite-production-gate-server-phone.sh |
 | `POCKETLAB_GATE_BASE_URL` | configuration | http://127.0.0.1:8443 | yes | component-dependent | scripts/dev/check-lite-production-gate-server-phone.sh |
@@ -509,6 +513,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_NATS_DURABLE_STALE_SECONDS` | configuration | 15 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_EVENT_FANOUT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
 | `POCKETLAB_NATS_HEALTH_URL` | configuration | http://127.0.0.1:8222/healthz | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
+| `POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_JETSTREAM` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_MAX_OUTSTANDING_PINGS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_NAME` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
@@ -669,6 +674,9 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_S8_GATE_WORKER_NAME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lib/long_gate_s8.py |
 | `POCKETLAB_S8_GATE_WORKER_PM2_BIN` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lib/long_gate_s8.py |
 | `POCKETLAB_S8_GATE_WORKER_PM2_HOME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lib/long_gate_s8.py |
+| `POCKETLAB_SCANCODE_MIN_RUNTIME_MEM_MIB` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SCANCODE_MIN_RUNTIME_SWAP_MIB` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SCANCODE_PROCESSES` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
 | `POCKETLAB_SCHEMASPY_JAR` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/setup-documentation-tools.sh, scripts/docs/sqlite/generate_schemaspy.py |
 | `POCKETLAB_SCHEMASPY_TMP` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/sqlite/generate_schemaspy.py |
 | `POCKETLAB_SCHEMASPY_TMPDIR` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/sqlite/generate_schemaspy.py |
@@ -706,6 +714,12 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_STORAGE_HYSTERESIS_PERCENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py |
 | `POCKETLAB_STORAGE_LOW_PERCENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py |
 | `POCKETLAB_STORAGE_WATCH_PERCENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py |
+| `POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SUPPLY_CHAIN_MIN_MEM_MIB_SCANCODE` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SUPPLY_CHAIN_MIN_SCRATCH_GIB` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SUPPLY_CHAIN_MIN_SWAP_FREE_MIB_SCANCODE` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SUPPLY_CHAIN_PROGRESS_SECONDS` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
+| `POCKETLAB_SUPPLY_CHAIN_TIMEOUT_` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
 | `POCKETLAB_TAILNET_IP` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_TASK_VERSION` | configuration | v3.50.0 | yes | component-dependent | scripts/dev/setup-wsl-ubuntu-dev.sh |
 | `POCKETLAB_TELEMETRY` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |

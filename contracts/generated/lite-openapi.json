@@ -1125,8 +1125,7 @@
     "title": "Pocket Lab FastAPI/NATS Control API",
     "version": "2.4.0-tier13",
     "x-pocketlab-audience": "development-contract",
-    "x-pocketlab-contract-hardening": "api-contract-fences-v1",
-    "x-pocketlab-source-commit": "uncommitted"
+    "x-pocketlab-contract-hardening": "api-contract-fences-v1"
   },
   "openapi": "3.1.0",
   "paths": {

@@ -189,6 +189,66 @@ def test_supply_chain_inventory_and_change_contracts_are_complete():
         assert field in delta
 
 
+def test_supply_chain_change_exposes_current_snapshot_and_baseline_readiness():
+    baseline = completion.current_release_baseline(ROOT)["baseline"]
+    inventory = completion.source_dependency_inventory(ROOT, baseline["tag"] if baseline else None)
+    change = completion.supply_chain_change(inventory, ROOT, baseline["tag"] if baseline else None)
+    assert change["schema_version"] == "1.1.0"
+    assert {"current_snapshot", "baseline_readiness", "historical_comparison"} <= set(change)
+    snapshot = change["current_snapshot"]
+    assert snapshot["raw_scanner_output_included"] is False
+    assert snapshot["live_capture_performed"] is False
+    assert {"sbom", "vulnerabilities", "licenses", "security", "repository_posture", "tool_coverage", "source_refs"} <= set(snapshot)
+    assert {"dev_components", "release_components", "runtime_components"} <= set(snapshot["sbom"])
+    assert {"package_license_coverage", "deep_source_license_coverage", "package_rows", "trivy_license_rows"} <= set(snapshot["licenses"])
+    readiness = change["baseline_readiness"]
+    assert readiness["status"] in {"ready", "not-ready"}
+    assert isinstance(readiness["candidate_count"], int)
+    assert readiness["baseline_policy"]
+    if baseline is None:
+        assert change["status"] == "no-comparable-verified-prior-release"
+        assert change["historical_comparison"]["status"] == "not-comparable"
+        assert readiness["selected_baseline"] is None
+
+
+def test_supply_chain_change_page_renders_snapshot_tool_posture_and_truthful_empty_state():
+    baseline = completion.current_release_baseline(ROOT)["baseline"]
+    inventory = completion.source_dependency_inventory(ROOT, baseline["tag"] if baseline else None)
+    change = completion.supply_chain_change(inventory, ROOT, baseline["tag"] if baseline else None)
+
+    def simple_table(headers, rows):
+        return "| " + " | ".join(map(str, headers)) + " |\n" + "\n".join("| " + " | ".join(map(str, row)) + " |" for row in rows) + "\n"
+
+    page = completion.render_supply_chain_change_page(change, table=simple_table)
+    for heading in [
+        "## Current promoted snapshot",
+        "### Tool coverage",
+        "### Repository posture",
+        "## Baseline readiness",
+        "## Historical comparison",
+    ]:
+        assert heading in page
+    assert "transient scanner output" in page
+    if change["status"] != "comparable":
+        assert "No comparable verified prior release" in page
+        assert "Historical comparison unavailable until a verified canonical prior-release baseline exists." in page
+        assert "| Ecosystem | Name | Version |" not in page
+    posture_checks = change["current_snapshot"]["repository_posture"]["checks"]
+    for item in posture_checks:
+        assert str(item["name"]) in page
+        assert str(item["status"]) in page
+
+
+def test_supply_chain_change_contract_keeps_provider_unavailable_scorecard_controls_truthful():
+    snapshot = completion.supply_chain_current_snapshot(ROOT)
+    checks = {row["name"]: row for row in snapshot["repository_posture"]["checks"]}
+    for name in ["Branch-Protection", "Signed-Releases", "Maintained"]:
+        if name in checks and checks[name]["status"] == "provider-unavailable":
+            assert checks[name]["score"] is None
+            assert checks[name]["reason"] == "scorecard-provider-unsupported-request-type"
+            assert checks[name]["blocking"] is False
+
+
 def test_security_tool_metadata_is_fully_pinned_and_installable_on_dev_surface():
     meta = read_json("contracts/metadata/documentation-security-tools.json")
     assert meta["schema_version"] == "2.0.0"

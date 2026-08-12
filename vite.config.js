@@ -18,6 +18,23 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_POCKETLAB_BUILD_ID': JSON.stringify(pocketLabBuildId),
   },
+  server: {
+    // Keep transient Pocket Lab evidence and generated test/build outputs out of
+    // Vite's development watcher. These trees can contain gigabytes of scanner
+    // scratch and are not frontend source inputs.
+    strictPort: true,
+    watch: {
+      ignored: [
+        '**/.pocketlab-dev/**',
+        '**/site/**',
+        '**/storybook-static/**',
+        '**/playwright-report/**',
+        '**/test-results/**',
+        '**/allure-results/**',
+        '**/dist/**',
+      ],
+    },
+  },
   build: {
     manifest: true,
   },

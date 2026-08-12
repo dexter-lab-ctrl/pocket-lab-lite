@@ -9,180 +9,23 @@ confidence: generated
 
 # Production Troubleshooting
 
-Start with symptoms and read-only checks. Open the linked runbook before repair. Technical commands remain classified.
+<div class="pl-page-lede"><strong>Diagnose first. Repair second.</strong><p>Start from the visible symptom, use read-only checks, and open the linked runbook before any mutating action. Commands remain classified so the page never turns into an unsafe copy/paste wall.</p></div>
 
-## API unavailable
-
-**Symptom:** Lite API cannot be reached
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** FastAPI/Caddy or local dependency unavailable
-**Safe checks:** curl -fsS http://127.0.0.1:8443/api/lite/status, pm2 status
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/api-unavailable.md`
-
-## NATS unavailable
-
-**Symptom:** write paths cannot safely deliver commands
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** NATS/JetStream unavailable
-**Safe checks:** pm2 status, ss -ltnp
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/nats-unavailable.md`
-
-## JetStream problem
-
-**Symptom:** durable command/event flow degrades
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** consumer/stream health degraded
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/jetstream-problem.md`
-
-## Agent offline
-
-**Symptom:** device appears Offline
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** heartbeat/NATS/Tailscale interruption
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/agent-offline.md`
-
-## Agent stopped
-
-**Symptom:** device reports Agent stopped
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** PM2 node-agent process stopped
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/agent-stopped.md`
-
-## Supervisor absent
-
-**Symptom:** automatic agent recovery unavailable
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** supervisor process absent
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/supervisor-absent.md`
-
-## Tailscale unavailable
-
-**Symptom:** Remote access not ready
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** tailscaled/Tailnet readiness issue
-**Safe checks:** tailscale status, tailscale ip -4
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/tailscale-unavailable.md`
-
-## PhotoPrism unavailable
-
-**Symptom:** app route does not open
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** PhotoPrism runtime/Caddy route issue
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/photoprism-unavailable.md`
-
-## Backup stale
-
-**Symptom:** latest backup evidence is old
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** backup execution/freshness issue
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/backup-stale.md`
-
-## Restore blocked
-
-**Symptom:** restore cannot proceed
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** preview/checkpoint/health guard unsatisfied
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/restore-blocked.md`
-
-## Security scan stuck
-
-**Symptom:** Safety Check does not advance
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** worker/consumer/scanner issue
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/security-scan-stuck.md`
-
-## Caddy routing issue
-
-**Symptom:** same-origin route fails
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** Caddy configuration/runtime issue
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/caddy-routing-issue.md`
-
-## Release mismatch
-
-**Symptom:** installed/runtime release identities differ
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** source/release/runtime binding not converged
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/release-mismatch.md`
-
-## Runtime evidence stale
-
-**Symptom:** docs show an old promoted observation
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** new capture has not been explicitly promoted
-**Safe checks:** pm2 status, pm2 logs <process> --lines 80
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/runtime-evidence-stale.md`
-
-## Docs generation drift
-
-**Symptom:** lite:docs:check reports drift
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** generated artifacts are out of sync or generator nondeterministic
-**Safe checks:** task lite:docs:enterprise:check, git diff --check
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/docs-generation-drift.md`
-
-## Parity mismatch
-
-**Symptom:** semantic/runtime parity differs
-**Impact:** affected capability may be unavailable, degraded, stale or safely blocked
-**Interpretation:** backend/frontend/runtime contract divergence
-**Safe checks:** task lite:parity:runtime:compare
-**Expected result:** compare read-only output with canonical health/readiness contract; preserve discrepancy
-**Next:** open related generated runbook and follow dependency-specific checks
-**Do not act when:** when evidence is stale/ambiguous, when action would overwrite identity or secrets, when healthy online device removal is not explicitly approved
-**Runbook:** `generated/enterprise/operate/runbooks/parity-mismatch.md`
+<div class="pl-troubleshooting-grid">
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>API unavailable</h2><p class="pl-card-lead">Lite API cannot be reached</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>FastAPI/Caddy or local dependency unavailable</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>curl -fsS http://127.0.0.1:8443/api/lite/status</code></div><div class="pl-command"><code>pm2 status</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/api-unavailable.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>NATS unavailable</h2><p class="pl-card-lead">write paths cannot safely deliver commands</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>NATS/JetStream unavailable</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>ss -ltnp</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/nats-unavailable.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>JetStream problem</h2><p class="pl-card-lead">durable command/event flow degrades</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>consumer/stream health degraded</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/jetstream-problem.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Agent offline</h2><p class="pl-card-lead">device appears Offline</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>heartbeat/NATS/Tailscale interruption</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/agent-offline.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Agent stopped</h2><p class="pl-card-lead">device reports Agent stopped</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>PM2 node-agent process stopped</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/agent-stopped.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Supervisor absent</h2><p class="pl-card-lead">automatic agent recovery unavailable</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>supervisor process absent</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/supervisor-absent.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Tailscale unavailable</h2><p class="pl-card-lead">Remote access not ready</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>tailscaled/Tailnet readiness issue</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>tailscale status</code></div><div class="pl-command"><code>tailscale ip -4</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/tailscale-unavailable.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>PhotoPrism unavailable</h2><p class="pl-card-lead">app route does not open</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>PhotoPrism runtime/Caddy route issue</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/photoprism-unavailable.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Backup stale</h2><p class="pl-card-lead">latest backup evidence is old</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>backup execution/freshness issue</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/backup-stale.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Restore blocked</h2><p class="pl-card-lead">restore cannot proceed</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>preview/checkpoint/health guard unsatisfied</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/restore-blocked.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Security scan stuck</h2><p class="pl-card-lead">Safety Check does not advance</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>worker/consumer/scanner issue</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/security-scan-stuck.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Caddy routing issue</h2><p class="pl-card-lead">same-origin route fails</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>Caddy configuration/runtime issue</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/caddy-routing-issue.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Release mismatch</h2><p class="pl-card-lead">installed/runtime release identities differ</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>source/release/runtime binding not converged</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/release-mismatch.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Runtime evidence stale</h2><p class="pl-card-lead">docs show an old promoted observation</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>new capture has not been explicitly promoted</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>pm2 status</code></div><div class="pl-command"><code>pm2 logs &lt;process&gt; --lines 80</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/runtime-evidence-stale.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Docs generation drift</h2><p class="pl-card-lead">lite:docs:check reports drift</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>generated artifacts are out of sync or generator nondeterministic</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>task lite:docs:enterprise:check</code></div><div class="pl-command"><code>git diff --check</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/docs-generation-drift.md</code></div></div></div></details></article>
+<article class="pl-troubleshooting-card"><div class="pl-card-kicker">Symptom</div><h2>Parity mismatch</h2><p class="pl-card-lead">semantic/runtime parity differs</p><div class="pl-fact-grid"><div class="pl-fact"><span>Impact</span><strong>affected capability may be unavailable, degraded, stale or safely blocked</strong></div><div class="pl-fact"><span>Interpretation</span><strong>backend/frontend/runtime contract divergence</strong></div></div><h3>Safe checks</h3><div class="pl-command-stack"><div class="pl-command"><code>task lite:parity:runtime:compare</code></div></div><details class="pl-disclosure pl-disclosure--compact"><summary>Decision details</summary><div class="pl-detail-list"><div class="pl-detail-row"><div><strong>Expected result</strong></div><div>compare read-only output with canonical health/readiness contract; preserve discrepancy</div></div><div class="pl-detail-row"><div><strong>Next diagnostic step</strong></div><div>open related generated runbook and follow dependency-specific checks</div></div><div class="pl-detail-row"><div><strong>Do not act when</strong></div><div><span class="pl-chip-list"><span class="pl-chip">when evidence is stale/ambiguous</span><span class="pl-chip">when action would overwrite identity or secrets</span><span class="pl-chip">when healthy online device removal is not explicitly approved</span></span></div></div><div class="pl-detail-row"><div><strong>Runbook</strong></div><div><code>generated/enterprise/operate/runbooks/parity-mismatch.md</code></div></div></div></details></article>
+</div>

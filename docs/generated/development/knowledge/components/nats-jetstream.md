@@ -86,6 +86,7 @@ Provides the command and event backbone with durable delivery; it is never conta
 - recovers_with: `Worker stopped`
 - related_to: `pocketlab.commands.lite.security.scan`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

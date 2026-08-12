@@ -17,9 +17,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:540",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:643",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:695",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:717",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1174",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:251",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
@@ -1090,7 +1090,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:30",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:461"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:483"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -1197,7 +1197,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1084"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1106"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1727,7 +1727,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:732"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4234,6 +4234,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "589f51dc5082cfd9da5bc553c9852e74eea925dd70428a0f4d8e89ea10d8973a"
+    "source_fingerprint": "e176395b84f95e63a0917e0a074a4d7edff5d72ef073903c6798dddf949aa609"
   }
 }

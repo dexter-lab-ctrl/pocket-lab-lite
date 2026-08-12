@@ -34,9 +34,9 @@
       "source_owner": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:540",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:643",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:695",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:717",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1174",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:251",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
@@ -2003,7 +2003,7 @@
       "security_classification": "internal metadata",
       "source_owner": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:30",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:461"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:483"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -2188,7 +2188,7 @@
       "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
       "security_classification": "internal metadata",
       "source_owner": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1084"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1106"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -3128,7 +3128,7 @@
       "source_owner": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:732"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"

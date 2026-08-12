@@ -9,11 +9,16 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Pocket Lab Lite release tag, for example lite-2026.07.28.1. Leave empty to generate the next date-based tag.'
+        description: 'Pocket Lab Lite release tag, for example lite-2026.07.28.1. Leave empty to allocate the next collision-free UTC date-based tag.'
         required: false
         type: string
       prerelease:
         description: 'Mark the GitHub release as a prerelease.'
+        required: false
+        default: false
+        type: boolean
+      repair_existing_release:
+        description: 'Explicit repair mode: allow replacing assets only when the existing tag resolves to this exact source commit.'
         required: false
         default: false
         type: boolean
@@ -35,34 +40,105 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '24'
           cache: npm
 
+      - name: Verify release source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --tags --force
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            if [[ "${GITHUB_REF_TYPE}" != "branch" || "${GITHUB_REF_NAME}" != "main" ]]; then
+              echo "ERROR manual release dispatch must use --ref main" >&2
+              exit 2
+            fi
+            origin_main="$(git rev-parse origin/main)"
+            if [[ "${GITHUB_SHA}" != "$origin_main" ]]; then
+              echo "ERROR manual release source commit must exactly match origin/main" >&2
+              echo "GITHUB_SHA=${GITHUB_SHA}" >&2
+              echo "origin/main=${origin_main}" >&2
+              exit 2
+            fi
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            tag_commit="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
+            if [[ "$tag_commit" != "${GITHUB_SHA}" ]]; then
+              echo "ERROR pushed release tag does not resolve to GITHUB_SHA" >&2
+              exit 2
+            fi
+          fi
+
       - name: Resolve release tag
         id: release_tag
         env:
+          GH_TOKEN: ${{ github.token }}
           DISPATCH_RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         shell: bash
         run: |
+          set -euo pipefail
+
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             tag="${GITHUB_REF_NAME}"
           elif [[ -n "${DISPATCH_RELEASE_TAG:-}" ]]; then
             tag="${DISPATCH_RELEASE_TAG}"
           elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-            today="$(date -u '+%Y.%m.%d')"
-            latest="$(git tag -l "lite-${today}.*" | awk -F. '{print $4}' | sort -n | tail -1)"
-            next="$(( ${latest:-0} + 1 ))"
-            tag="lite-${today}.${next}"
+            today_prefix="lite-$(date -u '+%Y.%m.%d')"
+
+            remote_tags="$(
+              git ls-remote --tags origin "${today_prefix}.*" \
+                | sed 's#.*refs/tags/##; s#\^{}##' \
+                | sort -u
+            )"
+
+            gh_releases="$(
+              gh release list --limit 100 --json tagName --jq '.[].tagName' \
+                | grep "^${today_prefix}\." || true
+            )"
+
+            next_num="$(
+              {
+                printf '%s\n' "$remote_tags"
+                printf '%s\n' "$gh_releases"
+              } \
+                | awk -v p="${today_prefix}." '
+                    index($0, p) == 1 {
+                      n = substr($0, length(p) + 1)
+                      if (n ~ /^[0-9]+$/ && n > max) max = n
+                    }
+                    END { print max + 1 }
+                  '
+            )"
+
+            while :; do
+              candidate="${today_prefix}.${next_num}"
+
+              if git ls-remote --exit-code --tags origin "$candidate" >/dev/null 2>&1; then
+                echo "Tag already exists; advancing sequence: $candidate"
+                next_num=$((next_num + 1))
+                continue
+              fi
+
+              if gh release view "$candidate" >/dev/null 2>&1; then
+                echo "Release already exists; advancing sequence: $candidate"
+                next_num=$((next_num + 1))
+                continue
+              fi
+
+              tag="$candidate"
+              break
+            done
           else
             tag=""
           fi
+
           if [[ -n "$tag" ]]; then
             python3 - "$tag" <<'PY'
           import datetime, re, sys
@@ -76,7 +152,42 @@ jobs:
               raise SystemExit('Release sequence is too large')
           PY
           fi
+
+          echo "Resolved release tag: ${tag:-<source-build>}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Verify requested release identity is safe
+        if: steps.release_tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          REPAIR_EXISTING_RELEASE: ${{ github.event.inputs.repair_existing_release }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin --tags --force
+
+          if git ls-remote --exit-code --tags origin "$RELEASE_TAG" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}" --force
+            tag_commit="$(git rev-list -n 1 "$RELEASE_TAG")"
+            if [[ "$tag_commit" != "${GITHUB_SHA}" ]]; then
+              echo "ERROR release tag already exists at a different commit" >&2
+              echo "tag_commit=${tag_commit}" >&2
+              echo "build_commit=${GITHUB_SHA}" >&2
+              exit 2
+            fi
+          fi
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" || "${REPAIR_EXISTING_RELEASE:-false}" != "true" ]]; then
+              echo "ERROR GitHub Release already exists; refusing to overwrite assets without explicit repair mode" >&2
+              exit 2
+            fi
+            if ! git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+              echo "ERROR repair mode requires an existing release tag" >&2
+              exit 2
+            fi
+          fi
 
       - name: Install frontend dependencies
         run: npm ci
@@ -141,7 +252,7 @@ jobs:
         run: python3 scripts/dev/lite/release_artifact_check.py --root .
 
       - name: Upload release assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pocket-lab-lite-dist
           path: |
@@ -157,20 +268,39 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
           PRERELEASE: ${{ github.event.inputs.prerelease }}
+          REPAIR_EXISTING_RELEASE: ${{ github.event.inputs.repair_existing_release }}
         run: |
+          set -euo pipefail
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --tags --force
-          if ! git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
-            git tag -a "$RELEASE_TAG" -m "Pocket Lab Lite $RELEASE_TAG"
-            git push origin "$RELEASE_TAG"
+          git fetch origin --tags --force
+
+          if git ls-remote --exit-code --tags origin "$RELEASE_TAG" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}" --force
+            tag_commit="$(git rev-list -n 1 "$RELEASE_TAG")"
+            if [[ "$tag_commit" != "${GITHUB_SHA}" ]]; then
+              echo "ERROR release tag moved or resolves to a different source commit" >&2
+              exit 2
+            fi
+          else
+            git tag -a "$RELEASE_TAG" "$GITHUB_SHA" -m "Pocket Lab Lite $RELEASE_TAG"
+            git push origin "refs/tags/${RELEASE_TAG}"
           fi
+
+          final_tag_commit="$(git rev-list -n 1 "$RELEASE_TAG")"
+          test "$final_tag_commit" = "$GITHUB_SHA"
+
           flags=()
           if [[ "${PRERELEASE:-false}" == "true" ]]; then
             flags+=(--prerelease)
           fi
+
           assets=(dist.zip checksums.txt pocketlab-lite-release.json)
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" || "${REPAIR_EXISTING_RELEASE:-false}" != "true" ]]; then
+              echo "ERROR existing release encountered without explicit repair mode" >&2
+              exit 2
+            fi
             gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
           else
             gh release create "$RELEASE_TAG" "${assets[@]}" \
@@ -178,3 +308,20 @@ jobs:
               --notes "Pocket Lab Lite native PWA release with a verified manifest and checksums." \
               "${flags[@]}"
           fi
+
+      - name: Verify published release identity
+        if: steps.release_tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin --tags --force
+          tag_commit="$(git rev-list -n 1 "$RELEASE_TAG")"
+          test "$tag_commit" = "$GITHUB_SHA"
+          gh release view "$RELEASE_TAG" >/dev/null
+          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fx 'dist.zip'
+          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fx 'checksums.txt'
+          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fx 'pocketlab-lite-release.json'
+          echo "PASS release identity and required assets verified for $RELEASE_TAG"

@@ -83,6 +83,7 @@ Own CPU-heavy projection reconstruction and serialization outside the API proces
 - related_to: `pocketlab.commands.unknown`
 - verified_by: `tests/backend/test_lite_devices_durable_enrollment.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

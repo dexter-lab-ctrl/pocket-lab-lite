@@ -98,6 +98,7 @@ Renders Lite screens and sends same-origin requests only to FastAPI through Cadd
 - verified_by: `tests/backend/test_lite_security_s8_recovery.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/backend/test_lite_workload_admission.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

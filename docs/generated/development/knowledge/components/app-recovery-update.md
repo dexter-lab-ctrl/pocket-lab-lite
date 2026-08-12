@@ -83,6 +83,7 @@ Coordinates app backup, safe restore preview, update readiness/apply, verificati
 - uses: `POST /api/lite/apps/{app_id}/restore/preview`
 - uses: `POST /api/lite/apps/{app_id}/update/apply`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

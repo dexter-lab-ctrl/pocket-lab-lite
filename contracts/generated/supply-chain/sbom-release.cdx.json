@@ -2,7 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "name": "/tmp/pocketlab-release-sbom-xvqjdl3c/package-lock.json",
+      "name": "<home>/pocket-lab-lite/.pocketlab-dev/tmp/security-tools/pocketlab-release-scan-w4a3fd28/package-lock.json",
       "type": "file"
     },
     {
@@ -100,7 +100,7 @@
       },
       {
         "name": "pocketlab:source-digest",
-        "value": "78e7dad663cce5ce6e9aa7c86efe56f23577070b89f61673d9cee2fc3cd5b1e4"
+        "value": "f42ccaaa517a6686bffb698e3899e3868f39bc0c7e94a462df97f6689017b579"
       },
       {
         "name": "pocketlab:sanitized",

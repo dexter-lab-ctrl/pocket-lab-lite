@@ -4,10 +4,15 @@ set -euo pipefail
 fail=0
 check_cmd() {
   local label="$1"; shift
-  if "$@" >/dev/null 2>&1; then
-    printf 'PASS %-24s %s\n' "$label" "$($@ 2>&1 | head -n1)"
+  local output
+
+  if output="$("$@" 2>&1)"; then
+    printf 'PASS %-24s %s\n' \
+      "$label" \
+      "$(printf '%s\n' "$output" | head -n1)"
   else
-    printf 'FAIL %-24s missing or unusable\n' "$label" >&2
+    printf 'FAIL %-24s missing or unusable\n' \
+      "$label" >&2
     fail=1
   fi
 }
@@ -24,9 +29,9 @@ elif [[ -n "${CI:-}" ]]; then
 else
   node scripts/dev/lite/resolve-browser.mjs --json >/dev/null || fail=1
 fi
-check_cmd playwright npx --no-install playwright --version
-check_cmd storybook npx --no-install storybook --version
-check_cmd redocly npx --no-install redocly --version
+check_cmd playwright node -p "require('./node_modules/@playwright/test/package.json').version"
+check_cmd storybook node -p "require('./node_modules/storybook/package.json').version"
+check_cmd redocly node -p "require('./node_modules/@redocly/cli/package.json').version"
 
 if [[ ! -x .venv/bin/python ]]; then
   echo 'FAIL .venv: existing virtual environment is missing. Run python3 -m venv .venv only if the repository environment was not provisioned.' >&2

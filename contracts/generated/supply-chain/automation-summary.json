@@ -1,80 +1,124 @@
 {
   "artifacts": {
-    "license-inventory.json": "0ccf94e79261e5bc21091a150d213af44f2c6f96d8a8099e3e1c7ccb5f270fa9",
-    "sbom-dev.cdx.json": "98d75e33fe9baba608a4cbc808e6274ac75a832e1c38b9cc005ac3361cf4e168",
-    "sbom-release.cdx.json": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461",
+    "license-inventory.json": "ad5012adda04ce10ee3859b1a099b1e08a0066ae04c89d03fe3f2494f4945412",
+    "sbom-dev.cdx.json": "e3aa8f28e4d4c13ee87d919dfaf9a30bf5a8a0cf5f90a436e46bd8b8dc322848",
+    "sbom-release.cdx.json": "a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33",
     "sbom-runtime.cdx.json": "aa5df952b7c831f9570df6121d17041b32ae5f3a651aa4646206d4c3cb26947a",
-    "scorecard-checks.json": "b7f001c015b7c827db7331b76f634f23d3ef231e81c33ed8db762d1574fb525a",
-    "security-analysis.json": "4c72fe899858b70b7757e6cada313f8c241fa42ee56a1329776d52cadbf7a6a2",
-    "vulnerability-correlation.json": "97d903cb8f6a36a9dcea23951f4c5da079837fc1a6d917bc950a19890067ca2a"
+    "scorecard-checks.json": "e8013826f50e6698f1833fcdfeb152382faeb52808aaf4f62237cbb87adc9099",
+    "security-analysis.json": "896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f",
+    "vulnerability-correlation.json": "39d0577ac1342a7a87c7118871d895187c1f64a92f623c665e3f145a70750eee"
   },
-  "capture_manifest_sha256": "eacbd447b1bb90759e16d2efe37640321797c53c42fecc35d01dab23b8964dd6",
+  "capture_complete": true,
+  "capture_manifest_sha256": "ec34845eabacc3ca0572adc43842d131a5ba7be1fea19e0f9f89ca00ef90b53b",
   "implementation_status": "implemented",
+  "license_authority": {
+    "deep_source_license_coverage": {
+      "claim": "deep source-level license/copyright analysis is not claimed",
+      "provider": "scancode",
+      "provider_status": "not-run",
+      "requested": false,
+      "required": false,
+      "status": "not-run"
+    },
+    "package_license_coverage": {
+      "authority": "syft+trivy",
+      "note": "Trivy standard license scanning is required; zero license findings do not imply that every file contained recognizable license evidence.",
+      "required": true,
+      "sources": [
+        "syft",
+        "trivy"
+      ],
+      "status": "observed",
+      "syft_component_count": 2366,
+      "trivy_license_finding_count": 31,
+      "trivy_license_scanner": "executed-standard"
+    }
+  },
+  "max_parallel_scanners": 1,
+  "qualification_surface": "local-or-ci-diagnostic",
   "raw_output_canonical": false,
-  "run_id": "manual-20260809T195830Z-1790260",
+  "release_qualification": false,
+  "run_id": "scorecard-compatible-20260811T100353Z",
   "runtime_capture_performed": false,
   "runtime_source": "contracts/parity/runtime-verification-baseline.json",
-  "schema_version": "1.0.0",
-  "source_commit": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1",
+  "schema_version": "1.2.0",
+  "source_commit": "19d54e0bb84226f355865c32c6decee8ce010083",
   "tool_statuses": [
     {
+      "duration_seconds": 129.844,
       "exit_code": 0,
       "status": "completed",
+      "step_id": "syft-dev",
       "tool": "syft"
     },
     {
+      "duration_seconds": 2.173,
       "exit_code": 0,
       "status": "completed",
+      "step_id": "syft-release",
       "tool": "syft"
     },
     {
-      "exit_code": 1,
-      "status": "findings-or-tool-nonzero",
-      "tool": "trivy"
-    },
-    {
-      "exit_code": 1,
-      "status": "findings-or-tool-nonzero",
-      "tool": "trivy"
-    },
-    {
-      "exit_code": 1,
-      "status": "findings-or-tool-nonzero",
-      "tool": "osv-scanner"
-    },
-    {
-      "exit_code": 1,
-      "status": "findings-or-tool-nonzero",
-      "tool": "osv-scanner"
-    },
-    {
+      "duration_seconds": 73.047,
       "exit_code": 0,
       "status": "completed",
+      "step_id": "trivy-source",
+      "tool": "trivy"
+    },
+    {
+      "duration_seconds": 0.419,
+      "exit_code": 0,
+      "status": "completed",
+      "step_id": "trivy-sbom-dev",
+      "tool": "trivy"
+    },
+    {
+      "duration_seconds": 70.248,
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "step_id": "osv-source",
+      "tool": "osv-scanner"
+    },
+    {
+      "duration_seconds": 5.133,
+      "exit_code": 1,
+      "status": "findings-or-tool-nonzero",
+      "step_id": "osv-sbom-dev",
+      "tool": "osv-scanner"
+    },
+    {
+      "duration_seconds": 5.45,
+      "exit_code": 0,
+      "status": "completed",
+      "step_id": "grype-sbom-dev",
       "tool": "grype"
     },
     {
+      "duration_seconds": 13.184,
       "exit_code": 1,
       "status": "findings-or-tool-nonzero",
+      "step_id": "gitleaks-worktree",
       "tool": "gitleaks"
     },
     {
+      "duration_seconds": 0.671,
       "exit_code": 0,
       "status": "completed",
+      "step_id": "gitleaks-release",
       "tool": "gitleaks"
     },
     {
+      "duration_seconds": 4.932,
       "exit_code": 0,
       "status": "completed",
+      "step_id": "semgrep",
       "tool": "semgrep"
     },
     {
-      "exit_code": 2,
-      "status": "findings-or-tool-nonzero",
-      "tool": "scancode"
-    },
-    {
-      "exit_code": 1,
-      "status": "findings-or-tool-nonzero",
+      "duration_seconds": 7.34,
+      "exit_code": 0,
+      "status": "completed",
+      "step_id": "scorecard",
       "tool": "scorecard"
     }
   ]
