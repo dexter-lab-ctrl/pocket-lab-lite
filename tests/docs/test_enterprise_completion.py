@@ -20,6 +20,7 @@ def load_module(name: str, rel: str):
 
 completion = load_module("enterprise_completion", "scripts/docs/enterprise/enterprise_completion.py")
 supply = load_module("supply_chain_automation", "scripts/docs/enterprise/supply_chain_automation.py")
+release_promotion = load_module("release_evidence_promotion", "scripts/docs/enterprise/release_evidence_promotion.py")
 
 
 def read_json(rel: str):
@@ -118,11 +119,19 @@ def test_release_evidence_model_contains_requested_fields_and_does_not_fake_asse
         "source_commit", "tree_hash", "exact_tag", "build_timestamp", "artifacts", "frontend_version",
         "backend_identity", "database_migration_level", "fingerprints", "runtime_baseline_binding",
         "sbom_digest", "security_scan_digest", "signatures", "provenance", "device_compatibility",
-        "known_limitations", "breaking_changes", "validation_outcomes",
+        "known_limitations", "breaking_changes", "validation_outcomes", "authorities", "assurance",
+        "evidence_gaps", "lineage",
     ]:
         assert field in evidence
     assert set(evidence["artifacts"]) >= {"dist.zip", "checksums.txt", "release_manifest"}
-    assert {entry["status"] for entry in evidence["artifacts"].values()} <= {"observed-local-release-staging", "unobserved"}
+    for entry in evidence["artifacts"].values():
+        assert {"release_presence", "integrity", "binding", "local_staging"} <= set(entry)
+        assert entry["release_presence"]["status"] in {"verified", "unobserved", "invalid"}
+        assert entry["local_staging"]["status"] in {"observed", "unobserved"}
+        if entry["release_presence"]["status"] != "verified":
+            assert entry["integrity"]["status"] != "verified"
+    assert set(evidence["authorities"]) == {"release", "runtime", "supply_chain", "local_repository"}
+    assert evidence["assurance"]["overall"] in {"verified", "verified-with-evidence-gaps", "partially-evidenced"}
 
 
 def test_threat_model_is_canonical_stride_and_production_posture_is_promoted_not_live():
@@ -134,7 +143,7 @@ def test_threat_model_is_canonical_stride_and_production_posture_is_promoted_not
     for item in dependency_doc.get("items", []):
         for dep in item.get("dependencies", []):
             deps.append({"domain": item.get("domain"), "dependency": dep.get("name"), "state": dep.get("state"), "evidence_authority": dep.get("evidence_status"), "root_cause": dep.get("note"), "blocking": dep.get("state") not in {"healthy", "ready", "online"}})
-    threat = completion.threat_model(ROOT, supply_index, evidence, deps)
+    threat = completion.enrich_threat_model(completion.threat_model(ROOT, supply_index, evidence, deps), ROOT)
     assert threat["implementation_status"] == "implemented"
     assert len(threat["boundaries"]) == 9
     assert len(threat["threats"]) == 54
@@ -150,6 +159,15 @@ def test_threat_model_is_canonical_stride_and_production_posture_is_promoted_not
         "control-observed", "control-partial", "control-unvalidated", "mitigation-source-derived",
         "evidence-stale", "not-applicable",
     }
+    assert threat["framework"]["primary"] == "STRIDE"
+    assert len(threat["attack_paths"]) == 8
+    assert all(path["confirmed_exploit"] is False for path in threat["attack_paths"])
+    assert all(path["controls"] and path["boundaries"] and path["consequences"] for path in threat["attack_paths"])
+    assert all(control["effect"] == "mitigates" and control["prevention_claim"] is False for control in threat["controls"])
+    assert all(control["failure_consequences"] for control in threat["controls"])
+    assert threat["architecture_integration"]["canonical_model"] == "architecture/metadata/pocket-lab-architecture.json"
+    assert threat["visualization"]["nodes"] and threat["visualization"]["edges"] and threat["visualization"]["control_bindings"]
+    assert threat["visualization"]["live_monitoring"] is False
 
 
 def test_enterprise_intelligence_contracts_cover_prompt_fields():
@@ -574,3 +592,51 @@ def test_schemaspy_uses_shared_dev_scratch_namespace():
     assert "POCKETLAB_SCHEMASPY_TMPDIR" in source
     assert 'POCKETLAB_DEV_SCRATCH_ROOT / "schemaspy"' in source
     assert "dir=POCKETLAB_SCHEMASPY_TMP" in source
+
+
+def test_release_comparison_never_substitutes_head_for_a_release():
+    delta = completion.release_delta(ROOT)
+    policy = completion.current_release_baseline(ROOT)["baseline_policy"]
+    assert "release-to-HEAD comparison is forbidden" in policy
+    if delta["status"] == "comparable":
+        assert isinstance(delta.get("from"), dict) and delta["from"].get("tag", "").startswith("lite-")
+        assert isinstance(delta.get("to"), dict) and delta["to"].get("tag", "").startswith("lite-")
+    else:
+        assert all(row["classification"] == "not-comparable" for row in delta["dimensions"])
+
+
+def test_threat_model_svg_is_semantic_architecture_integrated_and_not_live():
+    text = (ROOT / "docs/generated/assets/enterprise/threat-model.svg").read_text(encoding="utf-8")
+    for token in ["data-node=", "data-control=", "data-attack-path=", "Modeled flow — not live traffic", "prefers-reduced-motion"]:
+        assert token in text
+    for icon in ["fastapi.svg", "nats.svg", "tailscale.svg", "android.svg", "photoprism.svg"]:
+        assert icon in text
+
+
+def test_threat_model_progressive_enhancement_never_polls_network():
+    text = (ROOT / "docs/javascripts/threat-model.js").read_text(encoding="utf-8")
+    forbidden = ["fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "navigator.sendBeacon"]
+    assert not any(token in text for token in forbidden)
+    assert "prefers-reduced-motion" in text
+
+
+def test_release_evidence_promotion_validation_is_sanitized_and_fail_closed():
+    digest = "a" * 64
+    payload = {
+        "release_tag": "lite-2026.08.12.2", "source_commit": "b" * 40, "tree_hash": "c" * 40,
+        "verification_status": "verified", "sanitized": True,
+        "artifacts": [{"name": name, "sha256": digest, "bytes": 1, "status": "verified"} for name in release_promotion.REQUIRED],
+    }
+    assert release_promotion.validate_capture(payload) == []
+    broken = dict(payload); broken["sanitized"] = False
+    assert "capture is not marked sanitized" in release_promotion.validate_capture(broken)
+    parsed = release_promotion.parse_checksums(f"{digest}  dist.zip\n")
+    assert parsed == {"dist.zip": digest}
+
+
+def test_release_capture_is_explicit_and_never_invoked_by_docs_generators():
+    capture=(ROOT/'scripts/docs/enterprise/release_evidence_promotion.py').read_text(encoding='utf-8')
+    generator=(ROOT/'scripts/docs/enterprise/generate_enterprise_documentation.py').read_text(encoding='utf-8')
+    assert 'gh", "api"' in capture and 'gh", "release", "download"' in capture
+    assert 'RELEASE_EVIDENCE_PROMOTE' in capture
+    assert 'release_evidence_promotion.py' not in generator

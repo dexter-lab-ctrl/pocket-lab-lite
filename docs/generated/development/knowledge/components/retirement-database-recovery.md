@@ -85,6 +85,7 @@ Requires assessment and confirmation for device retirement and provides verified
 - uses: `POST /api/lite/recovery/database/backups/{backup_id}/restore`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

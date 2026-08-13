@@ -470,7 +470,22 @@ test('documentation intelligence dashboard is responsive, progressive, and evide
 
   await page.goto(`${DOCS_PREFIX}generated/development/intelligence/release-impact/`);
   await expect(page.getByRole('heading', { name: 'What changed?' })).toBeVisible();
-  await expect(page.getByText('No comparable verified prior release')).toBeVisible();
+
+  const releaseImpactContent = page
+    .locator('.md-content__inner.md-typeset')
+    .first();
+  const releaseImpactKpis = releaseImpactContent
+    .locator('.pl-release-kpis')
+    .first();
+
+  await expect(releaseImpactContent.getByText('Release impact summary')).toBeVisible();
+  await expect(releaseImpactContent.getByRole('heading', { name: 'Executive summary' })).toBeVisible();
+  await expect(releaseImpactKpis).toBeVisible();
+  await expect(releaseImpactKpis).toContainText('Comparison basis');
+  await expect(releaseImpactKpis).toContainText(
+    /Canonical release evidence not yet promoted|Initial canonical comparison baseline|Verified release-to-release comparison|Verified releases awaiting local comparison history/,
+  );
+  await expect(releaseImpactContent).not.toContainText('No comparable verified prior release');
 
   if (testInfo.project.name === 'docs-mobile') {
     await page.goto(

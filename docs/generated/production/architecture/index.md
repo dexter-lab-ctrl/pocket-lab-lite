@@ -42,6 +42,12 @@ React/Vite PWA
 → PWA
 ```
 
+## Security / threat-model overlay
+
+The [generated Threat Model](../../enterprise/threat-model/index.md) is a security overlay on this same canonical architecture. Its diagram binds threat nodes back to canonical component IDs and trust boundaries, then adds promoted control/runtime posture without redefining topology ownership.
+
+![Threat-model architecture overlay](../../assets/enterprise/threat-model.svg){ loading=lazy }
+
 ## How to read the infrastructure map
 
 - **Experience surface** — Browser, React/Vite PWA, and frontend state provide the self-hosted workspace experience.

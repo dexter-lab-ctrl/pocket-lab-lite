@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0.0",
+  "framework": {
+    "primary": "STRIDE",
+    "reference_mappings": ["OWASP Top 10 where applicable"],
+    "application": [
+      "Identify canonical trust boundaries, assets, actors and flows.",
+      "Generate STRIDE candidates for every trust boundary.",
+      "Map repository-owned controls to applicable threat categories and boundaries.",
+      "Attach promoted runtime, security, release and dependency evidence to control posture.",
+      "Require human review for threat relevance, mitigation adequacy, residual risk, risk acceptance and exceptions."
+    ],
+    "definitions": {
+      "Spoofing": "Impersonating a user, device, service or release identity.",
+      "Tampering": "Unauthorized modification of commands, durable state, releases or evidence.",
+      "Repudiation": "Loss of trustworthy evidence about who or what performed an action.",
+      "Information Disclosure": "Exposure of secrets, private paths, credentials or sensitive operational metadata.",
+      "Denial of Service": "Loss of availability, command delivery or recovery capability.",
+      "Elevation of Privilege": "Bypassing browser, control API, execution-owner or host boundaries."
+    }
+  },
+  "truth_layers": [
+    {"id": "threat-model", "question": "What could go wrong?", "authority": "canonical architecture and security source"},
+    {"id": "control-posture", "question": "Which mitigations currently have evidence?", "authority": "source plus promoted evidence"},
+    {"id": "operational-posture", "question": "What does the latest promoted evidence report?", "authority": "promoted sanitized runtime/security/release evidence"}
+  ],
+  "exclusions": [
+    "Live attack monitoring or packet inspection",
+    "Live NATS polling or traffic visualization",
+    "Running Trivy, Lynis, Semgrep or other scanners from MkDocs",
+    "Scanning the live Android filesystem from documentation generation",
+    "Automatically deciding whether a vulnerability is exploitable",
+    "Automatically accepting residual risk or security exceptions",
+    "Replacing penetration testing, source review or operational monitoring",
+    "Replacing incident detection, release qualification or runtime health checks"
+  ],
+  "consequences_without_model": [
+    "Trust assumptions become implicit and easier to violate during change.",
+    "Controls can exist without a clear statement of which threats and assets they protect.",
+    "Runtime, release and supply-chain evidence become disconnected from security reasoning.",
+    "Boundary changes can ship without exposing their security-review impact.",
+    "Duplicated, missing or weakly evidenced controls are harder to identify.",
+    "Residual risk and human-review decisions become less auditable."
+  ],
+  "attack_paths": [
+    {
+      "id": "AP-01", "name": "Browser control-plane bypass", "entry_point": "browser", "target": "nats-jetstream",
+      "path_nodes": ["browser", "nats-jetstream", "worker"],
+      "boundaries": ["browser", "messaging-execution"],
+      "stride": ["Spoofing", "Tampering", "Elevation of Privilege"],
+      "controls": ["CTRL-BROWSER-NATS", "CTRL-API-CONTROL"],
+      "consequences": ["unauthorized command injection", "control-plane bypass", "loss of expected audit/control ownership"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-02", "name": "Browser shell execution", "entry_point": "browser", "target": "server-host",
+      "path_nodes": ["browser", "lite-api", "server-host"],
+      "boundaries": ["browser", "control-api", "server-host"],
+      "stride": ["Tampering", "Elevation of Privilege"],
+      "controls": ["CTRL-BROWSER-SHELL", "CTRL-API-CONTROL"],
+      "consequences": ["host mutation", "secret exposure", "runtime integrity loss"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-03", "name": "Forged managed-device identity", "entry_point": "managed-device", "target": "node-agent",
+      "path_nodes": ["managed-device", "lite-api", "nats-jetstream", "node-agent"],
+      "boundaries": ["managed-device", "control-api", "messaging-execution"],
+      "stride": ["Spoofing", "Tampering", "Elevation of Privilege"],
+      "controls": ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"],
+      "consequences": ["unauthorized device enrollment", "command execution under a forged identity", "audit attribution failure"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-04", "name": "Messaging command tampering or replay", "entry_point": "lite-api", "target": "node-agent",
+      "path_nodes": ["lite-api", "nats-jetstream", "worker", "node-agent"],
+      "boundaries": ["control-api", "messaging-execution", "managed-device"],
+      "stride": ["Tampering", "Repudiation", "Denial of Service"],
+      "controls": ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"],
+      "consequences": ["incorrect or repeated device commands", "loss of command integrity", "device availability impact"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-05", "name": "Supply-chain artifact compromise", "entry_point": "github-release", "target": "server-host",
+      "path_nodes": ["github-release", "release-artifacts", "server-host"],
+      "boundaries": ["external-release", "server-host", "application-container"],
+      "stride": ["Tampering", "Information Disclosure", "Elevation of Privilege"],
+      "controls": ["CTRL-SUPPLY-CHAIN", "CTRL-EXPLICIT-PROMOTION", "CTRL-EVIDENCE-SANITIZE"],
+      "consequences": ["compromised release execution", "dependency or artifact integrity loss", "misleading release posture"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-06", "name": "Evidence poisoning", "entry_point": "scanner-evidence", "target": "documentation",
+      "path_nodes": ["scanner-evidence", "promoted-evidence", "documentation"],
+      "boundaries": ["external-release", "durable-state", "server-host"],
+      "stride": ["Tampering", "Repudiation", "Information Disclosure"],
+      "controls": ["CTRL-EVIDENCE-SANITIZE", "CTRL-EXPLICIT-PROMOTION"],
+      "consequences": ["incorrect security posture", "secret or private-path disclosure", "loss of evidence trust"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-07", "name": "Tailnet/private-network exposure", "entry_point": "private-network", "target": "lite-api",
+      "path_nodes": ["private-network", "tailscale", "caddy", "lite-api"],
+      "boundaries": ["private-network", "control-api", "server-host"],
+      "stride": ["Spoofing", "Information Disclosure", "Denial of Service"],
+      "controls": ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"],
+      "consequences": ["unexpected control-plane reachability", "service exposure", "availability impact"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-08", "name": "Recovery state tampering", "entry_point": "sqlite", "target": "recovery-state",
+      "path_nodes": ["sqlite", "recovery-state", "lite-api"],
+      "boundaries": ["durable-state", "control-api"],
+      "stride": ["Tampering", "Repudiation", "Denial of Service"],
+      "controls": ["CTRL-EVIDENCE-SANITIZE", "CTRL-EXPLICIT-PROMOTION", "CTRL-API-CONTROL"],
+      "consequences": ["unsafe restore decisions", "loss of recovery evidence integrity", "recovery unavailability"],
+      "status": "modeled", "review_status": "human-review-required"
+    }
+  ]
+}

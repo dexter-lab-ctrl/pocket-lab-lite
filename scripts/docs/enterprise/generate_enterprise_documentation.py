@@ -134,13 +134,14 @@ def safe(label: str, text: str) -> None:
 
 
 def inputs() -> list[Path]:
-    paths = [GENERATOR, ROOT / "scripts/docs/enterprise/enterprise_completion.py", ROOT / "scripts/docs/enterprise/supply_chain_automation.py", ROOT / "scripts/docs/enterprise/release_provenance.py", SCHEMA, TOOLS, PLATFORM, EXPERIENCE, KNOWLEDGE, INTELLIGENCE, OP_HEALTH, RUNTIME, ARCH, ASYNCAPI, OPENAPI, REASONS, RELEASES, ADRS, RELEASE_CHANGES_KB]
+    paths = [GENERATOR, ROOT / "scripts/docs/enterprise/enterprise_completion.py", ROOT / "scripts/docs/enterprise/threat_model_experience.py", ROOT / "scripts/docs/release_model.py", ROOT / "security/threat-model-scenarios.json", ROOT / "scripts/docs/enterprise/supply_chain_automation.py", ROOT / "scripts/docs/enterprise/release_provenance.py", SCHEMA, TOOLS, PLATFORM, EXPERIENCE, KNOWLEDGE, INTELLIGENCE, OP_HEALTH, RUNTIME, ARCH, ASYNCAPI, OPENAPI, REASONS, RELEASES, ADRS, RELEASE_CHANGES_KB]
     paths += sorted((ROOT / "tasks").glob("Taskfile*.yml"))
     paths += sorted((ROOT / "operations").glob("*.yaml"))
     paths += sorted((ROOT / "runbooks").glob("*.yaml"))
     paths += sorted((ROOT / "contracts/generated/supply-chain").glob("*.json"))
     if (ROOT / "contracts/generated/release-provenance.json").exists(): paths.append(ROOT / "contracts/generated/release-provenance.json")
     if (ROOT / "contracts/generated/release-signatures.json").exists(): paths.append(ROOT / "contracts/generated/release-signatures.json")
+    if (ROOT / "contracts/generated/releases/promoted-release-evidence.json").exists(): paths.append(ROOT / "contracts/generated/releases/promoted-release-evidence.json")
     return [p for p in paths if p.exists()]
 
 

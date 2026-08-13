@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 177df7d4470d35e90fa7e3772f5f5fd9ae8bf1890e6411a5c6f53fae999750ee
+source_fingerprint: 305a617c816d170a0a76c0e69505d07d1dd5b210ae2264c4e591d87ebe5ea0d2
 schema_revision: 1
 validation_status: generated
 ---
@@ -604,6 +604,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_RELEASE_CHILD_MAX_RSS_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_DOWNLOAD_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKETLAB_RELEASE_DRY_RUN_ACTIVE_SCOPE_EXCLUDES` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/release-dry-run.sh |
+| `POCKETLAB_RELEASE_EVIDENCE_PROMOTE` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/release_evidence_promotion.py |
 | `POCKETLAB_RELEASE_FAILURE_BACKOFF_BASE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
 | `POCKETLAB_RELEASE_HEALTH_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKETLAB_RELEASE_INITIAL_DELAY_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |

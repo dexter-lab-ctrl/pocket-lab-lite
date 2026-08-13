@@ -84,6 +84,7 @@ Runs separately from the agent, reads the protected agent environment, and start
 - verified_by: `tests/backend/test_lite_devices_production_readiness.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

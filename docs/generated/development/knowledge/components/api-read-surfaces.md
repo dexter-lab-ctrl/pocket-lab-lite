@@ -79,6 +79,7 @@ Serves side-effect-free prepared projections, health/readiness, compact diagnost
 - uses: `GET /api/lite/system/health`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

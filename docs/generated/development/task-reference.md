@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 9f8a72eccd6819f89b97d0c2042b1e8fd19666bff325a7f4c4e5e0585788267c
+source_fingerprint: 28df171b72ff9344d9df00174a5d4f81aa4721fec284b226bb68c5c2c1d12a39
 schema_revision: 1
 validation_status: generated
 ---
@@ -58,6 +58,10 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:development:generate`
 - `lite:docs:diagrams:check`
 - `lite:docs:diagrams:generate`
+- `lite:docs:enterprise-tools:check`
+- `lite:docs:enterprise-tools:plan`
+- `lite:docs:enterprise-tools:setup`
+- `lite:docs:enterprise-tools:update`
 - `lite:docs:enterprise:check`
 - `lite:docs:enterprise:generate`
 - `lite:docs:events`
@@ -92,6 +96,9 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:reason-codes`
 - `lite:docs:recovery`
 - `lite:docs:redaction`
+- `lite:docs:release-assurance:capture`
+- `lite:docs:release-assurance:check`
+- `lite:docs:release-assurance:promote`
 - `lite:docs:release-evidence`
 - `lite:docs:runtime:check`
 - `lite:docs:runtime:generate`

@@ -1,4 +1,5 @@
 {
+  "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
   "classifications": [
     "added",
     "removed",
@@ -21,90 +22,214 @@
     "unknown",
     "unchanged"
   ],
+  "comparison_state": "baseline-only",
   "dimensions": [
     {
       "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
       "dimension": "git-source",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "openapi",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "asyncapi-events",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "sqlite-schema-migrations",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "architecture",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "trust-boundaries",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "capabilities",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "operational-health",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "runtime-topology",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "semantic-parity",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "platform-capability-evidence",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "reason-codes",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "task-inventory",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "security-controls",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "threat-model",
-      "status": "not-comparable"
-    },
-    {
-      "classification": "not-comparable",
-      "dimension": "sbom",
+      "source_paths": [
+        "src",
+        "scripts",
+        "tasks",
+        "Taskfile.yml",
+        ".github/workflows",
+        "contracts/metadata",
+        "contracts/parity",
+        "schemas",
+        "architecture/metadata",
+        "operations",
+        "runbooks",
+        "package.json",
+        "package-lock.json",
+        "requirements-dev.txt",
+        "requirements-docs.txt",
+        "pocket-lab-final-structure/runtime/requirements.txt"
+      ],
       "status": "not-comparable"
     },
     {
       "classification": "not-comparable",
       "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "openapi",
+      "source_paths": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "asyncapi-events",
+      "source_paths": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "sqlite-schema-migrations",
+      "source_paths": [
+        "pocket-lab-final-structure/runtime/api_fastapi/migrations",
+        "pocket-lab-final-structure/runtime/migrations"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "architecture",
+      "source_paths": [
+        "architecture/metadata",
+        "scripts/docs/graphviz"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "trust-boundaries",
+      "source_paths": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "scripts/docs/enterprise/enterprise_completion.py"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "capabilities",
+      "source_paths": [
+        "contracts/generated/knowledge/capabilities.json",
+        "contracts/generated/device-capabilities.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "operational-health",
+      "source_paths": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "runtime-topology",
+      "source_paths": [
+        "contracts/generated/knowledge/runtime-topology.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "semantic-parity",
+      "source_paths": [
+        "contracts/parity/parity-model.json",
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "platform-capability-evidence",
+      "source_paths": [
+        "contracts/generated/documentation-intelligence/platform-matrix.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "reason-codes",
+      "source_paths": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "task-inventory",
+      "source_paths": [
+        "Taskfile.yml",
+        "tasks"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "security-controls",
+      "source_paths": [
+        "security",
+        "scripts/docs/enterprise/enterprise_completion.py"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "threat-model",
+      "source_paths": [
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/check_threat_model.py",
+        "architecture/metadata"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
+      "dimension": "sbom",
+      "source_paths": [
+        "contracts/generated/supply-chain/sbom-dev.cdx.json",
+        "contracts/generated/supply-chain/sbom-release.cdx.json",
+        "contracts/generated/supply-chain/sbom-runtime.cdx.json"
+      ],
+      "status": "not-comparable"
+    },
+    {
+      "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required",
         "supply_chain_change": {
           "dependencies_added": [],
           "dependencies_removed": [],
@@ -113,11 +238,18 @@
         }
       },
       "dimension": "dependency-versions",
+      "source_paths": [
+        "package-lock.json",
+        "requirements-dev.txt",
+        "requirements-docs.txt",
+        "pocket-lab-final-structure/runtime/requirements.txt"
+      ],
       "status": "not-comparable"
     },
     {
       "classification": "not-comparable",
       "details": {
+        "reason": "a second verified canonical release is required",
         "supply_chain_change": {
           "new_vulnerabilities": [],
           "resolved_vulnerabilities": [],
@@ -125,11 +257,15 @@
         }
       },
       "dimension": "vulnerabilities",
+      "source_paths": [
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
       "status": "not-comparable"
     },
     {
       "classification": "not-comparable",
       "details": {
+        "reason": "a second verified canonical release is required",
         "supply_chain_change": {
           "license_classification_changes": [],
           "new_licenses": [],
@@ -137,35 +273,61 @@
         }
       },
       "dimension": "licenses",
+      "source_paths": [
+        "contracts/generated/supply-chain/license-inventory.json"
+      ],
       "status": "not-comparable"
     },
     {
       "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
       "dimension": "release-artifacts",
+      "source_paths": [
+        ".github/workflows/release-dist.yml",
+        "tasks/Taskfile.release.yml",
+        "scripts/dev/lite/release_artifact_check.py"
+      ],
       "status": "not-comparable"
     },
     {
       "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
       "dimension": "documentation-coverage",
+      "source_paths": [
+        "contracts/generated/knowledge/index.json",
+        "mkdocs.yml"
+      ],
       "status": "not-comparable"
     },
     {
       "classification": "not-comparable",
+      "details": {
+        "reason": "a second verified canonical release is required"
+      },
       "dimension": "validation-coverage",
+      "source_paths": [
+        "tests",
+        "tasks",
+        "Taskfile.yml"
+      ],
       "status": "not-comparable"
     }
   ],
-  "evidence_status": "not-comparable",
+  "evidence_status": "baseline-only",
   "from": null,
   "implementation_status": "implemented",
-  "status": "no-comparable-verified-prior-release",
+  "status": "initial-canonical-comparison-baseline",
   "supply_chain_change": {
     "baseline_readiness": {
-      "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
-      "candidate_count": 0,
-      "head": "a6e4abc37ee9cca62c27286c556607ff3e740561",
-      "head_tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
-      "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+      "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
+      "candidate_count": 1,
+      "head": "a34a5a2ba5136a9d43dc950e26a9079dbf2aad5a",
+      "head_tree": "1df0908775e68b975cb73c43443d24c6073f2cd4",
+      "reason": "no second verified canonical release is available for release-to-release comparison",
       "selected_baseline": null,
       "status": "not-ready"
     },
@@ -364,7 +526,7 @@
     "evidence_status": "not-comparable",
     "historical_comparison": {
       "from": null,
-      "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+      "reason": "no second verified canonical release is available for release-to-release comparison",
       "status": "not-comparable",
       "to": "current-source"
     },
@@ -381,5 +543,63 @@
     "upstream_posture_changes": [],
     "versions_changed": []
   },
-  "to": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+  "to": {
+    "artifacts": [
+      {
+        "bytes": 474904,
+        "github_asset_presence": "verified",
+        "github_digest_status": "verified",
+        "name": "dist.zip",
+        "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+        "status": "verified",
+        "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+      },
+      {
+        "bytes": 75,
+        "github_asset_presence": "verified",
+        "github_digest_status": "verified",
+        "name": "checksums.txt",
+        "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+        "status": "verified",
+        "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+      },
+      {
+        "bytes": 362,
+        "github_asset_presence": "verified",
+        "github_digest_status": "verified",
+        "name": "pocketlab-lite-release.json",
+        "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+        "status": "verified",
+        "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+      }
+    ],
+    "canonical_source": "contracts/generated/releases/promoted-release-evidence.json",
+    "canonical_sources": [
+      "contracts/generated/releases/promoted-release-evidence.json"
+    ],
+    "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+    "local_tag_available": true,
+    "local_tag_matches": true,
+    "manifest_binding": {
+      "dist_zip_sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+      "release_tag": "lite-2026.08.12.2",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+      "status": "verified"
+    },
+    "observed_at": "2026-08-12T15:12:08Z",
+    "promotion_rule": "explicit-only; immutable per release tag",
+    "published_at": "2026-08-12T15:12:08Z",
+    "raw_urls_included": false,
+    "release_tag": "lite-2026.08.12.2",
+    "repository": "dexter-lab-ctrl/pocket-lab-lite",
+    "sanitized": true,
+    "schema_version": "1.0.0",
+    "source": "explicit-gh-release-capture",
+    "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+    "tag": "lite-2026.08.12.2",
+    "tagged_at": "2026-08-12T16:12:12+02:00",
+    "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+    "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+    "verification_status": "promoted"
+  }
 }

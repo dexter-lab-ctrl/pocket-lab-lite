@@ -1307,6 +1307,7 @@
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1322,6 +1323,7 @@
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1336,6 +1338,7 @@
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1350,6 +1353,7 @@
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1362,6 +1366,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1374,6 +1379,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1386,6 +1392,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1400,6 +1407,7 @@
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-test-helpers.ts"
       ],
@@ -1417,6 +1425,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1429,6 +1438,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1441,6 +1451,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1454,6 +1465,7 @@
         "test:tests/backend/test_lite_native_release.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1466,6 +1478,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1483,6 +1496,7 @@
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1501,6 +1515,7 @@
         "test:tests/backend/test_release_process_isolation.py",
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1516,6 +1531,7 @@
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1528,6 +1544,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1540,6 +1557,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1552,6 +1570,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1564,6 +1583,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1592,6 +1612,7 @@
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1604,6 +1625,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1616,6 +1638,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1628,6 +1651,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1640,6 +1664,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1653,6 +1678,7 @@
         "test:tests/backend/test_lite_native_release.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1680,6 +1706,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1692,6 +1719,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1704,6 +1732,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1719,6 +1748,7 @@
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1733,6 +1763,7 @@
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1754,6 +1785,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/parity/test_planned_runtime_parity_policy.py",
         "test:tests/parity/test_runtime_drift_reporting.py"
@@ -1771,6 +1803,7 @@
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1784,6 +1817,7 @@
         "test:tests/backend/test_lite_native_release.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1796,6 +1830,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1809,6 +1844,7 @@
         "test:tests/backend/test_lite_devices_durable_enrollment.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1821,6 +1857,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1849,6 +1886,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1861,6 +1899,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1873,6 +1912,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1885,6 +1925,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1897,6 +1938,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1909,6 +1951,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1922,6 +1965,7 @@
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1934,6 +1978,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1946,6 +1991,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1960,6 +2006,7 @@
         "test:tests/backend/test_lite_security_f7_split_read_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1979,6 +2026,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -1991,6 +2039,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2003,6 +2052,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2020,6 +2070,7 @@
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2032,6 +2083,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2044,6 +2096,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2059,6 +2112,7 @@
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2075,6 +2129,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2087,6 +2142,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "component",
@@ -2329,6 +2385,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "domain",
@@ -2371,6 +2428,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "domain",
@@ -2462,6 +2520,7 @@
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-mocked.spec.ts",
@@ -2511,6 +2570,7 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
@@ -2626,6 +2686,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "journey",
@@ -2828,6 +2889,7 @@
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "journey",
@@ -2840,6 +2902,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2852,6 +2915,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2864,6 +2928,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2876,6 +2941,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2888,6 +2954,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2900,6 +2967,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2912,6 +2980,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2924,6 +2993,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2936,6 +3006,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2948,6 +3019,7 @@
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
       "type": "requirement",
@@ -2960,6 +3032,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a"
+    "source_fingerprint": "5d58bb3caebc42b1b8b423183b03664cb9e18175b525bce325c0e495407c02c0"
   }
 }

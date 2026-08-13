@@ -1,19 +1,375 @@
 {
   "artifacts": {
     "checksums.txt": {
-      "bytes": null,
-      "sha256": null,
-      "status": "unobserved"
+      "binding": {
+        "authority": "release-manifest",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "release_tag": "lite-2026.08.12.2",
+          "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+        }
+      },
+      "filename": "checksums.txt",
+      "integrity": {
+        "authority": "release-artifact-integrity",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "github_digest_status": "verified",
+          "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+          "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+        }
+      },
+      "local_staging": {
+        "authority": "local-repository",
+        "confidence": "unvalidated",
+        "freshness": "current",
+        "observed_at": "unobserved",
+        "sanitized": true,
+        "source": "checksums.txt",
+        "status": "unobserved",
+        "value": {
+          "bytes": null,
+          "sha256": null
+        }
+      },
+      "release_presence": {
+        "authority": "github-release-promoted",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": "checksums.txt"
+      }
     },
     "dist.zip": {
-      "bytes": 1719519,
-      "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f",
-      "status": "observed-local-release-staging"
+      "binding": {
+        "authority": "release-manifest",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "release_tag": "lite-2026.08.12.2",
+          "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+        }
+      },
+      "filename": "dist.zip",
+      "integrity": {
+        "authority": "release-artifact-integrity",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "github_digest_status": "verified",
+          "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+          "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+        }
+      },
+      "local_staging": {
+        "authority": "local-repository",
+        "confidence": "local-observation",
+        "freshness": "current",
+        "observed_at": "unobserved",
+        "sanitized": true,
+        "source": "dist.zip",
+        "status": "observed",
+        "value": {
+          "bytes": 1719519,
+          "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
+        }
+      },
+      "release_presence": {
+        "authority": "github-release-promoted",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": "dist.zip"
+      }
     },
     "release_manifest": {
-      "bytes": null,
-      "sha256": null,
-      "status": "unobserved"
+      "binding": {
+        "authority": "release-manifest",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "release_tag": "lite-2026.08.12.2",
+          "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+        }
+      },
+      "filename": "pocketlab-lite-release.json",
+      "integrity": {
+        "authority": "release-artifact-integrity",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "github_digest_status": "verified",
+          "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+          "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+        }
+      },
+      "local_staging": {
+        "authority": "local-repository",
+        "confidence": "unvalidated",
+        "freshness": "current",
+        "observed_at": "unobserved",
+        "sanitized": true,
+        "source": "pocketlab-lite-release.json",
+        "status": "unobserved",
+        "value": {
+          "bytes": null,
+          "sha256": null
+        }
+      },
+      "release_presence": {
+        "authority": "github-release-promoted",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": "pocketlab-lite-release.json"
+      }
+    }
+  },
+  "assurance": {
+    "authorities": {
+      "local_repository": {
+        "authority": "local-repository",
+        "confidence": "local-observation",
+        "freshness": "current",
+        "observed_at": "unobserved",
+        "sanitized": true,
+        "source": "git/source environment",
+        "status": "observed",
+        "value": {
+          "source_commit": "uncommitted",
+          "tree": "uncommitted"
+        }
+      },
+      "release": {
+        "authority": "release",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T15:12:08Z",
+        "sanitized": true,
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "status": "verified",
+        "value": {
+          "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+          "tag": "lite-2026.08.12.2",
+          "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560"
+        }
+      },
+      "runtime": {
+        "authority": "runtime",
+        "confidence": "runtime-promoted",
+        "freshness": "current",
+        "observed_at": "2026-08-12T16:00:40Z",
+        "sanitized": true,
+        "source": "contracts/parity/runtime-verification-baseline.json",
+        "status": "promoted",
+        "value": {
+          "release_tag": "lite-2026.08.12.2",
+          "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+        }
+      },
+      "supply_chain": {
+        "authority": "supply-chain",
+        "confidence": "release-promoted",
+        "freshness": "current",
+        "observed_at": "unobserved",
+        "sanitized": true,
+        "source": "contracts/generated/supply-chain",
+        "status": "promoted",
+        "value": "normalized canonical evidence present"
+      }
+    },
+    "comparison_state": "baseline-only",
+    "dimensions": [
+      {
+        "evidence": "release tag ↔ commit ↔ tree",
+        "id": "source-identity",
+        "status": "verified"
+      },
+      {
+        "evidence": "3/3 promoted release assets have verified digest evidence",
+        "id": "artifact-integrity",
+        "status": "verified"
+      },
+      {
+        "evidence": "promoted runtime baseline ↔ release authority",
+        "id": "runtime-binding",
+        "status": "verified"
+      },
+      {
+        "evidence": {
+          "degraded": 2,
+          "healthy": 3,
+          "unvalidated": 2
+        },
+        "id": "operational-health",
+        "status": "degraded"
+      },
+      {
+        "evidence": {
+          "needs-review": 2,
+          "partial": 2,
+          "verified": 3
+        },
+        "id": "semantic-parity",
+        "status": "observed"
+      },
+      {
+        "evidence": "normalized scanner/security evidence",
+        "id": "security-evidence",
+        "status": "promoted"
+      },
+      {
+        "evidence": "CycloneDX release SBOM",
+        "id": "sbom",
+        "status": "verified"
+      },
+      {
+        "evidence": "unobserved",
+        "id": "provenance",
+        "status": "unobserved"
+      },
+      {
+        "evidence": "unobserved-until-explicit-sign-command",
+        "id": "signatures",
+        "status": "unobserved"
+      },
+      {
+        "evidence": "repository migration inventory",
+        "id": "migration-evidence",
+        "status": "unobserved"
+      },
+      {
+        "evidence": "baseline-only",
+        "id": "historical-delta",
+        "status": "observed"
+      }
+    ],
+    "evidence_gaps": [
+      {
+        "dimension": "provenance",
+        "reason": "unobserved",
+        "status": "unobserved"
+      },
+      {
+        "dimension": "signatures",
+        "reason": "unobserved-until-explicit-sign-command",
+        "status": "unobserved"
+      },
+      {
+        "dimension": "migration-evidence",
+        "reason": "repository migration inventory",
+        "status": "unobserved"
+      }
+    ],
+    "lineage": [
+      {
+        "from": "release authority",
+        "source": "contracts/generated/releases/promoted-release-evidence.json",
+        "to": "runtime baseline"
+      },
+      {
+        "from": "runtime baseline",
+        "source": "contracts/parity/runtime-verification-baseline.json",
+        "to": "domain operational health"
+      },
+      {
+        "from": "domain operational health",
+        "source": "contracts/generated/runtime/domain-operational-health.json",
+        "to": "release impact/assurance"
+      },
+      {
+        "from": "release impact/assurance",
+        "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+        "to": "MkDocs"
+      }
+    ],
+    "overall": "verified-with-evidence-gaps"
+  },
+  "authorities": {
+    "local_repository": {
+      "authority": "local-repository",
+      "confidence": "local-observation",
+      "freshness": "current",
+      "observed_at": "unobserved",
+      "sanitized": true,
+      "source": "git/source environment",
+      "status": "observed",
+      "value": {
+        "source_commit": "uncommitted",
+        "tree": "uncommitted"
+      }
+    },
+    "release": {
+      "authority": "release",
+      "confidence": "release-promoted",
+      "freshness": "current",
+      "observed_at": "2026-08-12T15:12:08Z",
+      "sanitized": true,
+      "source": "contracts/generated/releases/promoted-release-evidence.json",
+      "status": "verified",
+      "value": {
+        "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "tag": "lite-2026.08.12.2",
+        "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560"
+      }
+    },
+    "runtime": {
+      "authority": "runtime",
+      "confidence": "runtime-promoted",
+      "freshness": "current",
+      "observed_at": "2026-08-12T16:00:40Z",
+      "sanitized": true,
+      "source": "contracts/parity/runtime-verification-baseline.json",
+      "status": "promoted",
+      "value": {
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+      }
+    },
+    "supply_chain": {
+      "authority": "supply-chain",
+      "confidence": "release-promoted",
+      "freshness": "current",
+      "observed_at": "unobserved",
+      "sanitized": true,
+      "source": "contracts/generated/supply-chain",
+      "status": "promoted",
+      "value": "normalized canonical evidence present"
     }
   },
   "backend_identity": "a6e4abc37ee9cca62c27286c556607ff3e740561",
@@ -25,18 +381,283 @@
     "ARM64 Ubuntu/proot",
     "Ubuntu/WSL2 development"
   ],
+  "evidence_gaps": [
+    {
+      "dimension": "provenance",
+      "reason": "unobserved",
+      "status": "unobserved"
+    },
+    {
+      "dimension": "signatures",
+      "reason": "unobserved-until-explicit-sign-command",
+      "status": "unobserved"
+    },
+    {
+      "dimension": "migration-evidence",
+      "reason": "repository migration inventory",
+      "status": "unobserved"
+    }
+  ],
   "evidence_status": "source-and-canonical-evidence",
-  "exact_tag": null,
+  "exact_tag": "lite-2026.08.12.2",
   "fingerprints": {
     "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
     "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-    "documentation": "30a9e7d29b4520d7a57a05327dd8aae0f858806e6853919b4d9db03f6e9cca62",
+    "documentation": "c5e2377e21be83e6374f85ed0c74836777d996b07741c7f7014a8dea0f3a1c50",
     "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
     "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",
-  "known_limitations": "derive from canonical limitations catalog",
+  "known_limitations": [
+    {
+      "category": "accepted_limitations",
+      "description": "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract.",
+      "domain": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "Application-owned media indexing is not a Pocket Lab parity authority.",
+      "domain": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "Restore apply and update apply remain unavailable unless separately implemented and validated.",
+      "domain": "apps",
+      "implementation_status": "implemented",
+      "label": "Apps",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "Heartbeat freshness can move during capture; comparison records the observed revision.",
+      "domain": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "Per-device profile fields remain partial when the agent has not published them.",
+      "domain": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "Healthy online devices are not removed without explicit confirmation.",
+      "domain": "devices",
+      "implementation_status": "implemented",
+      "label": "Devices",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "CPU, memory, and storage presentation may be rounded or unit-formatted.",
+      "domain": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "Live runtime semantic evidence remains explicit and release-bound.",
+      "domain": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "Home never executes system operations directly.",
+      "domain": "home",
+      "implementation_status": "implemented",
+      "label": "Home",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "Credential values are never observable parity fields.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "The current tab is direct-rendered and has no dedicated selector layer.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "Identity guard and protected server-host projections are not fully implemented.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "Identity mismatch repair/rejoin must remain explicit and fail closed.",
+      "domain": "identity",
+      "implementation_status": "partial",
+      "label": "Identity",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "App restore apply remains explicitly unsupported where the repository reports it unavailable.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "Historical restore previews are evidence only and never authorize a new restore.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "Live Termux and live browser semantic capture remain explicit; missing capture is not drift.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "Unsafe writes remain disabled while the recovery projection is stale.",
+      "domain": "recovery",
+      "implementation_status": "implemented",
+      "label": "Backup & Restore",
+      "operational_health": "degraded",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine.",
+      "domain": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "Per-rule identity and execution history are planned, not present in the current API.",
+      "domain": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "Planned trigger/condition/action automation is not marked verified.",
+      "domain": "rules",
+      "implementation_status": "partial",
+      "label": "Rules",
+      "operational_health": "unvalidated",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "accepted_limitations",
+      "description": "Raw scanner output and sensitive paths are intentionally excluded.",
+      "domain": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "known_gaps",
+      "description": "A missing scanner is runtime-unavailable, not semantic drift.",
+      "domain": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    },
+    {
+      "category": "unsupported_operations",
+      "description": "The browser never runs Lynis, Trivy, shell, PM2, or NATS commands.",
+      "domain": "security",
+      "implementation_status": "implemented",
+      "label": "Security",
+      "operational_health": "healthy",
+      "source": "contracts/generated/parity/accepted-limitations.json"
+    }
+  ],
+  "lineage": [
+    {
+      "from": "release authority",
+      "source": "contracts/generated/releases/promoted-release-evidence.json",
+      "to": "runtime baseline"
+    },
+    {
+      "from": "runtime baseline",
+      "source": "contracts/parity/runtime-verification-baseline.json",
+      "to": "domain operational health"
+    },
+    {
+      "from": "domain operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "to": "release impact/assurance"
+    },
+    {
+      "from": "release impact/assurance",
+      "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "to": "MkDocs"
+    }
+  ],
   "provenance": {
     "build_type": "pocket-lab-lite/dist-zip-and-documentation-evidence",
     "builder": {
@@ -93,7 +714,7 @@
     "workflow": "cosign sign-blob --yes --bundle <bundle> <artifact>"
   },
   "source_commit": "uncommitted",
-  "status": "release-evidence-model-operational",
+  "status": "release-assurance-model-operational",
   "tree_hash": "uncommitted",
   "validation_outcomes": "canonical validation evidence only; never polled live"
 }

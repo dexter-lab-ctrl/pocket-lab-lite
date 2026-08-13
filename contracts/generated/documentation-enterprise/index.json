@@ -18171,6 +18171,31 @@
       },
       {
         "affected_components": [
+          "documentation",
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_EVIDENCE_PROMOTE",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/docs/enterprise/release_evidence_promotion.py",
+          "tasks/Taskfile.docs.yml"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "repository tooling"
         ],
         "affects_release": false,
@@ -32942,6 +32967,7 @@
       ]
     },
     "release_delta": {
+      "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
       "classifications": [
         "added",
         "removed",
@@ -32964,90 +32990,214 @@
         "unknown",
         "unchanged"
       ],
+      "comparison_state": "baseline-only",
       "dimensions": [
         {
           "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
           "dimension": "git-source",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "openapi",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "asyncapi-events",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "sqlite-schema-migrations",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "architecture",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "trust-boundaries",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "capabilities",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "operational-health",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "runtime-topology",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "semantic-parity",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "platform-capability-evidence",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "reason-codes",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "task-inventory",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "security-controls",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "threat-model",
-          "status": "not-comparable"
-        },
-        {
-          "classification": "not-comparable",
-          "dimension": "sbom",
+          "source_paths": [
+            "src",
+            "scripts",
+            "tasks",
+            "Taskfile.yml",
+            ".github/workflows",
+            "contracts/metadata",
+            "contracts/parity",
+            "schemas",
+            "architecture/metadata",
+            "operations",
+            "runbooks",
+            "package.json",
+            "package-lock.json",
+            "requirements-dev.txt",
+            "requirements-docs.txt",
+            "pocket-lab-final-structure/runtime/requirements.txt"
+          ],
           "status": "not-comparable"
         },
         {
           "classification": "not-comparable",
           "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "openapi",
+          "source_paths": [
+            "contracts/generated/lite-openapi.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "asyncapi-events",
+          "source_paths": [
+            "contracts/generated/lite-asyncapi.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "sqlite-schema-migrations",
+          "source_paths": [
+            "pocket-lab-final-structure/runtime/api_fastapi/migrations",
+            "pocket-lab-final-structure/runtime/migrations"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "architecture",
+          "source_paths": [
+            "architecture/metadata",
+            "scripts/docs/graphviz"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "trust-boundaries",
+          "source_paths": [
+            "architecture/metadata/pocket-lab-architecture.json",
+            "scripts/docs/enterprise/enterprise_completion.py"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "capabilities",
+          "source_paths": [
+            "contracts/generated/knowledge/capabilities.json",
+            "contracts/generated/device-capabilities.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "operational-health",
+          "source_paths": [
+            "contracts/generated/runtime/domain-operational-health.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "runtime-topology",
+          "source_paths": [
+            "contracts/generated/knowledge/runtime-topology.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "semantic-parity",
+          "source_paths": [
+            "contracts/parity/parity-model.json",
+            "contracts/parity/runtime-verification-baseline.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "platform-capability-evidence",
+          "source_paths": [
+            "contracts/generated/documentation-intelligence/platform-matrix.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "reason-codes",
+          "source_paths": [
+            "contracts/generated/reason-codes.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "task-inventory",
+          "source_paths": [
+            "Taskfile.yml",
+            "tasks"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "security-controls",
+          "source_paths": [
+            "security",
+            "scripts/docs/enterprise/enterprise_completion.py"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "threat-model",
+          "source_paths": [
+            "scripts/docs/enterprise/enterprise_completion.py",
+            "scripts/docs/check_threat_model.py",
+            "architecture/metadata"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
+          "dimension": "sbom",
+          "source_paths": [
+            "contracts/generated/supply-chain/sbom-dev.cdx.json",
+            "contracts/generated/supply-chain/sbom-release.cdx.json",
+            "contracts/generated/supply-chain/sbom-runtime.cdx.json"
+          ],
+          "status": "not-comparable"
+        },
+        {
+          "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required",
             "supply_chain_change": {
               "dependencies_added": [],
               "dependencies_removed": [],
@@ -33056,11 +33206,18 @@
             }
           },
           "dimension": "dependency-versions",
+          "source_paths": [
+            "package-lock.json",
+            "requirements-dev.txt",
+            "requirements-docs.txt",
+            "pocket-lab-final-structure/runtime/requirements.txt"
+          ],
           "status": "not-comparable"
         },
         {
           "classification": "not-comparable",
           "details": {
+            "reason": "a second verified canonical release is required",
             "supply_chain_change": {
               "new_vulnerabilities": [],
               "resolved_vulnerabilities": [],
@@ -33068,11 +33225,15 @@
             }
           },
           "dimension": "vulnerabilities",
+          "source_paths": [
+            "contracts/generated/supply-chain/vulnerability-correlation.json"
+          ],
           "status": "not-comparable"
         },
         {
           "classification": "not-comparable",
           "details": {
+            "reason": "a second verified canonical release is required",
             "supply_chain_change": {
               "license_classification_changes": [],
               "new_licenses": [],
@@ -33080,35 +33241,61 @@
             }
           },
           "dimension": "licenses",
+          "source_paths": [
+            "contracts/generated/supply-chain/license-inventory.json"
+          ],
           "status": "not-comparable"
         },
         {
           "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
           "dimension": "release-artifacts",
+          "source_paths": [
+            ".github/workflows/release-dist.yml",
+            "tasks/Taskfile.release.yml",
+            "scripts/dev/lite/release_artifact_check.py"
+          ],
           "status": "not-comparable"
         },
         {
           "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
           "dimension": "documentation-coverage",
+          "source_paths": [
+            "contracts/generated/knowledge/index.json",
+            "mkdocs.yml"
+          ],
           "status": "not-comparable"
         },
         {
           "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
           "dimension": "validation-coverage",
+          "source_paths": [
+            "tests",
+            "tasks",
+            "Taskfile.yml"
+          ],
           "status": "not-comparable"
         }
       ],
-      "evidence_status": "not-comparable",
+      "evidence_status": "baseline-only",
       "from": null,
       "implementation_status": "implemented",
-      "status": "no-comparable-verified-prior-release",
+      "status": "initial-canonical-comparison-baseline",
       "supply_chain_change": {
         "baseline_readiness": {
-          "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
-          "candidate_count": 0,
-          "head": "a6e4abc37ee9cca62c27286c556607ff3e740561",
-          "head_tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
-          "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+          "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
+          "candidate_count": 1,
+          "head": "a34a5a2ba5136a9d43dc950e26a9079dbf2aad5a",
+          "head_tree": "1df0908775e68b975cb73c43443d24c6073f2cd4",
+          "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
         },
@@ -33307,7 +33494,7 @@
         "evidence_status": "not-comparable",
         "historical_comparison": {
           "from": null,
-          "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+          "reason": "no second verified canonical release is available for release-to-release comparison",
           "status": "not-comparable",
           "to": "current-source"
         },
@@ -33324,24 +33511,438 @@
         "upstream_posture_changes": [],
         "versions_changed": []
       },
-      "to": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+      "to": {
+        "artifacts": [
+          {
+            "bytes": 474904,
+            "github_asset_presence": "verified",
+            "github_digest_status": "verified",
+            "name": "dist.zip",
+            "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+            "status": "verified",
+            "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+          },
+          {
+            "bytes": 75,
+            "github_asset_presence": "verified",
+            "github_digest_status": "verified",
+            "name": "checksums.txt",
+            "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+            "status": "verified",
+            "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+          },
+          {
+            "bytes": 362,
+            "github_asset_presence": "verified",
+            "github_digest_status": "verified",
+            "name": "pocketlab-lite-release.json",
+            "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+            "status": "verified",
+            "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+          }
+        ],
+        "canonical_source": "contracts/generated/releases/promoted-release-evidence.json",
+        "canonical_sources": [
+          "contracts/generated/releases/promoted-release-evidence.json"
+        ],
+        "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "local_tag_available": true,
+        "local_tag_matches": true,
+        "manifest_binding": {
+          "dist_zip_sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+          "release_tag": "lite-2026.08.12.2",
+          "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+          "status": "verified"
+        },
+        "observed_at": "2026-08-12T15:12:08Z",
+        "promotion_rule": "explicit-only; immutable per release tag",
+        "published_at": "2026-08-12T15:12:08Z",
+        "raw_urls_included": false,
+        "release_tag": "lite-2026.08.12.2",
+        "repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "sanitized": true,
+        "schema_version": "1.0.0",
+        "source": "explicit-gh-release-capture",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "tag": "lite-2026.08.12.2",
+        "tagged_at": "2026-08-12T16:12:12+02:00",
+        "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+        "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+        "verification_status": "promoted"
+      }
     },
     "release_evidence": {
       "artifacts": {
         "checksums.txt": {
-          "bytes": null,
-          "sha256": null,
-          "status": "unobserved"
+          "binding": {
+            "authority": "release-manifest",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "release_tag": "lite-2026.08.12.2",
+              "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+            }
+          },
+          "filename": "checksums.txt",
+          "integrity": {
+            "authority": "release-artifact-integrity",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "github_digest_status": "verified",
+              "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+              "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+            }
+          },
+          "local_staging": {
+            "authority": "local-repository",
+            "confidence": "unvalidated",
+            "freshness": "current",
+            "observed_at": "unobserved",
+            "sanitized": true,
+            "source": "checksums.txt",
+            "status": "unobserved",
+            "value": {
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "release_presence": {
+            "authority": "github-release-promoted",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": "checksums.txt"
+          }
         },
         "dist.zip": {
-          "bytes": 1719519,
-          "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f",
-          "status": "observed-local-release-staging"
+          "binding": {
+            "authority": "release-manifest",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "release_tag": "lite-2026.08.12.2",
+              "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+            }
+          },
+          "filename": "dist.zip",
+          "integrity": {
+            "authority": "release-artifact-integrity",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "github_digest_status": "verified",
+              "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+              "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+            }
+          },
+          "local_staging": {
+            "authority": "local-repository",
+            "confidence": "local-observation",
+            "freshness": "current",
+            "observed_at": "unobserved",
+            "sanitized": true,
+            "source": "dist.zip",
+            "status": "observed",
+            "value": {
+              "bytes": 1719519,
+              "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
+            }
+          },
+          "release_presence": {
+            "authority": "github-release-promoted",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": "dist.zip"
+          }
         },
         "release_manifest": {
-          "bytes": null,
-          "sha256": null,
-          "status": "unobserved"
+          "binding": {
+            "authority": "release-manifest",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "release_tag": "lite-2026.08.12.2",
+              "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+            }
+          },
+          "filename": "pocketlab-lite-release.json",
+          "integrity": {
+            "authority": "release-artifact-integrity",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "github_digest_status": "verified",
+              "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+              "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+            }
+          },
+          "local_staging": {
+            "authority": "local-repository",
+            "confidence": "unvalidated",
+            "freshness": "current",
+            "observed_at": "unobserved",
+            "sanitized": true,
+            "source": "pocketlab-lite-release.json",
+            "status": "unobserved",
+            "value": {
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "release_presence": {
+            "authority": "github-release-promoted",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": "pocketlab-lite-release.json"
+          }
+        }
+      },
+      "assurance": {
+        "authorities": {
+          "local_repository": {
+            "authority": "local-repository",
+            "confidence": "local-observation",
+            "freshness": "current",
+            "observed_at": "unobserved",
+            "sanitized": true,
+            "source": "git/source environment",
+            "status": "observed",
+            "value": {
+              "source_commit": "uncommitted",
+              "tree": "uncommitted"
+            }
+          },
+          "release": {
+            "authority": "release",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T15:12:08Z",
+            "sanitized": true,
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "status": "verified",
+            "value": {
+              "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+              "tag": "lite-2026.08.12.2",
+              "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560"
+            }
+          },
+          "runtime": {
+            "authority": "runtime",
+            "confidence": "runtime-promoted",
+            "freshness": "current",
+            "observed_at": "2026-08-12T16:00:40Z",
+            "sanitized": true,
+            "source": "contracts/parity/runtime-verification-baseline.json",
+            "status": "promoted",
+            "value": {
+              "release_tag": "lite-2026.08.12.2",
+              "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+            }
+          },
+          "supply_chain": {
+            "authority": "supply-chain",
+            "confidence": "release-promoted",
+            "freshness": "current",
+            "observed_at": "unobserved",
+            "sanitized": true,
+            "source": "contracts/generated/supply-chain",
+            "status": "promoted",
+            "value": "normalized canonical evidence present"
+          }
+        },
+        "comparison_state": "baseline-only",
+        "dimensions": [
+          {
+            "evidence": "release tag ↔ commit ↔ tree",
+            "id": "source-identity",
+            "status": "verified"
+          },
+          {
+            "evidence": "3/3 promoted release assets have verified digest evidence",
+            "id": "artifact-integrity",
+            "status": "verified"
+          },
+          {
+            "evidence": "promoted runtime baseline ↔ release authority",
+            "id": "runtime-binding",
+            "status": "verified"
+          },
+          {
+            "evidence": {
+              "degraded": 2,
+              "healthy": 3,
+              "unvalidated": 2
+            },
+            "id": "operational-health",
+            "status": "degraded"
+          },
+          {
+            "evidence": {
+              "needs-review": 2,
+              "partial": 2,
+              "verified": 3
+            },
+            "id": "semantic-parity",
+            "status": "observed"
+          },
+          {
+            "evidence": "normalized scanner/security evidence",
+            "id": "security-evidence",
+            "status": "promoted"
+          },
+          {
+            "evidence": "CycloneDX release SBOM",
+            "id": "sbom",
+            "status": "verified"
+          },
+          {
+            "evidence": "unobserved",
+            "id": "provenance",
+            "status": "unobserved"
+          },
+          {
+            "evidence": "unobserved-until-explicit-sign-command",
+            "id": "signatures",
+            "status": "unobserved"
+          },
+          {
+            "evidence": "repository migration inventory",
+            "id": "migration-evidence",
+            "status": "unobserved"
+          },
+          {
+            "evidence": "baseline-only",
+            "id": "historical-delta",
+            "status": "observed"
+          }
+        ],
+        "evidence_gaps": [
+          {
+            "dimension": "provenance",
+            "reason": "unobserved",
+            "status": "unobserved"
+          },
+          {
+            "dimension": "signatures",
+            "reason": "unobserved-until-explicit-sign-command",
+            "status": "unobserved"
+          },
+          {
+            "dimension": "migration-evidence",
+            "reason": "repository migration inventory",
+            "status": "unobserved"
+          }
+        ],
+        "lineage": [
+          {
+            "from": "release authority",
+            "source": "contracts/generated/releases/promoted-release-evidence.json",
+            "to": "runtime baseline"
+          },
+          {
+            "from": "runtime baseline",
+            "source": "contracts/parity/runtime-verification-baseline.json",
+            "to": "domain operational health"
+          },
+          {
+            "from": "domain operational health",
+            "source": "contracts/generated/runtime/domain-operational-health.json",
+            "to": "release impact/assurance"
+          },
+          {
+            "from": "release impact/assurance",
+            "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+            "to": "MkDocs"
+          }
+        ],
+        "overall": "verified-with-evidence-gaps"
+      },
+      "authorities": {
+        "local_repository": {
+          "authority": "local-repository",
+          "confidence": "local-observation",
+          "freshness": "current",
+          "observed_at": "unobserved",
+          "sanitized": true,
+          "source": "git/source environment",
+          "status": "observed",
+          "value": {
+            "source_commit": "uncommitted",
+            "tree": "uncommitted"
+          }
+        },
+        "release": {
+          "authority": "release",
+          "confidence": "release-promoted",
+          "freshness": "current",
+          "observed_at": "2026-08-12T15:12:08Z",
+          "sanitized": true,
+          "source": "contracts/generated/releases/promoted-release-evidence.json",
+          "status": "verified",
+          "value": {
+            "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+            "tag": "lite-2026.08.12.2",
+            "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560"
+          }
+        },
+        "runtime": {
+          "authority": "runtime",
+          "confidence": "runtime-promoted",
+          "freshness": "current",
+          "observed_at": "2026-08-12T16:00:40Z",
+          "sanitized": true,
+          "source": "contracts/parity/runtime-verification-baseline.json",
+          "status": "promoted",
+          "value": {
+            "release_tag": "lite-2026.08.12.2",
+            "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+          }
+        },
+        "supply_chain": {
+          "authority": "supply-chain",
+          "confidence": "release-promoted",
+          "freshness": "current",
+          "observed_at": "unobserved",
+          "sanitized": true,
+          "source": "contracts/generated/supply-chain",
+          "status": "promoted",
+          "value": "normalized canonical evidence present"
         }
       },
       "backend_identity": "a6e4abc37ee9cca62c27286c556607ff3e740561",
@@ -33353,18 +33954,283 @@
         "ARM64 Ubuntu/proot",
         "Ubuntu/WSL2 development"
       ],
+      "evidence_gaps": [
+        {
+          "dimension": "provenance",
+          "reason": "unobserved",
+          "status": "unobserved"
+        },
+        {
+          "dimension": "signatures",
+          "reason": "unobserved-until-explicit-sign-command",
+          "status": "unobserved"
+        },
+        {
+          "dimension": "migration-evidence",
+          "reason": "repository migration inventory",
+          "status": "unobserved"
+        }
+      ],
       "evidence_status": "source-and-canonical-evidence",
-      "exact_tag": null,
+      "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "30a9e7d29b4520d7a57a05327dd8aae0f858806e6853919b4d9db03f6e9cca62",
+        "documentation": "c5e2377e21be83e6374f85ed0c74836777d996b07741c7f7014a8dea0f3a1c50",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
-      "known_limitations": "derive from canonical limitations catalog",
+      "known_limitations": [
+        {
+          "category": "accepted_limitations",
+          "description": "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract.",
+          "domain": "apps",
+          "implementation_status": "implemented",
+          "label": "Apps",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "Application-owned media indexing is not a Pocket Lab parity authority.",
+          "domain": "apps",
+          "implementation_status": "implemented",
+          "label": "Apps",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "Restore apply and update apply remain unavailable unless separately implemented and validated.",
+          "domain": "apps",
+          "implementation_status": "implemented",
+          "label": "Apps",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "Heartbeat freshness can move during capture; comparison records the observed revision.",
+          "domain": "devices",
+          "implementation_status": "implemented",
+          "label": "Devices",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "Per-device profile fields remain partial when the agent has not published them.",
+          "domain": "devices",
+          "implementation_status": "implemented",
+          "label": "Devices",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "Healthy online devices are not removed without explicit confirmation.",
+          "domain": "devices",
+          "implementation_status": "implemented",
+          "label": "Devices",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "CPU, memory, and storage presentation may be rounded or unit-formatted.",
+          "domain": "home",
+          "implementation_status": "implemented",
+          "label": "Home",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "Live runtime semantic evidence remains explicit and release-bound.",
+          "domain": "home",
+          "implementation_status": "implemented",
+          "label": "Home",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "Home never executes system operations directly.",
+          "domain": "home",
+          "implementation_status": "implemented",
+          "label": "Home",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "Credential values are never observable parity fields.",
+          "domain": "identity",
+          "implementation_status": "partial",
+          "label": "Identity",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "Identity guard and protected server-host authority fields are planned and may remain unavailable until identity bootstrap services are implemented.",
+          "domain": "identity",
+          "implementation_status": "partial",
+          "label": "Identity",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "The current tab is direct-rendered and has no dedicated selector layer.",
+          "domain": "identity",
+          "implementation_status": "partial",
+          "label": "Identity",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "Identity guard and protected server-host projections are not fully implemented.",
+          "domain": "identity",
+          "implementation_status": "partial",
+          "label": "Identity",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "Identity mismatch repair/rejoin must remain explicit and fail closed.",
+          "domain": "identity",
+          "implementation_status": "partial",
+          "label": "Identity",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+          "domain": "recovery",
+          "implementation_status": "implemented",
+          "label": "Backup & Restore",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "App restore apply remains explicitly unsupported where the repository reports it unavailable.",
+          "domain": "recovery",
+          "implementation_status": "implemented",
+          "label": "Backup & Restore",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "Historical restore previews are evidence only and never authorize a new restore.",
+          "domain": "recovery",
+          "implementation_status": "implemented",
+          "label": "Backup & Restore",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "Live Termux and live browser semantic capture remain explicit; missing capture is not drift.",
+          "domain": "recovery",
+          "implementation_status": "implemented",
+          "label": "Backup & Restore",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "Unsafe writes remain disabled while the recovery projection is stale.",
+          "domain": "recovery",
+          "implementation_status": "implemented",
+          "label": "Backup & Restore",
+          "operational_health": "degraded",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine.",
+          "domain": "rules",
+          "implementation_status": "partial",
+          "label": "Rules",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "Per-rule identity and execution history are planned, not present in the current API.",
+          "domain": "rules",
+          "implementation_status": "partial",
+          "label": "Rules",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "Planned trigger/condition/action automation is not marked verified.",
+          "domain": "rules",
+          "implementation_status": "partial",
+          "label": "Rules",
+          "operational_health": "unvalidated",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "accepted_limitations",
+          "description": "Raw scanner output and sensitive paths are intentionally excluded.",
+          "domain": "security",
+          "implementation_status": "implemented",
+          "label": "Security",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "known_gaps",
+          "description": "A missing scanner is runtime-unavailable, not semantic drift.",
+          "domain": "security",
+          "implementation_status": "implemented",
+          "label": "Security",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        },
+        {
+          "category": "unsupported_operations",
+          "description": "The browser never runs Lynis, Trivy, shell, PM2, or NATS commands.",
+          "domain": "security",
+          "implementation_status": "implemented",
+          "label": "Security",
+          "operational_health": "healthy",
+          "source": "contracts/generated/parity/accepted-limitations.json"
+        }
+      ],
+      "lineage": [
+        {
+          "from": "release authority",
+          "source": "contracts/generated/releases/promoted-release-evidence.json",
+          "to": "runtime baseline"
+        },
+        {
+          "from": "runtime baseline",
+          "source": "contracts/parity/runtime-verification-baseline.json",
+          "to": "domain operational health"
+        },
+        {
+          "from": "domain operational health",
+          "source": "contracts/generated/runtime/domain-operational-health.json",
+          "to": "release impact/assurance"
+        },
+        {
+          "from": "release impact/assurance",
+          "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+          "to": "MkDocs"
+        }
+      ],
       "provenance": {
         "build_type": "pocket-lab-lite/dist-zip-and-documentation-evidence",
         "builder": {
@@ -33421,7 +34287,7 @@
         "workflow": "cosign sign-blob --yes --bundle <bundle> <artifact>"
       },
       "source_commit": "uncommitted",
-      "status": "release-evidence-model-operational",
+      "status": "release-assurance-model-operational",
       "tree_hash": "uncommitted",
       "validation_outcomes": "canonical validation evidence only; never polled live"
     },
@@ -34196,6 +35062,10 @@
           "messaging-execution"
         ],
         "description": "Frontend does not connect directly to NATS.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "browser could bypass the control API and attempt unauthorized messaging/command injection"
+        ],
         "freshness": "source-current",
         "id": "CTRL-BROWSER-NATS",
         "implementation": [
@@ -34204,6 +35074,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "frontend/control-api",
+        "prevention_claim": false,
         "runtime_evidence": [],
         "source_refs": [
           "contracts/generated/knowledge/requirements.json"
@@ -34222,6 +35093,10 @@
           "Spoofing",
           "Tampering",
           "Elevation of Privilege"
+        ],
+        "where_used": [
+          "browser",
+          "messaging-execution"
         ]
       },
       {
@@ -34232,6 +35107,10 @@
           "browser"
         ],
         "description": "Frontend does not execute shell commands.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "browser-originated input could reach host shell execution and mutate the server host"
+        ],
         "freshness": "source-current",
         "id": "CTRL-BROWSER-SHELL",
         "implementation": [
@@ -34239,6 +35118,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "frontend",
+        "prevention_claim": false,
         "runtime_evidence": [],
         "source_refs": [
           "contracts/generated/knowledge/requirements.json"
@@ -34254,6 +35134,9 @@
         "threats_mitigated": [
           "Tampering",
           "Elevation of Privilege"
+        ],
+        "where_used": [
+          "browser"
         ]
       },
       {
@@ -34268,6 +35151,10 @@
           "messaging-execution"
         ],
         "description": "FastAPI remains the frontend-facing control API.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "frontend intent could bypass centralized validation, authorization, reason codes and audit ownership"
+        ],
         "freshness": "promoted-observation",
         "id": "CTRL-API-CONTROL",
         "implementation": [
@@ -34275,6 +35162,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "FastAPI",
+        "prevention_claim": false,
         "runtime_evidence": [
           "contracts/parity/runtime-verification-baseline.json"
         ],
@@ -34295,6 +35183,11 @@
           "Spoofing",
           "Tampering",
           "Elevation of Privilege"
+        ],
+        "where_used": [
+          "browser",
+          "control-api",
+          "messaging-execution"
         ]
       },
       {
@@ -34309,6 +35202,10 @@
           "server-host"
         ],
         "description": "Workers, agents and supervisors own execution and recovery.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "commands or recovery could execute outside worker/agent/supervisor ownership and lose delivery/recovery guarantees"
+        ],
         "freshness": "promoted-observation",
         "id": "CTRL-EXECUTION-OWNERS",
         "implementation": [
@@ -34317,6 +35214,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "worker/agent/supervisor",
+        "prevention_claim": false,
         "runtime_evidence": [
           "contracts/parity/runtime-verification-baseline.json"
         ],
@@ -34336,6 +35234,11 @@
           "Tampering",
           "Denial of Service",
           "Elevation of Privilege"
+        ],
+        "where_used": [
+          "messaging-execution",
+          "managed-device",
+          "server-host"
         ]
       },
       {
@@ -34350,6 +35253,10 @@
           "server-host"
         ],
         "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "secret-bearing or private-path evidence could enter canonical documentation or mislead security posture"
+        ],
         "freshness": "2026-08-12T16:00:40Z",
         "id": "CTRL-EVIDENCE-SANITIZE",
         "implementation": [
@@ -34358,6 +35265,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "evidence pipeline",
+        "prevention_claim": false,
         "runtime_evidence": [
           "contracts/parity/runtime-verification-baseline.json"
         ],
@@ -34375,6 +35283,11 @@
         "threats_mitigated": [
           "Information Disclosure",
           "Repudiation"
+        ],
+        "where_used": [
+          "durable-state",
+          "external-release",
+          "server-host"
         ]
       },
       {
@@ -34389,6 +35302,10 @@
           "server-host"
         ],
         "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "transient/unreviewed capture could be mistaken for canonical release/runtime evidence"
+        ],
         "freshness": "2026-08-12T16:00:40Z",
         "id": "CTRL-EXPLICIT-PROMOTION",
         "implementation": [
@@ -34397,6 +35314,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "developer/CI explicit promotion",
+        "prevention_claim": false,
         "runtime_evidence": [
           "contracts/parity/runtime-verification-baseline.json"
         ],
@@ -34416,6 +35334,11 @@
           "Tampering",
           "Repudiation",
           "Information Disclosure"
+        ],
+        "where_used": [
+          "external-release",
+          "durable-state",
+          "server-host"
         ]
       },
       {
@@ -34428,6 +35351,10 @@
           "application-container"
         ],
         "description": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence"
+        ],
         "freshness": "canonical artifact dependent",
         "id": "CTRL-SUPPLY-CHAIN",
         "implementation": [
@@ -34436,6 +35363,7 @@
         ],
         "mitigation_adequacy": "human-review-required",
         "owner": "WSL2/CI security automation",
+        "prevention_claim": false,
         "runtime_evidence": [
           "contracts/generated/supply-chain/automation-summary.json"
         ],
@@ -34455,6 +35383,10 @@
           "Tampering",
           "Information Disclosure",
           "Elevation of Privilege"
+        ],
+        "where_used": [
+          "external-release",
+          "application-container"
         ]
       }
     ],
@@ -34853,11 +35785,11 @@
     },
     "supply_chain_change": {
       "baseline_readiness": {
-        "baseline_policy": "verified canonical release inventory record + reachable matching Git tag/commit/tree",
-        "candidate_count": 0,
-        "head": "a6e4abc37ee9cca62c27286c556607ff3e740561",
-        "head_tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
-        "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+        "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
+        "candidate_count": 1,
+        "head": "a34a5a2ba5136a9d43dc950e26a9079dbf2aad5a",
+        "head_tree": "1df0908775e68b975cb73c43443d24c6073f2cd4",
+        "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
       },
@@ -35056,7 +35988,7 @@
       "evidence_status": "not-comparable",
       "historical_comparison": {
         "from": null,
-        "reason": "no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy",
+        "reason": "no second verified canonical release is available for release-to-release comparison",
         "status": "not-comparable",
         "to": "current-source"
       },
@@ -71474,6 +72406,7 @@
         "lite:docs:development:generate",
         "lite:docs:diagrams:check",
         "lite:docs:diagrams:generate",
+        "lite:docs:enterprise-tools:check",
         "lite:docs:enterprise:check",
         "lite:docs:enterprise:generate",
         "lite:docs:generate",
@@ -71491,6 +72424,7 @@
         "lite:docs:production:check",
         "lite:docs:production:generate",
         "lite:docs:provenance:generate",
+        "lite:docs:release-assurance:check",
         "lite:docs:runtime:check",
         "lite:docs:runtime:generate",
         "lite:docs:security-tools:check",
@@ -71508,6 +72442,9 @@
         "lite:docs:knowledge:releases",
         "lite:docs:provenance:sign-release-set",
         "lite:docs:provenance:verify-release-set",
+        "lite:docs:release-assurance:capture",
+        "lite:docs:release-assurance:check",
+        "lite:docs:release-assurance:promote",
         "lite:docs:release-evidence",
         "lite:release:artifact-check",
         "lite:release:dry-run"
@@ -72296,6 +73233,166 @@
         "side_effects": {
           "network_or_external_tools": true,
           "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --check {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:enterprise-tools:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+        ],
+        "name": "lite:docs:enterprise-tools:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Verify the complete pinned enterprise documentation toolchain without downloads, upgrades, runtime access or scanner execution",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --plan {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:enterprise-tools:plan",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+        ],
+        "name": "lite:docs:enterprise-tools:plan",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Show the complete idempotent WSL2/CI Documentation Platform tool plan, including optional Threat Dragon/Dependency-Track when requested",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --install-missing {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:enterprise-tools:setup",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+        ],
+        "name": "lite:docs:enterprise-tools:setup",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Install only missing pinned Documentation Platform, security/supply-chain and architecture-icon tooling on WSL2/Ubuntu/CI",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": true,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": true
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --update {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:enterprise-tools:update",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+        ],
+        "name": "lite:docs:enterprise-tools:update",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Explicitly update reviewed security-tool pins and repair architecture icons; never runs automatically",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
           "runtime_mutation": false
         },
         "source": "tasks/Taskfile.docs.yml",
@@ -73546,6 +74643,130 @@
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "not-a-validation-task",
         "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": true,
+        "commands": [
+          "test -n \"{{.TAG}}\" && test -n \"{{.REPO}}\" || (echo \"TAG and REPO are required\" >&2; exit 2)",
+          "{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py capture --tag {{.TAG}} --repo {{.REPO}}"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:release-assurance:capture",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/enterprise/release_evidence_promotion.py"
+        ],
+        "name": "lite:docs:release-assurance:capture",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Explicitly capture and verify sanitized GitHub Release identity/artifact evidence into transient .pocketlab-dev storage; never called by MkDocs",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py check"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:release-assurance:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/enterprise/release_evidence_promotion.py"
+        ],
+        "name": "lite:docs:release-assurance:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Validate promoted release evidence offline without GitHub polling",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "test -n \"{{.TAG}}\" || (echo \"TAG is required\" >&2; exit 2)",
+          "POCKETLAB_RELEASE_EVIDENCE_PROMOTE=1 {{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py promote --tag {{.TAG}}"
+        ],
+        "dependencies": [],
+        "environment": [
+          "POCKETLAB_RELEASE_EVIDENCE_PROMOTE"
+        ],
+        "example_invocation": "task lite:docs:release-assurance:promote",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/enterprise/release_evidence_promotion.py"
+        ],
+        "name": "lite:docs:release-assurance:promote",
+        "outputs": [],
+        "promotes_evidence": true,
+        "purpose": "Explicitly promote a validated release capture into append-only canonical release evidence",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Release loop"
       },
       {
         "aliases": [],
@@ -78281,6 +79502,296 @@
       }
     ],
     "threat_model": {
+      "architecture_integration": {
+        "architecture_page": "generated/production/architecture/",
+        "canonical_model": "architecture/metadata/pocket-lab-architecture.json",
+        "component_count": 16,
+        "rule": "Threat visualization nodes reference canonical architecture component ids; security overlays never redefine topology ownership."
+      },
+      "attack_paths": [
+        {
+          "boundaries": [
+            "browser",
+            "messaging-execution"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "unauthorized command injection",
+            "control-plane bypass",
+            "loss of expected audit/control ownership"
+          ],
+          "controls": [
+            "CTRL-BROWSER-NATS",
+            "CTRL-API-CONTROL"
+          ],
+          "entry_point": "browser",
+          "id": "AP-01",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Browser control-plane bypass",
+          "path_nodes": [
+            "browser",
+            "nats-jetstream",
+            "worker"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Spoofing",
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "target": "nats-jetstream"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "server-host"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "host mutation",
+            "secret exposure",
+            "runtime integrity loss"
+          ],
+          "controls": [
+            "CTRL-BROWSER-SHELL",
+            "CTRL-API-CONTROL"
+          ],
+          "entry_point": "browser",
+          "id": "AP-02",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Browser shell execution",
+          "path_nodes": [
+            "browser",
+            "lite-api",
+            "server-host"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "target": "server-host"
+        },
+        {
+          "boundaries": [
+            "managed-device",
+            "control-api",
+            "messaging-execution"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "unauthorized device enrollment",
+            "command execution under a forged identity",
+            "audit attribution failure"
+          ],
+          "controls": [
+            "CTRL-API-CONTROL",
+            "CTRL-EXECUTION-OWNERS"
+          ],
+          "entry_point": "managed-device",
+          "id": "AP-03",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Forged managed-device identity",
+          "path_nodes": [
+            "managed-device",
+            "lite-api",
+            "nats-jetstream",
+            "node-agent"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Spoofing",
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "target": "node-agent"
+        },
+        {
+          "boundaries": [
+            "control-api",
+            "messaging-execution",
+            "managed-device"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "incorrect or repeated device commands",
+            "loss of command integrity",
+            "device availability impact"
+          ],
+          "controls": [
+            "CTRL-API-CONTROL",
+            "CTRL-EXECUTION-OWNERS"
+          ],
+          "entry_point": "lite-api",
+          "id": "AP-04",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Messaging command tampering or replay",
+          "path_nodes": [
+            "lite-api",
+            "nats-jetstream",
+            "worker",
+            "node-agent"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Repudiation",
+            "Denial of Service"
+          ],
+          "target": "node-agent"
+        },
+        {
+          "boundaries": [
+            "external-release",
+            "server-host",
+            "application-container"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "compromised release execution",
+            "dependency or artifact integrity loss",
+            "misleading release posture"
+          ],
+          "controls": [
+            "CTRL-SUPPLY-CHAIN",
+            "CTRL-EXPLICIT-PROMOTION",
+            "CTRL-EVIDENCE-SANITIZE"
+          ],
+          "entry_point": "github-release",
+          "id": "AP-05",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Supply-chain artifact compromise",
+          "path_nodes": [
+            "github-release",
+            "release-artifacts",
+            "server-host"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Information Disclosure",
+            "Elevation of Privilege"
+          ],
+          "target": "server-host"
+        },
+        {
+          "boundaries": [
+            "external-release",
+            "durable-state",
+            "server-host"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "incorrect security posture",
+            "secret or private-path disclosure",
+            "loss of evidence trust"
+          ],
+          "controls": [
+            "CTRL-EVIDENCE-SANITIZE",
+            "CTRL-EXPLICIT-PROMOTION"
+          ],
+          "entry_point": "scanner-evidence",
+          "id": "AP-06",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Evidence poisoning",
+          "path_nodes": [
+            "scanner-evidence",
+            "promoted-evidence",
+            "documentation"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Repudiation",
+            "Information Disclosure"
+          ],
+          "target": "documentation"
+        },
+        {
+          "boundaries": [
+            "private-network",
+            "control-api",
+            "server-host"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "unexpected control-plane reachability",
+            "service exposure",
+            "availability impact"
+          ],
+          "controls": [
+            "CTRL-API-CONTROL",
+            "CTRL-EXECUTION-OWNERS"
+          ],
+          "entry_point": "private-network",
+          "id": "AP-07",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Tailnet/private-network exposure",
+          "path_nodes": [
+            "private-network",
+            "tailscale",
+            "caddy",
+            "lite-api"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Spoofing",
+            "Information Disclosure",
+            "Denial of Service"
+          ],
+          "target": "lite-api"
+        },
+        {
+          "boundaries": [
+            "durable-state",
+            "control-api"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "unsafe restore decisions",
+            "loss of recovery evidence integrity",
+            "recovery unavailability"
+          ],
+          "controls": [
+            "CTRL-EVIDENCE-SANITIZE",
+            "CTRL-EXPLICIT-PROMOTION",
+            "CTRL-API-CONTROL"
+          ],
+          "entry_point": "sqlite",
+          "id": "AP-08",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Recovery state tampering",
+          "path_nodes": [
+            "sqlite",
+            "recovery-state",
+            "lite-api"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Repudiation",
+            "Denial of Service"
+          ],
+          "target": "recovery-state"
+        }
+      ],
       "boundaries": [
         {
           "actors": [
@@ -78333,7 +79844,7 @@
               "state": "control-observed"
             },
             {
-              "observed": "release-evidence-model-operational",
+              "observed": "release-assurance-model-operational",
               "signal": "release evidence",
               "source": "contracts/generated/documentation-enterprise/release-evidence.json",
               "state": "control-observed"
@@ -78597,7 +80108,7 @@
               "state": "control-observed"
             },
             {
-              "observed": "release-evidence-model-operational",
+              "observed": "release-assurance-model-operational",
               "signal": "release evidence",
               "source": "contracts/generated/documentation-enterprise/release-evidence.json",
               "state": "control-observed"
@@ -78905,7 +80416,7 @@
               "state": "control-observed"
             },
             {
-              "observed": "release-evidence-model-operational",
+              "observed": "release-assurance-model-operational",
               "signal": "release evidence",
               "source": "contracts/generated/documentation-enterprise/release-evidence.json",
               "state": "control-observed"
@@ -78981,6 +80492,14 @@
           ]
         }
       ],
+      "consequences_without_model": [
+        "Trust assumptions become implicit and easier to violate during change.",
+        "Controls can exist without a clear statement of which threats and assets they protect.",
+        "Runtime, release and supply-chain evidence become disconnected from security reasoning.",
+        "Boundary changes can ship without exposing their security-review impact.",
+        "Duplicated, missing or weakly evidenced controls are harder to identify.",
+        "Residual risk and human-review decisions become less auditable."
+      ],
       "controls": [
         {
           "boundaries": [
@@ -78992,6 +80511,10 @@
             "messaging-execution"
           ],
           "description": "Frontend does not connect directly to NATS.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "browser could bypass the control API and attempt unauthorized messaging/command injection"
+          ],
           "freshness": "source-current",
           "id": "CTRL-BROWSER-NATS",
           "implementation": [
@@ -79000,6 +80523,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "frontend/control-api",
+          "prevention_claim": false,
           "runtime_evidence": [],
           "source_refs": [
             "contracts/generated/knowledge/requirements.json"
@@ -79018,6 +80542,10 @@
             "Spoofing",
             "Tampering",
             "Elevation of Privilege"
+          ],
+          "where_used": [
+            "browser",
+            "messaging-execution"
           ]
         },
         {
@@ -79028,6 +80556,10 @@
             "browser"
           ],
           "description": "Frontend does not execute shell commands.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "browser-originated input could reach host shell execution and mutate the server host"
+          ],
           "freshness": "source-current",
           "id": "CTRL-BROWSER-SHELL",
           "implementation": [
@@ -79035,6 +80567,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "frontend",
+          "prevention_claim": false,
           "runtime_evidence": [],
           "source_refs": [
             "contracts/generated/knowledge/requirements.json"
@@ -79050,6 +80583,9 @@
           "threats_mitigated": [
             "Tampering",
             "Elevation of Privilege"
+          ],
+          "where_used": [
+            "browser"
           ]
         },
         {
@@ -79064,6 +80600,10 @@
             "messaging-execution"
           ],
           "description": "FastAPI remains the frontend-facing control API.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "frontend intent could bypass centralized validation, authorization, reason codes and audit ownership"
+          ],
           "freshness": "promoted-observation",
           "id": "CTRL-API-CONTROL",
           "implementation": [
@@ -79071,6 +80611,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "FastAPI",
+          "prevention_claim": false,
           "runtime_evidence": [
             "contracts/parity/runtime-verification-baseline.json"
           ],
@@ -79091,6 +80632,11 @@
             "Spoofing",
             "Tampering",
             "Elevation of Privilege"
+          ],
+          "where_used": [
+            "browser",
+            "control-api",
+            "messaging-execution"
           ]
         },
         {
@@ -79105,6 +80651,10 @@
             "server-host"
           ],
           "description": "Workers, agents and supervisors own execution and recovery.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "commands or recovery could execute outside worker/agent/supervisor ownership and lose delivery/recovery guarantees"
+          ],
           "freshness": "promoted-observation",
           "id": "CTRL-EXECUTION-OWNERS",
           "implementation": [
@@ -79113,6 +80663,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "worker/agent/supervisor",
+          "prevention_claim": false,
           "runtime_evidence": [
             "contracts/parity/runtime-verification-baseline.json"
           ],
@@ -79132,6 +80683,11 @@
             "Tampering",
             "Denial of Service",
             "Elevation of Privilege"
+          ],
+          "where_used": [
+            "messaging-execution",
+            "managed-device",
+            "server-host"
           ]
         },
         {
@@ -79146,6 +80702,10 @@
             "server-host"
           ],
           "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "secret-bearing or private-path evidence could enter canonical documentation or mislead security posture"
+          ],
           "freshness": "2026-08-12T16:00:40Z",
           "id": "CTRL-EVIDENCE-SANITIZE",
           "implementation": [
@@ -79154,6 +80714,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "evidence pipeline",
+          "prevention_claim": false,
           "runtime_evidence": [
             "contracts/parity/runtime-verification-baseline.json"
           ],
@@ -79171,6 +80732,11 @@
           "threats_mitigated": [
             "Information Disclosure",
             "Repudiation"
+          ],
+          "where_used": [
+            "durable-state",
+            "external-release",
+            "server-host"
           ]
         },
         {
@@ -79185,6 +80751,10 @@
             "server-host"
           ],
           "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "transient/unreviewed capture could be mistaken for canonical release/runtime evidence"
+          ],
           "freshness": "2026-08-12T16:00:40Z",
           "id": "CTRL-EXPLICIT-PROMOTION",
           "implementation": [
@@ -79193,6 +80763,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "developer/CI explicit promotion",
+          "prevention_claim": false,
           "runtime_evidence": [
             "contracts/parity/runtime-verification-baseline.json"
           ],
@@ -79212,6 +80783,11 @@
             "Tampering",
             "Repudiation",
             "Information Disclosure"
+          ],
+          "where_used": [
+            "external-release",
+            "durable-state",
+            "server-host"
           ]
         },
         {
@@ -79224,6 +80800,10 @@
             "application-container"
           ],
           "description": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence"
+          ],
           "freshness": "canonical artifact dependent",
           "id": "CTRL-SUPPLY-CHAIN",
           "implementation": [
@@ -79232,6 +80812,7 @@
           ],
           "mitigation_adequacy": "human-review-required",
           "owner": "WSL2/CI security automation",
+          "prevention_claim": false,
           "runtime_evidence": [
             "contracts/generated/supply-chain/automation-summary.json"
           ],
@@ -79251,9 +80832,44 @@
             "Tampering",
             "Information Disclosure",
             "Elevation of Privilege"
+          ],
+          "where_used": [
+            "external-release",
+            "application-container"
           ]
         }
       ],
+      "exclusions": [
+        "Live attack monitoring or packet inspection",
+        "Live NATS polling or traffic visualization",
+        "Running Trivy, Lynis, Semgrep or other scanners from MkDocs",
+        "Scanning the live Android filesystem from documentation generation",
+        "Automatically deciding whether a vulnerability is exploitable",
+        "Automatically accepting residual risk or security exceptions",
+        "Replacing penetration testing, source review or operational monitoring",
+        "Replacing incident detection, release qualification or runtime health checks"
+      ],
+      "framework": {
+        "application": [
+          "Identify canonical trust boundaries, assets, actors and flows.",
+          "Generate STRIDE candidates for every trust boundary.",
+          "Map repository-owned controls to applicable threat categories and boundaries.",
+          "Attach promoted runtime, security, release and dependency evidence to control posture.",
+          "Require human review for threat relevance, mitigation adequacy, residual risk, risk acceptance and exceptions."
+        ],
+        "definitions": {
+          "Denial of Service": "Loss of availability, command delivery or recovery capability.",
+          "Elevation of Privilege": "Bypassing browser, control API, execution-owner or host boundaries.",
+          "Information Disclosure": "Exposure of secrets, private paths, credentials or sensitive operational metadata.",
+          "Repudiation": "Loss of trustworthy evidence about who or what performed an action.",
+          "Spoofing": "Impersonating a user, device, service or release identity.",
+          "Tampering": "Unauthorized modification of commands, durable state, releases or evidence."
+        },
+        "primary": "STRIDE",
+        "reference_mappings": [
+          "OWASP Top 10 where applicable"
+        ]
+      },
       "generator": "scripts/docs/enterprise/generate_enterprise_documentation.py",
       "human_review_required": [
         "threat relevance",
@@ -79290,7 +80906,7 @@
           },
           {
             "boundary": "application-container",
-            "observed": "release-evidence-model-operational",
+            "observed": "release-assurance-model-operational",
             "signal": "release evidence",
             "source": "contracts/generated/documentation-enterprise/release-evidence.json",
             "state": "control-observed"
@@ -79358,7 +80974,7 @@
           },
           {
             "boundary": "external-release",
-            "observed": "release-evidence-model-operational",
+            "observed": "release-assurance-model-operational",
             "signal": "release evidence",
             "source": "contracts/generated/documentation-enterprise/release-evidence.json",
             "state": "control-observed"
@@ -79533,7 +81149,7 @@
           },
           {
             "boundary": "server-host",
-            "observed": "release-evidence-model-operational",
+            "observed": "release-assurance-model-operational",
             "signal": "release evidence",
             "source": "contracts/generated/documentation-enterprise/release-evidence.json",
             "state": "control-observed"
@@ -81217,7 +82833,868 @@
             "tests/docs/test_enterprise_completion.py"
           ]
         }
-      ]
+      ],
+      "truth_layers": [
+        {
+          "authority": "canonical architecture and security source",
+          "id": "threat-model",
+          "question": "What could go wrong?"
+        },
+        {
+          "authority": "source plus promoted evidence",
+          "id": "control-posture",
+          "question": "Which mitigations currently have evidence?"
+        },
+        {
+          "authority": "promoted sanitized runtime/security/release evidence",
+          "id": "operational-posture",
+          "question": "What does the latest promoted evidence report?"
+        }
+      ],
+      "visualization": {
+        "animation_semantics": "animated lines represent modeled control/evidence flow, never live traffic or attacks",
+        "attack_paths": [
+          {
+            "boundaries": [
+              "browser",
+              "messaging-execution"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "unauthorized command injection",
+              "control-plane bypass",
+              "loss of expected audit/control ownership"
+            ],
+            "controls": [
+              "CTRL-BROWSER-NATS",
+              "CTRL-API-CONTROL"
+            ],
+            "entry_point": "browser",
+            "id": "AP-01",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Browser control-plane bypass",
+            "path_nodes": [
+              "browser",
+              "nats-jetstream",
+              "worker"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ],
+            "target": "nats-jetstream"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api",
+              "server-host"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "host mutation",
+              "secret exposure",
+              "runtime integrity loss"
+            ],
+            "controls": [
+              "CTRL-BROWSER-SHELL",
+              "CTRL-API-CONTROL"
+            ],
+            "entry_point": "browser",
+            "id": "AP-02",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Browser shell execution",
+            "path_nodes": [
+              "browser",
+              "lite-api",
+              "server-host"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Elevation of Privilege"
+            ],
+            "target": "server-host"
+          },
+          {
+            "boundaries": [
+              "managed-device",
+              "control-api",
+              "messaging-execution"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "unauthorized device enrollment",
+              "command execution under a forged identity",
+              "audit attribution failure"
+            ],
+            "controls": [
+              "CTRL-API-CONTROL",
+              "CTRL-EXECUTION-OWNERS"
+            ],
+            "entry_point": "managed-device",
+            "id": "AP-03",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Forged managed-device identity",
+            "path_nodes": [
+              "managed-device",
+              "lite-api",
+              "nats-jetstream",
+              "node-agent"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ],
+            "target": "node-agent"
+          },
+          {
+            "boundaries": [
+              "control-api",
+              "messaging-execution",
+              "managed-device"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "incorrect or repeated device commands",
+              "loss of command integrity",
+              "device availability impact"
+            ],
+            "controls": [
+              "CTRL-API-CONTROL",
+              "CTRL-EXECUTION-OWNERS"
+            ],
+            "entry_point": "lite-api",
+            "id": "AP-04",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Messaging command tampering or replay",
+            "path_nodes": [
+              "lite-api",
+              "nats-jetstream",
+              "worker",
+              "node-agent"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Repudiation",
+              "Denial of Service"
+            ],
+            "target": "node-agent"
+          },
+          {
+            "boundaries": [
+              "external-release",
+              "server-host",
+              "application-container"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "compromised release execution",
+              "dependency or artifact integrity loss",
+              "misleading release posture"
+            ],
+            "controls": [
+              "CTRL-SUPPLY-CHAIN",
+              "CTRL-EXPLICIT-PROMOTION",
+              "CTRL-EVIDENCE-SANITIZE"
+            ],
+            "entry_point": "github-release",
+            "id": "AP-05",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Supply-chain artifact compromise",
+            "path_nodes": [
+              "github-release",
+              "release-artifacts",
+              "server-host"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Information Disclosure",
+              "Elevation of Privilege"
+            ],
+            "target": "server-host"
+          },
+          {
+            "boundaries": [
+              "external-release",
+              "durable-state",
+              "server-host"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "incorrect security posture",
+              "secret or private-path disclosure",
+              "loss of evidence trust"
+            ],
+            "controls": [
+              "CTRL-EVIDENCE-SANITIZE",
+              "CTRL-EXPLICIT-PROMOTION"
+            ],
+            "entry_point": "scanner-evidence",
+            "id": "AP-06",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Evidence poisoning",
+            "path_nodes": [
+              "scanner-evidence",
+              "promoted-evidence",
+              "documentation"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Repudiation",
+              "Information Disclosure"
+            ],
+            "target": "documentation"
+          },
+          {
+            "boundaries": [
+              "private-network",
+              "control-api",
+              "server-host"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "unexpected control-plane reachability",
+              "service exposure",
+              "availability impact"
+            ],
+            "controls": [
+              "CTRL-API-CONTROL",
+              "CTRL-EXECUTION-OWNERS"
+            ],
+            "entry_point": "private-network",
+            "id": "AP-07",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Tailnet/private-network exposure",
+            "path_nodes": [
+              "private-network",
+              "tailscale",
+              "caddy",
+              "lite-api"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Spoofing",
+              "Information Disclosure",
+              "Denial of Service"
+            ],
+            "target": "lite-api"
+          },
+          {
+            "boundaries": [
+              "durable-state",
+              "control-api"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "unsafe restore decisions",
+              "loss of recovery evidence integrity",
+              "recovery unavailability"
+            ],
+            "controls": [
+              "CTRL-EVIDENCE-SANITIZE",
+              "CTRL-EXPLICIT-PROMOTION",
+              "CTRL-API-CONTROL"
+            ],
+            "entry_point": "sqlite",
+            "id": "AP-08",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Recovery state tampering",
+            "path_nodes": [
+              "sqlite",
+              "recovery-state",
+              "lite-api"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Repudiation",
+              "Denial of Service"
+            ],
+            "target": "recovery-state"
+          }
+        ],
+        "control_bindings": [
+          {
+            "boundary": "browser",
+            "control": "CTRL-BROWSER-NATS",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "messaging-execution",
+            "control": "CTRL-BROWSER-NATS",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "browser",
+            "control": "CTRL-BROWSER-SHELL",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "browser",
+            "control": "CTRL-API-CONTROL",
+            "status": "control-observed",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "control-api",
+            "control": "CTRL-API-CONTROL",
+            "status": "control-observed",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "messaging-execution",
+            "control": "CTRL-API-CONTROL",
+            "status": "control-observed",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "messaging-execution",
+            "control": "CTRL-EXECUTION-OWNERS",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Denial of Service",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "managed-device",
+            "control": "CTRL-EXECUTION-OWNERS",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Denial of Service",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "server-host",
+            "control": "CTRL-EXECUTION-OWNERS",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Denial of Service",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-EVIDENCE-SANITIZE",
+            "status": "control-observed",
+            "threats": [
+              "Information Disclosure",
+              "Repudiation"
+            ]
+          },
+          {
+            "boundary": "external-release",
+            "control": "CTRL-EVIDENCE-SANITIZE",
+            "status": "control-observed",
+            "threats": [
+              "Information Disclosure",
+              "Repudiation"
+            ]
+          },
+          {
+            "boundary": "server-host",
+            "control": "CTRL-EVIDENCE-SANITIZE",
+            "status": "control-observed",
+            "threats": [
+              "Information Disclosure",
+              "Repudiation"
+            ]
+          },
+          {
+            "boundary": "external-release",
+            "control": "CTRL-EXPLICIT-PROMOTION",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Information Disclosure"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-EXPLICIT-PROMOTION",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Information Disclosure"
+            ]
+          },
+          {
+            "boundary": "server-host",
+            "control": "CTRL-EXPLICIT-PROMOTION",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Information Disclosure"
+            ]
+          },
+          {
+            "boundary": "external-release",
+            "control": "CTRL-SUPPLY-CHAIN",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Information Disclosure",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "application-container",
+            "control": "CTRL-SUPPLY-CHAIN",
+            "status": "control-observed",
+            "threats": [
+              "Tampering",
+              "Information Disclosure",
+              "Elevation of Privilege"
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "from": "browser",
+            "id": "flow-01",
+            "kind": "allowed-flow",
+            "label": "HTTPS",
+            "to": "caddy"
+          },
+          {
+            "from": "caddy",
+            "id": "flow-02",
+            "kind": "allowed-flow",
+            "label": "same-origin",
+            "to": "lite-api"
+          },
+          {
+            "from": "lite-api",
+            "id": "flow-03",
+            "kind": "allowed-flow",
+            "label": "commands/events",
+            "to": "nats-jetstream"
+          },
+          {
+            "from": "nats-jetstream",
+            "id": "flow-04",
+            "kind": "allowed-flow",
+            "label": "JetStream",
+            "to": "worker"
+          },
+          {
+            "from": "worker",
+            "id": "flow-05",
+            "kind": "allowed-flow",
+            "label": "execution",
+            "to": "node-agent"
+          },
+          {
+            "from": "node-agent",
+            "id": "flow-06",
+            "kind": "allowed-flow",
+            "label": "recovery",
+            "to": "agent-supervisor"
+          },
+          {
+            "from": "managed-device",
+            "id": "flow-07",
+            "kind": "allowed-flow",
+            "label": "device identity/agent",
+            "to": "node-agent"
+          },
+          {
+            "from": "agent-supervisor",
+            "id": "flow-08",
+            "kind": "allowed-flow",
+            "label": "PM2 supervision",
+            "to": "server-host"
+          },
+          {
+            "from": "lite-api",
+            "id": "flow-09",
+            "kind": "allowed-flow",
+            "label": "durable state",
+            "to": "sqlite"
+          },
+          {
+            "from": "worker",
+            "id": "flow-10",
+            "kind": "allowed-flow",
+            "label": "app lifecycle",
+            "to": "photoprism"
+          },
+          {
+            "from": "photoprism",
+            "id": "flow-11",
+            "kind": "allowed-flow",
+            "label": "hosted runtime",
+            "to": "server-host"
+          },
+          {
+            "from": "private-network",
+            "id": "flow-12",
+            "kind": "allowed-flow",
+            "label": "private access",
+            "to": "tailscale"
+          },
+          {
+            "from": "tailscale",
+            "id": "flow-13",
+            "kind": "allowed-flow",
+            "label": "remote HTTPS",
+            "to": "caddy"
+          },
+          {
+            "from": "github-release",
+            "id": "flow-14",
+            "kind": "allowed-flow",
+            "label": "release",
+            "to": "release-artifacts"
+          },
+          {
+            "from": "release-artifacts",
+            "id": "flow-15",
+            "kind": "allowed-flow",
+            "label": "explicit install/update",
+            "to": "server-host"
+          },
+          {
+            "from": "scanner-evidence",
+            "id": "flow-16",
+            "kind": "allowed-flow",
+            "label": "sanitize + promote",
+            "to": "promoted-evidence"
+          },
+          {
+            "from": "server-host",
+            "id": "flow-17",
+            "kind": "allowed-flow",
+            "label": "sanitized runtime evidence",
+            "to": "promoted-evidence"
+          },
+          {
+            "from": "promoted-evidence",
+            "id": "flow-18",
+            "kind": "allowed-flow",
+            "label": "deterministic projection",
+            "to": "documentation"
+          },
+          {
+            "from": "sqlite",
+            "id": "flow-19",
+            "kind": "allowed-flow",
+            "label": "backup/recovery metadata",
+            "to": "recovery-state"
+          },
+          {
+            "from": "recovery-state",
+            "id": "flow-20",
+            "kind": "allowed-flow",
+            "label": "safe projection",
+            "to": "lite-api"
+          }
+        ],
+        "evidence_lineage": [
+          {
+            "id": "runtime",
+            "label": "Promoted runtime baseline",
+            "source": "contracts/parity/runtime-verification-baseline.json"
+          },
+          {
+            "id": "health",
+            "label": "Domain operational health",
+            "source": "contracts/generated/runtime/domain-operational-health.json"
+          },
+          {
+            "id": "dependencies",
+            "label": "Dependency health",
+            "source": "contracts/generated/documentation-intelligence/dependency-health.json"
+          },
+          {
+            "id": "supply-chain",
+            "label": "Normalized scanner/SBOM evidence",
+            "source": "contracts/generated/supply-chain"
+          },
+          {
+            "id": "threat-posture",
+            "label": "Threat posture projection",
+            "source": "contracts/generated/documentation-enterprise/threat-posture.json"
+          },
+          {
+            "id": "diagram",
+            "label": "Threat model diagram",
+            "source": "docs/generated/assets/enterprise/threat-model.svg"
+          }
+        ],
+        "legend": {
+          "allowed-flow": "canonical architecture flow",
+          "attack-path": "modeled threat path",
+          "control": "mitigation/control interception"
+        },
+        "live_monitoring": false,
+        "nodes": [
+          {
+            "architecture_component": "github-release",
+            "boundary": "external-release",
+            "icon": "github.svg",
+            "id": "github-release",
+            "label": "GitHub Release",
+            "posture": "control-observed",
+            "x": 90,
+            "y": 90
+          },
+          {
+            "architecture_component": "release-artifacts",
+            "boundary": "external-release",
+            "icon": "release.svg",
+            "id": "release-artifacts",
+            "label": "Release artifacts",
+            "posture": "control-observed",
+            "x": 280,
+            "y": 90
+          },
+          {
+            "architecture_component": "security-profiles",
+            "boundary": "external-release",
+            "icon": "trivy.svg",
+            "id": "scanner-evidence",
+            "label": "Scanner / SBOM",
+            "posture": "control-observed",
+            "x": 470,
+            "y": 90
+          },
+          {
+            "architecture_component": "tailscale",
+            "boundary": "private-network",
+            "icon": "network.svg",
+            "id": "private-network",
+            "label": "Private network",
+            "posture": "control-observed",
+            "x": 90,
+            "y": 260
+          },
+          {
+            "architecture_component": "tailscale",
+            "boundary": "private-network",
+            "icon": "tailscale.svg",
+            "id": "tailscale",
+            "label": "Tailscale",
+            "posture": "control-observed",
+            "x": 280,
+            "y": 260
+          },
+          {
+            "architecture_component": "pwa",
+            "boundary": "browser",
+            "icon": "react.svg",
+            "id": "browser",
+            "label": "Browser / PWA",
+            "posture": "control-observed",
+            "x": 90,
+            "y": 430
+          },
+          {
+            "architecture_component": "caddy",
+            "boundary": "server-host",
+            "icon": "caddy.svg",
+            "id": "caddy",
+            "label": "Caddy",
+            "posture": "control-partial",
+            "x": 280,
+            "y": 430
+          },
+          {
+            "architecture_component": "lite-api",
+            "boundary": "control-api",
+            "icon": "fastapi.svg",
+            "id": "lite-api",
+            "label": "FastAPI",
+            "posture": "control-observed",
+            "x": 470,
+            "y": 430
+          },
+          {
+            "architecture_component": "nats-jetstream",
+            "boundary": "messaging-execution",
+            "icon": "nats.svg",
+            "id": "nats-jetstream",
+            "label": "NATS / JetStream",
+            "posture": "control-partial",
+            "x": 660,
+            "y": 430
+          },
+          {
+            "architecture_component": "worker",
+            "boundary": "messaging-execution",
+            "icon": "python.svg",
+            "id": "worker",
+            "label": "Worker",
+            "posture": "control-partial",
+            "x": 850,
+            "y": 430
+          },
+          {
+            "architecture_component": "node-agent",
+            "boundary": "managed-device",
+            "icon": "android.svg",
+            "id": "managed-device",
+            "label": "Managed device",
+            "posture": "control-partial",
+            "x": 1040,
+            "y": 260
+          },
+          {
+            "architecture_component": "node-agent",
+            "boundary": "managed-device",
+            "icon": "agent.svg",
+            "id": "node-agent",
+            "label": "Node agent",
+            "posture": "control-partial",
+            "x": 1040,
+            "y": 430
+          },
+          {
+            "architecture_component": "agent-supervisor",
+            "boundary": "managed-device",
+            "icon": "supervisor.svg",
+            "id": "agent-supervisor",
+            "label": "Supervisor",
+            "posture": "control-partial",
+            "x": 1040,
+            "y": 600
+          },
+          {
+            "architecture_component": "pm2",
+            "boundary": "server-host",
+            "icon": "terminal.svg",
+            "id": "server-host",
+            "label": "Termux host",
+            "posture": "control-partial",
+            "x": 850,
+            "y": 600
+          },
+          {
+            "architecture_component": "photoprism",
+            "boundary": "application-container",
+            "icon": "photoprism.svg",
+            "id": "photoprism",
+            "label": "PhotoPrism",
+            "posture": "control-observed",
+            "x": 660,
+            "y": 600
+          },
+          {
+            "architecture_component": "sqlite",
+            "boundary": "durable-state",
+            "icon": "sqlite.svg",
+            "id": "sqlite",
+            "label": "SQLite",
+            "posture": "evidence-stale",
+            "x": 470,
+            "y": 600
+          },
+          {
+            "architecture_component": "recovery-state",
+            "boundary": "durable-state",
+            "icon": "recovery.svg",
+            "id": "recovery-state",
+            "label": "Recovery state",
+            "posture": "evidence-stale",
+            "x": 280,
+            "y": 600
+          },
+          {
+            "architecture_component": "completion-evidence",
+            "boundary": "durable-state",
+            "icon": "evidence.svg",
+            "id": "promoted-evidence",
+            "label": "Promoted evidence",
+            "posture": "evidence-stale",
+            "x": 470,
+            "y": 760
+          },
+          {
+            "architecture_component": "completion-evidence",
+            "boundary": "durable-state",
+            "icon": "docs.svg",
+            "id": "documentation",
+            "label": "Documentation",
+            "posture": "evidence-stale",
+            "x": 660,
+            "y": 760
+          }
+        ],
+        "posture_summary": {
+          "attack_paths": 8,
+          "control_states": {
+            "control-observed": 5,
+            "mitigation-source-derived": 2
+          },
+          "controls": 7,
+          "human_review_required": true,
+          "posture_states": {
+            "control-observed": 31,
+            "control-partial": 3,
+            "evidence-stale": 1
+          },
+          "stride_candidates": 54,
+          "trust_boundaries": 9
+        },
+        "schema_version": "1.0.0"
+      }
     },
     "troubleshooting": [
       {
@@ -82133,11 +84610,18 @@
       "agent_compatibility": "review agent/supervisor and bootstrap source changes in release delta",
       "backup_requirement": "run/verify recovery backup according to release policy before destructive migration/update",
       "breaking_api_changes": "use existing oasdiff evidence plus OpenAPI release-delta dimension",
-      "config_changes": "Configuration Intelligence + git release delta",
+      "config_changes": "Configuration Intelligence + verified release-to-release delta",
       "database_migrations": [
         {
           "classification": "not-comparable",
+          "details": {
+            "reason": "a second verified canonical release is required"
+          },
           "dimension": "sqlite-schema-migrations",
+          "source_paths": [
+            "pocket-lab-final-structure/runtime/api_fastapi/migrations",
+            "pocket-lab-final-structure/runtime/migrations"
+          ],
           "status": "not-comparable"
         }
       ],
@@ -82145,6 +84629,7 @@
         {
           "classification": "not-comparable",
           "details": {
+            "reason": "a second verified canonical release is required",
             "supply_chain_change": {
               "dependencies_added": [],
               "dependencies_removed": [],
@@ -82153,6 +84638,12 @@
             }
           },
           "dimension": "dependency-versions",
+          "source_paths": [
+            "package-lock.json",
+            "requirements-dev.txt",
+            "requirements-docs.txt",
+            "pocket-lab-final-structure/runtime/requirements.txt"
+          ],
           "status": "not-comparable"
         }
       ],
@@ -82160,9 +84651,9 @@
       "implementation_status": "implemented",
       "known_risks": "Known Limitations + FMEA + Threat Model",
       "rollback": "release rollback contract + verified backup/checkpoint where state changes",
-      "runtime_changes": "compare only promoted runtime evidence; current HEAD is not automatically runtime-promoted",
+      "runtime_changes": "compare only promoted runtime evidence; repository HEAD is never treated as a release baseline",
       "status": "not-comparable",
-      "to_release": "HEAD/current source",
+      "to_release": "lite-2026.08.12.2",
       "verification": [
         "task lite:api:breaking-changes",
         "task lite:docs:check",
@@ -82453,5 +84944,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "2f6fa65eaab0bec04ffa0fb3e408471c8c24239299e67e0614d817ce53aee492"
+  "source_fingerprint": "0231ce840555482fb5ca7e75f0406c80e7c62a4d2011266f997788b625866446"
 }

@@ -14,7 +14,7 @@ generator_version: 2
 
 <div class="pl-page-lede"><strong>Start with a repository area, then drill into exact source ownership.</strong><p>This is a reverse lookup from source paths to generated knowledge entities. It is source-derived and does not expose local filesystem prefixes.</p></div>
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>20</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>77</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>20</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>161</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>20</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>77</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>20</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>162</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -330,6 +330,7 @@ generator_version: 2
 <article class="pl-repository-card"><code>tests/docs/test_enterprise_documentation.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_enterprise_documentation.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_living_knowledgebase.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_living_knowledgebase.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_operational_health_bridge.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_operational_health_bridge.py</span></div></article>
+<article class="pl-repository-card"><code>tests/docs/test_release_model.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_release_model.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_supply_chain_runner_hardening.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_supply_chain_runner_hardening.py</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/global-setup.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/global-setup.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-accessibility.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-accessibility.spec.ts</span></div></article>

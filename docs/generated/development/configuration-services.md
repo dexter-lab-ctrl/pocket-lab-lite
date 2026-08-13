@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 9f8a72eccd6819f89b97d0c2042b1e8fd19666bff325a7f4c4e5e0585788267c
+source_fingerprint: 28df171b72ff9344d9df00174a5d4f81aa4721fec284b226bb68c5c2c1d12a39
 schema_revision: 1
 validation_status: generated
 ---
@@ -254,6 +254,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_READY_CONNECT_TIMEOUT`
 - `POCKETLAB_READY_MAX_TIME`
 - `POCKETLAB_RELEASE_DRY_RUN_ACTIVE_SCOPE_EXCLUDES`
+- `POCKETLAB_RELEASE_EVIDENCE_PROMOTE`
 - `POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS`
 - `POCKETLAB_RELEASE_VALIDATION_DIRECT_URL`
 - `POCKETLAB_RELEASE_VALIDATION_POLL_ATTEMPTS`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_S6_GATE_SCAN_TIMEOUT_SECONDS`
 - `POCKETLAB_S6_GATE_SQLITE`
 - `POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS`
-- `POCKETLAB_S7_GATE_BASE_URL`
 
 ## Process roles
 

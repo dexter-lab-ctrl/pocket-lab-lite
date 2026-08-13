@@ -102,10 +102,12 @@ extra_css:
   - stylesheets/brand.css
   - stylesheets/components.css
   - stylesheets/intelligence.css
+  - stylesheets/threat-model.css
   - stylesheets/print.css
 
 extra_javascript:
   - javascripts/docs.js
+  - javascripts/threat-model.js
 
 nav:
   - Home: index.md
@@ -466,7 +468,7 @@ nav:
       - Overview: generated/experience/release.md
       - What changed: generated/production/intelligence/what-changed.md
       - Why we believe this: generated/production/intelligence/why-we-believe-this.md
-      - Release evidence: generated/enterprise/engineering/release-evidence.md
+      - Release assurance: generated/enterprise/engineering/release-evidence.md
       - Upgrade & migration: generated/enterprise/reference/upgrade-migration.md
       - Supply chain: generated/enterprise/reference/supply-chain.md
       - Provenance: generated/enterprise/release/index.md

@@ -55,11 +55,16 @@ def test_dependency_health_never_inherits_domain_health_without_dependency_evide
 def test_release_impact_is_future_ready_but_does_not_fabricate_history():
     impact = intelligence()["release_impact"]
     assert impact["to_release"] == load(RUNTIME)["release_tag"]
-    assert impact["status"] in {"no-comparable-verified-prior-release", "semantic-comparison-available"}
-    if impact["status"] == "no-comparable-verified-prior-release":
+    assert impact["status"] == "release-impact-ready"
+    assert impact["comparison_state"] in {"no-canonical-release", "baseline-only", "comparable"}
+    assert len(impact["dimensions"]) == 22
+    assert impact["material_findings"]
+    assert {"operational_health", "semantic_parity", "platform_capabilities"} <= set(impact["current_snapshot"])
+    if impact["comparison_state"] != "comparable":
         assert impact["from_release"] is None
-        assert impact["added"] == impact["removed"] == impact["changed"] == []
-        assert "fabricated" in impact["note"]
+        assert impact["unchanged"] == []
+        assert all(row["classification"] == "not-comparable" for row in impact["technical_delta"]["dimensions"])
+        assert "HEAD" not in impact["comparison_label"]
 
 
 def test_runtime_drift_keeps_configuration_and_semantic_drift_independent():

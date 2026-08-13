@@ -19219,6 +19219,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_release_model.py",
+      "name": "tests/docs/test_release_model.py",
+      "source_refs": [
+        "tests/docs/test_release_model.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_supply_chain_runner_hardening.py",
       "name": "tests/docs/test_supply_chain_runner_hardening.py",
       "source_refs": [
@@ -22030,6 +22040,7 @@
         "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
@@ -22906,6 +22917,7 @@
         "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
@@ -30717,11 +30729,251 @@
       ],
       "test:tests/docs/test_enterprise_completion.py": [
         {
+          "source": "component:agent-command-executor",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:agent-recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:agent-signals",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:agent-supervisor",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:api-domain-surfaces",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:api-guards",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:api-read-surfaces",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-catalog",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-lifecycle-worker",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-recovery-update",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:app-workflow-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:atomic-promotion",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:backup-engine",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:bounded-reconciliation",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:browser",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:checkpoints-retention",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:command-lifecycle",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:completion-evidence",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:device-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:frontend-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:github-release",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:invite-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:lan",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:last-known-good",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:media-app-health",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-jetstream",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:node-agent",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:post-switch-health",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:prepared-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:projection-subprocesses",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:proot-ubuntu",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:recovery-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-artifacts",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-staging",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:release-subprocess",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:remote-readiness",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:restore-preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:retirement-database-recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:scanner-adapters",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:security-coordinator",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:security-profiles",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:security-state",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:sqlite",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:tailscale",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:tailscaled",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:user",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:worker",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:workflow-execution",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:documentation",
           "type": "verified_by"
         },
         {
+          "source": "domain:platform",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:release",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:device-reconnect",
           "type": "verified_by"
         },
         {
@@ -30730,6 +30982,56 @@
         },
         {
           "source": "journey:security-scan",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-01",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-02",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-03",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-04",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-05",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-06",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-07",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-08",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-09",
+          "type": "verified_by"
+        },
+        {
+          "source": "requirement:architecture-10",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_enterprise_documentation.py": [
+        {
+          "source": "domain:security",
           "type": "verified_by"
         }
       ],
@@ -34065,6 +34367,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34167,6 +34473,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34261,6 +34571,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34311,6 +34625,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34354,6 +34672,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -34415,6 +34737,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34454,6 +34780,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -34508,6 +34838,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -34693,6 +35027,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34736,6 +35074,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -34785,6 +35127,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34820,6 +35166,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -34901,6 +35251,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -34948,6 +35302,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35002,6 +35360,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35067,6 +35429,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35102,6 +35468,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35175,6 +35545,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35210,6 +35584,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35256,6 +35634,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35349,6 +35731,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35372,6 +35758,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35402,6 +35792,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35451,6 +35845,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35474,6 +35872,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35520,6 +35922,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35685,6 +36091,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35716,6 +36126,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35773,6 +36187,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35820,6 +36238,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -35913,6 +36335,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -35972,6 +36398,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36037,6 +36467,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36084,6 +36518,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36141,6 +36579,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36187,6 +36629,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36214,6 +36660,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36327,6 +36777,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36373,6 +36827,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36396,6 +36854,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36473,6 +36935,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36523,6 +36989,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36558,6 +37028,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36600,6 +37074,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36653,6 +37131,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36703,6 +37185,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36750,6 +37236,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36831,6 +37321,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36862,6 +37356,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36900,6 +37398,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -36949,6 +37451,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -36995,6 +37501,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -37033,6 +37543,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -37068,6 +37582,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -37257,6 +37775,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -37312,6 +37834,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -38485,6 +39011,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -38846,6 +39376,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -39289,6 +39823,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_documentation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -39458,6 +39996,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -39774,6 +40316,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -40342,6 +40888,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -41071,6 +41621,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -41082,6 +41636,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -41099,6 +41657,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -41110,6 +41672,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -41127,6 +41693,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -41138,6 +41708,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -41155,6 +41729,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -41166,6 +41744,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -41183,6 +41765,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         }
@@ -41194,6 +41780,10 @@
         },
         {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
         },
         {
@@ -41655,6 +42245,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:036c38503f1a2773",
+      "source": "component:lite-api",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:038783662baecb57",
@@ -41775,6 +42374,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:0557594cdb802dcd",
+      "source": "component:security-coordinator",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:0574be97c04d4535",
@@ -41834,6 +42442,15 @@
       "id": "rel:05d7945f3449feef",
       "source": "reason:service_unavailable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:05e1cb208be18161",
+      "source": "component:app-workflow-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -42178,6 +42795,15 @@
       "source": "component:security-profiles",
       "target": "boundary:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:0a37aaf947bc71fa",
+      "source": "requirement:architecture-09",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -42811,6 +43437,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_documentation.py"
+      ],
+      "id": "rel:129b258f4599ea64",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_enterprise_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:129c4d670e6f9fc5",
@@ -43054,6 +43689,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:15602b117ead66e0",
+      "source": "component:tailscale",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:157401bb837dc32b",
@@ -43206,6 +43850,15 @@
       "id": "rel:1768ed21c81ea0c1",
       "source": "requirement:architecture-07",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:17ae19930a796af5",
+      "source": "component:recovery-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -43589,6 +44242,15 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.commands.lite.maintenance.retention",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:1c5b27ae8d074f2d",
+      "source": "requirement:architecture-10",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -44214,6 +44876,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:253e4c3b0fe67c3a",
+      "source": "component:frontend-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_control_plane_sqlite_p3.py"
       ],
       "id": "rel:25478332fcc24bf5",
@@ -44363,6 +45034,15 @@
       "id": "rel:275f31d2545c0484",
       "source": "reason:worker_start_timeout",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2775036ce12cfa43",
+      "source": "journey:device-reconnect",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -44529,6 +45209,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:29b9309ce727d318",
+      "source": "component:photoprism",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py"
       ],
@@ -44665,6 +45354,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2b3e4883bd622a7e",
+      "source": "requirement:architecture-07",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:2b3f62985b595b02",
@@ -44762,6 +45460,15 @@
       "source": "journey:restore-execution",
       "target": "api:post:/api/lite/recovery/restore",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2d5eadfe6756709d",
+      "source": "requirement:architecture-05",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -44946,6 +45653,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2f3baa49ac5befef",
+      "source": "component:post-switch-health",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:2f7f8771e77d9c43",
@@ -45024,6 +45740,15 @@
       "source": "domain:recovery",
       "target": "api:get:/api/lite/recovery/database/restore/previews/{preview_id}",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:30f03b5cb6d349e7",
+      "source": "component:proot-ubuntu",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -45443,6 +46168,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:35df4643ba4c32dc",
+      "source": "component:atomic-promotion",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_health_d4.py"
       ],
       "id": "rel:35e38e41610bf6cc",
@@ -45502,6 +46236,15 @@
       "id": "rel:36738a8576f911f9",
       "source": "reason:remote_access_not_ready",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:367600304e887831",
+      "source": "component:app-recovery-update",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -45584,6 +46327,15 @@
       "source": "component:app-lifecycle-worker",
       "target": "subject:pocketlab.events.worker.maintenance_deferred",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:374ccca1033f8609",
+      "source": "component:remote-readiness",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -45711,6 +46463,15 @@
       "source": "domain:rules",
       "target": "ui:literules",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:38b161f591881646",
+      "source": "component:invite-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -45921,6 +46682,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:3a8fc3d92064e87f",
+      "source": "component:last-known-good",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "contracts/generated/lite-sqlite-schema.json"
       ],
@@ -46121,6 +46891,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:3e010510b54585ab",
+      "source": "component:api-guards",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:3e3517ce00b012a8",
@@ -46252,6 +47031,15 @@
       "id": "rel:402beab965c3c6ae",
       "source": "reason:protected_server_host",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:404fa64dd7d10468",
+      "source": "component:pwa",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -46475,6 +47263,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:43c1d7cb675ab0a7",
+      "source": "component:node-agent",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
         "src/lite/LiteDevices.jsx"
       ],
@@ -46548,6 +47345,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:448ab2221be4bf4a",
+      "source": "component:scanner-adapters",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_lifecycle_idempotency.py"
       ],
       "id": "rel:448db10f56832326",
@@ -46580,6 +47386,15 @@
       "id": "rel:44fa64bdeb8de183",
       "source": "component:agent-signals",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:4528fd6a3e0e1297",
+      "source": "component:user",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -46836,6 +47651,24 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:493ec9dfc6680985",
+      "source": "component:sqlite",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:493f136dfe7c5401",
+      "source": "component:caddy",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:495b8a4dd6fca0f5",
@@ -46887,6 +47720,15 @@
       "source": "domain:release",
       "target": "subject:pocketlab.commands.release.check",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:49cb62768d3db67f",
+      "source": "component:workflow-execution",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -47169,6 +48011,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:4e5f4e71898db4e3",
+      "source": "requirement:architecture-03",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:4e7d18cbf7b6b000",
@@ -47431,6 +48282,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:51767b673ddf7e86",
+      "source": "component:security-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
@@ -47540,6 +48400,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:534fd162039aa4f4",
+      "source": "component:release-subprocess",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:53af8b49c2352ece",
@@ -47581,6 +48450,15 @@
       "id": "rel:54684ed516e942b5",
       "source": "api:get:/api/lite/devices/{device_id}/health/history",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:547dc63f2f1e424a",
+      "source": "component:nats-jetstream",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -47711,6 +48589,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:568a25e194b37ead",
+      "source": "domain:platform",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_sqlite_s3_s5.py"
       ],
       "id": "rel:568f6b9bcf8702fb",
@@ -47770,6 +48657,15 @@
       "id": "rel:579fafdccf715284",
       "source": "component:app-lifecycle-worker",
       "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:57bfb10d6b835e2a",
+      "source": "component:restore-preview",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -48445,6 +49341,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:6155462a4c7aa6b8",
+      "source": "component:lan",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
       ],
       "id": "rel:61d084825a51886d",
@@ -48815,6 +49720,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:6778a214c7a17af8",
+      "source": "component:device-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:67817963f768df05",
@@ -48910,6 +49824,15 @@
       "id": "rel:688898f1a7f147e4",
       "source": "component:security-state",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:6890b6520a6af1b3",
+      "source": "component:agent-command-executor",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -49389,6 +50312,15 @@
       "source": "ui:litedevices",
       "target": "api:post:/api/lite/fleet/add-device",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:6ea21dfed6b3f990",
+      "source": "requirement:architecture-01",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -50256,6 +51188,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:7a305e65b5a1d3cc",
+      "source": "component:nats-listeners",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:7a479a4e28557575",
@@ -50279,6 +51220,15 @@
       "id": "rel:7a7e0bbbc24661cf",
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:7a9670d428f7e608",
+      "source": "component:api-read-surfaces",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -50352,6 +51302,15 @@
       "source": "journey:recovery-reconciliation",
       "target": "api:get:/api/lite/recovery/summary",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:7c698d2f6f381325",
+      "source": "component:release-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -50434,6 +51393,15 @@
       "source": "journey:parity-capture",
       "target": "component:lite-api",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:7dbf124c05933e87",
+      "source": "component:bounded-reconciliation",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -50578,6 +51546,15 @@
       "source": "component:api-read-surfaces",
       "target": "api:get:/api/lite/diagnostics/runtime",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:7f7c1864a395274a",
+      "source": "component:security-profiles",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -51576,6 +52553,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8bde3c028f4c71aa",
+      "source": "component:github-repository",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:8c0e59498eb0f86c",
@@ -51654,6 +52640,15 @@
       "source": "component:tailscaled",
       "target": "troubleshooting:remote-access-not-ready",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8d760544e1b6d2eb",
+      "source": "component:agent-supervisor",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -51738,6 +52733,24 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8ee37d0d6005692b",
+      "source": "component:prepared-state",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8ef1cf48c6189ba7",
+      "source": "requirement:architecture-04",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:8ef2722b5e4de9d1",
@@ -51783,6 +52796,24 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8f5be142ee977013",
+      "source": "component:retirement-database-recovery",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8f63b3d63d331f35",
+      "source": "requirement:architecture-06",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/parity/parity-model.json"
       ],
       "id": "rel:8f9712c88d9aeebd",
@@ -51816,6 +52847,15 @@
       "source": "domain:security",
       "target": "table:security_maintenance_runs",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:8fe423c0b348e0aa",
+      "source": "requirement:architecture-08",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -52142,6 +53182,15 @@
       "id": "rel:949549a668b0b036",
       "source": "api:get:/api/lite/policy",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:94a471479bd3ba64",
+      "source": "component:worker",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -52853,6 +53902,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:9e9513704a9df107",
+      "source": "component:media-app-health",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:9ea3ac3d1dbb7da6",
@@ -53284,6 +54342,15 @@
       "id": "rel:a4e69f27ac4878e9",
       "source": "reason:invalid_domain",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:a4f12222998a7c16",
+      "source": "component:tailscaled",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -54012,6 +55079,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:ae84724bf97dee74",
+      "source": "component:app-catalog",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:ae99b49cab7c514e",
@@ -54102,12 +55178,30 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:af8e04dc59a1d770",
+      "source": "component:backup-engine",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:afacfd575365056f",
       "source": "ui:literecovery",
       "target": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:afd80fb49d515758",
+      "source": "component:agent-recovery",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -54161,6 +55255,15 @@
       "id": "rel:b0ab9945ef6bd5a8",
       "source": "journey:security-scan",
       "target": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:b0b280283773743a",
+      "source": "component:checkpoints-retention",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -55145,6 +56248,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:be42b64b0a4306ce",
+      "source": "component:pm2",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:320"
       ],
       "id": "rel:be8b75bf20724657",
@@ -55159,6 +56271,15 @@
       "id": "rel:be9896dc6328953d",
       "source": "component:retirement-database-recovery",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:bea043287fd5c226",
+      "source": "domain:validation",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -55361,6 +56482,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:c10b9c4475d59fad",
+      "source": "component:completion-evidence",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3136"
       ],
       "id": "rel:c146c302df54058b",
@@ -55430,6 +56560,15 @@
       "source": "component:app-catalog",
       "target": "api:get:/api/lite/apps/{app_id}/actions",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:c2a84a0c39616514",
+      "source": "requirement:architecture-02",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -55541,11 +56680,29 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:c478fe82072a1867",
+      "source": "component:app-lifecycle-worker",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_s8_recovery.py"
       ],
       "id": "rel:c48b740eca50a6d1",
       "source": "reason:interrupted",
       "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:c4b1cb2f4a7faa37",
+      "source": "domain:release",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -56117,6 +57274,15 @@
       "source": "domain:vault",
       "target": "subject:pocketlab.commands.vault.dynamic_secret",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:cbe9aa1c523ba345",
+      "source": "component:command-lifecycle",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -57661,6 +58827,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:e0cfed5dbb53b534",
+      "source": "component:agent-signals",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:e0d43b4b0575c84a",
@@ -57907,6 +59082,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:e44096e20241eac2",
+      "source": "component:release-artifacts",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:e45123186031f906",
@@ -58133,6 +59317,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:e67ca56d1ce8b9c8",
+      "source": "component:projection-subprocesses",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:e67e27510155ccea",
@@ -58326,6 +59519,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:e8c31700ff045d8b",
+      "source": "component:github-release",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:e8c62a9b140a3b1c",
@@ -58448,6 +59650,15 @@
       "id": "rel:eb4f16cc57c1d3a0",
       "source": "api:get:/api/lite/devices/{device_id}/history",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:eb5761051ee1f0a4",
+      "source": "component:browser",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -59264,6 +60475,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:f5106624ea165cc9",
+      "source": "journey:startup",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:f5296dda172189b2",
@@ -59554,6 +60774,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:f894d91277dffec2",
+      "source": "component:release-staging",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:f8ac43140c23252f",
@@ -59578,6 +60807,15 @@
       "source": "domain:workflow",
       "target": "subject:pocketlab.events.workflow.replay_requested",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:f8e60e7b8e3af221",
+      "source": "component:api-domain-surfaces",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -60013,9 +61251,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "29ba20c46b7253c7f05f3fa91558b3615778265718e3650d627e364f7f3c666a",
+  "source_fingerprint": "5d58bb3caebc42b1b8b423183b03664cb9e18175b525bce325c0e495407c02c0",
   "statistics": {
-    "entity_count": 839,
+    "entity_count": 840,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -60032,14 +61270,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 164,
+      "test": 165,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2062,
-    "source_count": 200
+    "relation_count": 2134,
+    "source_count": 201
   }
 }

@@ -773,6 +773,166 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --check {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:enterprise-tools:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+      ],
+      "name": "lite:docs:enterprise-tools:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Verify the complete pinned enterprise documentation toolchain without downloads, upgrades, runtime access or scanner execution",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Documentation loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --plan {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:enterprise-tools:plan",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+      ],
+      "name": "lite:docs:enterprise-tools:plan",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Show the complete idempotent WSL2/CI Documentation Platform tool plan, including optional Threat Dragon/Dependency-Track when requested",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Documentation loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --install-missing {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:enterprise-tools:setup",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+      ],
+      "name": "lite:docs:enterprise-tools:setup",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Install only missing pinned Documentation Platform, security/supply-chain and architecture-icon tooling on WSL2/Ubuntu/CI",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Documentation loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --update {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:enterprise-tools:update",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/setup-documentation-enterprise-tools.sh"
+      ],
+      "name": "lite:docs:enterprise-tools:update",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Explicitly update reviewed security-tool pins and repair architecture icons; never runs automatically",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Documentation loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check",
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py"
       ],
@@ -2012,6 +2172,130 @@
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "not-a-validation-task",
       "workflow_group": "Documentation loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": true,
+      "commands": [
+        "test -n \"{{.TAG}}\" && test -n \"{{.REPO}}\" || (echo \"TAG and REPO are required\" >&2; exit 2)",
+        "{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py capture --tag {{.TAG}} --repo {{.REPO}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:release-assurance:capture",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/enterprise/release_evidence_promotion.py"
+      ],
+      "name": "lite:docs:release-assurance:capture",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Explicitly capture and verify sanitized GitHub Release identity/artifact evidence into transient .pocketlab-dev storage; never called by MkDocs",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py check"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:release-assurance:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/enterprise/release_evidence_promotion.py"
+      ],
+      "name": "lite:docs:release-assurance:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Validate promoted release evidence offline without GitHub polling",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "test -n \"{{.TAG}}\" || (echo \"TAG is required\" >&2; exit 2)",
+        "POCKETLAB_RELEASE_EVIDENCE_PROMOTE=1 {{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py promote --tag {{.TAG}}"
+      ],
+      "dependencies": [],
+      "environment": [
+        "POCKETLAB_RELEASE_EVIDENCE_PROMOTE"
+      ],
+      "example_invocation": "task lite:docs:release-assurance:promote",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/enterprise/release_evidence_promotion.py"
+      ],
+      "name": "lite:docs:release-assurance:promote",
+      "outputs": [],
+      "promotes_evidence": true,
+      "purpose": "Explicitly promote a validated release capture into append-only canonical release evidence",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Release loop"
     },
     {
       "aliases": [],

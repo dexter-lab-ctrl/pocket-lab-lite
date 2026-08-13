@@ -24,9 +24,10 @@ def test_threat_model_is_canonical_and_requires_human_review():
 
 def test_release_delta_fails_closed_without_two_verified_manifests():
     delta=json.loads((ROOT/'contracts/generated/documentation-enterprise/release-delta.json').read_text())
-    assert delta['status'] in {'no-comparable-verified-prior-release','comparable'}
+    assert delta['status'] in {'no-comparable-verified-prior-release','initial-canonical-comparison-baseline','comparison-evidence-unavailable','comparable'}
     if delta['status'] != 'comparable':
         assert all(x['status'] == 'not-comparable' for x in delta['dimensions'])
+        assert all(x['classification'] == 'not-comparable' for x in delta['dimensions'])
 
 def test_dependency_health_has_development_and_production_svg():
     for name in ['dependency-health-development.svg','dependency-health-production.svg']:
@@ -38,3 +39,32 @@ def test_tool_metadata_keeps_heavy_work_off_termux():
     meta=json.loads((ROOT/'contracts/metadata/documentation-security-tools.json').read_text())
     assert meta['execution_policy']['heavy_default_surface'] == 'WSL2/CI'
     assert meta['execution_policy']['docs_check_runs_heavy_tools'] is False
+
+
+def test_threat_model_page_exposes_framework_controls_paths_exclusions_and_architecture_link():
+    page=(ROOT/'docs/generated/enterprise/threat-model/index.md').read_text(encoding='utf-8')
+    for heading in [
+        '## Threat Model Diagram', '## Threat framework', '## How Pocket Lab applies STRIDE',
+        '## Three truth layers', '## Security controls', '## Where controls are used',
+        '## Modeled attack paths', '## What this threat model does not do',
+        '## Consequences of not threat modelling', '## Evidence lineage', '## Human review required',
+    ]:
+        assert heading in page
+    assert '../../production/architecture/index.md' in page
+    assert 'not live monitoring' in page.lower()
+
+
+def test_release_assurance_page_separates_evidence_authorities():
+    page=(ROOT/'docs/generated/enterprise/engineering/release-evidence.md').read_text(encoding='utf-8')
+    for heading in ['# Release Assurance', '## Evidence authorities', '## Assurance matrix', '## Artifact evidence', '## Evidence gaps', '## Evidence lineage']:
+        assert heading in page
+    assert 'Local repository' in page
+    assert 'Runtime' in page
+    assert 'Release' in page
+
+
+def test_architecture_overview_embeds_the_generated_threat_overlay():
+    page=(ROOT/'docs/generated/production/architecture/index.md').read_text(encoding='utf-8')
+    assert '## Security / threat-model overlay' in page
+    assert '../../enterprise/threat-model/index.md' in page
+    assert '../../assets/enterprise/threat-model.svg' in page
