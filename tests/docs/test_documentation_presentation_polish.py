@@ -56,12 +56,37 @@ def test_dependency_health_uses_safe_html_image_instead_of_leaking_markdown_attr
     assert "/data/data/com.termux" not in page
 
 
-def test_technical_delta_and_provenance_use_structured_progressive_disclosure():
+def test_technical_delta_uses_scan_first_cards_with_provenance_on_demand():
+    intelligence = load_module(
+        "technical_delta_intelligence",
+        "scripts/docs/intelligence/generate_documentation_intelligence.py",
+    )
+    dimensions = [
+        {
+            "dimension": name,
+            "classification": "not-comparable",
+            "technical_status": "not-comparable",
+            "source_paths": [f"contracts/{name}.json"],
+            "details": {"reason": "baseline-only"},
+        }
+        for name in intelligence.TECHNICAL_DELTA_LABELS
+    ]
+    page = intelligence.render_technical_delta_card(
+        {"comparison_state": "baseline-only", "dimensions": dimensions}
+    )
+
+    assert 'class="pl-technical-delta"' in page
+    assert 'class="pl-delta-grid"' in page
+    assert page.count('class="pl-delta-card"') == 22
+    assert "Machine-derived release dimensions" in page
+    assert "zero change is not inferred" in page
+    assert "Source provenance" in page
+    assert "contracts/openapi.json" in page
+    assert "| Dimension | Classification | Technical status | Source paths |" not in page
+    assert "<script" not in page.lower()
+
     source = (ROOT / "scripts/docs/intelligence/generate_documentation_intelligence.py").read_text(encoding="utf-8")
-    assert 'pl-technical-panel' in source
-    assert 'pl-technical-grid' in source
     assert 'pl-provenance-grid' in source
-    assert 'Exact machine-oriented change sets' in source
     assert 'Release-bound evidence lineage' in source
 
 

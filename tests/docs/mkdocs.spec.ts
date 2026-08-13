@@ -538,6 +538,30 @@ test('documentation intelligence dashboard is responsive, progressive, and evide
   );
   await expect(releaseImpactContent).not.toContainText('No comparable verified prior release');
 
+  await page.goto(`${DOCS_PREFIX}generated/production/intelligence/what-changed/`);
+
+  const technicalDelta = page.locator('.pl-technical-delta').first();
+  await expect(technicalDelta).toBeVisible();
+  await expect(technicalDelta).toContainText('Machine-derived release dimensions');
+  await expect(technicalDelta.locator('.pl-delta-card')).toHaveCount(22);
+  await expect(technicalDelta).not.toContainText('Raw classifications and source paths');
+
+  const firstDeltaCard = technicalDelta.locator('.pl-delta-card').first();
+  await expect(firstDeltaCard).toBeVisible();
+  await firstDeltaCard.locator('summary').click();
+  await expect(firstDeltaCard.locator('.pl-delta-sources')).toBeVisible();
+
+  if (testInfo.project.name === 'docs-mobile') {
+    const deltaLayout = await technicalDelta.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }));
+
+    expect(deltaLayout.scrollWidth).toBeLessThanOrEqual(
+      deltaLayout.clientWidth + 1,
+    );
+  }
+
   if (testInfo.project.name === 'docs-mobile') {
     await page.goto(
       `${DOCS_PREFIX}generated/development/intelligence/platform-matrix/`,

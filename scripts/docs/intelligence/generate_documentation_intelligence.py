@@ -521,6 +521,162 @@ def render_dependency_page(data: list[dict[str, Any]], experience: dict[str, Any
     return out
 
 
+TECHNICAL_DELTA_LABELS = {
+    "git-source": "Repository / source topology",
+    "openapi": "API contract",
+    "asyncapi-events": "Event contract",
+    "sqlite-schema-migrations": "SQLite migrations",
+    "architecture": "Architecture model",
+    "trust-boundaries": "Trust boundaries",
+    "capabilities": "Capability model",
+    "operational-health": "Operational health",
+    "runtime-topology": "Runtime topology",
+    "semantic-parity": "Semantic parity",
+    "platform-capability-evidence": "Platform capability evidence",
+    "reason-codes": "Reason-code contract",
+    "task-inventory": "Engineering task inventory",
+    "security-controls": "Security controls",
+    "threat-model": "Threat model",
+    "sbom": "Software bill of materials",
+    "dependency-versions": "Dependency versions",
+    "vulnerabilities": "Vulnerability evidence",
+    "licenses": "License inventory",
+    "release-artifacts": "Release artifacts",
+    "documentation-coverage": "Documentation coverage",
+    "validation-coverage": "Validation coverage",
+}
+
+
+def _delta_label(value: Any) -> str:
+    raw = str(value or "unknown")
+    return TECHNICAL_DELTA_LABELS.get(raw, raw.replace("-", " ").title())
+
+
+def _delta_state_class(value: Any) -> str:
+    token = re.sub(r"[^a-z0-9-]+", "-", str(value or "unknown").lower()).strip("-")
+    return token or "unknown"
+
+
+def _delta_source_chips(paths: Iterable[Any]) -> str:
+    values = [str(path).strip() for path in paths if str(path).strip()]
+    if not values:
+        return '<span class="pl-chip pl-chip--muted">No source path recorded</span>'
+    return '<span class="pl-chip-list">' + "".join(
+        f'<span class="pl-chip pl-chip--code">{html.escape(value)}</span>' for value in values
+    ) + "</span>"
+
+
+def _delta_interpretation(row: dict[str, Any], comparison_state: str) -> str:
+    dimension = str(row.get("dimension") or "unknown")
+    label = _delta_label(dimension)
+    classification = str(row.get("classification") or "unknown")
+    details = row.get("details") if isinstance(row.get("details"), dict) else {}
+
+    if classification == "not-comparable":
+        if comparison_state == "baseline-only":
+            return (
+                f"{label} captured for the canonical baseline. Historical change classification "
+                "awaits a verified prior release."
+            )
+        return (
+            f"{label} is source-backed, but qualified release comparison evidence is unavailable; "
+            "no zero-change conclusion is inferred."
+        )
+    if classification == "unchanged":
+        return f"{label} matched across the two verified canonical release baselines."
+    if classification == "breaking":
+        removed = len(details.get("operations_removed") or details.get("channels_removed") or [])
+        return f"{label} contains a breaking release-to-release change" + (f" ({removed} removal{'s' if removed != 1 else ''})." if removed else ".")
+    if classification == "non-breaking":
+        added = len(details.get("operations_added") or details.get("channels_added") or [])
+        return f"{label} changed without a detected breaking removal" + (f" ({added} addition{'s' if added != 1 else ''})." if added else ".")
+    if classification == "new-vulnerability":
+        count = len(details.get("new_vulnerabilities") or [])
+        return f"{label} contains newly observed vulnerability evidence" + (f" ({count} identifier{'s' if count != 1 else ''})." if count else ".")
+    if classification == "resolved-vulnerability":
+        count = len(details.get("resolved_vulnerabilities") or [])
+        return f"{label} contains resolved vulnerability evidence" + (f" ({count} identifier{'s' if count != 1 else ''})." if count else ".")
+    if classification == "new-license":
+        count = len(details.get("licenses_added") or [])
+        return f"{label} contains newly observed license evidence" + (f" ({count} license{'s' if count != 1 else ''})." if count else ".")
+    if classification in {"improved", "degraded"}:
+        before = details.get("from_health_score")
+        after = details.get("to_health_score")
+        suffix = f" ({before} → {after})." if before is not None and after is not None else "."
+        return f"{label} is classified as {classification} from promoted/canonical evidence{suffix}"
+    if classification == "architecture-drift":
+        return f"{label} changed across verified release baselines and is classified as architecture drift."
+    if classification in {"added", "removed", "changed", "newly-observed", "no-longer-observed", "evidence-stale", "dependency-added", "dependency-removed", "dependency-updated"}:
+        return f"{label} is classified as {classification.replace('-', ' ')} by the deterministic release-delta engine."
+    return f"{label} has technical classification {classification.replace('-', ' ')}."
+
+
+def render_technical_delta_card(data: dict[str, Any]) -> str:
+    dimensions = list(data.get("dimensions") or [])
+    comparison_state = str(data.get("comparison_state") or "unknown")
+    comparable = sum(1 for row in dimensions if row.get("technical_status") == "comparable" or row.get("status") == "comparable")
+    awaiting = sum(1 for row in dimensions if row.get("classification") == "not-comparable")
+    material = sum(1 for row in dimensions if row.get("classification") not in {"unchanged", "not-comparable"})
+
+    if comparison_state == "baseline-only":
+        narrative = (
+            "This release establishes the canonical comparison baseline. Historical comparison is "
+            "unavailable and zero change is not inferred."
+        )
+    elif comparison_state == "comparable":
+        narrative = (
+            "Technical classifications are derived from two verified canonical release records. "
+            "Source provenance remains available for every dimension."
+        )
+    else:
+        narrative = (
+            "Historical comparison evidence is incomplete. Current source provenance remains "
+            "available without inventing a release delta or zero-change claim."
+        )
+
+    out = '<section class="pl-technical-delta" aria-labelledby="technical-delta-title">\n'
+    out += '<div class="pl-technical-delta__head"><div>'
+    out += '<span class="pl-card-kicker">Technical delta</span>'
+    out += '<h3 id="technical-delta-title">Machine-derived release dimensions</h3>'
+    out += f'<p>{html.escape(narrative)}</p></div>'
+    out += (
+        f'<span class="pl-state-pill pl-state-pill--{_delta_state_class(comparison_state)}">'
+        f'{html.escape(comparison_state.replace("-", " ").title())}</span></div>\n'
+    )
+    out += '<div class="pl-technical-delta__metrics" role="list" aria-label="Technical delta summary">'
+    for label, value in [
+        ("Dimensions", len(dimensions)),
+        ("Comparable", comparable),
+        ("Awaiting baseline", awaiting),
+        ("Material delta", material),
+    ]:
+        out += (
+            '<div class="pl-fact" role="listitem">'
+            f'<span>{html.escape(label)}</span><strong>{value}</strong></div>'
+        )
+    out += '</div>\n<div class="pl-delta-grid">\n'
+
+    for row in dimensions:
+        dimension = str(row.get("dimension") or "unknown")
+        classification = str(row.get("classification") or "unknown")
+        technical_status = str(row.get("technical_status") or row.get("status") or "unknown")
+        out += (
+            f'<article class="pl-delta-card" data-delta-dimension="{html.escape(dimension)}">'
+            '<div class="pl-card-head"><div>'
+            f'<span class="pl-card-kicker">{html.escape(technical_status.replace("-", " "))}</span>'
+            f'<h3>{html.escape(_delta_label(dimension))}</h3></div>'
+            f'<span class="pl-state-pill pl-state-pill--{_delta_state_class(classification)}">'
+            f'{html.escape(classification.replace("-", " "))}</span></div>'
+            f'<p class="pl-card-lead">{html.escape(_delta_interpretation(row, comparison_state))}</p>'
+            '<details class="pl-disclosure pl-disclosure--compact">'
+            '<summary>Source provenance</summary><div class="pl-delta-sources">'
+            f'{_delta_source_chips(row.get("source_paths") or [])}</div></details></article>\n'
+        )
+
+    out += '</div></section>\n'
+    return out
+
+
 def render_release_page(data: dict[str, Any], audience: str) -> str:
     out = frontmatter("Release impact briefing", "Current release posture, material findings and verified multidimensional delta without fabricated history.", audience, "release-promoted")
     out += "# What changed? — Release impact briefing\n\n"
@@ -564,13 +720,7 @@ def render_release_page(data: dict[str, Any], audience: str) -> str:
     else:
         out += "Historical unchanged comparison is unavailable until a second verified canonical release is promoted.\n"
     out += "\n## Technical delta\n\n"
-    out += '<details class="pl-disclosure pl-technical-panel"><summary><span>Machine-derived details</span><small>Raw classifications and source paths</small></summary>\n'
-    if data.get("comparison_state") == "baseline-only":
-        out += '<p>Historical comparison is unavailable because this release establishes the canonical baseline; zero changes are not claimed.</p>\n'
-    elif data.get("comparison_state") != "comparable":
-        out += '<p>Historical comparison is unavailable because qualified release comparison evidence is not yet available; zero changes are not claimed.</p>\n'
-    out += table(["Dimension", "Classification", "Technical status", "Source paths"], ((d.get("dimension"), d.get("classification"), d.get("technical_status"), d.get("source_paths")) for d in data.get("dimensions", [])))
-    out += '</details>\n'
+    out += render_technical_delta_card(data)
     return out
 
 def render_drift_page(data: dict[str, Any], audience: str) -> str:

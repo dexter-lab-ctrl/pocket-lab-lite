@@ -710,6 +710,111 @@
 .pl-provenance-grid span { display: block; color: var(--md-default-fg-color--light); font-size: .65rem; text-transform: uppercase; letter-spacing: .04em; }
 .pl-provenance-grid strong { display: block; margin-top: .25rem; font-size: .74rem; font-weight: 600; overflow-wrap: anywhere; }
 
+
+/* Enterprise technical delta: scan-first release classifications with provenance on demand. */
+.pl-technical-delta {
+  margin: var(--pl-space-4) 0 var(--pl-space-6);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--md-default-bg-color) 97%, var(--md-accent-fg-color)),
+    var(--md-default-bg-color)
+  );
+  box-shadow: var(--pl-shadow);
+}
+.pl-technical-delta__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--pl-space-4);
+}
+.pl-technical-delta__head h3 {
+  margin: .2rem 0 .35rem;
+  border: 0;
+  padding: 0;
+}
+.pl-technical-delta__head p {
+  margin: 0;
+  color: var(--md-default-fg-color--light);
+}
+.pl-technical-delta__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--pl-space-2);
+  margin: var(--pl-space-4) 0;
+}
+.pl-technical-delta__metrics .pl-fact {
+  min-width: 0;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: var(--pl-surface-raised);
+}
+.pl-delta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: var(--pl-space-3);
+}
+.pl-delta-card {
+  min-width: 0;
+  padding: var(--pl-space-4);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: var(--pl-surface-raised);
+}
+.pl-delta-card h3 {
+  margin: .15rem 0 0;
+  border: 0;
+  padding: 0;
+}
+.pl-delta-card .pl-card-lead {
+  margin-bottom: var(--pl-space-3);
+  color: var(--md-default-fg-color--light);
+}
+.pl-delta-sources {
+  margin-top: var(--pl-space-3);
+  min-width: 0;
+}
+.pl-delta-sources .pl-chip--code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.pl-state-pill--not-comparable,
+.pl-state-pill--baseline-only,
+.pl-state-pill--unchanged {
+  border-color: var(--pl-border);
+  background: var(--pl-surface-muted);
+  color: var(--md-default-fg-color--light);
+}
+.pl-state-pill--breaking,
+.pl-state-pill--new-vulnerability,
+.pl-state-pill--degraded,
+.pl-state-pill--removed,
+.pl-state-pill--no-longer-observed {
+  border-color: color-mix(in srgb, var(--pl-danger) 45%, var(--pl-border));
+  background: color-mix(in srgb, var(--pl-danger) 8%, var(--pl-surface-raised));
+  color: var(--pl-danger);
+}
+.pl-state-pill--improved,
+.pl-state-pill--resolved-vulnerability {
+  border-color: color-mix(in srgb, var(--pl-success) 45%, var(--pl-border));
+  background: color-mix(in srgb, var(--pl-success) 8%, var(--pl-surface-raised));
+  color: var(--pl-success);
+}
+.pl-state-pill--changed,
+.pl-state-pill--architecture-drift,
+.pl-state-pill--non-breaking,
+.pl-state-pill--added,
+.pl-state-pill--newly-observed,
+.pl-state-pill--dependency-added,
+.pl-state-pill--dependency-updated,
+.pl-state-pill--new-license {
+  border-color: color-mix(in srgb, var(--md-accent-fg-color) 45%, var(--pl-border));
+  background: color-mix(in srgb, var(--md-accent-fg-color) 8%, var(--pl-surface-raised));
+}
+
 @media screen and (max-width: 44.9844em) {
   .pl-page-lede { padding: var(--pl-space-3); }
   .pl-troubleshooting-grid,
@@ -730,6 +835,9 @@
   .pl-anatomy-flow > span { flex-basis: 78vw; scroll-snap-align: start; }
   .pl-technical-panel > summary { display: block; }
   .pl-technical-panel > summary small { display: block; margin-top: .15rem; }
+  .pl-technical-delta__head { flex-direction: column; }
+  .pl-technical-delta__metrics { grid-template-columns: 1fr 1fr; }
+  .pl-delta-grid { grid-template-columns: 1fr; }
 }
 
 @media print {
@@ -740,7 +848,9 @@
   .pl-page-type-card,
   .pl-alias-card,
   .pl-journey-card,
-  .pl-repository-card { box-shadow: none; break-inside: avoid; }
+  .pl-repository-card,
+  .pl-technical-delta,
+  .pl-delta-card { box-shadow: none; break-inside: avoid; }
   .pl-trace-flow,
   .pl-journey-flow,
   .pl-anatomy-flow,
