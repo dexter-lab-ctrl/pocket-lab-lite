@@ -1,11 +1,11 @@
 {
   "counts": {
     "development": 2249,
-    "direct": 94,
+    "direct": 95,
     "release": 0,
     "runtime": 23,
     "total": 2272,
-    "transitive": 2178
+    "transitive": 2177
   },
   "dependencies": [
     {
@@ -5781,7 +5781,7 @@
       "runtime_or_dev": "development",
       "transitive": true,
       "upstream_posture": "OpenSSF/normalized evidence when promoted",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "vulnerability_status": "canonical scanner evidence when promoted"
     },
     {
@@ -24668,16 +24668,16 @@
       "architecture": "browser/developer/runtime depending on package",
       "arm64_support": "package/source metadata does not establish architecture-specific support",
       "category": "Node dependency",
-      "direct": false,
+      "direct": true,
       "ecosystem": "npm",
       "license": "MIT",
       "name": "mermaid",
       "purpose": "development/tooling dependency",
       "release_introduced": "not-comparable",
       "runtime_or_dev": "development",
-      "transitive": true,
+      "transitive": false,
       "upstream_posture": "OpenSSF/normalized evidence when promoted",
-      "version": "11.15.0",
+      "version": "11.16.1",
       "vulnerability_status": "canonical scanner evidence when promoted"
     },
     {

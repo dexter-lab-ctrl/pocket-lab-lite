@@ -44,3 +44,92 @@
   .pl-threat-canvas object,.pl-threat-canvas img { width:100%; min-height:0; }
   .pl-threat-detail { display:none; }
 }
+
+/* Security Atlas: deterministic catalog projection over the canonical threat model. */
+.pl-security-atlas-poster { margin:1rem 0 1.25rem; border:1px solid var(--pl-border); border-radius:var(--pl-radius-lg); overflow:hidden; background:#0b1020; box-shadow:var(--pl-shadow); }
+.pl-security-atlas-poster img { display:block; width:100%; height:auto; }
+.pl-security-atlas-poster figcaption { padding:.7rem .9rem; background:var(--md-default-bg-color); color:var(--md-default-fg-color--light); font-size:.72rem; }
+.pl-atlas-toolbar { display:flex; flex-wrap:wrap; gap:.5rem; margin:1rem 0; }
+.pl-atlas-toolbar .md-button { display:inline-flex; align-items:center; gap:.45rem; min-width:0; padding:.5rem .75rem; font-size:.72rem; }
+.pl-atlas-toolbar .md-button span { display:inline-grid; place-items:center; min-width:1.5rem; min-height:1.5rem; padding:0 .35rem; border-radius:999px; background:color-mix(in srgb, currentColor 10%, transparent); font-size:.66rem; }
+.pl-atlas-layout { display:grid; grid-template-columns:minmax(0, 2.4fr) minmax(16rem, 1fr); gap:1rem; align-items:start; margin-bottom:1.5rem; }
+.pl-atlas-catalog { min-width:0; }
+.pl-atlas-panel[hidden] { display:none!important; }
+.pl-atlas-panel-head { margin-bottom:.75rem; }
+.pl-atlas-panel-head h3 { margin:0 0 .2rem; }
+.pl-atlas-panel-head p { margin:0; color:var(--md-default-fg-color--light); }
+.pl-atlas-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:.7rem; }
+.pl-atlas-card { min-width:0; padding:.8rem; text-align:left; border:1px solid var(--pl-border); border-radius:var(--pl-radius-md); background:var(--pl-surface-raised); color:inherit; cursor:pointer; transition:transform var(--pl-duration-fast) var(--pl-ease-standard), border-color var(--pl-duration-fast) var(--pl-ease-standard), box-shadow var(--pl-duration-fast) var(--pl-ease-standard); }
+.pl-atlas-card:hover,
+.pl-atlas-card:focus-visible,
+.pl-atlas-card[aria-pressed="true"] { transform:translateY(-1px); border-color:var(--md-accent-fg-color); box-shadow:0 0 0 1px color-mix(in srgb, var(--md-accent-fg-color) 28%, transparent); outline:none; }
+.pl-atlas-card strong,
+.pl-atlas-card small { display:block; overflow-wrap:anywhere; }
+.pl-atlas-card small { margin-top:.3rem; color:var(--md-default-fg-color--light); font-size:.7rem; line-height:1.45; }
+.pl-atlas-detail { max-height:min(70vh,42rem); overflow:auto; }
+@media screen and (max-width: 59.9844em) {
+  .pl-atlas-layout { grid-template-columns:1fr; }
+  .pl-atlas-detail { position:static; max-height:none; }
+}
+@media screen and (max-width: 44.9844em) {
+  .pl-atlas-toolbar { display:grid; grid-template-columns:1fr 1fr; }
+  .pl-atlas-toolbar .md-button { justify-content:space-between; width:100%; }
+  .pl-atlas-grid { grid-template-columns:1fr; }
+  .pl-security-atlas-poster { border-radius:var(--pl-radius-md); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-atlas-card { transition:none; }
+  .pl-atlas-card:hover,.pl-atlas-card:focus-visible { transform:none; }
+}
+@media print {
+  .pl-atlas-toolbar,.pl-atlas-detail { display:none; }
+  .pl-atlas-panel[hidden] { display:block!important; }
+  .pl-atlas-grid { grid-template-columns:repeat(2,1fr); }
+  .pl-atlas-card { break-inside:avoid; }
+}
+
+/* Security Atlas responsive containment.
+ * Grid/flex descendants must be allowed to shrink inside the MkDocs content
+ * column. Do not mask overflow globally; keep containment local to the Atlas.
+ */
+.pl-security-atlas-poster,
+.pl-atlas-toolbar,
+.pl-atlas-layout,
+.pl-atlas-catalog,
+.pl-atlas-panel,
+.pl-atlas-grid,
+.pl-atlas-detail {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pl-atlas-layout > *,
+.pl-atlas-toolbar > *,
+.pl-atlas-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pl-atlas-toolbar .md-button,
+.pl-atlas-card {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 44.9844em) {
+  .pl-atlas-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .pl-atlas-toolbar .md-button {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .pl-atlas-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

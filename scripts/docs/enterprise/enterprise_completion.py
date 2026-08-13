@@ -27,7 +27,12 @@ for _script_root in (DOCS_SCRIPT_ROOT, ENTERPRISE_SCRIPT_ROOT):
     if str(_script_root) not in sys.path:
         sys.path.insert(0, str(_script_root))
 
-from threat_model_experience import enrich as enrich_threat_model, render_svg as render_threat_svg
+from threat_model_experience import (
+    build_security_atlas,
+    enrich as enrich_threat_model,
+    render_security_atlas_svg,
+    render_svg as render_threat_svg,
+)
 
 from release_model import (
     active_limitations as shared_active_limitations,
@@ -1006,7 +1011,7 @@ def contribution_matrix()->list[dict[str,Any]]:
 
 def coverage_requirements()->list[dict[str,Any]]:
     names=[
-      "Close five Documentation Experience gaps","Documentation Platform tab","Executable Task Reference","Contribution & Review onboarding","Event encyclopedia","Release evidence","Development diagnostic handbook","First-class generated threat model","Production promoted threat posture","Production Living Knowledgebase","Dedicated Architecture","Production incident runbooks","Production troubleshooting","Configuration Intelligence","API-to-UI trace explorer","Data lifecycle & privacy map","FMEA/resilience catalog","SLO/reliability objectives","ADR intelligence","Dependency/software supply-chain inventory","Security controls catalog","Developer change simulator","Ownership/responsibility map","Validation coverage dashboard","Upgrade/migration intelligence","Disaster recovery architecture","Documentation quality scorecard","Threat Dragon integration","Syft/CycloneDX SBOM","Trivy integration","OSV-Scanner correlation","Grype corroboration","Dependency-Track optional export","OpenSSF Scorecard checks","ScanCode licensing","Gitleaks secrets","Semgrep Community rules","Graphviz architecture/flow diagrams","Event encyclopedia automation","Task reference automation","Contribution guidance automation","Troubleshooting diagnostic-fact automation","Incident runbook automation","Failure Mode and Effects Analysis","Release delta","Supply-chain change intelligence","Cosign artifact signing workflow","SLSA-style provenance","Heavy WSL2/CI execution","Lightweight Termux evidence boundary","Tool bootstrap/download","Output normalization","Page-anatomy enforcement" ]
+      "Close five Documentation Experience gaps","Documentation Platform tab","Executable Task Reference","Contribution & Review onboarding","Event encyclopedia","Release evidence","Development diagnostic handbook","First-class generated threat model","Security Atlas deterministic projections","Production promoted threat posture","Production Living Knowledgebase","Dedicated Architecture","Production incident runbooks","Production troubleshooting","Configuration Intelligence","API-to-UI trace explorer","Data lifecycle & privacy map","FMEA/resilience catalog","SLO/reliability objectives","ADR intelligence","Dependency/software supply-chain inventory","Security controls catalog","Developer change simulator","Ownership/responsibility map","Validation coverage dashboard","Upgrade/migration intelligence","Disaster recovery architecture","Documentation quality scorecard","Threat Dragon integration","Syft/CycloneDX SBOM","Trivy integration","OSV-Scanner correlation","Grype corroboration","Dependency-Track optional export","OpenSSF Scorecard checks","ScanCode licensing","Gitleaks secrets","Semgrep Community rules","Graphviz architecture/flow diagrams","Event encyclopedia automation","Task reference automation","Contribution guidance automation","Troubleshooting diagnostic-fact automation","Incident runbook automation","Failure Mode and Effects Analysis","Release delta","Supply-chain change intelligence","Cosign artifact signing workflow","SLSA-style provenance","Heavy WSL2/CI execution","Lightweight Termux evidence boundary","Tool bootstrap/download","Output normalization","Page-anatomy enforcement" ]
     return [{"requirement":x,"implementation_status":"implemented","evidence_status":"implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified","source_refs":["scripts/docs/enterprise/generate_enterprise_documentation.py","scripts/docs/enterprise/enterprise_completion.py","scripts/docs/enterprise/supply_chain_automation.py","scripts/dev/lite/documentation_security_tools.py"]} for x in names]
 
 
@@ -1286,7 +1291,7 @@ def render_release_assurance_page(release: dict[str, Any], delta: dict[str, Any]
     return body
 
 
-def render_threat_model_page(threat: dict[str, Any], *, table: Callable[..., str]) -> str:
+def render_threat_model_page(threat: dict[str, Any], atlas: dict[str, Any], *, table: Callable[..., str]) -> str:
     posture=threat.get("production_posture", {})
     viz=threat.get("visualization", {})
     summary=viz.get("posture_summary", {})
@@ -1305,9 +1310,36 @@ def render_threat_model_page(threat: dict[str, Any], *, table: Callable[..., str
         body += f'<div class="pl-kpi"><span>{_html_text(label)}</span><strong>{_html_text(value)}</strong></div>'
     body += '</div>\n\n'
     body += f'Promoted runtime release: **{posture.get("promoted_runtime_release","unobserved")}** · authority: **{posture.get("authority","promoted/canonical evidence only")}**.\n\n'
+    body += '## Security Atlas\n\n'
+    body += '<div class="pl-page-lede"><strong>Architecture is the map.</strong><p>Security Atlas explains threats, assets, controls, trust boundaries, reviewed attack paths and evidence. Every view is generated from the canonical security model; the presentation layer never becomes a truth source.</p></div>\n\n'
+    body += '<figure class="pl-security-atlas-poster"><img src="../../assets/enterprise/security-atlas.svg" alt="Pocket Lab Lite Security Atlas poster showing Architecture, Threat Atlas, System Atlas, Attack Surface Atlas, Control Atlas and Evidence Atlas" loading="lazy"><figcaption>Canonical source → deterministic projection → human review. No live monitoring or automatic exploit prediction.</figcaption></figure>\n\n'
+    body += '<div class="pl-atlas-toolbar" role="tablist" aria-label="Security Atlas views">'
+    for index,view in enumerate(atlas.get("views", [])):
+        selected='true' if index == 0 else 'false'
+        body += f'<button type="button" class="md-button{" md-button--primary" if index == 0 else ""}" role="tab" aria-selected="{selected}" data-atlas-view="{_html_text(view.get("id"))}">{_html_text(view.get("label"))}<span>{_html_text(view.get("entry_count",0))}</span></button>'
+    body += '</div>\n'
+    body += '<div class="pl-atlas-layout"><div class="pl-atlas-catalog">\n'
+    for index,view in enumerate(atlas.get("views", [])):
+        hidden='' if index == 0 else ' hidden'
+        body += f'<section class="pl-atlas-panel" data-atlas-panel="{_html_text(view.get("id"))}"{hidden}><div class="pl-atlas-panel-head"><h3>{_html_text(view.get("label"))}</h3><p>{_html_text(view.get("description"))}</p></div><div class="pl-atlas-grid">\n'
+        for entry in (x for x in atlas.get("catalog", []) if x.get("view") == view.get("id")):
+            body += (
+                f'<button class="pl-atlas-card" type="button" aria-pressed="false" '
+                f'data-catalog-id="{_html_text(entry.get("catalog_id"))}" '
+                f'data-catalog-kind="{_html_text(entry.get("kind"))}" '
+                f'data-catalog-target="{_html_text(entry.get("target_id"))}" '
+                f'data-catalog-title="{_html_text(entry.get("title"))}" '
+                f'data-catalog-summary="{_html_text(entry.get("summary"))}" '
+                f'data-catalog-meta="{_html_text(entry.get("meta"))}">'
+                f'<span class="pl-card-kicker">{_html_text(entry.get("kind"))}</span>'
+                f'<strong>{_html_text(entry.get("title"))}</strong>'
+                f'<small>{_html_text(entry.get("summary"))}</small></button>\n'
+            )
+        body += '</div></section>\n'
+    body += '</div><aside class="pl-threat-detail pl-atlas-detail" id="threat-selection" aria-live="polite"><strong>Select a catalog entry</strong><p>Threats, controls, boundaries, assets and paths remain evidence-bound and source-derived.</p></aside></div>\n\n'
     body += '## Threat Model Diagram\n\n'
     body += '<div class="pl-threat-toolbar" role="toolbar" aria-label="Threat model diagram controls"><button type="button" data-threat-mode="system" class="md-button md-button--primary">System</button><button type="button" data-threat-mode="controls" class="md-button">Controls</button><button type="button" data-threat-mode="attack-paths" class="md-button">Attack paths</button><button type="button" data-threat-mode="evidence" class="md-button">Evidence posture</button><button type="button" data-threat-motion="toggle" class="md-button">Pause animation</button></div>\n'
-    body += '<div class="pl-threat-layout"><div class="pl-threat-canvas"><object id="pl-threat-model-svg" data="../../assets/enterprise/threat-model.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite threat model diagram"><img src="../../assets/enterprise/threat-model.svg" alt="Pocket Lab Lite threat model diagram"></object><p class="pl-muted">Blue = modeled allowed/control flow · red dashed = selected modeled attack path · shields = controls. Motion never means live traffic.</p></div><aside class="pl-threat-detail" id="threat-selection" aria-live="polite"><strong>Select a boundary, control or attack path</strong><p>Details remain evidence-bound and source-derived.</p></aside></div>\n\n'
+    body += '<div class="pl-threat-canvas"><object id="pl-threat-model-svg" data="../../assets/enterprise/threat-model.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite threat model diagram"><img src="../../assets/enterprise/threat-model.svg" alt="Pocket Lab Lite threat model diagram"></object><p class="pl-muted">Blue = modeled allowed/control flow · red dashed = selected modeled attack path · shields = controls. Motion never means live traffic.</p></div>\n\n'
     body += '### Attack-path explorer\n\n<div class="pl-threat-path-grid">\n'
     for path in threat.get("attack_paths", []):
         body += f'<button class="pl-threat-path-card" type="button" data-attack-path-id="{_html_text(path.get("id"))}"><span class="pl-card-kicker">{_html_text(path.get("id"))}</span><strong>{_html_text(path.get("name"))}</strong><small>{_html_text(" · ".join(path.get("stride",[])))}</small></button>\n'
@@ -1360,13 +1392,13 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
             dimension.setdefault("details", {})["supply_chain_change"] = {"new_vulnerabilities":supply_change.get("new_vulnerabilities",[]),"resolved_vulnerabilities":supply_change.get("resolved_vulnerabilities",[]),"scanner_history_comparable":supply_change.get("scanner_history_comparable",False)}
         elif dimension.get("dimension") == "licenses":
             dimension.setdefault("details", {})["supply_chain_change"] = {"new_licenses":supply_change.get("new_licenses",[]),"removed_licenses":supply_change.get("removed_licenses",[]),"license_classification_changes":supply_change.get("license_classification_changes",[])}
-    release=release_evidence(root,delta); threat=enrich_threat_model(threat_model(root,supply,release,deps), root); config=configuration_intelligence(base_config); traces=api_ui_traces(root); trouble=troubleshooting(); privacy=privacy_map(root); fm=fmea(root,deps); slo=reliability(root); adr=adr_intelligence(root); owners=ownership(root); validation=validation_coverage(root); advisor=change_advisor(); upgrade=upgrade_migration(root,delta); disaster=disaster_recovery(); quality=documentation_quality(root); contrib=contribution_matrix(); requirements=coverage_requirements()
+    release=release_evidence(root,delta); threat=enrich_threat_model(threat_model(root,supply,release,deps), root); atlas=build_security_atlas(threat); config=configuration_intelligence(base_config); traces=api_ui_traces(root); trouble=troubleshooting(); privacy=privacy_map(root); fm=fmea(root,deps); slo=reliability(root); adr=adr_intelligence(root); owners=ownership(root); validation=validation_coverage(root); advisor=change_advisor(); upgrade=upgrade_migration(root,delta); disaster=disaster_recovery(); quality=documentation_quality(root); contrib=contribution_matrix(); requirements=coverage_requirements()
     provenance=read_json(root/"contracts/generated/release-provenance.json",{}) or {"implementation_status":"implemented","evidence_status":"unobserved-until-explicit-generate/sign","formal_slsa_level":"not-claimed","workflow":"scripts/docs/enterprise/release_provenance.py"}
     controls=threat["controls"]
-    updates={"release_delta":delta,"release_evidence":release,"tasks":tasks,"events":events,"threat_model":threat,"configuration":config,"api_ui_traces":traces,"troubleshooting":trouble,"privacy_map":privacy,"fmea":fm,"reliability_objectives":slo,"adr_intelligence":adr,"security_controls":controls,"change_advisor":advisor,"ownership":owners,"validation_coverage":validation,"upgrade_migration":upgrade,"disaster_recovery":disaster,"documentation_quality":quality,"supply_chain_inventory":inventory,"supply_chain_change":supply_change,"provenance":provenance,"contribution_review":contrib,"requirements_coverage":requirements}
+    updates={"release_delta":delta,"release_evidence":release,"tasks":tasks,"events":events,"threat_model":threat,"security_atlas":{"implementation_status":"implemented","source_model":atlas.get("source_model"),"live_monitoring":False,"contract":"contracts/generated/documentation-enterprise/security-atlas.json","views":atlas.get("views",[])},"configuration":config,"api_ui_traces":traces,"troubleshooting":trouble,"privacy_map":privacy,"fmea":fm,"reliability_objectives":slo,"adr_intelligence":adr,"security_controls":controls,"change_advisor":advisor,"ownership":owners,"validation_coverage":validation,"upgrade_migration":upgrade,"disaster_recovery":disaster,"documentation_quality":quality,"supply_chain_inventory":inventory,"supply_chain_change":supply_change,"provenance":provenance,"contribution_review":contrib,"requirements_coverage":requirements}
     index["schema_version"]="2.0.0"; index["items"].update(updates); index["implementation_status"]="implemented"
     outputs[root/"contracts/security/threat-model.json"]=stable(threat)
-    for name,payload in {"release-delta.json":delta,"release-evidence.json":release,"release-assurance.json":release.get("assurance",{}),"threat-model-visualization.json":threat.get("visualization",{}),"supply-chain-change.json":supply_change,"validation-coverage.json":validation,"documentation-quality.json":{"items":quality},"requirements-coverage.json":{"schema_version":"1.0.0","items":requirements},"dependency-inventory.json":inventory,"threat-posture.json":threat["production_posture"],"task-handbook.json":{"items":tasks},"event-encyclopedia.json":{"items":events},"security-controls.json":{"items":controls},"configuration-intelligence.json":{"items":config},"api-ui-trace.json":{"items":traces},"fmea.json":{"items":fm},"reliability-objectives.json":{"items":slo}}.items(): outputs[out/name]=stable(payload)
+    for name,payload in {"release-delta.json":delta,"release-evidence.json":release,"release-assurance.json":release.get("assurance",{}),"threat-model-visualization.json":threat.get("visualization",{}),"security-atlas.json":atlas,"supply-chain-change.json":supply_change,"validation-coverage.json":validation,"documentation-quality.json":{"items":quality},"requirements-coverage.json":{"schema_version":"1.0.0","items":requirements},"dependency-inventory.json":inventory,"threat-posture.json":threat["production_posture"],"task-handbook.json":{"items":tasks},"event-encyclopedia.json":{"items":events},"security-controls.json":{"items":controls},"configuration-intelligence.json":{"items":config},"api-ui-trace.json":{"items":traces},"fmea.json":{"items":fm},"reliability-objectives.json":{"items":slo}}.items(): outputs[out/name]=stable(payload)
 
     def page(title:str,desc:str,audience:str,body:str,page_type:str="reference")->str:
         rendered=frontmatter(title,desc,audience,page_type)+body.strip()+"\n"
@@ -1384,7 +1416,7 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
         slug=re.sub(r"[^a-z0-9]+","-",x['scenario'].lower()).strip("-")
         body=f"# {x['title']}\n\n## Trigger\n{x['trigger']}\n\n## Impact\n{x['impact']}\n\n## Urgency\n{x['urgency']}\n\n## User-visible symptom\n{x['symptom']}\n\n## Known evidence\n"+"\n".join(f"- {v}" for v in x['known_evidence'])+"\n\n## Safe checks\n"+table(["Command","Class"],[[c['command'],c['class']] for c in x['safe_checks']])+f"\n## Expected output\n{x['expected_result']}\n\n## Decision tree\n"+"\n".join(f"1. {v}" for v in x['decision_tree'])+f"\n\n## Recovery\n{x['repair_options']}\n\n## Verification\n{x['verification']}\n\n## Rollback\n{x['rollback']}\n\n## When not to act\n"+"\n".join(f"- {v}" for v in x['when_not_to_act'])+"\n\n## Evidence to preserve\n"+"\n".join(f"- {v}" for v in x['evidence_to_preserve'])+f"\n\n## Escalation\n{x['escalation']}\n"
         outputs[doc/"operate/runbooks"/f"{slug}.md"]=page(x['title'],f"Production runbook for {x['title']}.","production",body,"runbook")
-    outputs[doc/"threat-model/index.md"]=page("Threat Model","Architecture-aware STRIDE threat model with promoted posture, controls and modeled attack paths; never live monitoring.","production",render_threat_model_page(threat,table=table),"reference")
+    outputs[doc/"threat-model/index.md"]=page("Threat Model","Architecture-aware STRIDE threat model with promoted posture, controls and modeled attack paths; never live monitoring.","production",render_threat_model_page(threat,atlas,table=table),"reference")
     for b in threat['boundaries']:
         bt=[x for x in threat['threats'] if x['boundary']==b['id']]
         body=f"# {b['label']}\n\n## Boundary\n{b['label']}\n\n## Assets\n"+"\n".join(f"- {x}" for x in b['assets'])+"\n\n## Actors\n"+"\n".join(f"- {x}" for x in b['actors'])+"\n\n## Entry points\n"+"\n".join(f"- {x}" for x in b['entry_points'])+"\n\n## Data flows\n"+"\n".join(f"- {x}" for x in b['data_flows'])+"\n\n## Allowed flows\n"+"\n".join(f"- {x}" for x in b['allowed_flows'])+"\n\n## Forbidden flows\n"+"\n".join(f"- {x}" for x in b['forbidden_flows'])+"\n\n## Threats\n"+table(["STRIDE","Scenario","OWASP mapping","Controls"],[[x['stride'],x['scenario'],x['owasp_mappings'],x['controls']] for x in bt])+"\n## Controls\n"+"\n".join(f"- `{x}`" for x in b['controls'])+"\n\n## Runtime evidence\n"+table(["Signal","State","Source"],[[x['signal'],x['state'],x['source']] for x in b['runtime_evidence']])+f"\n## Residual risk\n{b['residual_risk']}\n\n## Review status\n{b['review_status']}\n"
@@ -1416,4 +1448,5 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
     assets={"event-flows":("Event encyclopedia flow",event_rows),"api-ui-trace":("API-to-UI trace",trace_rows),"data-lifecycle":("Data lifecycle and sanitization",privacy_rows),"adr-relationships":("ADR intelligence",adr_rows),"security-controls":("Threat/control coverage",control_rows),"disaster-recovery":("Disaster recovery dependency order",dr_rows)}
     for name,(title,rows) in assets.items(): outputs[diagrams/f"{name}.dot"]=flow_dot(title,rows); outputs[diagrams/f"{name}.svg"]=flow_svg(title,rows)
     outputs[diagrams/"threat-model.svg"] = render_threat_svg(threat)
+    outputs[diagrams/"security-atlas.svg"] = render_security_atlas_svg(atlas)
     return index,outputs

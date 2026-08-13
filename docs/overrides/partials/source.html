@@ -1,0 +1,22 @@
+{#-
+  Pocket Lab Lite static repository link.
+
+  Repository statistics and release metadata are generated/promoted through
+  repository-owned evidence. The documentation browser must not require
+  hosting-provider API access at runtime.
+-#}
+
+<a
+  href="{{ config.repo_url }}"
+  title="Pocket Lab Lite repository"
+  class="md-source"
+>
+  <div class="md-source__icon md-icon">
+    {% set icon = config.theme.icon.repo or "fontawesome/brands/git-alt" %}
+    {% include ".icons/" ~ icon ~ ".svg" %}
+  </div>
+
+  <div class="md-source__repository">
+    {{ config.repo_name or config.repo_url }}
+  </div>
+</a>

@@ -18,7 +18,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 50 |
 | Documentation loop | 50 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 23 |
+| Runtime-evidence loop | 24 |
 | Security-analysis loop | 8 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
@@ -459,6 +459,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check`
 - `task lite:docs:diagrams:check`
 - `{{.PYTHON}} -m mkdocs build --strict`
+- `task lite:docs:runtime-network:check`
 
 **Environment:** None source-discovered
 
@@ -472,7 +473,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
 
-**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime:check, lite:docs:tools:check
+**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:tools:check
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 
@@ -1964,6 +1965,40 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:docs:release-evidence`
+
+## `lite:docs:runtime-network:check`
+
+**Purpose:** Verify generated docs have no external runtime repository API dependency
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/check_docs_runtime_network_fence.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/check_docs_runtime_network_fence.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:docs:runtime-network:check`
 
 ## `lite:docs:runtime:check`
 

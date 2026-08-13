@@ -516,7 +516,8 @@
         "task lite:docs:production:check",
         "{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check",
         "task lite:docs:diagrams:check",
-        "{{.PYTHON}} -m mkdocs build --strict"
+        "{{.PYTHON}} -m mkdocs build --strict",
+        "task lite:docs:runtime-network:check"
       ],
       "dependencies": [
         "lite:dev:scratch:prepare"
@@ -551,6 +552,7 @@
         "lite:docs:parity:check",
         "lite:docs:platform:check",
         "lite:docs:production:check",
+        "lite:docs:runtime-network:check",
         "lite:docs:runtime:check",
         "lite:docs:tools:check"
       ],
@@ -2336,6 +2338,50 @@
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "not-a-validation-task",
       "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/docs/check_docs_runtime_network_fence.py"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:docs:runtime-network:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/check_docs_runtime_network_fence.py"
+      ],
+      "name": "lite:docs:runtime-network:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Verify generated docs have no external runtime repository API dependency",
+      "related_tasks": [
+        "lite:dev:scratch:prepare"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Runtime-evidence loop"
     },
     {
       "aliases": [],

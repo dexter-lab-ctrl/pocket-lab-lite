@@ -1,0 +1,1954 @@
+{
+  "architecture_rule": "Architecture is the map. Security Atlas explains threats, assets, controls, trust boundaries, attack paths and evidence without redefining architecture ownership.",
+  "catalog": [
+    {
+      "catalog_id": "AP-01",
+      "kind": "attack-path",
+      "meta": "STRIDE: Spoofing · Tampering · Elevation of Privilege; controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Browser control-plane bypass",
+      "target_id": "AP-01",
+      "title": "Attack path AP-01",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-02",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Elevation of Privilege; controls: CTRL-BROWSER-SHELL, CTRL-API-CONTROL",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Browser shell execution",
+      "target_id": "AP-02",
+      "title": "Attack path AP-02",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-03",
+      "kind": "attack-path",
+      "meta": "STRIDE: Spoofing · Tampering · Elevation of Privilege; controls: CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Forged managed-device identity",
+      "target_id": "AP-03",
+      "title": "Attack path AP-03",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-04",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Repudiation · Denial of Service; controls: CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Messaging command tampering or replay",
+      "target_id": "AP-04",
+      "title": "Attack path AP-04",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-05",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Information Disclosure · Elevation of Privilege; controls: CTRL-SUPPLY-CHAIN, CTRL-EXPLICIT-PROMOTION, CTRL-EVIDENCE-SANITIZE",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Supply-chain artifact compromise",
+      "target_id": "AP-05",
+      "title": "Attack path AP-05",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-06",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Repudiation · Information Disclosure; controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Evidence poisoning",
+      "target_id": "AP-06",
+      "title": "Attack path AP-06",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-07",
+      "kind": "attack-path",
+      "meta": "STRIDE: Spoofing · Information Disclosure · Denial of Service; controls: CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Tailnet/private-network exposure",
+      "target_id": "AP-07",
+      "title": "Attack path AP-07",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-08",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Repudiation · Denial of Service; controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-API-CONTROL",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Recovery state tampering",
+      "target_id": "AP-08",
+      "title": "Attack path AP-08",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:application-container",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: PhotoPrism runtime/config, app route. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "application-container",
+      "title": "Application-container boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:browser",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: PWA session/UI state, safe snapshots. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "browser",
+      "title": "Browser trust boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:control-api",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: API request/response contracts, authorization/context. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "control-api",
+      "title": "Control API boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:durable-state",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: SQLite state, audit evidence, backup metadata. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "durable-state",
+      "title": "Durable-state boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:external-release",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: dist.zip, SBOM, release manifest, provenance. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "external-release",
+      "title": "External release boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:managed-device",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: device identity, agent state, bootstrap state. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "managed-device",
+      "title": "Managed-device boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:messaging-execution",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: commands, events, durable consumers. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "messaging-execution",
+      "title": "Messaging and execution boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:private-network",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: Tailnet connectivity, same-origin remote access. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "private-network",
+      "title": "Private network and Tailnet boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "boundary:server-host",
+      "kind": "boundary",
+      "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Assets: Termux runtime, PM2 services, local secrets. Entry points: repository-defined API/event/runtime/release flow.",
+      "target_id": "server-host",
+      "title": "Server-host boundary",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "CTRL-API-CONTROL",
+      "kind": "control",
+      "meta": "Coverage: browser, control-api, messaging-execution. If it fails: frontend intent could bypass centralized validation, authorization, reason codes and audit ownership",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/lite-openapi.json"
+      ],
+      "summary": "FastAPI remains the frontend-facing control API.",
+      "target_id": "CTRL-API-CONTROL",
+      "title": "Control CTRL-API-CONTROL",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-BROWSER-NATS",
+      "kind": "control",
+      "meta": "Coverage: browser, messaging-execution. If it fails: browser could bypass the control API and attempt unauthorized messaging/command injection",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/knowledge/requirements.json"
+      ],
+      "summary": "Frontend does not connect directly to NATS.",
+      "target_id": "CTRL-BROWSER-NATS",
+      "title": "Control CTRL-BROWSER-NATS",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-BROWSER-SHELL",
+      "kind": "control",
+      "meta": "Coverage: browser. If it fails: browser-originated input could reach host shell execution and mutate the server host",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/knowledge/requirements.json"
+      ],
+      "summary": "Frontend does not execute shell commands.",
+      "target_id": "CTRL-BROWSER-SHELL",
+      "title": "Control CTRL-BROWSER-SHELL",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-EVIDENCE-SANITIZE",
+      "kind": "control",
+      "meta": "Coverage: durable-state, external-release, server-host. If it fails: secret-bearing or private-path evidence could enter canonical documentation or mislead security posture",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "summary": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
+      "target_id": "CTRL-EVIDENCE-SANITIZE",
+      "title": "Control CTRL-EVIDENCE-SANITIZE",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-EXECUTION-OWNERS",
+      "kind": "control",
+      "meta": "Coverage: messaging-execution, managed-device, server-host. If it fails: commands or recovery could execute outside worker/agent/supervisor ownership and lose delivery/recovery guarantees",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Workers, agents and supervisors own execution and recovery.",
+      "target_id": "CTRL-EXECUTION-OWNERS",
+      "title": "Control CTRL-EXECUTION-OWNERS",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-EXPLICIT-PROMOTION",
+      "kind": "control",
+      "meta": "Coverage: external-release, durable-state, server-host. If it fails: transient/unreviewed capture could be mistaken for canonical release/runtime evidence",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "summary": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
+      "target_id": "CTRL-EXPLICIT-PROMOTION",
+      "title": "Control CTRL-EXPLICIT-PROMOTION",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-SUPPLY-CHAIN",
+      "kind": "control",
+      "meta": "Coverage: external-release, application-container. If it fails: unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/metadata/documentation-security-tools.json"
+      ],
+      "summary": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
+      "target_id": "CTRL-SUPPLY-CHAIN",
+      "title": "Control CTRL-SUPPLY-CHAIN",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "evidence:dependencies",
+      "kind": "evidence",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Canonical or promoted evidence lineage used by the threat-model projection.",
+      "target_id": "dependencies",
+      "title": "Dependency health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "evidence:diagram",
+      "kind": "evidence",
+      "meta": "docs/generated/assets/enterprise/threat-model.svg",
+      "source_refs": [
+        "docs/generated/assets/enterprise/threat-model.svg"
+      ],
+      "summary": "Canonical or promoted evidence lineage used by the threat-model projection.",
+      "target_id": "diagram",
+      "title": "Threat model diagram",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "evidence:health",
+      "kind": "evidence",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Canonical or promoted evidence lineage used by the threat-model projection.",
+      "target_id": "health",
+      "title": "Domain operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "evidence:runtime",
+      "kind": "evidence",
+      "meta": "contracts/parity/runtime-verification-baseline.json",
+      "source_refs": [
+        "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "summary": "Canonical or promoted evidence lineage used by the threat-model projection.",
+      "target_id": "runtime",
+      "title": "Promoted runtime baseline",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "evidence:supply-chain",
+      "kind": "evidence",
+      "meta": "contracts/generated/supply-chain",
+      "source_refs": [
+        "contracts/generated/supply-chain"
+      ],
+      "summary": "Canonical or promoted evidence lineage used by the threat-model projection.",
+      "target_id": "supply-chain",
+      "title": "Normalized scanner/SBOM evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "evidence:threat-posture",
+      "kind": "evidence",
+      "meta": "contracts/generated/documentation-enterprise/threat-posture.json",
+      "source_refs": [
+        "contracts/generated/documentation-enterprise/threat-posture.json"
+      ],
+      "summary": "Canonical or promoted evidence lineage used by the threat-model projection.",
+      "target_id": "threat-posture",
+      "title": "Threat posture projection",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:01",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: application-container. State: control-observed. Observed: healthy.",
+      "target_id": "posture:01",
+      "title": "apps operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:02",
+      "kind": "posture",
+      "meta": "contracts/generated/supply-chain/automation-summary.json",
+      "source_refs": [
+        "contracts/generated/supply-chain/automation-summary.json"
+      ],
+      "summary": "Boundary: application-container. State: control-observed. Observed: normalized-evidence-present.",
+      "target_id": "posture:02",
+      "title": "scanner results",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:03",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "source_refs": [
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Boundary: application-container. State: control-observed. Observed: release-assurance-model-operational.",
+      "target_id": "posture:03",
+      "title": "release evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:04",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: application-container. State: control-observed. Observed: {\"healthy\":22,\"unvalidated\":4}.",
+      "target_id": "posture:04",
+      "title": "dependency health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:05",
+      "kind": "posture",
+      "meta": "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "source_refs": [
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Boundary: application-container. State: control-observed. Observed: normalized canonical evidence present.",
+      "target_id": "posture:05",
+      "title": "SBOM/vulnerability evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:06",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: browser. State: control-observed. Observed: degraded.",
+      "target_id": "posture:06",
+      "title": "home operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:07",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: control-api. State: control-observed. Observed: degraded.",
+      "target_id": "posture:07",
+      "title": "home operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:08",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: control-api. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:08",
+      "title": "NATS/JetStream health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:09",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: durable-state. State: evidence-stale. Observed: degraded.",
+      "target_id": "posture:09",
+      "title": "recovery operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:10",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: external-release. State: control-observed. Observed: healthy.",
+      "target_id": "posture:10",
+      "title": "security operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:11",
+      "kind": "posture",
+      "meta": "contracts/generated/supply-chain/automation-summary.json",
+      "source_refs": [
+        "contracts/generated/supply-chain/automation-summary.json"
+      ],
+      "summary": "Boundary: external-release. State: control-observed. Observed: normalized-evidence-present.",
+      "target_id": "posture:11",
+      "title": "scanner results",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:12",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "source_refs": [
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Boundary: external-release. State: control-observed. Observed: release-assurance-model-operational.",
+      "target_id": "posture:12",
+      "title": "release evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:13",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: external-release. State: control-observed. Observed: {\"healthy\":22,\"unvalidated\":4}.",
+      "target_id": "posture:13",
+      "title": "dependency health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:14",
+      "kind": "posture",
+      "meta": "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "source_refs": [
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Boundary: external-release. State: control-observed. Observed: normalized canonical evidence present.",
+      "target_id": "posture:14",
+      "title": "SBOM/vulnerability evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:15",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: managed-device. State: control-observed. Observed: healthy.",
+      "target_id": "posture:15",
+      "title": "devices operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:16",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: managed-device. State: control-observed. Observed: True.",
+      "target_id": "posture:16",
+      "title": "Tailscale readiness",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:17",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: managed-device. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:17",
+      "title": "node-agent status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:18",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: managed-device. State: control-partial. Observed: [\"unvalidated\"].",
+      "target_id": "posture:18",
+      "title": "supervisor status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:19",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: managed-device. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:19",
+      "title": "worker status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:20",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: degraded.",
+      "target_id": "posture:20",
+      "title": "home operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:21",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:21",
+      "title": "NATS/JetStream health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:22",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:22",
+      "title": "node-agent status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:23",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-partial. Observed: [\"unvalidated\"].",
+      "target_id": "posture:23",
+      "title": "supervisor status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:24",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:24",
+      "title": "worker status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:25",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: {\"healthy\":22,\"unvalidated\":4}.",
+      "target_id": "posture:25",
+      "title": "dependency health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:26",
+      "kind": "posture",
+      "meta": "contracts/generated/supply-chain/vulnerability-correlation.json",
+      "source_refs": [
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: normalized canonical evidence present.",
+      "target_id": "posture:26",
+      "title": "SBOM/vulnerability evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:27",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: server-host. State: control-observed. Observed: degraded.",
+      "target_id": "posture:27",
+      "title": "home operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:28",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: server-host. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:28",
+      "title": "NATS/JetStream health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:29",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: server-host. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:29",
+      "title": "node-agent status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:30",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: server-host. State: control-partial. Observed: [\"unvalidated\"].",
+      "target_id": "posture:30",
+      "title": "supervisor status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:31",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-intelligence/dependency-health.json",
+      "source_refs": [
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Boundary: server-host. State: control-observed. Observed: [\"healthy\"].",
+      "target_id": "posture:31",
+      "title": "worker status",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:32",
+      "kind": "posture",
+      "meta": "contracts/generated/supply-chain/automation-summary.json",
+      "source_refs": [
+        "contracts/generated/supply-chain/automation-summary.json"
+      ],
+      "summary": "Boundary: server-host. State: control-observed. Observed: normalized-evidence-present.",
+      "target_id": "posture:32",
+      "title": "scanner results",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:33",
+      "kind": "posture",
+      "meta": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "source_refs": [
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Boundary: server-host. State: control-observed. Observed: release-assurance-model-operational.",
+      "target_id": "posture:33",
+      "title": "release evidence",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:34",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: private-network. State: control-observed. Observed: healthy.",
+      "target_id": "posture:34",
+      "title": "devices operational health",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "posture:35",
+      "kind": "posture",
+      "meta": "contracts/generated/runtime/domain-operational-health.json",
+      "source_refs": [
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Boundary: private-network. State: control-observed. Observed: True.",
+      "target_id": "posture:35",
+      "title": "Tailscale readiness",
+      "view": "evidence"
+    },
+    {
+      "catalog_id": "system:agent-supervisor",
+      "kind": "system",
+      "meta": "architecture:agent-supervisor",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: managed-device. Promoted posture: control-partial. Assets: device identity, agent state, bootstrap state.",
+      "target_id": "agent-supervisor",
+      "title": "Supervisor",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:browser",
+      "kind": "system",
+      "meta": "architecture:pwa",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: browser. Promoted posture: control-observed. Assets: PWA session/UI state, safe snapshots.",
+      "target_id": "browser",
+      "title": "Browser / PWA",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:caddy",
+      "kind": "system",
+      "meta": "architecture:caddy",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: server-host. Promoted posture: control-partial. Assets: Termux runtime, PM2 services, local secrets.",
+      "target_id": "caddy",
+      "title": "Caddy",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:documentation",
+      "kind": "system",
+      "meta": "architecture:completion-evidence",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: durable-state. Promoted posture: evidence-stale. Assets: SQLite state, audit evidence, backup metadata.",
+      "target_id": "documentation",
+      "title": "Documentation",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:github-release",
+      "kind": "system",
+      "meta": "architecture:github-release",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: external-release. Promoted posture: control-observed. Assets: dist.zip, SBOM, release manifest, provenance.",
+      "target_id": "github-release",
+      "title": "GitHub Release",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:lite-api",
+      "kind": "system",
+      "meta": "architecture:lite-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: control-api. Promoted posture: control-observed. Assets: API request/response contracts, authorization/context.",
+      "target_id": "lite-api",
+      "title": "FastAPI",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:managed-device",
+      "kind": "system",
+      "meta": "architecture:node-agent",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: managed-device. Promoted posture: control-partial. Assets: device identity, agent state, bootstrap state.",
+      "target_id": "managed-device",
+      "title": "Managed device",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:nats-jetstream",
+      "kind": "system",
+      "meta": "architecture:nats-jetstream",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: messaging-execution. Promoted posture: control-partial. Assets: commands, events, durable consumers.",
+      "target_id": "nats-jetstream",
+      "title": "NATS / JetStream",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:node-agent",
+      "kind": "system",
+      "meta": "architecture:node-agent",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: managed-device. Promoted posture: control-partial. Assets: device identity, agent state, bootstrap state.",
+      "target_id": "node-agent",
+      "title": "Node agent",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:photoprism",
+      "kind": "system",
+      "meta": "architecture:photoprism",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: application-container. Promoted posture: control-observed. Assets: PhotoPrism runtime/config, app route.",
+      "target_id": "photoprism",
+      "title": "PhotoPrism",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:private-network",
+      "kind": "system",
+      "meta": "architecture:tailscale",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: private-network. Promoted posture: control-observed. Assets: Tailnet connectivity, same-origin remote access.",
+      "target_id": "private-network",
+      "title": "Private network",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:promoted-evidence",
+      "kind": "system",
+      "meta": "architecture:completion-evidence",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: durable-state. Promoted posture: evidence-stale. Assets: SQLite state, audit evidence, backup metadata.",
+      "target_id": "promoted-evidence",
+      "title": "Promoted evidence",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:recovery-state",
+      "kind": "system",
+      "meta": "architecture:recovery-state",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: durable-state. Promoted posture: evidence-stale. Assets: SQLite state, audit evidence, backup metadata.",
+      "target_id": "recovery-state",
+      "title": "Recovery state",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:release-artifacts",
+      "kind": "system",
+      "meta": "architecture:release-artifacts",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: external-release. Promoted posture: control-observed. Assets: dist.zip, SBOM, release manifest, provenance.",
+      "target_id": "release-artifacts",
+      "title": "Release artifacts",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:scanner-evidence",
+      "kind": "system",
+      "meta": "architecture:security-profiles",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: external-release. Promoted posture: control-observed. Assets: dist.zip, SBOM, release manifest, provenance.",
+      "target_id": "scanner-evidence",
+      "title": "Scanner / SBOM",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:server-host",
+      "kind": "system",
+      "meta": "architecture:pm2",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: server-host. Promoted posture: control-partial. Assets: Termux runtime, PM2 services, local secrets.",
+      "target_id": "server-host",
+      "title": "Termux host",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:sqlite",
+      "kind": "system",
+      "meta": "architecture:sqlite",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: durable-state. Promoted posture: evidence-stale. Assets: SQLite state, audit evidence, backup metadata.",
+      "target_id": "sqlite",
+      "title": "SQLite",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:tailscale",
+      "kind": "system",
+      "meta": "architecture:tailscale",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: private-network. Promoted posture: control-observed. Assets: Tailnet connectivity, same-origin remote access.",
+      "target_id": "tailscale",
+      "title": "Tailscale",
+      "view": "system"
+    },
+    {
+      "catalog_id": "system:worker",
+      "kind": "system",
+      "meta": "architecture:worker",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Trust boundary: messaging-execution. Promoted posture: control-partial. Assets: commands, events, durable consumers.",
+      "target_id": "worker",
+      "title": "Worker",
+      "view": "system"
+    },
+    {
+      "catalog_id": "THR-APPLICATION-CONTAINER-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Application-container boundary.",
+      "target_id": "THR-APPLICATION-CONTAINER-DENIALOFSERV",
+      "title": "Denial of Service — application-container",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-APPLICATION-CONTAINER-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-SUPPLY-CHAIN",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Application-container boundary.",
+      "target_id": "THR-APPLICATION-CONTAINER-ELEVATIONOFP",
+      "title": "Elevation of Privilege — application-container",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-APPLICATION-CONTAINER-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: CTRL-SUPPLY-CHAIN",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Application-container boundary.",
+      "target_id": "THR-APPLICATION-CONTAINER-INFORMATIOND",
+      "title": "Information Disclosure — application-container",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-APPLICATION-CONTAINER-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Application-container boundary.",
+      "target_id": "THR-APPLICATION-CONTAINER-REPUDIATION",
+      "title": "Repudiation — application-container",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-APPLICATION-CONTAINER-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Application-container boundary.",
+      "target_id": "THR-APPLICATION-CONTAINER-SPOOFING",
+      "title": "Spoofing — application-container",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-APPLICATION-CONTAINER-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-SUPPLY-CHAIN",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Application-container boundary.",
+      "target_id": "THR-APPLICATION-CONTAINER-TAMPERING",
+      "title": "Tampering — application-container",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-BROWSER-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Browser trust boundary.",
+      "target_id": "THR-BROWSER-DENIALOFSERV",
+      "title": "Denial of Service — browser",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-BROWSER-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Browser trust boundary.",
+      "target_id": "THR-BROWSER-ELEVATIONOFP",
+      "title": "Elevation of Privilege — browser",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-BROWSER-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Browser trust boundary.",
+      "target_id": "THR-BROWSER-INFORMATIOND",
+      "title": "Information Disclosure — browser",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-BROWSER-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Browser trust boundary.",
+      "target_id": "THR-BROWSER-REPUDIATION",
+      "title": "Repudiation — browser",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-BROWSER-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Browser trust boundary.",
+      "target_id": "THR-BROWSER-SPOOFING",
+      "title": "Spoofing — browser",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-BROWSER-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Browser trust boundary.",
+      "target_id": "THR-BROWSER-TAMPERING",
+      "title": "Tampering — browser",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-CONTROL-API-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Control API boundary.",
+      "target_id": "THR-CONTROL-API-DENIALOFSERV",
+      "title": "Denial of Service — control-api",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-CONTROL-API-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Control API boundary.",
+      "target_id": "THR-CONTROL-API-ELEVATIONOFP",
+      "title": "Elevation of Privilege — control-api",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-CONTROL-API-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Control API boundary.",
+      "target_id": "THR-CONTROL-API-INFORMATIOND",
+      "title": "Information Disclosure — control-api",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-CONTROL-API-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Control API boundary.",
+      "target_id": "THR-CONTROL-API-REPUDIATION",
+      "title": "Repudiation — control-api",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-CONTROL-API-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Control API boundary.",
+      "target_id": "THR-CONTROL-API-SPOOFING",
+      "title": "Spoofing — control-api",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-CONTROL-API-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Control API boundary.",
+      "target_id": "THR-CONTROL-API-TAMPERING",
+      "title": "Tampering — control-api",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-DURABLE-STATE-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Durable-state boundary.",
+      "target_id": "THR-DURABLE-STATE-DENIALOFSERV",
+      "title": "Denial of Service — durable-state",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-DURABLE-STATE-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Durable-state boundary.",
+      "target_id": "THR-DURABLE-STATE-ELEVATIONOFP",
+      "title": "Elevation of Privilege — durable-state",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-DURABLE-STATE-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Durable-state boundary.",
+      "target_id": "THR-DURABLE-STATE-INFORMATIOND",
+      "title": "Information Disclosure — durable-state",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-DURABLE-STATE-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Durable-state boundary.",
+      "target_id": "THR-DURABLE-STATE-REPUDIATION",
+      "title": "Repudiation — durable-state",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-DURABLE-STATE-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Durable-state boundary.",
+      "target_id": "THR-DURABLE-STATE-SPOOFING",
+      "title": "Spoofing — durable-state",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-DURABLE-STATE-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Durable-state boundary.",
+      "target_id": "THR-DURABLE-STATE-TAMPERING",
+      "title": "Tampering — durable-state",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-EXTERNAL-RELEASE-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the External release boundary.",
+      "target_id": "THR-EXTERNAL-RELEASE-DENIALOFSERV",
+      "title": "Denial of Service — external-release",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-EXTERNAL-RELEASE-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-SUPPLY-CHAIN",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the External release boundary.",
+      "target_id": "THR-EXTERNAL-RELEASE-ELEVATIONOFP",
+      "title": "Elevation of Privilege — external-release",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-EXTERNAL-RELEASE-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-SUPPLY-CHAIN",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the External release boundary.",
+      "target_id": "THR-EXTERNAL-RELEASE-INFORMATIOND",
+      "title": "Information Disclosure — external-release",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-EXTERNAL-RELEASE-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the External release boundary.",
+      "target_id": "THR-EXTERNAL-RELEASE-REPUDIATION",
+      "title": "Repudiation — external-release",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-EXTERNAL-RELEASE-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the External release boundary.",
+      "target_id": "THR-EXTERNAL-RELEASE-SPOOFING",
+      "title": "Spoofing — external-release",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-EXTERNAL-RELEASE-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXPLICIT-PROMOTION, CTRL-SUPPLY-CHAIN",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the External release boundary.",
+      "target_id": "THR-EXTERNAL-RELEASE-TAMPERING",
+      "title": "Tampering — external-release",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MANAGED-DEVICE-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Managed-device boundary.",
+      "target_id": "THR-MANAGED-DEVICE-DENIALOFSERV",
+      "title": "Denial of Service — managed-device",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MANAGED-DEVICE-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Managed-device boundary.",
+      "target_id": "THR-MANAGED-DEVICE-ELEVATIONOFP",
+      "title": "Elevation of Privilege — managed-device",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MANAGED-DEVICE-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Managed-device boundary.",
+      "target_id": "THR-MANAGED-DEVICE-INFORMATIOND",
+      "title": "Information Disclosure — managed-device",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MANAGED-DEVICE-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Managed-device boundary.",
+      "target_id": "THR-MANAGED-DEVICE-REPUDIATION",
+      "title": "Repudiation — managed-device",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MANAGED-DEVICE-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Managed-device boundary.",
+      "target_id": "THR-MANAGED-DEVICE-SPOOFING",
+      "title": "Spoofing — managed-device",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MANAGED-DEVICE-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Managed-device boundary.",
+      "target_id": "THR-MANAGED-DEVICE-TAMPERING",
+      "title": "Tampering — managed-device",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MESSAGING-EXECUTION-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Messaging and execution boundary.",
+      "target_id": "THR-MESSAGING-EXECUTION-DENIALOFSERV",
+      "title": "Denial of Service — messaging-execution",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MESSAGING-EXECUTION-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Messaging and execution boundary.",
+      "target_id": "THR-MESSAGING-EXECUTION-ELEVATIONOFP",
+      "title": "Elevation of Privilege — messaging-execution",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MESSAGING-EXECUTION-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Messaging and execution boundary.",
+      "target_id": "THR-MESSAGING-EXECUTION-INFORMATIOND",
+      "title": "Information Disclosure — messaging-execution",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MESSAGING-EXECUTION-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Messaging and execution boundary.",
+      "target_id": "THR-MESSAGING-EXECUTION-REPUDIATION",
+      "title": "Repudiation — messaging-execution",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MESSAGING-EXECUTION-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Messaging and execution boundary.",
+      "target_id": "THR-MESSAGING-EXECUTION-SPOOFING",
+      "title": "Spoofing — messaging-execution",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-MESSAGING-EXECUTION-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/vulnerability-correlation.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Messaging and execution boundary.",
+      "target_id": "THR-MESSAGING-EXECUTION-TAMPERING",
+      "title": "Tampering — messaging-execution",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-PRIVATE-NETWORK-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Private network and Tailnet boundary.",
+      "target_id": "THR-PRIVATE-NETWORK-DENIALOFSERV",
+      "title": "Denial of Service — private-network",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-PRIVATE-NETWORK-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Private network and Tailnet boundary.",
+      "target_id": "THR-PRIVATE-NETWORK-ELEVATIONOFP",
+      "title": "Elevation of Privilege — private-network",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-PRIVATE-NETWORK-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Private network and Tailnet boundary.",
+      "target_id": "THR-PRIVATE-NETWORK-INFORMATIOND",
+      "title": "Information Disclosure — private-network",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-PRIVATE-NETWORK-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Private network and Tailnet boundary.",
+      "target_id": "THR-PRIVATE-NETWORK-REPUDIATION",
+      "title": "Repudiation — private-network",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-PRIVATE-NETWORK-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Private network and Tailnet boundary.",
+      "target_id": "THR-PRIVATE-NETWORK-SPOOFING",
+      "title": "Spoofing — private-network",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-PRIVATE-NETWORK-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/runtime/domain-operational-health.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Private network and Tailnet boundary.",
+      "target_id": "THR-PRIVATE-NETWORK-TAMPERING",
+      "title": "Tampering — private-network",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-SERVER-HOST-DENIALOFSERV",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Source-derived candidate Denial of Service threat affecting the Server-host boundary.",
+      "target_id": "THR-SERVER-HOST-DENIALOFSERV",
+      "title": "Denial of Service — server-host",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-SERVER-HOST-ELEVATIONOFP",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Source-derived candidate Elevation of Privilege threat affecting the Server-host boundary.",
+      "target_id": "THR-SERVER-HOST-ELEVATIONOFP",
+      "title": "Elevation of Privilege — server-host",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-SERVER-HOST-INFORMATIOND",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Source-derived candidate Information Disclosure threat affecting the Server-host boundary.",
+      "target_id": "THR-SERVER-HOST-INFORMATIOND",
+      "title": "Information Disclosure — server-host",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-SERVER-HOST-REPUDIATION",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Source-derived candidate Repudiation threat affecting the Server-host boundary.",
+      "target_id": "THR-SERVER-HOST-REPUDIATION",
+      "title": "Repudiation — server-host",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-SERVER-HOST-SPOOFING",
+      "kind": "threat",
+      "meta": "Controls: unvalidated",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Source-derived candidate Spoofing threat affecting the Server-host boundary.",
+      "target_id": "THR-SERVER-HOST-SPOOFING",
+      "title": "Spoofing — server-host",
+      "view": "threats"
+    },
+    {
+      "catalog_id": "THR-SERVER-HOST-TAMPERING",
+      "kind": "threat",
+      "meta": "Controls: CTRL-EXECUTION-OWNERS, CTRL-EXPLICIT-PROMOTION",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "contracts/generated/runtime/domain-operational-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/documentation-intelligence/dependency-health.json",
+        "contracts/generated/supply-chain/automation-summary.json",
+        "contracts/generated/documentation-enterprise/release-evidence.json"
+      ],
+      "summary": "Source-derived candidate Tampering threat affecting the Server-host boundary.",
+      "target_id": "THR-SERVER-HOST-TAMPERING",
+      "title": "Tampering — server-host",
+      "view": "threats"
+    }
+  ],
+  "generated_intelligence": "deterministic-projection-only",
+  "live_monitoring": false,
+  "poster": {
+    "asset": "docs/generated/assets/enterprise/security-atlas.svg",
+    "view_count": 5
+  },
+  "schema_version": "1.0.0",
+  "source_model": "contracts/security/threat-model.json",
+  "views": [
+    {
+      "description": "STRIDE candidates and their reviewed source-derived control relationships.",
+      "entry_count": 54,
+      "id": "threats",
+      "label": "Threat Atlas"
+    },
+    {
+      "description": "Canonical architecture components, trust boundaries, assets and promoted posture.",
+      "entry_count": 19,
+      "id": "system",
+      "label": "System Atlas"
+    },
+    {
+      "description": "Entry surfaces, trust boundaries and reviewed modeled attack paths.",
+      "entry_count": 17,
+      "id": "attack-surface",
+      "label": "Attack Surface Atlas"
+    },
+    {
+      "description": "Controls, coverage, threat relationships and consequences if controls fail.",
+      "entry_count": 7,
+      "id": "controls",
+      "label": "Control Atlas"
+    },
+    {
+      "description": "Promoted/canonical evidence lineage and posture signals; never live monitoring.",
+      "entry_count": 41,
+      "id": "evidence",
+      "label": "Evidence Atlas"
+    }
+  ]
+}

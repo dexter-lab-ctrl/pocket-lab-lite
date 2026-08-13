@@ -173,6 +173,157 @@ def enrich(threat: dict[str, Any], root: Path) -> dict[str, Any]:
     return threat
 
 
+def build_security_atlas(threat: dict[str, Any]) -> dict[str, Any]:
+    """Build deterministic, source-derived catalog projections from the canonical model."""
+    viz = threat.get("visualization", {})
+
+    def display(value: Any) -> str:
+        if isinstance(value, (dict, list, tuple, set, Counter)):
+            normalized = dict(value) if isinstance(value, Counter) else list(value) if isinstance(value, (tuple, set)) else value
+            return json.dumps(normalized, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+        return str(value)
+    boundaries = {row.get("id"): row for row in threat.get("boundaries", [])}
+    catalog: list[dict[str, Any]] = []
+
+    def add(
+        view: str,
+        kind: str,
+        catalog_id: str,
+        target_id: str,
+        title: str,
+        summary: str,
+        meta: str,
+        source_refs: list[str],
+    ) -> None:
+        catalog.append({
+            "view": view,
+            "kind": kind,
+            "catalog_id": catalog_id,
+            "target_id": target_id,
+            "title": title,
+            "summary": summary,
+            "meta": meta,
+            "source_refs": source_refs,
+        })
+
+    for row in threat.get("threats", []):
+        add(
+            "threats",
+            "threat",
+            str(row.get("id")),
+            str(row.get("id")),
+            f"{row.get('stride', 'Threat')} — {row.get('boundary', 'unvalidated')}",
+            str(row.get("scenario") or "Source-derived STRIDE candidate requiring human review."),
+            "Controls: " + ", ".join(row.get("controls", []) or ["unvalidated"]),
+            ["contracts/security/threat-model.json", *list(row.get("runtime_evidence", []) or [])],
+        )
+
+    for row in viz.get("nodes", []):
+        boundary = boundaries.get(row.get("boundary"), {})
+        assets = ", ".join(boundary.get("assets", []) or ["source-derived asset scope"])
+        add(
+            "system",
+            "system",
+            f"system:{row.get('id')}",
+            str(row.get("id")),
+            str(row.get("label") or row.get("id")),
+            f"Trust boundary: {row.get('boundary', 'unvalidated')}. Promoted posture: {row.get('posture', 'unvalidated')}. Assets: {assets}.",
+            f"architecture:{row.get('architecture_component', 'unvalidated')}",
+            ["architecture/metadata/pocket-lab-architecture.json", "contracts/security/threat-model.json"],
+        )
+
+    for row in threat.get("boundaries", []):
+        add(
+            "attack-surface",
+            "boundary",
+            f"boundary:{row.get('id')}",
+            str(row.get("id")),
+            str(row.get("label") or row.get("id")),
+            "Assets: " + ", ".join(row.get("assets", []) or ["unvalidated"]) + ". Entry points: " + ", ".join(row.get("entry_points", []) or ["unvalidated"]) + ".",
+            "Forbidden flows: " + ", ".join(row.get("forbidden_flows", []) or ["none declared"]),
+            ["contracts/security/threat-model.json", "architecture/metadata/pocket-lab-architecture.json"],
+        )
+
+    for row in threat.get("attack_paths", []):
+        add(
+            "attack-surface",
+            "attack-path",
+            str(row.get("id")),
+            str(row.get("id")),
+            f"Attack path {row.get('id')}",
+            str(row.get("name") or "Reviewed modeled attack path."),
+            "STRIDE: " + " · ".join(row.get("stride", []) or ["unvalidated"]) + "; controls: " + ", ".join(row.get("controls", []) or ["unvalidated"]),
+            ["security/threat-model-scenarios.json", "contracts/security/threat-model.json"],
+        )
+
+    for row in threat.get("controls", []):
+        consequences = "; ".join(row.get("failure_consequences", []) or ["control coverage would be reduced"])
+        add(
+            "controls",
+            "control",
+            str(row.get("id")),
+            str(row.get("id")),
+            f"Control {row.get('id')}",
+            str(row.get("description") or "Source-derived security control."),
+            f"Coverage: {', '.join(row.get('where_used', []) or ['unvalidated'])}. If it fails: {consequences}",
+            ["contracts/security/threat-model.json", *list(row.get("source_refs", []) or [])],
+        )
+
+    for row in viz.get("evidence_lineage", []):
+        add(
+            "evidence",
+            "evidence",
+            f"evidence:{row.get('id')}",
+            str(row.get("id")),
+            str(row.get("label") or row.get("id")),
+            "Canonical or promoted evidence lineage used by the threat-model projection.",
+            str(row.get("source") or "unvalidated"),
+            [str(row.get("source") or "unvalidated")],
+        )
+
+    for index, row in enumerate(threat.get("production_posture", {}).get("signals", []), 1):
+        add(
+            "evidence",
+            "posture",
+            f"posture:{index:02d}",
+            f"posture:{index:02d}",
+            str(row.get("signal") or f"Posture signal {index}"),
+            f"Boundary: {row.get('boundary', 'unvalidated')}. State: {row.get('state', 'unvalidated')}. Observed: {display(row.get('observed', 'unobserved'))}.",
+            str(row.get("source") or "unvalidated"),
+            [str(row.get("source") or "unvalidated")],
+        )
+
+    catalog.sort(key=lambda row: (str(row["view"]), str(row["kind"]), str(row["catalog_id"])))
+    keys = [(row["kind"], row["catalog_id"]) for row in catalog]
+    targets = [(row["kind"], row["target_id"]) for row in catalog]
+    if len(keys) != len(set(keys)):
+        raise ValueError("Security Atlas catalog contains duplicate kind/id entries")
+    if len(targets) != len(set(targets)):
+        raise ValueError("Security Atlas catalog contains ambiguous deep-link targets")
+
+    views = [
+        {"id": "threats", "label": "Threat Atlas", "description": "STRIDE candidates and their reviewed source-derived control relationships."},
+        {"id": "system", "label": "System Atlas", "description": "Canonical architecture components, trust boundaries, assets and promoted posture."},
+        {"id": "attack-surface", "label": "Attack Surface Atlas", "description": "Entry surfaces, trust boundaries and reviewed modeled attack paths."},
+        {"id": "controls", "label": "Control Atlas", "description": "Controls, coverage, threat relationships and consequences if controls fail."},
+        {"id": "evidence", "label": "Evidence Atlas", "description": "Promoted/canonical evidence lineage and posture signals; never live monitoring."},
+    ]
+    counts = Counter(row["view"] for row in catalog)
+    for row in views:
+        row["entry_count"] = counts.get(row["id"], 0)
+
+    return {
+        "schema_version": "1.0.0",
+        "source_model": "contracts/security/threat-model.json",
+        "live_monitoring": False,
+        "generated_intelligence": "deterministic-projection-only",
+        "architecture_rule": "Architecture is the map. Security Atlas explains threats, assets, controls, trust boundaries, attack paths and evidence without redefining architecture ownership.",
+        "poster": {"asset": "docs/generated/assets/enterprise/security-atlas.svg", "view_count": len(views)},
+        "views": views,
+        "catalog": catalog,
+    }
+
+
 def _esc(value: Any) -> str:
     return html.escape(str(value), quote=True)
 
@@ -212,5 +363,44 @@ def render_svg(threat: dict[str, Any]) -> str:
         x=55+i*155; y=825
         parts.append(f'<g class="control" data-control="{_esc(c["id"])}" data-boundaries="{_esc(" ".join(c.get("boundaries",[])))}" data-threats="{_esc(" ".join(c.get("threats",[])))}" tabindex="0" role="button" aria-label="Control {_esc(c["id"])}; {_esc(c.get("status"))}"><circle cx="{x}" cy="{y-20}" r="12"/><text x="{x+18}" y="{y-16}">{_esc(c["id"].replace("CTRL-",""))}</text></g>')
     parts.append('<text class="legend" x="38" y="690">Modeled flow — not live traffic · Blue = allowed/control flow · Red dashed = selected modeled attack path · Shield row = controls</text>')
+    parts.append('</svg>\n')
+    return ''.join(parts)
+
+
+def render_security_atlas_svg(atlas: dict[str, Any]) -> str:
+    """Render a self-contained Security Atlas overview poster."""
+    views = atlas.get("views", [])
+    width, height = 1200, 720
+    cards = [
+        ("Architecture", "The map", "Canonical topology and ownership stay architecture-owned."),
+        *[(row.get("label"), f"{row.get('entry_count', 0)} entries", row.get("description")) for row in views],
+    ]
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="sa-title sa-desc">',
+        '<title id="sa-title">Pocket Lab Lite Security Atlas</title>',
+        '<desc id="sa-desc">Architecture is the map. Security Atlas explains threats, assets, controls, trust boundaries, reviewed attack paths and evidence from canonical source.</desc>',
+        '<style>.bg{fill:#0b1020}.title{fill:#f2f6ff;font:700 28px system-ui,sans-serif}.sub{fill:#b9c7dc;font:500 14px system-ui,sans-serif}.card{fill:#111a2d;stroke:#3c4d70;stroke-width:1.5;rx:18}.k{fill:#7ee787;font:700 12px system-ui,sans-serif;letter-spacing:.08em}.h{fill:#f2f6ff;font:700 18px system-ui,sans-serif}.p{fill:#b9c7dc;font:500 12px system-ui,sans-serif}.line{stroke:#58a6ff;stroke-width:2;opacity:.55}</style>',
+        '<rect class="bg" width="1200" height="720"/>',
+        '<text class="title" x="55" y="64">Pocket Lab Lite Security Atlas</text>',
+        '<text class="sub" x="55" y="92">Architecture is the map. The Atlas is a deterministic security projection — never live monitoring.</text>',
+    ]
+    positions = [(55,135),(420,135),(785,135),(55,390),(420,390),(785,390)]
+    for (label, kicker, description), (x, y) in zip(cards, positions):
+        parts.append(f'<rect class="card" x="{x}" y="{y}" width="320" height="190"/>')
+        parts.append(f'<text class="k" x="{x+24}" y="{y+38}">{_esc(kicker)}</text>')
+        parts.append(f'<text class="h" x="{x+24}" y="{y+72}">{_esc(label)}</text>')
+        words = str(description or "").split()
+        lines: list[str] = []
+        current: list[str] = []
+        for word in words:
+            if len(" ".join(current + [word])) > 40 and current:
+                lines.append(" ".join(current)); current = [word]
+            else:
+                current.append(word)
+        if current: lines.append(" ".join(current))
+        for offset, line in enumerate(lines[:4]):
+            parts.append(f'<text class="p" x="{x+24}" y="{y+108+offset*22}">{_esc(line)}</text>')
+    parts.append('<path class="line" d="M 375 230 L 420 230 M 740 230 L 785 230 M 375 485 L 420 485 M 740 485 L 785 485"/>')
+    parts.append('<text class="sub" x="55" y="665">Canonical source → deterministic projection → human review. No probabilistic scoring, exploit prediction, runtime polling or automatic attack-path invention.</text>')
     parts.append('</svg>\n')
     return ''.join(parts)

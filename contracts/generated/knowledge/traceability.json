@@ -1514,6 +1514,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_release_process_isolation.py",
         "test:tests/dev/test_frontend_resource_policy.py",
+        "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -2518,11 +2519,13 @@
         "test:tests/backend/test_lite_startup_workload_isolation.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
@@ -3032,6 +3035,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5d58bb3caebc42b1b8b423183b03664cb9e18175b525bce325c0e495407c02c0"
+    "source_fingerprint": "9f5568421e811c68393465a8cd88d6ad743afdcf376b5512737bd0a965fe80ef"
   }
 }

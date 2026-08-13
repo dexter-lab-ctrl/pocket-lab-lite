@@ -7341,7 +7341,17 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:projection_too_old",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_docs_runtime_network_fence.py": [
+        {
+          "source": "component:browser",
           "type": "verified_by"
         }
       ],
@@ -8640,6 +8650,12 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_threat_model_atlas.py": [
+        {
+          "source": "domain:security",
           "type": "verified_by"
         }
       ],
@@ -12314,6 +12330,10 @@
         },
         {
           "target": "test:tests/dev/test_frontend_resource_policy.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_docs_runtime_network_fence.py",
           "type": "verified_by"
         },
         {
@@ -16773,6 +16793,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
@@ -16790,6 +16814,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_threat_model_atlas.py",
           "type": "verified_by"
         },
         {
@@ -18917,6 +18945,6 @@
     "generator_version": 2,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5d58bb3caebc42b1b8b423183b03664cb9e18175b525bce325c0e495407c02c0"
+    "source_fingerprint": "9f5568421e811c68393465a8cd88d6ad743afdcf376b5512737bd0a965fe80ef"
   }
 }

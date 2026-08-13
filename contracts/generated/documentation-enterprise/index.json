@@ -33293,8 +33293,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "a34a5a2ba5136a9d43dc950e26a9079dbf2aad5a",
-          "head_tree": "1df0908775e68b975cb73c43443d24c6073f2cd4",
+          "head": "29452240d84840b574972a9f80225412317c61c2",
+          "head_tree": "f43500153227060361a173e4f039b27c39f0eb4e",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33976,7 +33976,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "c5e2377e21be83e6374f85ed0c74836777d996b07741c7f7014a8dea0f3a1c50",
+        "documentation": "1072f601fcb5df0331afdd5871add0a674217601cfce2837fc7f07ebb2e29328",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -34417,6 +34417,17 @@
         "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
         "implementation_status": "implemented",
         "requirement": "First-class generated threat model",
+        "source_refs": [
+          "scripts/docs/enterprise/generate_enterprise_documentation.py",
+          "scripts/docs/enterprise/enterprise_completion.py",
+          "scripts/docs/enterprise/supply_chain_automation.py",
+          "scripts/dev/lite/documentation_security_tools.py"
+        ]
+      },
+      {
+        "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+        "implementation_status": "implemented",
+        "requirement": "Security Atlas deterministic projections",
         "source_refs": [
           "scripts/docs/enterprise/generate_enterprise_documentation.py",
           "scripts/docs/enterprise/enterprise_completion.py",
@@ -35051,6 +35062,44 @@
         ]
       }
     ],
+    "security_atlas": {
+      "contract": "contracts/generated/documentation-enterprise/security-atlas.json",
+      "implementation_status": "implemented",
+      "live_monitoring": false,
+      "source_model": "contracts/security/threat-model.json",
+      "views": [
+        {
+          "description": "STRIDE candidates and their reviewed source-derived control relationships.",
+          "entry_count": 54,
+          "id": "threats",
+          "label": "Threat Atlas"
+        },
+        {
+          "description": "Canonical architecture components, trust boundaries, assets and promoted posture.",
+          "entry_count": 19,
+          "id": "system",
+          "label": "System Atlas"
+        },
+        {
+          "description": "Entry surfaces, trust boundaries and reviewed modeled attack paths.",
+          "entry_count": 17,
+          "id": "attack-surface",
+          "label": "Attack Surface Atlas"
+        },
+        {
+          "description": "Controls, coverage, threat relationships and consequences if controls fail.",
+          "entry_count": 7,
+          "id": "controls",
+          "label": "Control Atlas"
+        },
+        {
+          "description": "Promoted/canonical evidence lineage and posture signals; never live monitoring.",
+          "entry_count": 41,
+          "id": "evidence",
+          "label": "Evidence Atlas"
+        }
+      ]
+    },
     "security_controls": [
       {
         "boundaries": [
@@ -35395,11 +35444,11 @@
       "manifests": [
         {
           "path": "package-lock.json",
-          "sha256": "70773e4a15b2017f6150cedca568659acae7f075e1dc9cf7a9a892eeca864129"
+          "sha256": "e4d0c83b421c709c1d61ed740a7cf5f723c37d1d8cafaf5367629330a72f4bb6"
         },
         {
           "path": "package.json",
-          "sha256": "6c885d1c8d3beffb4fc7ab9886945c9e29b3da5d8af438c3e27bced6cd14afbd"
+          "sha256": "77cc632463f99a13efd6e168202fcaa9ae9acca824b15b9a3e9c244485823589"
         },
         {
           "path": "requirements-dev.txt",
@@ -35787,8 +35836,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "a34a5a2ba5136a9d43dc950e26a9079dbf2aad5a",
-        "head_tree": "1df0908775e68b975cb73c43443d24c6073f2cd4",
+        "head": "29452240d84840b574972a9f80225412317c61c2",
+        "head_tree": "f43500153227060361a173e4f039b27c39f0eb4e",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -36008,11 +36057,11 @@
     "supply_chain_inventory": {
       "counts": {
         "development": 2249,
-        "direct": 94,
+        "direct": 95,
         "release": 0,
         "runtime": 23,
         "total": 2272,
-        "transitive": 2178
+        "transitive": 2177
       },
       "dependencies": [
         {
@@ -41788,7 +41837,7 @@
           "runtime_or_dev": "development",
           "transitive": true,
           "upstream_posture": "OpenSSF/normalized evidence when promoted",
-          "version": "1.1.1",
+          "version": "1.2.0",
           "vulnerability_status": "canonical scanner evidence when promoted"
         },
         {
@@ -60675,16 +60724,16 @@
           "architecture": "browser/developer/runtime depending on package",
           "arm64_support": "package/source metadata does not establish architecture-specific support",
           "category": "Node dependency",
-          "direct": false,
+          "direct": true,
           "ecosystem": "npm",
           "license": "MIT",
           "name": "mermaid",
           "purpose": "development/tooling dependency",
           "release_introduced": "not-comparable",
           "runtime_or_dev": "development",
-          "transitive": true,
+          "transitive": false,
           "upstream_posture": "OpenSSF/normalized evidence when promoted",
-          "version": "11.15.0",
+          "version": "11.16.1",
           "vulnerability_status": "canonical scanner evidence when promoted"
         },
         {
@@ -72425,6 +72474,7 @@
         "lite:docs:production:generate",
         "lite:docs:provenance:generate",
         "lite:docs:release-assurance:check",
+        "lite:docs:runtime-network:check",
         "lite:docs:runtime:check",
         "lite:docs:runtime:generate",
         "lite:docs:security-tools:check",
@@ -72987,7 +73037,8 @@
           "task lite:docs:production:check",
           "{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check",
           "task lite:docs:diagrams:check",
-          "{{.PYTHON}} -m mkdocs build --strict"
+          "{{.PYTHON}} -m mkdocs build --strict",
+          "task lite:docs:runtime-network:check"
         ],
         "dependencies": [
           "lite:dev:scratch:prepare"
@@ -73022,6 +73073,7 @@
           "lite:docs:parity:check",
           "lite:docs:platform:check",
           "lite:docs:production:check",
+          "lite:docs:runtime-network:check",
           "lite:docs:runtime:check",
           "lite:docs:tools:check"
         ],
@@ -74807,6 +74859,50 @@
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "not-a-validation-task",
         "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/check_docs_runtime_network_fence.py"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:docs:runtime-network:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/check_docs_runtime_network_fence.py"
+        ],
+        "name": "lite:docs:runtime-network:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Verify generated docs have no external runtime repository API dependency",
+        "related_tasks": [
+          "lite:dev:scratch:prepare"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Runtime-evidence loop"
       },
       {
         "aliases": [],
@@ -84944,5 +85040,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "0231ce840555482fb5ca7e75f0406c80e7c62a4d2011266f997788b625866446"
+  "source_fingerprint": "954f48da102e2aa0b50b7f3a3c530552cd0a1ee803bbc6962da2fd61a0c292f1"
 }

@@ -91,6 +91,17 @@
     {
       "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
       "implementation_status": "implemented",
+      "requirement": "Security Atlas deterministic projections",
+      "source_refs": [
+        "scripts/docs/enterprise/generate_enterprise_documentation.py",
+        "scripts/docs/enterprise/enterprise_completion.py",
+        "scripts/docs/enterprise/supply_chain_automation.py",
+        "scripts/dev/lite/documentation_security_tools.py"
+      ]
+    },
+    {
+      "evidence_status": "implementation-verified-by-source-tests; observed security/release/runtime evidence remains independently classified",
+      "implementation_status": "implemented",
       "requirement": "Production promoted threat posture",
       "source_refs": [
         "scripts/docs/enterprise/generate_enterprise_documentation.py",

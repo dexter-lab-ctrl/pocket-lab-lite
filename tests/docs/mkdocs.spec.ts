@@ -3,15 +3,52 @@ import { expect, test } from '@playwright/test';
 
 const consoleFailures: string[] = [];
 const failedRequests: string[] = [];
+const externalRuntimeRequests: string[] = [];
 const DOCS_PREFIX = '/pocket-lab-lite/';
 const SURFACE_SELECTOR = '.md-header__inner, .md-tabs__inner, .md-content, .md-footer__inner, .md-banner__inner';
 const TRANSIENT_LAYER_SELECTOR = '[data-md-component="search"], .md-sidebar, .md-nav';
 
+const expectNoExternalRuntimeRequests = () => {
+  expect(
+    externalRuntimeRequests,
+    `Unexpected external documentation runtime requests:\n${externalRuntimeRequests.join('\n')}`,
+  ).toEqual([]);
+};
+
 test.beforeEach(async ({ page }) => {
   consoleFailures.length = 0;
   failedRequests.length = 0;
+  externalRuntimeRequests.length = 0;
+  page.on('request', (request) => {
+    let url: URL;
+
+    try {
+      url = new URL(request.url());
+    } catch {
+      return;
+    }
+
+    if (!['http:', 'https:'].includes(url.protocol)) return;
+
+    const isLocalDocsRuntime =
+      ['127.0.0.1', 'localhost'].includes(url.hostname);
+
+    if (isLocalDocsRuntime) return;
+
+    externalRuntimeRequests.push(
+      `${request.method()} ${request.resourceType()} ${url.toString()}`,
+    );
+  });
+
   page.on('console', (message) => {
-    if (message.type() === 'error') consoleFailures.push(message.text());
+    if (message.type() !== 'error') return;
+
+    const location = message.location();
+    const source = location.url
+      ? ` [${location.url}:${location.lineNumber ?? 0}:${location.columnNumber ?? 0}]`
+      : '';
+
+    consoleFailures.push(`${message.text()}${source}`);
   });
   page.on('pageerror', (error) => consoleFailures.push(`PAGEERROR ${error.message}`));
   page.on('requestfailed', (request) => {
@@ -46,6 +83,20 @@ test.beforeEach(async ({ page }) => {
     if (isLocalDocsPageAbort) return;
 
     failedRequests.push(`${failure} ${url}`);
+  });
+
+  page.on('response', (response) => {
+    const status = response.status();
+
+    if (status < 400) return;
+
+    const url = response.url();
+
+    // MkDocs development live reload is infrastructure noise and is already
+    // excluded from requestfailed handling.
+    if (url.includes('/livereload/')) return;
+
+    failedRequests.push(`HTTP ${status} ${url}`);
   });
 });
 
@@ -548,6 +599,125 @@ test('documentation intelligence dashboard is responsive, progressive, and evide
     ).toBeGreaterThanOrEqual(matrixLayout.scrollClientWidth);
   }
 
+  expectNoExternalRuntimeRequests();
+  expect(consoleFailures, consoleFailures.join('\n')).toEqual([]);
+  expect(failedRequests, failedRequests.join('\n')).toEqual([]);
+});
+
+test('Security Atlas is a responsive catalog with deterministic deep links and no runtime polling', async ({ page }) => {
+  await page.goto(`${DOCS_PREFIX}generated/enterprise/threat-model/#attack-path=AP-04`);
+
+  await expect(page.locator('h1#threat-model')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Security Atlas' })).toBeVisible();
+  await expect(page.locator('.pl-security-atlas-poster img')).toBeVisible();
+
+  const selection = page.locator('#threat-selection');
+  await expect(selection).toContainText('Attack path AP-04');
+  await expect(selection).toContainText('Messaging command tampering or replay');
+
+  const ap04 = page.locator('[data-catalog-kind="attack-path"][data-catalog-target="AP-04"]').first();
+  await expect(ap04).toBeVisible();
+  await expect(ap04).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/#attack-path=AP-04$/);
+
+  const attackSurfaceTab = page.locator('[data-atlas-view="attack-surface"]');
+  await expect(attackSurfaceTab).toHaveAttribute('aria-selected', 'true');
+
+  await page.locator('[data-atlas-view="controls"]').click();
+  const control = page.locator('[data-catalog-kind="control"]').first();
+  await expect(control).toBeVisible();
+  const controlTarget = await control.getAttribute('data-catalog-target');
+  await control.click();
+  await expect(selection).toContainText(/Control CTRL-/);
+  expect(controlTarget).toBeTruthy();
+  await expect(page).toHaveURL((url) =>
+    url.searchParams.get('atlas-control') === controlTarget
+    && url.hash === '#security-atlas'
+  );
+
+  const runtimeRequests = await page.evaluate(() => performance
+    .getEntriesByType('resource')
+    .map((entry) => (entry as PerformanceResourceTiming).name)
+    .filter((url) => /\/api\//.test(new URL(url).pathname)));
+  expect(runtimeRequests).toEqual([]);
+
+  const layout = await page.evaluate(() => {
+    const viewport = document.documentElement.clientWidth;
+    const atlas = document.querySelector<HTMLElement>('.pl-atlas-layout');
+
+    if (!atlas) {
+      return {
+        viewport,
+        atlasWidth: 0,
+        atlasScrollWidth: 0,
+        atlasClientWidth: 0,
+        atlasLeft: 0,
+        atlasRight: 0,
+        overflowers: [],
+      };
+    }
+
+    const atlasRect = atlas.getBoundingClientRect();
+
+    const overflowers = Array.from(atlas.querySelectorAll<HTMLElement>('*'))
+      .filter((element) => {
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+
+        return (
+          !element.hidden
+          && style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && rect.width > 0
+          && rect.height > 0
+        );
+      })
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+
+        return {
+          tag: element.tagName.toLowerCase(),
+          id: element.id,
+          className: typeof element.className === 'string' ? element.className : '',
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+        };
+      })
+      .filter(({ left, right }) =>
+        left < atlasRect.left - 1 || right > atlasRect.right + 1
+      )
+      .slice(0, 20);
+
+    return {
+      viewport,
+      atlasWidth: atlasRect.width,
+      atlasScrollWidth: atlas.scrollWidth,
+      atlasClientWidth: atlas.clientWidth,
+      atlasLeft: atlasRect.left,
+      atlasRight: atlasRect.right,
+      overflowers,
+    };
+  });
+
+  expect(layout.atlasWidth).toBeGreaterThan(0);
+
+  expect(
+    layout.atlasRight,
+    `Security Atlas exceeds viewport: ${JSON.stringify(layout, null, 2)}`,
+  ).toBeLessThanOrEqual(layout.viewport + 1);
+
+  expect(
+    layout.atlasScrollWidth,
+    `Security Atlas internal horizontal overflow:\n${JSON.stringify(layout.overflowers, null, 2)}`,
+  ).toBeLessThanOrEqual(layout.atlasClientWidth + 1);
+
+  expect(
+    layout.overflowers,
+    `Security Atlas descendants exceed their layout boundary:\n${JSON.stringify(layout.overflowers, null, 2)}`,
+  ).toEqual([]);
+
+  expectNoExternalRuntimeRequests();
   expect(consoleFailures, consoleFailures.join('\n')).toEqual([]);
   expect(failedRequests, failedRequests.join('\n')).toEqual([]);
 });

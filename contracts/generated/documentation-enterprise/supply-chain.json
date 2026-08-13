@@ -3,11 +3,11 @@
   "manifests": [
     {
       "path": "package-lock.json",
-      "sha256": "70773e4a15b2017f6150cedca568659acae7f075e1dc9cf7a9a892eeca864129"
+      "sha256": "e4d0c83b421c709c1d61ed740a7cf5f723c37d1d8cafaf5367629330a72f4bb6"
     },
     {
       "path": "package.json",
-      "sha256": "6c885d1c8d3beffb4fc7ab9886945c9e29b3da5d8af438c3e27bced6cd14afbd"
+      "sha256": "77cc632463f99a13efd6e168202fcaa9ae9acca824b15b9a3e9c244485823589"
     },
     {
       "path": "requirements-dev.txt",
