@@ -477,6 +477,13 @@ tasks:
       - task: lite:docs:generate
       - task: lite:docs:check
 
+  lite:docs:runtime-network:check:
+    desc: Verify generated docs have no external runtime repository API dependency
+    deps:
+      - lite:dev:scratch:prepare
+    cmds:
+      - '{{.PYTHON}} scripts/docs/check_docs_runtime_network_fence.py'
+
   lite:docs:check:
     desc: Strict combined documentation, schema, runtime, diagram, contract, safety, and MkDocs gate
     deps: [lite:dev:scratch:prepare]
@@ -496,6 +503,7 @@ tasks:
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
       - task: lite:docs:diagrams:check
       - '{{.PYTHON}} -m mkdocs build --strict'
+      - task: lite:docs:runtime-network:check
 
   lite:test:docs:
     desc: Validate the MkDocs portal in external Chrome on desktop and mobile

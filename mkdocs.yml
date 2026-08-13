@@ -106,6 +106,8 @@ extra_css:
   - stylesheets/print.css
 
 extra_javascript:
+  - javascripts/vendor/mermaid-11.16.1.min.js
+  - javascripts/mermaid-local.js
   - javascripts/docs.js
   - javascripts/threat-model.js
 

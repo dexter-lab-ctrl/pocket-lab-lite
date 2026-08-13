@@ -68,3 +68,39 @@ def test_architecture_overview_embeds_the_generated_threat_overlay():
     assert '## Security / threat-model overlay' in page
     assert '../../enterprise/threat-model/index.md' in page
     assert '../../assets/enterprise/threat-model.svg' in page
+
+
+def test_docs_repository_source_is_static_and_edge_safe():
+    """Repository navigation must not require runtime GitHub API access."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    mkdocs = (root / "mkdocs.yml").read_text(encoding="utf-8")
+    source = (
+        root / "docs/overrides/partials/source.html"
+    ).read_text(encoding="utf-8")
+
+    # Preserve source/edit integration.
+    assert "repo_url:" in mkdocs
+    assert "repo_name:" in mkdocs
+    assert "edit_uri:" in mkdocs
+
+    # Preserve a visible static repository link.
+    assert 'href="{{ config.repo_url }}"' in source
+    assert 'class="md-source"' in source
+    assert "config.repo_name" in source
+
+    # Fail closed if Material's runtime repository-facts component is restored.
+    assert 'data-md-component="source"' not in source
+
+    # The override itself must remain passive.
+    forbidden_runtime_dependencies = (
+        "api.github.com",
+        "releases/latest",
+        "fetch(",
+        "XMLHttpRequest",
+        "WebSocket",
+        "EventSource",
+    )
+    for token in forbidden_runtime_dependencies:
+        assert token not in source

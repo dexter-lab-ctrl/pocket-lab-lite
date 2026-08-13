@@ -19159,6 +19159,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_docs_runtime_network_fence.py",
+      "name": "tests/docs/test_docs_runtime_network_fence.py",
+      "source_refs": [
+        "tests/docs/test_docs_runtime_network_fence.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_documentation_intelligence.py",
       "name": "tests/docs/test_documentation_intelligence.py",
       "source_refs": [
@@ -19233,6 +19243,16 @@
       "name": "tests/docs/test_supply_chain_runner_hardening.py",
       "source_refs": [
         "tests/docs/test_supply_chain_runner_hardening.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_atlas.py",
+      "name": "tests/docs/test_threat_model_atlas.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_atlas.py"
       ],
       "type": "test"
     },
@@ -22034,6 +22054,7 @@
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/dev/test_pytest_temp_policy.py",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -22042,6 +22063,7 @@
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
+        "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -22911,6 +22933,7 @@
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/dev/test_pytest_temp_policy.py",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -22919,6 +22942,7 @@
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
+        "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -30383,7 +30407,17 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:projection_too_old",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_docs_runtime_network_fence.py": [
+        {
+          "source": "component:browser",
           "type": "verified_by"
         }
       ],
@@ -31682,6 +31716,12 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_threat_model_atlas.py": [
+        {
+          "source": "domain:security",
           "type": "verified_by"
         }
       ],
@@ -35356,6 +35396,10 @@
         },
         {
           "target": "test:tests/dev/test_frontend_resource_policy.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_docs_runtime_network_fence.py",
           "type": "verified_by"
         },
         {
@@ -39815,6 +39859,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
@@ -39832,6 +39880,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_threat_model_atlas.py",
           "type": "verified_by"
         },
         {
@@ -43979,6 +44031,15 @@
       "source": "component:api-guards",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_docs_runtime_network_fence.py"
+      ],
+      "id": "rel:195c157e76c3206d",
+      "source": "component:browser",
+      "target": "test:tests/docs/test_docs_runtime_network_fence.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -49494,6 +49555,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_threat_model_atlas.py"
+      ],
+      "id": "rel:64579f15a3103478",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_threat_model_atlas.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:646ca54d4fd3314b",
@@ -50240,6 +50310,15 @@
       "source": "component:release-staging",
       "target": "subject:pocketlab.events.release.stage.failed",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/mkdocs.spec.ts"
+      ],
+      "id": "rel:6d2e2f1b09ebf10e",
+      "source": "domain:security",
+      "target": "test:tests/docs/mkdocs.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -61251,9 +61330,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5d58bb3caebc42b1b8b423183b03664cb9e18175b525bce325c0e495407c02c0",
+  "source_fingerprint": "9f5568421e811c68393465a8cd88d6ad743afdcf376b5512737bd0a965fe80ef",
   "statistics": {
-    "entity_count": 840,
+    "entity_count": 842,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61270,14 +61349,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 165,
+      "test": 167,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2134,
-    "source_count": 201
+    "relation_count": 2137,
+    "source_count": 203
   }
 }

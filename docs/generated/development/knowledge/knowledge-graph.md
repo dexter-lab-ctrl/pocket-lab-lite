@@ -14,8 +14,8 @@ generator_version: 2
 
 | Metric | Count |
 | --- | --- |
-| Entities | 840 |
-| Relations | 2134 |
+| Entities | 842 |
+| Relations | 2137 |
 | Entity types | 21 |
 | Domains | 46 |
 
