@@ -63,11 +63,11 @@ Current promoted evidence and historical change are intentionally separate autho
 | Signal | Value |
 | --- | --- |
 | Readiness | not-ready |
-| Verified candidates | 0 |
+| Verified candidates | 1 |
 | Selected baseline | none |
 | Selected commit | none |
-| Policy | verified canonical release inventory record + reachable matching Git tag/commit/tree |
-| Reason | no verified canonical prior-release baseline satisfies tag + commit + tree + ancestry policy |
+| Policy | two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden |
+| Reason | no second verified canonical release is available for release-to-release comparison |
 
 ## Historical comparison
 

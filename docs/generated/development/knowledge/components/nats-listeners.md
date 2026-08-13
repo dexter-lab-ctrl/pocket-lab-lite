@@ -79,6 +79,7 @@ Exposes local and verified Tailnet-reachable NATS listeners for agents without h
 - verified_by: `tests/backend/test_lite_security_s6_frontend_contract.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

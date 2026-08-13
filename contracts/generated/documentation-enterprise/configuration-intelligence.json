@@ -16716,6 +16716,31 @@
     },
     {
       "affected_components": [
+        "documentation",
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_RELEASE_EVIDENCE_PROMOTE",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/docs/enterprise/release_evidence_promotion.py",
+        "tasks/Taskfile.docs.yml"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "repository tooling"
       ],
       "affects_release": false,

@@ -295,6 +295,43 @@ tasks:
       - '{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check'
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py'
 
+  lite:docs:enterprise-tools:plan:
+    desc: Show the complete idempotent WSL2/CI Documentation Platform tool plan, including optional Threat Dragon/Dependency-Track when requested
+    cmds:
+      - 'bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --plan {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}'
+
+  lite:docs:enterprise-tools:setup:
+    desc: Install only missing pinned Documentation Platform, security/supply-chain and architecture-icon tooling on WSL2/Ubuntu/CI
+    cmds:
+      - 'bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --install-missing {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}'
+
+  lite:docs:enterprise-tools:check:
+    desc: Verify the complete pinned enterprise documentation toolchain without downloads, upgrades, runtime access or scanner execution
+    cmds:
+      - 'bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --check {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}'
+
+  lite:docs:enterprise-tools:update:
+    desc: Explicitly update reviewed security-tool pins and repair architecture icons; never runs automatically
+    cmds:
+      - 'bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --update {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}'
+
+  lite:docs:release-assurance:capture:
+    desc: Explicitly capture and verify sanitized GitHub Release identity/artifact evidence into transient .pocketlab-dev storage; never called by MkDocs
+    cmds:
+      - 'test -n "{{.TAG}}" && test -n "{{.REPO}}" || (echo "TAG and REPO are required" >&2; exit 2)'
+      - '{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py capture --tag {{.TAG}} --repo {{.REPO}}'
+
+  lite:docs:release-assurance:promote:
+    desc: Explicitly promote a validated release capture into append-only canonical release evidence
+    cmds:
+      - 'test -n "{{.TAG}}" || (echo "TAG is required" >&2; exit 2)'
+      - 'POCKETLAB_RELEASE_EVIDENCE_PROMOTE=1 {{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py promote --tag {{.TAG}}'
+
+  lite:docs:release-assurance:check:
+    desc: Validate promoted release evidence offline without GitHub polling
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py check'
+
   lite:docs:security-tools:plan:
     desc: Show the pinned architecture-aware WSL2/CI security-tool installation plan without downloading anything
     cmds:

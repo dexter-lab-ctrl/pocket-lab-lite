@@ -1,0 +1,54 @@
+{
+  "releases": [
+    {
+      "artifacts": [
+        {
+          "bytes": 474904,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "dist.zip",
+          "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+          "status": "verified",
+          "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+        },
+        {
+          "bytes": 75,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "checksums.txt",
+          "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+          "status": "verified",
+          "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+        },
+        {
+          "bytes": 362,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "pocketlab-lite-release.json",
+          "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+          "status": "verified",
+          "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+        }
+      ],
+      "manifest_binding": {
+        "dist_zip_sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "status": "verified"
+      },
+      "observed_at": "2026-08-12T15:12:08Z",
+      "promotion_rule": "explicit-only; immutable per release tag",
+      "published_at": "2026-08-12T15:12:08Z",
+      "raw_urls_included": false,
+      "release_tag": "lite-2026.08.12.2",
+      "repository": "dexter-lab-ctrl/pocket-lab-lite",
+      "sanitized": true,
+      "schema_version": "1.0.0",
+      "source": "explicit-gh-release-capture",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+      "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+      "verification_status": "promoted"
+    }
+  ],
+  "schema_version": "1.0.0"
+}

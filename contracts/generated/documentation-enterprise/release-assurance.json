@@ -1,0 +1,160 @@
+{
+  "authorities": {
+    "local_repository": {
+      "authority": "local-repository",
+      "confidence": "local-observation",
+      "freshness": "current",
+      "observed_at": "unobserved",
+      "sanitized": true,
+      "source": "git/source environment",
+      "status": "observed",
+      "value": {
+        "source_commit": "uncommitted",
+        "tree": "uncommitted"
+      }
+    },
+    "release": {
+      "authority": "release",
+      "confidence": "release-promoted",
+      "freshness": "current",
+      "observed_at": "2026-08-12T15:12:08Z",
+      "sanitized": true,
+      "source": "contracts/generated/releases/promoted-release-evidence.json",
+      "status": "verified",
+      "value": {
+        "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "tag": "lite-2026.08.12.2",
+        "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560"
+      }
+    },
+    "runtime": {
+      "authority": "runtime",
+      "confidence": "runtime-promoted",
+      "freshness": "current",
+      "observed_at": "2026-08-12T16:00:40Z",
+      "sanitized": true,
+      "source": "contracts/parity/runtime-verification-baseline.json",
+      "status": "promoted",
+      "value": {
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561"
+      }
+    },
+    "supply_chain": {
+      "authority": "supply-chain",
+      "confidence": "release-promoted",
+      "freshness": "current",
+      "observed_at": "unobserved",
+      "sanitized": true,
+      "source": "contracts/generated/supply-chain",
+      "status": "promoted",
+      "value": "normalized canonical evidence present"
+    }
+  },
+  "comparison_state": "baseline-only",
+  "dimensions": [
+    {
+      "evidence": "release tag ↔ commit ↔ tree",
+      "id": "source-identity",
+      "status": "verified"
+    },
+    {
+      "evidence": "3/3 promoted release assets have verified digest evidence",
+      "id": "artifact-integrity",
+      "status": "verified"
+    },
+    {
+      "evidence": "promoted runtime baseline ↔ release authority",
+      "id": "runtime-binding",
+      "status": "verified"
+    },
+    {
+      "evidence": {
+        "degraded": 2,
+        "healthy": 3,
+        "unvalidated": 2
+      },
+      "id": "operational-health",
+      "status": "degraded"
+    },
+    {
+      "evidence": {
+        "needs-review": 2,
+        "partial": 2,
+        "verified": 3
+      },
+      "id": "semantic-parity",
+      "status": "observed"
+    },
+    {
+      "evidence": "normalized scanner/security evidence",
+      "id": "security-evidence",
+      "status": "promoted"
+    },
+    {
+      "evidence": "CycloneDX release SBOM",
+      "id": "sbom",
+      "status": "verified"
+    },
+    {
+      "evidence": "unobserved",
+      "id": "provenance",
+      "status": "unobserved"
+    },
+    {
+      "evidence": "unobserved-until-explicit-sign-command",
+      "id": "signatures",
+      "status": "unobserved"
+    },
+    {
+      "evidence": "repository migration inventory",
+      "id": "migration-evidence",
+      "status": "unobserved"
+    },
+    {
+      "evidence": "baseline-only",
+      "id": "historical-delta",
+      "status": "observed"
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "dimension": "provenance",
+      "reason": "unobserved",
+      "status": "unobserved"
+    },
+    {
+      "dimension": "signatures",
+      "reason": "unobserved-until-explicit-sign-command",
+      "status": "unobserved"
+    },
+    {
+      "dimension": "migration-evidence",
+      "reason": "repository migration inventory",
+      "status": "unobserved"
+    }
+  ],
+  "lineage": [
+    {
+      "from": "release authority",
+      "source": "contracts/generated/releases/promoted-release-evidence.json",
+      "to": "runtime baseline"
+    },
+    {
+      "from": "runtime baseline",
+      "source": "contracts/parity/runtime-verification-baseline.json",
+      "to": "domain operational health"
+    },
+    {
+      "from": "domain operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json",
+      "to": "release impact/assurance"
+    },
+    {
+      "from": "release impact/assurance",
+      "source": "contracts/generated/documentation-enterprise/release-evidence.json",
+      "to": "MkDocs"
+    }
+  ],
+  "overall": "verified-with-evidence-gaps"
+}

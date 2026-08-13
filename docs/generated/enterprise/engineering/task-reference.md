@@ -16,11 +16,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Workflow | Task count |
 | --- | --- |
 | Development loop | 50 |
-| Documentation loop | 46 |
+| Documentation loop | 50 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 23 |
 | Security-analysis loop | 8 |
-| Release loop | 16 |
+| Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
 ## `default`
@@ -649,6 +649,142 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:docs:diagrams:generate`
+
+## `lite:docs:enterprise-tools:check`
+
+**Purpose:** Verify the complete pinned enterprise documentation toolchain without downloads, upgrades, runtime access or scanner execution
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --check {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/setup-documentation-enterprise-tools.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:docs:enterprise-tools:check`
+
+## `lite:docs:enterprise-tools:plan`
+
+**Purpose:** Show the complete idempotent WSL2/CI Documentation Platform tool plan, including optional Threat Dragon/Dependency-Track when requested
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --plan {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/setup-documentation-enterprise-tools.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:enterprise-tools:plan`
+
+## `lite:docs:enterprise-tools:setup`
+
+**Purpose:** Install only missing pinned Documentation Platform, security/supply-chain and architecture-icon tooling on WSL2/Ubuntu/CI
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --install-missing {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/setup-documentation-enterprise-tools.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:enterprise-tools:setup`
+
+## `lite:docs:enterprise-tools:update`
+
+**Purpose:** Explicitly update reviewed security-tool pins and repair architecture icons; never runs automatically
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/setup-documentation-enterprise-tools.sh --update {{if .INCLUDE_OPTIONAL}}--include-optional{{end}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/setup-documentation-enterprise-tools.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:enterprise-tools:update`
 
 ## `lite:docs:enterprise:check`
 
@@ -1690,6 +1826,110 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:docs:redaction`
+
+## `lite:docs:release-assurance:capture`
+
+**Purpose:** Explicitly capture and verify sanitized GitHub Release identity/artifact evidence into transient .pocketlab-dev storage; never called by MkDocs
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `test -n "{{.TAG}}" && test -n "{{.REPO}}" || (echo "TAG and REPO are required" >&2; exit 2)`
+- `{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py capture --tag {{.TAG}} --repo {{.REPO}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/enterprise/release_evidence_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=True; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:release-assurance:capture`
+
+## `lite:docs:release-assurance:check`
+
+**Purpose:** Validate promoted release evidence offline without GitHub polling
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py check`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/enterprise/release_evidence_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:docs:release-assurance:check`
+
+## `lite:docs:release-assurance:promote`
+
+**Purpose:** Explicitly promote a validated release capture into append-only canonical release evidence
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `test -n "{{.TAG}}" || (echo "TAG is required" >&2; exit 2)`
+- `POCKETLAB_RELEASE_EVIDENCE_PROMOTE=1 {{.PYTHON}} scripts/docs/enterprise/release_evidence_promotion.py promote --tag {{.TAG}}`
+
+**Environment:** POCKETLAB_RELEASE_EVIDENCE_PROMOTE
+
+**Inputs:** scripts/docs/enterprise/release_evidence_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=True
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:release-assurance:promote`
 
 ## `lite:docs:release-evidence`
 

@@ -23,7 +23,7 @@
     },
     {
       "boundary": "application-container",
-      "observed": "release-evidence-model-operational",
+      "observed": "release-assurance-model-operational",
       "signal": "release evidence",
       "source": "contracts/generated/documentation-enterprise/release-evidence.json",
       "state": "control-observed"
@@ -91,7 +91,7 @@
     },
     {
       "boundary": "external-release",
-      "observed": "release-evidence-model-operational",
+      "observed": "release-assurance-model-operational",
       "signal": "release evidence",
       "source": "contracts/generated/documentation-enterprise/release-evidence.json",
       "state": "control-observed"
@@ -266,7 +266,7 @@
     },
     {
       "boundary": "server-host",
-      "observed": "release-evidence-model-operational",
+      "observed": "release-assurance-model-operational",
       "signal": "release evidence",
       "source": "contracts/generated/documentation-enterprise/release-evidence.json",
       "state": "control-observed"

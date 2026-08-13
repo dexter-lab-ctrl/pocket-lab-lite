@@ -74,6 +74,7 @@ Owns Tailscale networking; startup scripts may detect/start it safely while read
 - recovers_with: `Tailscale unavailable`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

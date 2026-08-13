@@ -20,6 +20,15 @@ from typing import Any, Iterable
 
 import jsonschema
 
+DOCS_SCRIPT_ROOT = Path(__file__).resolve().parents[1]
+ENTERPRISE_SCRIPT_ROOT = DOCS_SCRIPT_ROOT / "enterprise"
+for _path in (DOCS_SCRIPT_ROOT, ENTERPRISE_SCRIPT_ROOT):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
+
+from enterprise_completion import release_delta as canonical_release_delta
+from release_model import release_impact_brief as build_release_impact_brief
+
 ROOT = Path(__file__).resolve().parents[3]
 EXPERIENCE = ROOT / "contracts/metadata/documentation-experience.json"
 EXPERIENCE_SCHEMA = ROOT / "schemas/documentation/documentation-experience.schema.json"
@@ -186,32 +195,25 @@ def dependency_health(op: dict[str, Any], arch_runtime: dict[str, Any]) -> list[
 
 
 def release_impact(op: dict[str, Any], runtime: dict[str, Any], release_changes: dict[str, Any], parity_drift: dict[str, Any]) -> dict[str, Any]:
-    changes = release_changes.get("items", [])
-    canonical = changes[0] if changes else {"status": "no-comparable-verified-prior-release", "added": [], "removed": [], "changed": []}
-    health_counts = dict(sorted(Counter(x.get("operational_health", "unvalidated") for x in op["domains"].values()).items()))
-    parity_counts = dict(sorted(Counter(x.get("runtime_status", "unvalidated") for x in parity_drift.get("items", [])).items()))
-    capability_counts = dict(sorted(Counter(x.get("status", "unvalidated") for x in op.get("platform_capabilities", [])).items()))
-    dimensions = [
-        {"dimension": "source/repository", "status": canonical.get("status", "unvalidated"), "changed": canonical.get("changed", []), "note": canonical.get("note")},
-        {"dimension": "operational-health", "status": "current-baseline-only", "changed": [], "note": "Current promoted domain health is available; prior promoted domain health is not fabricated."},
-        {"dimension": "semantic-parity", "status": "current-baseline-only", "changed": [], "note": "Current runtime parity is available independently from operational health."},
-        {"dimension": "capability-evidence", "status": "current-baseline-only", "changed": [], "note": "Current role-aware platform capability evidence is available."},
-        {"dimension": "database", "status": "not-comparable", "changed": [], "note": "No verified prior release schema snapshot is present for a release-to-release delta."},
-        {"dimension": "architecture", "status": "not-comparable", "changed": [], "note": "No verified prior architecture snapshot is present for a release-to-release delta."},
-    ]
-    return {
-        "status": canonical.get("status", "unvalidated"),
-        "from_release": canonical.get("from"),
-        "to_release": runtime.get("release_tag"),
-        "source_commit": runtime.get("source_commit"),
-        "added": canonical.get("added", []),
-        "removed": canonical.get("removed", []),
-        "changed": canonical.get("changed", []),
-        "note": canonical.get("note", "No verified prior release comparison is available."),
-        "current_snapshot": {"operational_health": health_counts, "semantic_parity": parity_counts, "platform_capabilities": capability_counts},
-        "dimensions": dimensions,
-    }
+    """Project the canonical enterprise release engine into a reader-oriented briefing.
 
+    The release delta implementation is intentionally shared with Enterprise Completion so
+    What Changed and Release Assurance cannot drift into separate baseline policies.
+    """
+    del release_changes
+    delta = canonical_release_delta(ROOT)
+    brief = build_release_impact_brief(
+        ROOT, delta, op.get("domains", {}), parity_drift.get("items", []), op.get("platform_capabilities", [])
+    )
+    # Runtime identity remains useful current-release context even before GitHub release evidence
+    # is explicitly promoted. It never makes the historical comparison comparable by itself.
+    runtime_release = runtime.get("release_tag") or runtime.get("release")
+    if not brief.get("release") and runtime_release:
+        brief["release"] = runtime_release
+        brief["to_release"] = runtime_release
+    if not brief.get("source_commit"):
+        brief["source_commit"] = runtime.get("source_commit")
+    return brief
 
 def runtime_drift(arch_runtime: dict[str, Any], semantic: dict[str, Any]) -> dict[str, Any]:
     entries: list[dict[str, Any]] = []
@@ -520,30 +522,56 @@ def render_dependency_page(data: list[dict[str, Any]], experience: dict[str, Any
 
 
 def render_release_page(data: dict[str, Any], audience: str) -> str:
-    out = frontmatter("Release change impact", "Semantic release delta across source, health, parity, capabilities, database, and architecture.", audience, "release-promoted")
-    out += "# What changed?\n\n"
-    if data["status"] == "no-comparable-verified-prior-release":
-        out += '<div class="pl-empty-state"><strong>No comparable verified prior release</strong><p>The platform will not fabricate a historical delta. Current-release evidence is shown below and becomes the comparison basis when a second canonical release is available.</p></div>\n\n'
+    out = frontmatter("Release impact briefing", "Current release posture, material findings and verified multidimensional delta without fabricated history.", audience, "release-promoted")
+    out += "# What changed? — Release impact briefing\n\n"
+    out += '<div class="pl-page-lede"><strong>Release impact summary</strong><p>No-prior-release is a comparison state, not the identity of this page. Current promoted health, parity, capability and evidence findings remain useful even when historical comparison is unavailable.</p></div>\n\n'
+    snapshot = data.get("current_snapshot", {})
+    health = snapshot.get("operational_health", {})
+    parity = snapshot.get("semantic_parity", {})
+    out += '<div class="pl-kpi-grid pl-release-kpis">'
+    for label, value, detail in [
+        ("Release", data.get("release") or "unobserved", data.get("source_commit") or "source unobserved"),
+        ("Comparison basis", data.get("comparison_label"), data.get("comparison_state")),
+        ("Operational posture", f"{health.get('degraded',0)} degraded · {health.get('healthy',0)} healthy · {health.get('unvalidated',0)} unvalidated", "promoted domain health"),
+        ("Runtime parity", f"{parity.get('needs-review',0)} needs review · {parity.get('verified',0)} verified · {parity.get('partial',0)} partial", "independent from operational health"),
+    ]:
+        out += f'<div class="pl-kpi"><span>{html.escape(str(label))}</span><strong>{html.escape(str(value))}</strong><small>{html.escape(str(detail))}</small></div>'
+    out += '</div>\n\n'
+    if data.get("baseline_establishment", {}).get("active"):
+        out += '## Baseline establishment\n\n!!! info "Initial canonical comparison baseline"\n    ' + str(data["baseline_establishment"]["message"]) + '\n\n'
+    out += "## Executive summary\n\n"
+    out += table(["Field", "Value"], [
+        ["Release", data.get("release")], ["Source", data.get("source_commit")], ["Comparison basis", data.get("comparison_label")],
+        ["Operational health", ", ".join(f"{k} {v}" for k,v in health.items())], ["Parity posture", ", ".join(f"{k} {v}" for k,v in parity.items())], ["Evidence confidence", "release/runtime promoted where explicitly observed"],
+    ])
+    out += "\n## Change domains\n\n"
+    out += table(["Dimension", "Current status", "Historical comparison", "Confidence"], ((d.get("dimension"), d.get("current_status"), d.get("historical_comparison"), d.get("confidence")) for d in data.get("dimensions", [])))
+    out += "\n## Material findings\n\n"
+    findings=data.get("material_findings", [])
+    if findings:
+        out += table(["Priority", "Area", "Finding", "Evidence"], ((x.get("severity"), x.get("label"), x.get("summary"), x.get("evidence")) for x in findings))
     else:
-        out += f"Comparing `{data.get('from_release')}` → `{data.get('to_release')}`.\n\n"
-    out += table(["Dimension", "Comparison status", "Note"], ((d["dimension"], d["status"], d["note"]) for d in data["dimensions"]))
-    out += "\n## Current release snapshot\n\n"
-    for name, counts in data["current_snapshot"].items():
-        out += f"**{name.replace('-', ' ').replace('_', ' ').title()}:** " + ", ".join(f"{k} {v}" for k, v in counts.items()) + "\n\n"
-    out += '<details class="pl-disclosure pl-technical-panel"><summary><span>Technical delta payload</span><small>Exact machine-oriented change sets</small></summary>\n'
-    out += '<div class="pl-technical-grid">'
-    for label, key in (("Added", "added"), ("Changed", "changed"), ("Removed", "removed")):
-        values = data.get(key, []) or []
-        out += f'<section><span class="pl-card-kicker">{label}</span><strong>{len(values)}</strong><div class="pl-code-stack">'
-        if values:
-            for value in values:
-                out += f'<code>{html.escape(str(value))}</code>'
-        else:
-            out += '<span class="pl-muted">No entries</span>'
-        out += '</div></section>'
-    out += '</div></details>\n'
+        out += "No material current-release findings are present in canonical evidence.\n"
+    out += "\n## What requires attention?\n\n"
+    attention=data.get("requires_attention", [])
+    if attention:
+        out += table(["Priority", "Area", "Why"], ((x.get("severity"), x.get("label"), x.get("summary")) for x in attention))
+    else:
+        out += "No high/medium attention items are present in canonical evidence.\n"
+    out += "\n## What is unchanged?\n\n"
+    if data.get("comparison_state") == "comparable":
+        out += ("\n".join(f"- {x}" for x in data.get("unchanged", [])) or "No unchanged dimensions were established by the comparison.") + "\n"
+    else:
+        out += "Historical unchanged comparison is unavailable until a second verified canonical release is promoted.\n"
+    out += "\n## Technical delta\n\n"
+    out += '<details class="pl-disclosure pl-technical-panel"><summary><span>Machine-derived details</span><small>Raw classifications and source paths</small></summary>\n'
+    if data.get("comparison_state") == "baseline-only":
+        out += '<p>Historical comparison is unavailable because this release establishes the canonical baseline; zero changes are not claimed.</p>\n'
+    elif data.get("comparison_state") != "comparable":
+        out += '<p>Historical comparison is unavailable because qualified release comparison evidence is not yet available; zero changes are not claimed.</p>\n'
+    out += table(["Dimension", "Classification", "Technical status", "Source paths"], ((d.get("dimension"), d.get("classification"), d.get("technical_status"), d.get("source_paths")) for d in data.get("dimensions", [])))
+    out += '</details>\n'
     return out
-
 
 def render_drift_page(data: dict[str, Any], audience: str) -> str:
     out = frontmatter("Runtime drift", "Expected repository/runtime alignment without confusing drift with semantic parity or operational health.", audience, "generated")
@@ -845,7 +873,7 @@ def render_home(data: dict[str, Any], op: dict[str, Any], experience: dict[str, 
         href = doc_href("index.md", target_doc)
         out += f'<a class="pl-task-card pl-intent-link" href="{href}"><strong>{label}</strong><span>Open focused guidance →</span></a>'
     out += '</div>\n'
-    if data.get("release_impact_status") == "no-comparable-verified-prior-release":
+    if data.get("release_impact_status") in {"release-impact-ready", "initial-canonical-comparison-baseline"}:
         release_href = doc_href("index.md", "generated/development/intelligence/release-impact.md")
         out += f'<div class="pl-empty-state"><strong>Release delta is ready, history is not fabricated.</strong><p>The current release is fully summarized; a previous release delta will appear only when a second verified canonical release is available.</p><a href="{release_href}">Open change impact →</a></div>\n'
     out += '</div>\n'

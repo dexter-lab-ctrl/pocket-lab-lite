@@ -88,6 +88,7 @@ Applies identity guards, duplicate checks, protected-host checks, and fail-close
 - uses: `POST /api/lite/fleet/add-device`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

@@ -1,0 +1,46 @@
+/* Threat Model Experience: static evidence first, optional progressive interaction second. */
+.pl-threat-kpis,
+.pl-release-kpis { margin: 1rem 0 1.5rem; }
+.pl-threat-toolbar { display:flex; flex-wrap:wrap; gap:.5rem; margin:1rem 0; }
+.pl-threat-toolbar .md-button { padding:.45rem .75rem; font-size:.72rem; }
+.pl-threat-layout { display:grid; grid-template-columns:minmax(0, 2.4fr) minmax(16rem, 1fr); gap:1rem; align-items:start; max-width:none; }
+.pl-threat-canvas { min-width:0; overflow:auto; border:1px solid var(--pl-border); border-radius:var(--pl-radius-lg); background:#0b1020; box-shadow:var(--pl-shadow); overscroll-behavior-inline:contain; }
+.pl-threat-canvas object,
+.pl-threat-canvas img { display:block; width:max(100%, 70rem); height:auto; min-height:31rem; }
+.pl-threat-canvas > p { margin:0; padding:.65rem .85rem; background:var(--md-default-bg-color); color:var(--md-default-fg-color--light); font-size:.72rem; }
+.pl-threat-detail { position:sticky; top:4.5rem; min-width:0; padding:1rem; border:1px solid var(--pl-border); border-radius:var(--pl-radius-md); background:var(--pl-surface-raised); }
+.pl-threat-detail strong { display:block; margin-bottom:.35rem; }
+.pl-threat-detail code { overflow-wrap:anywhere; }
+.pl-threat-path-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr)); gap:.75rem; max-width:none; }
+.pl-threat-path-card { min-width:0; padding:.85rem; text-align:left; border:1px solid var(--pl-border); border-radius:var(--pl-radius-md); background:var(--pl-surface-raised); color:inherit; cursor:pointer; transition:transform var(--pl-duration-fast) var(--pl-ease-standard), border-color var(--pl-duration-fast) var(--pl-ease-standard); }
+.pl-threat-path-card:hover,
+.pl-threat-path-card:focus-visible,
+.pl-threat-path-card[aria-pressed="true"] { transform:translateY(-1px); border-color:var(--md-accent-fg-color); outline:none; }
+.pl-threat-path-card strong,
+.pl-threat-path-card small { display:block; }
+.pl-threat-path-card small { margin-top:.3rem; color:var(--md-default-fg-color--light); }
+.pl-lineage a { flex:1 0 12rem; min-width:0; padding:var(--pl-space-3); border:1px solid var(--pl-border); border-radius:var(--pl-radius-md); background:var(--pl-surface-raised); color:inherit!important; text-decoration:none!important; }
+.pl-lineage a strong,
+.pl-lineage a span { display:block; }
+.pl-lineage a span { margin-top:.2rem; font-size:.72rem; }
+@media screen and (max-width: 59.9844em) {
+  .pl-threat-layout { grid-template-columns:1fr; }
+  .pl-threat-detail { position:static; }
+  .pl-threat-canvas object,.pl-threat-canvas img { min-height:27rem; }
+}
+@media screen and (max-width: 44.9844em) {
+  .pl-threat-toolbar { display:grid; grid-template-columns:1fr 1fr; }
+  .pl-threat-canvas { border-radius:var(--pl-radius-md); }
+  .pl-threat-canvas object,.pl-threat-canvas img { width:62rem; min-height:24rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-threat-path-card { transition:none; }
+  .pl-threat-path-card:hover,.pl-threat-path-card:focus-visible { transform:none; }
+}
+@media print {
+  .pl-threat-toolbar { display:none; }
+  .pl-threat-layout { display:block; }
+  .pl-threat-canvas { overflow:visible; box-shadow:none; }
+  .pl-threat-canvas object,.pl-threat-canvas img { width:100%; min-height:0; }
+  .pl-threat-detail { display:none; }
+}

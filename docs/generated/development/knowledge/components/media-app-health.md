@@ -76,6 +76,7 @@ Verifies approved media mapping, base-path route health, and app readiness witho
 - uses: `GET /api/lite/apps/photoprism/storage-preview`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

@@ -79,6 +79,7 @@ Records sanitized lifecycle and completion evidence for commands, devices, apps,
 - recovers_with: `Stale runtime evidence`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
+- verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
 
 ## Used by / backlinks

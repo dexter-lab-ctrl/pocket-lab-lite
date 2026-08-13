@@ -10,6 +10,10 @@
         "messaging-execution"
       ],
       "description": "Frontend does not connect directly to NATS.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "browser could bypass the control API and attempt unauthorized messaging/command injection"
+      ],
       "freshness": "source-current",
       "id": "CTRL-BROWSER-NATS",
       "implementation": [
@@ -18,6 +22,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "frontend/control-api",
+      "prevention_claim": false,
       "runtime_evidence": [],
       "source_refs": [
         "contracts/generated/knowledge/requirements.json"
@@ -36,6 +41,10 @@
         "Spoofing",
         "Tampering",
         "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "messaging-execution"
       ]
     },
     {
@@ -46,6 +55,10 @@
         "browser"
       ],
       "description": "Frontend does not execute shell commands.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "browser-originated input could reach host shell execution and mutate the server host"
+      ],
       "freshness": "source-current",
       "id": "CTRL-BROWSER-SHELL",
       "implementation": [
@@ -53,6 +66,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "frontend",
+      "prevention_claim": false,
       "runtime_evidence": [],
       "source_refs": [
         "contracts/generated/knowledge/requirements.json"
@@ -68,6 +82,9 @@
       "threats_mitigated": [
         "Tampering",
         "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser"
       ]
     },
     {
@@ -82,6 +99,10 @@
         "messaging-execution"
       ],
       "description": "FastAPI remains the frontend-facing control API.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "frontend intent could bypass centralized validation, authorization, reason codes and audit ownership"
+      ],
       "freshness": "promoted-observation",
       "id": "CTRL-API-CONTROL",
       "implementation": [
@@ -89,6 +110,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "FastAPI",
+      "prevention_claim": false,
       "runtime_evidence": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -109,6 +131,11 @@
         "Spoofing",
         "Tampering",
         "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "control-api",
+        "messaging-execution"
       ]
     },
     {
@@ -123,6 +150,10 @@
         "server-host"
       ],
       "description": "Workers, agents and supervisors own execution and recovery.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "commands or recovery could execute outside worker/agent/supervisor ownership and lose delivery/recovery guarantees"
+      ],
       "freshness": "promoted-observation",
       "id": "CTRL-EXECUTION-OWNERS",
       "implementation": [
@@ -131,6 +162,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "worker/agent/supervisor",
+      "prevention_claim": false,
       "runtime_evidence": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -150,6 +182,11 @@
         "Tampering",
         "Denial of Service",
         "Elevation of Privilege"
+      ],
+      "where_used": [
+        "messaging-execution",
+        "managed-device",
+        "server-host"
       ]
     },
     {
@@ -164,6 +201,10 @@
         "server-host"
       ],
       "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "secret-bearing or private-path evidence could enter canonical documentation or mislead security posture"
+      ],
       "freshness": "2026-08-12T16:00:40Z",
       "id": "CTRL-EVIDENCE-SANITIZE",
       "implementation": [
@@ -172,6 +213,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "evidence pipeline",
+      "prevention_claim": false,
       "runtime_evidence": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -189,6 +231,11 @@
       "threats_mitigated": [
         "Information Disclosure",
         "Repudiation"
+      ],
+      "where_used": [
+        "durable-state",
+        "external-release",
+        "server-host"
       ]
     },
     {
@@ -203,6 +250,10 @@
         "server-host"
       ],
       "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "transient/unreviewed capture could be mistaken for canonical release/runtime evidence"
+      ],
       "freshness": "2026-08-12T16:00:40Z",
       "id": "CTRL-EXPLICIT-PROMOTION",
       "implementation": [
@@ -211,6 +262,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "developer/CI explicit promotion",
+      "prevention_claim": false,
       "runtime_evidence": [
         "contracts/parity/runtime-verification-baseline.json"
       ],
@@ -230,6 +282,11 @@
         "Tampering",
         "Repudiation",
         "Information Disclosure"
+      ],
+      "where_used": [
+        "external-release",
+        "durable-state",
+        "server-host"
       ]
     },
     {
@@ -242,6 +299,10 @@
         "application-container"
       ],
       "description": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence"
+      ],
       "freshness": "canonical artifact dependent",
       "id": "CTRL-SUPPLY-CHAIN",
       "implementation": [
@@ -250,6 +311,7 @@
       ],
       "mitigation_adequacy": "human-review-required",
       "owner": "WSL2/CI security automation",
+      "prevention_claim": false,
       "runtime_evidence": [
         "contracts/generated/supply-chain/automation-summary.json"
       ],
@@ -269,6 +331,10 @@
         "Tampering",
         "Information Disclosure",
         "Elevation of Privilege"
+      ],
+      "where_used": [
+        "external-release",
+        "application-container"
       ]
     }
   ]
