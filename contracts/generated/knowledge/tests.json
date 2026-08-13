@@ -1333,6 +1333,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/knowledge-graph.spec.ts",
+      "name": "tests/docs/knowledge-graph.spec.ts",
+      "source_refs": [
+        "tests/docs/knowledge-graph.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/mkdocs.spec.ts",
       "name": "tests/docs/mkdocs.spec.ts",
       "source_refs": [
@@ -1674,9 +1684,9 @@
   "metadata": {
     "generated_at": "uncommitted",
     "generator": "scripts/docs/knowledge/generate_knowledge.py",
-    "generator_version": 2,
+    "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f4b4f5d3e860a626d3bb46aed695c38c4e58fe78f902d53859b4b3a8d541c444"
+    "source_fingerprint": "004db706f8c0490eae5932d25b7f25e3bba5c4154b1e7c0d397802bec600a940"
   }
 }

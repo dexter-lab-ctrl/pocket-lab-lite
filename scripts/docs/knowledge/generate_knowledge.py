@@ -19,7 +19,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = "scripts/docs/knowledge/generate_knowledge.py"
-GENERATOR_VERSION = 2
+GENERATOR_VERSION = 3
 SCHEMA_VERSION = "1.0.0"
 META = ROOT / "contracts/metadata/knowledge-base.json"
 ARCH = ROOT / "architecture/metadata/pocket-lab-architecture.json"
@@ -44,6 +44,8 @@ TEST_ROOTS = (ROOT / "tests", ROOT / "src/__tests__")
 OUT = ROOT / "contracts/generated/knowledge"
 DEV = ROOT / "docs/generated/development/knowledge"
 PROD = ROOT / "docs/generated/production/knowledge"
+ENTERPRISE_KB = ROOT / "docs/generated/enterprise/knowledgebase"
+KNOWLEDGE_ASSETS = ROOT / "docs/generated/assets/knowledge"
 SCHEMA_ROOT = ROOT / "schemas/knowledge"
 MKDOCS = ROOT / "mkdocs.yml"
 
@@ -902,6 +904,295 @@ def backlinks(entity_id: str, indexes: dict[str, Any], graph: Graph) -> tuple[li
     return uses, used_by
 
 
+def knowledge_graph_integrity(graph: Graph, indexes: dict[str, Any]) -> dict[str, Any]:
+    entity_ids = set(graph.entities)
+    incoming = indexes.get("incoming", {})
+    outgoing = indexes.get("outgoing", {})
+    unsupported = sorted({str(rel.get("type")) for rel in graph.relations.values()} - REL_TYPES)
+    dangling = [
+        rid
+        for rid, rel in sorted(graph.relations.items())
+        if rel.get("source") not in entity_ids or rel.get("target") not in entity_ids
+    ]
+    unstable_relations = [
+        rid
+        for rid, rel in sorted(graph.relations.items())
+        if rid != rel_id(str(rel.get("type")), str(rel.get("source")), str(rel.get("target")))
+    ]
+    orphans = [
+        eid
+        for eid in sorted(entity_ids)
+        if not incoming.get(eid) and not outgoing.get(eid)
+    ]
+    return {
+        "stable_entity_ids": len(entity_ids),
+        "stable_relation_ids": len(graph.relations) - len(unstable_relations),
+        "dangling_relations": len(dangling),
+        "unsupported_relation_types": len(unsupported),
+        "entities_with_source_refs": sum(bool(entity.get("source_refs")) for entity in graph.entities.values()),
+        "relations_with_evidence": sum(bool(rel.get("evidence")) for rel in graph.relations.values()),
+        "orphan_entities": len(orphans),
+        "orphan_entity_ids": orphans,
+        "unstable_relation_ids": unstable_relations,
+        "unsupported_relation_type_names": unsupported,
+    }
+
+
+def knowledge_graph_taxonomy(graph: Graph, indexes: dict[str, Any]) -> dict[str, Any]:
+    relation_counts: dict[str, int] = defaultdict(int)
+    for rel in graph.relations.values():
+        relation_counts[str(rel["type"])] += 1
+    return {
+        "entity_types": [
+            {"type": kind, "count": len(ids)}
+            for kind, ids in sorted(indexes.get("by_type", {}).items())
+        ],
+        "relation_types": [
+            {"type": kind, "count": count}
+            for kind, count in sorted(relation_counts.items())
+        ],
+    }
+
+
+def knowledge_graph_domain_connectivity(graph: Graph, indexes: dict[str, Any]) -> list[dict[str, Any]]:
+    entity_domain = {
+        eid: str(entity.get("domain"))
+        for eid, entity in graph.entities.items()
+        if entity.get("domain")
+    }
+    rows = {
+        domain: {
+            "domain": domain,
+            "entities": len(ids),
+            "internal_relations": 0,
+            "cross_domain_relations": 0,
+            "connected_domains": set(),
+        }
+        for domain, ids in indexes.get("by_domain", {}).items()
+    }
+    for rel in graph.relations.values():
+        source_domain = entity_domain.get(str(rel.get("source")))
+        target_domain = entity_domain.get(str(rel.get("target")))
+        if not source_domain or not target_domain:
+            continue
+        if source_domain == target_domain:
+            if source_domain in rows:
+                rows[source_domain]["internal_relations"] += 1
+            continue
+        if source_domain in rows:
+            rows[source_domain]["cross_domain_relations"] += 1
+            rows[source_domain]["connected_domains"].add(target_domain)
+        if target_domain in rows:
+            rows[target_domain]["cross_domain_relations"] += 1
+            rows[target_domain]["connected_domains"].add(source_domain)
+    return [
+        {
+            **row,
+            "connected_domains": sorted(row["connected_domains"]),
+        }
+        for _, row in sorted(rows.items())
+    ]
+
+
+def knowledge_graph_explorer_projection(graph: Graph) -> dict[str, Any]:
+    entities = [
+        {
+            "id": eid,
+            "type": str(entity.get("type") or "unknown"),
+            "name": str(entity.get("name") or eid),
+            "domain": str(entity.get("domain") or ""),
+            "confidence": str(entity.get("confidence") or "unvalidated"),
+            "description": str(entity.get("description") or ""),
+            "source_refs": sorted(set(map(str, entity.get("source_refs") or []))),
+        }
+        for eid, entity in sorted(graph.entities.items())
+    ]
+    relations = [
+        {
+            "id": rid,
+            "type": str(rel.get("type")),
+            "source": str(rel.get("source")),
+            "target": str(rel.get("target")),
+            "evidence": sorted(set(map(str, rel.get("evidence") or []))),
+            "derivation": {
+                "method": "deterministic-canonical-correlation",
+                "generator": GENERATOR,
+                "generator_version": GENERATOR_VERSION,
+            },
+        }
+        for rid, rel in sorted(graph.relations.items())
+    ]
+    return {
+        "schema_version": "1.0.0",
+        "source": "contracts/generated/knowledge/index.json",
+        "live_runtime": False,
+        "max_hops": 1,
+        "entities": entities,
+        "relations": relations,
+    }
+
+
+def render_knowledge_ontology_svg(graph: Graph, indexes: dict[str, Any]) -> str:
+    taxonomy = knowledge_graph_taxonomy(graph, indexes)
+    entity_types = sorted(taxonomy["entity_types"], key=lambda row: (-row["count"], row["type"]))[:6]
+    relation_types = sorted(taxonomy["relation_types"], key=lambda row: (-row["count"], row["type"]))[:6]
+    domains = sorted(
+        ((domain, len(ids)) for domain, ids in indexes.get("by_domain", {}).items()),
+        key=lambda row: (-row[1], row[0]),
+    )[:6]
+
+    def esc(value: Any) -> str:
+        return html.escape(str(value), quote=True)
+
+    def rows(items: list[tuple[str, int]] | list[dict[str, Any]], x: int, key: str = "type") -> str:
+        rendered = []
+        for idx, item in enumerate(items):
+            if isinstance(item, dict):
+                label, count = item[key], item["count"]
+            else:
+                label, count = item
+            y = 142 + idx * 48
+            rendered.append(
+                f'<text x="{x}" y="{y}" class="label">{esc(label)}</text>'
+                f'<text x="{x + 238}" y="{y}" text-anchor="end" class="count">{count}</text>'
+            )
+        return "".join(rendered)
+
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" role="img" '
+        'aria-labelledby="kg-title kg-desc">'
+        '<title id="kg-title">Pocket Lab Lite bounded knowledge graph ontology</title>'
+        '<desc id="kg-desc">Top source-derived entity types, approved relationship predicates, and domains. '
+        'This is an ontology overview, not a live runtime topology.</desc>'
+        '<style>'
+        '.panel{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.5}.head{font:700 22px sans-serif;fill:#0f172a}'
+        '.label{font:600 15px sans-serif;fill:#334155}.count{font:700 15px sans-serif;fill:#475569}'
+        '.arrow{stroke:#64748b;stroke-width:2;fill:none}.note{font:500 13px sans-serif;fill:#64748b}'
+        '</style>'
+        '<rect width="1200" height="470" rx="22" fill="white"/>'
+        '<rect class="panel" x="28" y="60" width="344" height="350" rx="18"/>'
+        '<rect class="panel" x="428" y="60" width="344" height="350" rx="18"/>'
+        '<rect class="panel" x="828" y="60" width="344" height="350" rx="18"/>'
+        '<text class="head" x="54" y="100">Entity taxonomy</text>'
+        '<text class="head" x="454" y="100">Relation taxonomy</text>'
+        '<text class="head" x="854" y="100">Domain mapping</text>'
+        + rows(entity_types, 54)
+        + rows(relation_types, 454)
+        + rows(domains, 854, key="domain")
+        + '<path class="arrow" d="M372 235 H428"/><path class="arrow" d="M772 235 H828"/>'
+        '<text class="note" x="600" y="446" text-anchor="middle">Canonical source → controlled ontology → deterministic relationship map</text>'
+        '</svg>\n'
+    )
+
+
+def render_knowledge_graph_page(graph: Graph, indexes: dict[str, Any]) -> tuple[str, str, str]:
+    taxonomy = knowledge_graph_taxonomy(graph, indexes)
+    integrity = knowledge_graph_integrity(graph, indexes)
+    connectivity = knowledge_graph_domain_connectivity(graph, indexes)
+    explorer = knowledge_graph_explorer_projection(graph)
+    svg = render_knowledge_ontology_svg(graph, indexes)
+
+    def esc(value: Any) -> str:
+        return html.escape(str(value), quote=True)
+
+    entity_cards = "".join(
+        f'<article class="pl-kg-taxonomy-card"><span class="pl-card-kicker">Entity type</span>'
+        f'<strong>{esc(row["type"])}</strong><small>{row["count"]} entities</small></article>'
+        for row in sorted(taxonomy["entity_types"], key=lambda row: (-row["count"], row["type"]))
+    )
+    relation_cards = "".join(
+        f'<article class="pl-kg-taxonomy-card"><span class="pl-card-kicker">Relationship</span>'
+        f'<strong><code>{esc(row["type"])}</code></strong><small>{row["count"]} relations</small></article>'
+        for row in sorted(taxonomy["relation_types"], key=lambda row: (-row["count"], row["type"]))
+    )
+    domain_rows = md_table(
+        ["Domain", "Entities", "Internal relations", "Cross-domain relations", "Connected domains"],
+        (
+            (
+                row["domain"], row["entities"], row["internal_relations"], row["cross_domain_relations"],
+                row["connected_domains"] or "—",
+            )
+            for row in connectivity
+        ),
+    )
+    type_options = "".join(f'<option value="{esc(row["type"])}">{esc(row["type"])}</option>' for row in taxonomy["entity_types"])
+    domain_options = "".join(f'<option value="{esc(row["domain"])}">{esc(row["domain"])}</option>' for row in connectivity)
+    relation_options = "".join(f'<option value="{esc(row["type"])}">{esc(row["type"])}</option>' for row in taxonomy["relation_types"])
+    confidence_options = "".join(f'<option value="{esc(value)}">{esc(value)}</option>' for value in sorted(CONFIDENCE))
+
+    body = '# Knowledge Graph\n\n'
+    body += '<div class="pl-page-lede"><strong>Pocket Lab Lite’s canonical structural relationship map.</strong><p>Explore what entities exist, how the controlled ontology connects them, and why a direct relationship exists. Deeper impact, execution, evidence, security, and release analysis stays with the specialist intelligence pages.</p></div>\n\n'
+    body += '<div class="pl-kpi-grid pl-kg-kpis" role="group" aria-label="Knowledge graph summary">'
+    for label, value in [
+        ("Entities", len(graph.entities)), ("Relations", len(graph.relations)),
+        ("Entity types", len(indexes.get("by_type", {}))), ("Domains", len(indexes.get("by_domain", {}))),
+    ]:
+        body += f'<div class="pl-kpi"><span>{esc(label)}</span><strong>{value}</strong><small>canonical graph</small></div>'
+    body += '</div>\n\n'
+    body += '## Graph integrity\n\n<div class="pl-kg-integrity" role="group" aria-label="Knowledge graph integrity">'
+    integrity_rows = [
+        ("Stable entity IDs", f'{integrity["stable_entity_ids"]} / {len(graph.entities)}'),
+        ("Stable relation IDs", f'{integrity["stable_relation_ids"]} / {len(graph.relations)}'),
+        ("Dangling relations", integrity["dangling_relations"]),
+        ("Unsupported predicates", integrity["unsupported_relation_types"]),
+        ("Entities with source refs", f'{integrity["entities_with_source_refs"]} / {len(graph.entities)}'),
+        ("Relations with evidence", f'{integrity["relations_with_evidence"]} / {len(graph.relations)}'),
+        ("Orphan entities", integrity["orphan_entities"]),
+    ]
+    for label, value in integrity_rows:
+        body += f'<div><span>{esc(label)}</span><strong>{esc(value)}</strong></div>'
+    body += '</div>\n\n'
+    body += 'Integrity here describes the graph model itself. Operational evidence coverage, release confidence, and runtime health remain on their dedicated Documentation Intelligence pages.\n\n'
+    body += '## Ontology map\n\n<figure class="pl-generated-diagram pl-kg-ontology"><img src="../../../assets/knowledge/knowledge-graph-ontology.svg" alt="Bounded Pocket Lab Lite knowledge graph ontology showing source-derived entity types, controlled relationship predicates, and domain mapping" width="1200" height="470" loading="eager" decoding="async"><figcaption>Bounded ontology projection only. It never renders all graph nodes, polls runtime, or implies live traffic.</figcaption></figure>\n\n'
+    body += '## Entity taxonomy\n\n<div class="pl-kg-taxonomy-grid">' + entity_cards + '</div>\n\n'
+    body += '## Relation taxonomy\n\n<div class="pl-kg-taxonomy-grid">' + relation_cards + '</div>\n\n'
+    body += '## Domain connectivity\n\nStructural connectivity only; health and impact are intentionally excluded.\n\n<div class="pl-wide-data pl-kg-domain-table" role="region" aria-label="Knowledge Graph domain connectivity table" tabindex="0" markdown="1">\n' + domain_rows + '</div>\n\n'
+    body += '## Explore an entity\n\n'
+    body += (
+        f'<section class="pl-kg-explorer" data-pl-knowledge-graph="true" data-entity-count="{len(graph.entities)}" data-relation-count="{len(graph.relations)}">'
+        '<div class="pl-kg-controls">'
+        '<label>Search entities<input type="search" data-kg-search autocomplete="off" placeholder="Name or stable entity ID"></label>'
+        '<label>Entity type<select data-kg-type><option value="">All types</option>' + type_options + '</select></label>'
+        '<label>Domain<select data-kg-domain><option value="">All domains</option>' + domain_options + '</select></label>'
+        '<label>Relationship<select data-kg-relation><option value="">All relationships</option>' + relation_options + '</select></label>'
+        '<label>Confidence<select data-kg-confidence><option value="">All confidence states</option>' + confidence_options + '</select></label>'
+        '</div>'
+        '<div class="pl-kg-explorer-layout">'
+        '<div class="pl-kg-results" aria-label="Knowledge graph entity results" aria-live="polite"><div class="pl-empty-state" data-kg-status><strong>Loading canonical graph projection</strong><p>The explorer reads a same-origin generated asset only. It never queries GitHub, FastAPI, NATS, or runtime.</p></div></div>'
+        '<aside class="pl-kg-inspector" data-kg-inspector aria-live="polite"><span class="pl-card-kicker">Entity inspector</span><strong>Select an entity</strong><p>Direct one-hop relationships and their canonical evidence will appear here.</p></aside>'
+        '</div></section>'
+    )
+    body += '\n\n### Explorer boundary\n\nThe browser is limited to **one hop**. It does not predict consequences, execute graph traversal beyond direct neighbors, mutate source/runtime, or invent missing relationships.\n\n'
+    body += '## Go deeper\n\n<div class="pl-kg-specialist-grid">'
+    specialist = [
+        ("Change consequence", "Change Impact Advisor", "../../reference/change-advisor/"),
+        ("End-to-end action", "API-to-UI Trace Explorer", "../../reference/api-ui-trace/"),
+        ("Evidence completeness", "Evidence Coverage & Confidence", "../../../development/intelligence/evidence-coverage/"),
+        ("Operational provenance", "Evidence Lineage", "../../../development/intelligence/evidence-lineage/"),
+        ("Security relationships", "Security Atlas", "../../threat-model/"),
+        ("Release change", "What Changed", "../../../production/intelligence/what-changed/"),
+        ("Runtime dependencies", "Dependency Health", "../../reference/dependency-health/"),
+    ]
+    for kicker, title, href in specialist:
+        body += f'<a class="pl-kg-specialist-card pl-intent-link" href="{href}"><span class="pl-card-kicker">{esc(kicker)}</span><strong>{esc(title)}</strong><small>Open authoritative specialist view →</small></a>'
+    body += '</div>\n\n'
+    body += '## AI-ready canonical graph\n\n'
+    body += md_table(["Property", "Value"], [
+        ("Canonical artifact", "`contracts/generated/knowledge/index.json`"),
+        ("Stable identity", "Deterministic entity IDs and relation IDs"),
+        ("Relationship vocabulary", "Closed and validated"),
+        ("Provenance", "Entity source refs + relation evidence"),
+        ("Confidence", "Categorical; no invented percentage"),
+        ("Runtime access", "None"),
+        ("Graph mutation", "None"),
+        ("Browser projection", "Same-origin generated asset; one-hop exploration only"),
+    ])
+    body += '\nThe graph is suitable for evidence-backed retrieval and relationship lookup. MkDocs does not run an LLM, graph database, repository indexer, or live runtime query.\n'
+
+    page = frontmatter("Knowledge Graph", "Canonical ontology, graph integrity, structural connectivity, one-hop exploration, and relation provenance for Pocket Lab Lite.") + body
+    return page, stable_json(explorer), svg
+
+
 def render_component_page(entity: dict[str, Any], indexes: dict[str, Any], graph: Graph) -> str:
     uses, used_by = backlinks(entity["id"], indexes, graph)
     rows = [
@@ -1006,7 +1297,10 @@ def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) 
     outputs[DEV / "vocabulary.md"] = frontmatter("Vocabulary", "Canonical status semantics and independent documentation dimensions.") + "# Vocabulary\n\n" + md_table(["Status", "Exact meaning", "Does not prove", "Dimensions", "Blocks promotion", "Blocks writes", "Can coexist"], ((f"`{x['name']}`", x.get("description"), x.get("does_not_prove"), x.get("dimensions"), x.get("blocks_promotion"), x.get("blocks_writes"), x.get("can_coexist_with")) for x in exports["vocabulary"]))
     outputs[DEV / "glossary.md"] = frontmatter("Glossary", "Canonical Pocket Lab Lite terminology ontology.") + "# Glossary\n\n" + md_table(["Term", "Definition", "Aliases", "Domain"], ((x["name"], x.get("description"), x.get("aliases"), x.get("domain")) for x in exports["glossary"]))
     outputs[DEV / "freshness.md"] = frontmatter("Knowledge freshness dashboard", "Pre-generated documentation freshness and evidence status dashboard.") + "# Freshness dashboard\n\n" + md_table(["Signal", "Value"], sorted(exports["freshness"].items()))
-    outputs[DEV / "knowledge-graph.md"] = frontmatter("Knowledge graph", "Stable entity/relation graph and backlinks for Pocket Lab Lite.") + "# Knowledge graph\n\n" + md_table(["Metric", "Count"], [("Entities", len(graph.entities)), ("Relations", len(graph.relations)), ("Entity types", len(indexes["by_type"])), ("Domains", len(indexes["by_domain"]))]) + "\nThe AI-ready canonical export is `contracts/generated/knowledge/index.json`. Relations use stable IDs and graph validation rejects dangling references.\n"
+    knowledge_graph_page, knowledge_graph_explorer, knowledge_graph_svg = render_knowledge_graph_page(graph, indexes)
+    outputs[ENTERPRISE_KB / "knowledge-graph.md"] = knowledge_graph_page
+    outputs[KNOWLEDGE_ASSETS / "knowledge-graph-explorer.json"] = knowledge_graph_explorer
+    outputs[KNOWLEDGE_ASSETS / "knowledge-graph-ontology.svg"] = knowledge_graph_svg
 
     # Production keeps Lite-friendly operator views and omits source-heavy catalogs.
     outputs[PROD / "index.md"] = frontmatter("Pocket Lab Lite knowledge", "Operator-oriented living knowledgebase.") + "# Pocket Lab Lite knowledge\n\nUse this section to understand current health, workflows, supported capabilities, known limitations, releases, and safe recovery guidance.\n"

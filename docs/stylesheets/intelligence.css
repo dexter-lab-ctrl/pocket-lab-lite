@@ -856,3 +856,352 @@
   .pl-anatomy-flow,
   .pl-generated-diagram--contained { overflow: visible; }
 }
+
+/* Knowledge Graph Explorer: bounded, source-derived structural intelligence. */
+.pl-kg-kpis,
+.pl-kg-integrity,
+.pl-kg-taxonomy-grid,
+.pl-kg-explorer,
+.pl-kg-specialist-grid,
+.pl-kg-domain-table,
+.pl-kg-ontology {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pl-kg-integrity {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1px;
+  margin: var(--pl-space-4) 0 var(--pl-space-5);
+  overflow: hidden;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: var(--pl-border);
+}
+.pl-kg-integrity > div {
+  min-width: 0;
+  padding: var(--pl-space-3);
+  background: var(--pl-surface-raised);
+}
+.pl-kg-integrity span,
+.pl-kg-integrity strong { display: block; }
+.pl-kg-integrity span {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pl-kg-integrity strong { margin-top: 0.2rem; font-size: 1rem; overflow-wrap: anywhere; }
+
+.pl-kg-ontology {
+  margin: var(--pl-space-4) 0 var(--pl-space-5);
+  padding: var(--pl-space-3);
+  overflow: hidden;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  background: var(--pl-surface-raised);
+}
+.pl-kg-ontology img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 1200 / 470; }
+.pl-kg-ontology figcaption { margin-top: var(--pl-space-2); color: var(--md-default-fg-color); font-size: 0.72rem; }
+
+/* Knowledge Graph small text must remain WCAG AA on light and dark surfaces. */
+.pl-kg-integrity span,
+.pl-kg-taxonomy-card .pl-card-kicker,
+.pl-kg-specialist-card .pl-card-kicker,
+.pl-kg-inspector > .pl-card-kicker,
+.pl-kg-taxonomy-card small,
+.pl-kg-specialist-card small,
+.pl-kg-result-summary,
+.pl-kg-result small,
+.pl-kg-controls label {
+  color: var(--md-default-fg-color);
+}
+
+.pl-kg-taxonomy-grid,
+.pl-kg-specialist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--pl-space-3);
+  margin: var(--pl-space-4) 0 var(--pl-space-5);
+}
+.pl-kg-taxonomy-card,
+.pl-kg-specialist-card {
+  min-width: 0;
+  padding: var(--pl-space-3) var(--pl-space-4);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: var(--pl-surface-raised);
+}
+.pl-kg-taxonomy-card strong,
+.pl-kg-taxonomy-card small,
+.pl-kg-specialist-card strong,
+.pl-kg-specialist-card small { display: block; overflow-wrap: anywhere; }
+.pl-kg-taxonomy-card small,
+.pl-kg-specialist-card small { margin-top: 0.3rem; color: var(--md-default-fg-color--light); }
+.pl-kg-specialist-card { color: inherit !important; text-decoration: none !important; }
+.pl-kg-specialist-card:hover,
+.pl-kg-specialist-card:focus-visible {
+  border-color: color-mix(in srgb, var(--md-accent-fg-color) 55%, var(--pl-border));
+  background: var(--pl-surface-muted);
+}
+
+.pl-kg-domain-table { margin-bottom: var(--pl-space-5); }
+.pl-kg-domain-table:focus-visible { outline: 2px solid var(--md-accent-fg-color); outline-offset: 2px; }
+.pl-kg-domain-table .md-typeset__scrollwrap,
+.pl-kg-domain-table .md-typeset__table { overflow: visible; }
+.pl-kg-domain-table table { min-width: 52rem; }
+
+.pl-kg-explorer {
+  margin: var(--pl-space-4) 0 var(--pl-space-5);
+  padding: clamp(0.85rem, 2vw, 1.25rem);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  background: var(--pl-surface-raised);
+  box-shadow: var(--pl-shadow);
+}
+.pl-kg-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr));
+  gap: var(--pl-space-2);
+  margin-bottom: var(--pl-space-3);
+}
+.pl-kg-controls label {
+  min-width: 0;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+.pl-kg-controls input,
+.pl-kg-controls select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0.3rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-sm);
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font: inherit;
+}
+.pl-kg-explorer-layout {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.85fr) minmax(0, 1.65fr);
+  gap: var(--pl-space-3);
+  min-width: 0;
+}
+.pl-kg-results,
+.pl-kg-inspector {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: var(--md-default-bg-color);
+}
+.pl-kg-results {
+  max-height: 38rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.pl-kg-result-summary {
+  margin: 0;
+  padding: var(--pl-space-2) var(--pl-space-3);
+  border-bottom: 1px solid var(--pl-border);
+  color: var(--md-default-fg-color--light);
+  font-size: 0.7rem;
+}
+.pl-kg-result {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: var(--pl-space-3);
+  border: 0;
+  border-bottom: 1px solid var(--pl-border);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pl-kg-result:last-child { border-bottom: 0; }
+.pl-kg-result:hover,
+.pl-kg-result:focus-visible { background: var(--pl-surface-muted); outline-offset: -2px; }
+.pl-kg-result strong,
+.pl-kg-result code,
+.pl-kg-result small { display: block; max-width: 100%; overflow-wrap: anywhere; }
+.pl-kg-result code { margin: 0.25rem 0; font-size: 0.67rem; }
+.pl-kg-result small { color: var(--md-default-fg-color--light); }
+.pl-kg-inspector { padding: var(--pl-space-4); overflow-wrap: anywhere; }
+.pl-kg-inspector h3 { margin: 0.2rem 0 0.35rem; border: 0; padding: 0; }
+.pl-kg-entity-id { display: block; max-width: 100%; overflow-wrap: anywhere; }
+.pl-kg-relation-stack { display: grid; gap: var(--pl-space-2); min-width: 0; }
+.pl-kg-relation-card {
+  min-width: 0;
+  margin: 0 !important;
+  border: 1px solid var(--pl-border) !important;
+  border-left-width: 1px !important;
+  background: var(--pl-surface-raised);
+}
+.pl-kg-relation-card > summary {
+  display: grid;
+  grid-template-columns: auto minmax(7rem, auto) minmax(0, 1fr);
+  gap: var(--pl-space-2);
+  align-items: baseline;
+  min-width: 0;
+}
+.pl-kg-relation-card > summary strong,
+.pl-kg-relation-card > summary code { overflow-wrap: anywhere; }
+.pl-kg-direction { color: var(--md-accent-fg-color); font-weight: 900; }
+
+@media screen and (max-width: 59.9844em) {
+  .pl-kg-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pl-kg-controls label:first-child { grid-column: 1 / -1; }
+}
+
+@media screen and (max-width: 44.9844em) {
+  .pl-kg-controls,
+  .pl-kg-explorer-layout,
+  .pl-kg-taxonomy-grid,
+  .pl-kg-specialist-grid { grid-template-columns: 1fr; }
+  .pl-kg-controls label:first-child { grid-column: auto; }
+  .pl-kg-results { max-height: 24rem; }
+  .pl-kg-relation-card > summary { grid-template-columns: auto minmax(0, 1fr); }
+  .pl-kg-relation-card > summary strong { grid-column: 2; }
+}
+
+@media print {
+  .pl-kg-explorer { box-shadow: none; }
+  .pl-kg-results { max-height: none; overflow: visible; }
+  .pl-kg-taxonomy-card,
+  .pl-kg-specialist-card,
+  .pl-kg-relation-card { break-inside: avoid; }
+}
+
+/* --------------------------------------------------------------------------
+ * Knowledge Graph WCAG AA text-contrast fence
+ *
+ * Keep this after the shared Material/Documentation Intelligence typography
+ * rules. Knowledge Graph compact metadata is meaningful text, not decorative
+ * secondary chrome, so it must retain normal foreground contrast on both
+ * light and dark Pocket Lab palettes.
+ * -------------------------------------------------------------------------- */
+
+.md-content .pl-kg-kpis .pl-kpi > small,
+.md-content .pl-kg-taxonomy-card > small,
+.md-content .pl-kg-result > small,
+.md-content .pl-kg-specialist-card > small,
+.md-content .pl-kg-inspector small,
+.md-content .pl-kg-explorer small {
+  color: var(--md-default-fg-color);
+  opacity: 1;
+}
+
+/*
+ * Explicitly retain adequate contrast for Knowledge Graph card kickers too.
+ * The earlier stabilization already covers these, but the stronger
+ * md-content scope prevents future shared-theme rules from overriding them.
+ */
+.md-content .pl-kg-taxonomy-card > .pl-card-kicker,
+.md-content .pl-kg-specialist-card > .pl-card-kicker,
+.md-content .pl-kg-inspector > .pl-card-kicker {
+  color: var(--md-default-fg-color);
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+ * Knowledge Graph mobile table containment fence
+ *
+ * The Domain connectivity table is intentionally wider than narrow mobile
+ * viewports. Keep that width inside one explicitly keyboard-accessible
+ * Knowledge Graph scroll region rather than allowing Material's table
+ * wrappers to increase the document scroll width.
+ * -------------------------------------------------------------------------- */
+
+.md-content .pl-kg-domain-table {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: auto;
+
+  /*
+   * Keep the intentionally wide table's intrinsic inline size isolated from
+   * document layout. The scroll region owns horizontal overflow; its contents
+   * must never contribute width to the MkDocs page itself.
+   */
+  contain: inline-size;
+}
+
+/*
+ * Material's generated table wrappers normally provide their own horizontal
+ * scrolling and spacing. The Knowledge Graph already supplies the accessible
+ * outer scroll region, so neutralize nested width/margin behavior here.
+ */
+.md-content .pl-kg-domain-table > .md-typeset__scrollwrap,
+.md-content .pl-kg-domain-table .md-typeset__scrollwrap {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-inline: 0;
+  padding-inline: 0;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.md-content .pl-kg-domain-table .md-typeset__table {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.md-content .pl-kg-domain-table table {
+  width: max-content;
+  min-width: 52rem;
+  max-width: none;
+  margin-inline: 0;
+}
+
+/*
+ * Long canonical identifiers and domain names may wrap inside cells, but they
+ * must never force the page itself beyond the viewport.
+ */
+.md-content .pl-kg-domain-table th,
+.md-content .pl-kg-domain-table td {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/*
+ * Preserve a visible keyboard focus indicator on the sole horizontal
+ * scrolling owner.
+ */
+.md-content .pl-kg-domain-table:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}
+
+/* Knowledge Graph page inline-size containment
+ *
+ * The Knowledge Graph contains an intentionally wide, independently
+ * scrollable domain table. Prevent Material page wrappers from acquiring
+ * residual inline overflow from scroll-container geometry while preserving
+ * the table's own horizontal scrollbar.
+ */
+.md-content__inner:has(.pl-kg-domain-table) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}

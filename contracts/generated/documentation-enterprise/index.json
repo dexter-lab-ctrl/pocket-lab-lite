@@ -33293,8 +33293,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "b8224fb277af3a515472850470f1c56e30c8c593",
-          "head_tree": "f0f6332e18f98f9fb946c29a877237112ddfaf62",
+          "head": "589a8a82668711dc83e2b2ba09c9112bc65fb297",
+          "head_tree": "b27957c55aafb2c20c1e73d94c3f9524a38da2aa",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33976,7 +33976,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "057a548570cf60583d812d5db31e74f5cd261e02db1591ea97c70ee780caaffb",
+        "documentation": "e89ae98af92bc6f169ab375ebe2215f5d783b8e4b477ad232da730af50706827",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -35836,8 +35836,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "b8224fb277af3a515472850470f1c56e30c8c593",
-        "head_tree": "f0f6332e18f98f9fb946c29a877237112ddfaf62",
+        "head": "589a8a82668711dc83e2b2ba09c9112bc65fb297",
+        "head_tree": "b27957c55aafb2c20c1e73d94c3f9524a38da2aa",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -73909,7 +73909,7 @@
         "name": "lite:docs:knowledge:check",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Check knowledge schemas, graph integrity, links, sanitization, and generated drift",
+        "purpose": "Check knowledge schemas, graph integrity, Enterprise Knowledgebase graph projection, links, sanitization, and generated drift",
         "related_tasks": [],
         "repository_mutation": true,
         "requires_termux": false,
@@ -73949,7 +73949,7 @@
         "name": "lite:docs:knowledge:generate",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Generate the living Pocket Lab Lite knowledge graph, AI export, and Development/Production pages",
+        "purpose": "Generate the living Pocket Lab Lite knowledge graph, AI export, Development/Production pages, and Enterprise Knowledgebase graph projection",
         "related_tasks": [],
         "repository_mutation": true,
         "requires_termux": false,
@@ -85040,5 +85040,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "0aae14d284867cc1709a50c21929a28e84f32df5f69e51c4163bccc6de3e62b3"
+  "source_fingerprint": "41869de73dd3212f77e5051219f37764c6e25cd7a5d8a36d3021891a5fc076be"
 }
