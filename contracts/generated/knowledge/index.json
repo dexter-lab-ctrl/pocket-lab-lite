@@ -19269,6 +19269,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_poster.py",
+      "name": "tests/docs/test_threat_model_poster.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-poster.spec.ts",
+      "name": "tests/docs/threat-model-poster.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-poster.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/global-setup.ts",
       "name": "tests/e2e/global-setup.ts",
       "source_refs": [
@@ -22075,6 +22095,8 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -22955,6 +22977,8 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -31737,6 +31761,18 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_threat_model_poster.py": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/threat-model-poster.spec.ts": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-live.spec.ts": [
         {
           "source": "reason:disabled",
@@ -39896,6 +39932,14 @@
         },
         {
           "target": "test:tests/docs/test_threat_model_atlas.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_threat_model_poster.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/threat-model-poster.spec.ts",
           "type": "verified_by"
         },
         {
@@ -49098,6 +49142,15 @@
     },
     {
       "evidence": [
+        "tests/docs/threat-model-poster.spec.ts"
+      ],
+      "id": "rel:5ca6929d8eaebf69",
+      "source": "domain:security",
+      "target": "test:tests/docs/threat-model-poster.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
@@ -55787,6 +55840,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_threat_model_poster.py"
+      ],
+      "id": "rel:b6afdd1e969c00f2",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_threat_model_poster.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:b6bdcfcd50d033f0",
@@ -61342,9 +61404,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "004db706f8c0490eae5932d25b7f25e3bba5c4154b1e7c0d397802bec600a940",
+  "source_fingerprint": "0836aee864aa31c612cf977655bcd6ba040a10270b2edc3525a0e5f41a0a22c2",
   "statistics": {
-    "entity_count": 843,
+    "entity_count": 845,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61361,14 +61423,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 168,
+      "test": 170,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2137,
-    "source_count": 204
+    "relation_count": 2139,
+    "source_count": 206
   }
 }

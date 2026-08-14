@@ -133,3 +133,332 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* --------------------------------------------------------------------------
+ * Pocket Lab Lite Security Architecture Poster
+ *
+ * Static-model presentation only. The embedded SVG owns modeled animation;
+ * the page shell owns accessible controls, responsive containment, story and
+ * provenance. No global overflow masking is used.
+ * -------------------------------------------------------------------------- */
+.pl-threat-subnav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem;
+  margin:.8rem 0 1.15rem;
+}
+.pl-threat-subnav a {
+  display:inline-flex;
+  align-items:center;
+  min-height:2rem;
+  padding:.35rem .62rem;
+  border:1px solid var(--pl-border);
+  border-radius:999px;
+  background:var(--pl-surface-raised);
+  color:inherit!important;
+  font-size:.7rem;
+  text-decoration:none!important;
+}
+.pl-threat-subnav a:hover,
+.pl-threat-subnav a:focus-visible {
+  border-color:var(--md-accent-fg-color);
+  outline:2px solid color-mix(in srgb,var(--md-accent-fg-color) 28%,transparent);
+  outline-offset:2px;
+}
+.pl-threat-poster {
+  min-width:0;
+  max-width:100%;
+  margin:1.1rem 0 1.8rem;
+  padding:clamp(.8rem,2vw,1.2rem);
+  border:1px solid var(--pl-border);
+  border-radius:var(--pl-radius-lg);
+  background:linear-gradient(145deg,color-mix(in srgb,var(--pl-surface-raised) 96%,#5b83b8 4%),var(--md-default-bg-color));
+  box-shadow:var(--pl-shadow);
+  box-sizing:border-box;
+}
+.pl-threat-poster-head {
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  align-items:flex-start;
+  margin-bottom:.85rem;
+}
+.pl-threat-poster-head h2 { margin:.12rem 0 .2rem; }
+.pl-threat-poster-head p { margin:0; color:var(--md-default-fg-color--light); max-width:52rem; }
+.pl-threat-static-badge {
+  flex:none;
+  padding:.35rem .58rem;
+  border:1px solid var(--pl-border);
+  border-radius:999px;
+  background:var(--md-default-bg-color);
+  color:var(--md-default-fg-color);
+  font-size:.66rem;
+  font-weight:700;
+  letter-spacing:.03em;
+  white-space:nowrap;
+}
+.pl-threat-poster-controls {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.65rem 1rem;
+  align-items:end;
+  margin:.7rem 0 .85rem;
+}
+.pl-threat-mode-group,
+.pl-threat-stride-lens,
+.pl-threat-poster-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.35rem;
+  align-items:center;
+  min-width:0;
+}
+.pl-threat-mode-group > span,
+.pl-threat-stride-lens > span {
+  margin-right:.15rem;
+  color:var(--md-default-fg-color);
+  font-size:.66rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.pl-threat-poster-controls .md-button {
+  min-width:0;
+  margin:0;
+  padding:.38rem .62rem;
+  font-size:.68rem;
+}
+.pl-threat-poster-layout {
+  display:grid;
+  grid-template-columns:minmax(0,2.6fr) minmax(15rem,1fr);
+  gap:1rem;
+  align-items:start;
+  min-width:0;
+  max-width:100%;
+}
+.pl-threat-poster-canvas {
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-inline:contain;
+  contain:inline-size;
+  border:1px solid var(--pl-border);
+  border-radius:var(--pl-radius-md);
+  background:#f5f7fb;
+  box-sizing:border-box;
+}
+[data-md-color-scheme="slate"] .pl-threat-poster-canvas { background:#0d1422; }
+.pl-threat-poster-canvas object,
+.pl-threat-poster-canvas img {
+  display:block;
+  width:max(100%,68rem);
+  height:auto;
+  min-height:35rem;
+}
+.pl-threat-poster-canvas > p {
+  margin:0;
+  padding:.55rem .72rem;
+  border-top:1px solid var(--pl-border);
+  background:var(--md-default-bg-color);
+  color:var(--md-default-fg-color);
+  font-size:.68rem;
+}
+.pl-threat-poster-detail {
+  max-height:min(66vh,36rem);
+  overflow:auto;
+}
+.pl-threat-poster-detail .pl-card-kicker { display:block; margin-bottom:.25rem; }
+.pl-threat-story-grid,
+.pl-threat-explore-grid,
+.pl-threat-control-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));
+  gap:.75rem;
+  min-width:0;
+}
+.pl-threat-story-grid article,
+.pl-threat-explore-card,
+.pl-threat-control-card {
+  min-width:0;
+  padding:.85rem;
+  border:1px solid var(--pl-border);
+  border-radius:var(--pl-radius-md);
+  background:var(--pl-surface-raised);
+  box-sizing:border-box;
+}
+.pl-threat-story-grid article > span {
+  display:grid;
+  place-items:center;
+  width:1.8rem;
+  height:1.8rem;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--md-accent-fg-color) 12%,var(--pl-surface-raised));
+  color:var(--md-default-fg-color);
+  font-size:.7rem;
+  font-weight:800;
+}
+.pl-threat-story-grid h3 { margin:.55rem 0 .2rem; }
+.pl-threat-story-grid p { margin:0; color:var(--md-default-fg-color); font-size:.78rem; }
+.pl-threat-explore-card,
+.pl-threat-control-card {
+  color:inherit!important;
+  text-decoration:none!important;
+  transition:transform var(--pl-duration-fast) var(--pl-ease-standard),border-color var(--pl-duration-fast) var(--pl-ease-standard),box-shadow var(--pl-duration-fast) var(--pl-ease-standard);
+}
+.pl-threat-explore-card:hover,
+.pl-threat-explore-card:focus-visible,
+.pl-threat-control-card:hover,
+.pl-threat-control-card:focus-visible {
+  transform:translateY(-1px);
+  border-color:var(--md-accent-fg-color);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--md-accent-fg-color) 24%,transparent);
+  outline:none;
+}
+.pl-threat-explore-card strong,
+.pl-threat-explore-card small,
+.pl-threat-control-card strong,
+.pl-threat-control-card small { display:block; overflow-wrap:anywhere; }
+.pl-threat-explore-card small,
+.pl-threat-control-card small { margin-top:.28rem; color:var(--md-default-fg-color); font-size:.7rem; line-height:1.45; }
+.pl-threat-control-card { display:flex; gap:.7rem; align-items:flex-start; }
+.pl-threat-control-card p { margin:.2rem 0 .45rem; font-size:.76rem; }
+.pl-threat-shield {
+  display:grid;
+  place-items:center;
+  flex:none;
+  width:2rem;
+  height:2rem;
+  border:1px solid color-mix(in srgb,#4d9a72 65%,var(--pl-border));
+  border-radius:.65rem .65rem .9rem .9rem;
+  background:color-mix(in srgb,#4d9a72 12%,var(--pl-surface-raised));
+  color:#367b59;
+  font-weight:800;
+}
+.pl-threat-provenance-strip {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));
+  gap:.55rem;
+  margin:.8rem 0 1rem;
+}
+.pl-threat-provenance-strip > div {
+  min-width:0;
+  padding:.65rem .72rem;
+  border:1px solid var(--pl-border);
+  border-radius:var(--pl-radius-md);
+  background:var(--pl-surface-raised);
+}
+.pl-threat-provenance-strip span,
+.pl-threat-provenance-strip strong { display:block; }
+.pl-threat-provenance-strip span { color:var(--md-default-fg-color); font-size:.65rem; text-transform:uppercase; letter-spacing:.05em; }
+.pl-threat-provenance-strip strong { margin-top:.15rem; font-size:.75rem; overflow-wrap:anywhere; }
+.pl-threat-detail-diagram {
+  max-width:100%;
+  overflow-x:auto;
+  contain:inline-size;
+}
+.pl-threat-detail-diagram img {
+  display:block;
+  width:max(100%,66rem);
+  height:auto;
+}
+.pl-threat-path-card p { margin:.45rem 0 0; font-size:.72rem; color:var(--md-default-fg-color); overflow-wrap:anywhere; }
+
+@media screen and (max-width:59.9844em) {
+  .pl-threat-poster-layout { grid-template-columns:1fr; }
+  .pl-threat-poster-detail { position:static; max-height:none; }
+}
+@media screen and (max-width:44.9844em) {
+  .pl-threat-poster { padding:.7rem; border-radius:var(--pl-radius-md); }
+  .pl-threat-poster-head { display:block; }
+  .pl-threat-static-badge { display:inline-flex; margin-top:.55rem; }
+  .pl-threat-poster-controls { display:grid; grid-template-columns:minmax(0,1fr); }
+  .pl-threat-mode-group,.pl-threat-stride-lens,.pl-threat-poster-actions { width:100%; }
+  .pl-threat-poster-controls .md-button { flex:1 1 auto; }
+  .pl-threat-poster-canvas object,.pl-threat-poster-canvas img { width:64rem; min-height:31rem; }
+  .pl-threat-story-grid,.pl-threat-explore-grid,.pl-threat-control-grid { grid-template-columns:minmax(0,1fr); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pl-threat-explore-card,.pl-threat-control-card { transition:none; }
+  .pl-threat-explore-card:hover,.pl-threat-explore-card:focus-visible,.pl-threat-control-card:hover,.pl-threat-control-card:focus-visible { transform:none; }
+}
+@media print {
+  .pl-threat-poster-controls,.pl-threat-poster-detail { display:none; }
+  .pl-threat-poster-layout { display:block; }
+  .pl-threat-poster-canvas { overflow:visible; contain:none; }
+  .pl-threat-poster-canvas object,.pl-threat-poster-canvas img,.pl-threat-detail-diagram img { width:100%; min-height:0; }
+  .pl-threat-explore-card,.pl-threat-control-card,.pl-threat-story-grid article { break-inside:avoid; }
+}
+
+/* Threat Model poster WCAG accessibility fence
+ *
+ * Material's inherited muted/kicker colors are too light for small text in
+ * the poster's light theme. Keep this override local to the Threat Model
+ * experience and use the theme foreground token for light/dark compatibility.
+ */
+.md-content .pl-threat-kpis .pl-kpi > small,
+.md-content .pl-threat-explore-card > .pl-card-kicker {
+  color: var(--md-default-fg-color);
+  opacity: 1;
+}
+
+/* The poster canvas intentionally owns horizontal scrolling on narrow
+ * viewports, so it must be keyboard reachable as a named region.
+ */
+.md-content .pl-threat-poster-canvas:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}
+
+/* Threat Model poster control WCAG AA fence
+ *
+ * Material's default cyan button hover uses white text at ~3.68:1 in the
+ * Pocket Lab light theme. Keep poster controls on the normal documentation
+ * surface and use border/focus treatment for state. This preserves the theme,
+ * avoids fixed light-only colors, and keeps every hover/focus/pressed state
+ * WCAG-AA compatible for small text.
+ */
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button,
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button:hover,
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button:focus-visible,
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button.md-button--primary {
+  color: var(--md-default-fg-color);
+  background-color: var(--pl-surface-raised);
+  border-color: var(--pl-border);
+}
+
+/* Selected presentation/lens states remain visually obvious without using
+ * white text on the cyan accent fill.
+ */
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button[aria-pressed="true"],
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button.md-button--primary {
+  color: var(--md-default-fg-color);
+  background-color: var(--pl-surface-raised);
+  border-color: var(--md-accent-fg-color);
+  box-shadow: inset 0 0 0 1px var(--md-accent-fg-color);
+}
+
+/* Hover/focus must never replace readable text with the Material
+ * white-on-cyan combination.
+ */
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button:hover,
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button:focus-visible {
+  color: var(--md-default-fg-color);
+  background-color: var(--pl-surface-raised);
+  border-color: var(--md-accent-fg-color);
+}
+
+.md-content [data-pl-threat-poster="true"]
+  .pl-threat-poster-controls .md-button:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}

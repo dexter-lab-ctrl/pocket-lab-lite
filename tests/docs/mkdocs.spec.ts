@@ -629,10 +629,10 @@ test('documentation intelligence dashboard is responsive, progressive, and evide
 });
 
 test('Security Atlas is a responsive catalog with deterministic deep links and no runtime polling', async ({ page }) => {
-  await page.goto(`${DOCS_PREFIX}generated/enterprise/threat-model/#attack-path=AP-04`);
+  await page.goto(`${DOCS_PREFIX}generated/enterprise/threat-model/catalog/?atlas-attack-path=AP-04#security-atlas`);
 
-  await expect(page.locator('h1#threat-model')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Security Atlas' })).toBeVisible();
+  await expect(page.locator('h1#security-atlas-catalog')).toBeVisible();
+  await expect(page.locator('h2#security-atlas')).toBeVisible();
   await expect(page.locator('.pl-security-atlas-poster img')).toBeVisible();
 
   const selection = page.locator('#threat-selection');
@@ -642,7 +642,10 @@ test('Security Atlas is a responsive catalog with deterministic deep links and n
   const ap04 = page.locator('[data-catalog-kind="attack-path"][data-catalog-target="AP-04"]').first();
   await expect(ap04).toBeVisible();
   await expect(ap04).toHaveAttribute('aria-pressed', 'true');
-  await expect(page).toHaveURL(/#attack-path=AP-04$/);
+  await expect(page).toHaveURL((url) =>
+    url.searchParams.get('atlas-attack-path') === 'AP-04'
+    && url.hash === '#security-atlas'
+  );
 
   const attackSurfaceTab = page.locator('[data-atlas-view="attack-surface"]');
   await expect(attackSurfaceTab).toHaveAttribute('aria-selected', 'true');
