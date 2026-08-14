@@ -34,6 +34,7 @@ from threat_model_experience import (
 from threat_model_poster import (
     build_security_poster,
     render_security_poster_svg,
+    render_threat_boundary_page,
     render_threat_model_overview,
     render_threat_model_subpages,
     threat_model_nav,
@@ -1467,6 +1468,20 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
         bt=[x for x in threat['threats'] if x['boundary']==b['id']]
         body=f"# {b['label']}\n\n## Boundary\n{b['label']}\n\n## Assets\n"+"\n".join(f"- {x}" for x in b['assets'])+"\n\n## Actors\n"+"\n".join(f"- {x}" for x in b['actors'])+"\n\n## Entry points\n"+"\n".join(f"- {x}" for x in b['entry_points'])+"\n\n## Data flows\n"+"\n".join(f"- {x}" for x in b['data_flows'])+"\n\n## Allowed flows\n"+"\n".join(f"- {x}" for x in b['allowed_flows'])+"\n\n## Forbidden flows\n"+"\n".join(f"- {x}" for x in b['forbidden_flows'])+"\n\n## Threats\n"+table(["STRIDE","Scenario","OWASP mapping","Controls"],[[x['stride'],x['scenario'],x['owasp_mappings'],x['controls']] for x in bt])+"\n## Controls\n"+"\n".join(f"- `{x}`" for x in b['controls'])+"\n\n## Runtime evidence\n"+table(["Signal","State","Source"],[[x['signal'],x['state'],x['source']] for x in b['runtime_evidence']])+f"\n## Residual risk\n{b['residual_risk']}\n\n## Review status\n{b['review_status']}\n"
         outputs[doc/"threat-model"/f"{b['id']}.md"]=page(b['label'],f"Generated STRIDE threat model for {b['label']}.","production",body,"threat-model")
+
+    # Re-project canonical boundary pages through the shared Threat Model detail renderer.
+    # Canonical boundary semantics stay in threat_model; this only aligns presentation/anatomy.
+    for b in threat['boundaries']:
+        bt=[x for x in threat['threats'] if x['boundary']==b['id']]
+        body=render_threat_boundary_page(b,bt,table=table)
+        outputs[doc/"threat-model"/f"{b['id']}.md"]=page(
+            b['label'],
+            f"Generated STRIDE threat model for {b['label']}.",
+            "production",
+            body,
+            "threat-model",
+        )
+
     outputs[doc/"reference/configuration.md"]=page("Configuration Intelligence","Source-derived sanitized configuration catalog.","development","# Configuration Intelligence\n\nNo runtime secret values are read or rendered.\n\n"+table(["Name","Purpose","Owner","Default","Required","Secret?","Scope","Restart","Release","Runtime","Validation"],[[x['name'],x['purpose'],x['owner'],x['default'],x['required'],x['secret'],x['runtime_scope'],x['restart_required'],x['affects_release'],x['affects_runtime'],x['validation']] for x in config]))
     outputs[doc/"reference/api-ui-trace.md"]=page("API-to-UI Trace Explorer","Source-derived UI → API → execution → evidence traces.","development",render_api_ui_trace_page(traces))
     outputs[doc/"reference/data-lifecycle.md"]=page("Data Lifecycle & Privacy Map","Storage, retention, sanitization, exposure and deletion intelligence.","production","# Data Lifecycle & Privacy Map\n\n![Data lifecycle](../../assets/enterprise/data-lifecycle.svg){ loading=lazy }\n\n"+table(["Category","Storage","Retention","Sanitization","Access","Network exposure","Backup","Deletion","Privacy risk"],[[x['category'],x['storage'],x['retention'],x['sanitization'],x['access'],x['network_exposure'],x['backup_behavior'],x['deletion_behavior'],x['privacy_risk']] for x in privacy]))

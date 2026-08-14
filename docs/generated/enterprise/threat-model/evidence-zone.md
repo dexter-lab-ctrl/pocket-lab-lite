@@ -9,13 +9,15 @@ confidence: generated
 
 # Promoted evidence → documentation
 
-<nav class="pl-threat-subnav" aria-label="Threat Model sections"><a class="pl-intent-link" href="../">Overview</a><a class="pl-intent-link" href="../architecture/">Architecture &amp; trust zones</a><a class="pl-intent-link" href="../stride/">STRIDE</a><a class="pl-intent-link" href="../attack-paths/">Attack paths</a><a class="pl-intent-link" href="../controls/">Controls</a><a class="pl-intent-link" href="../assets-guardrails/">Assets &amp; guardrails</a><a class="pl-intent-link" href="../evidence/">Evidence &amp; provenance</a><a class="pl-intent-link" href="../catalog/">Security Atlas catalog</a></nav>
+<nav class="pl-threat-subnav" aria-label="Threat Model sections"><a class="pl-intent-link" href="../">Overview</a><a class="pl-intent-link" href="../architecture/">Architecture &amp; trust zones</a><a class="pl-intent-link" href="../stride/">STRIDE</a><a class="pl-intent-link" href="../attack-paths/">Attack paths</a><a class="pl-intent-link" href="../controls/">Controls</a><a class="pl-intent-link" href="../assets-guardrails/">Assets &amp; guardrails</a><a class="pl-intent-link" href="../evidence/">Evidence &amp; provenance</a><a class="pl-intent-link" href="../evidence-zone/">Promoted evidence → documentation</a><a class="pl-intent-link" href="../catalog/">Security Atlas catalog</a></nav>
 
-<div class="pl-page-lede"><strong>Saved evidence enters documentation through an explicit projection zone.</strong><p>This page explains the visual evidence lane in the Security Architecture Poster. It is a presentation/evidence zone backed by canonical and promoted inputs; it is not promoted into a new canonical threat boundary.</p></div>
+<div class="pl-page-lede pl-threat-boundary-lede"><strong>Saved evidence enters documentation through an explicit projection zone.</strong><p>This lane uses the same review anatomy as canonical boundaries while remaining a presentation/evidence projection. It does not create a tenth canonical threat boundary or imply live monitoring.</p></div>
+
+<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Evidence projection zone</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>2</strong></article><article><span>Review</span><strong>Human review required</strong></article></div>
 
 ## Boundary
 
-**Projection zone:** Promoted evidence → documentation. Canonical threat-boundary ownership remains unchanged.
+<div class="pl-threat-boundary-callout"><strong>Promoted evidence → documentation</strong><span>Presentation/evidence zone · canonical threat-boundary ownership unchanged</span></div>
 
 ## Assets
 
@@ -23,19 +25,17 @@ confidence: generated
 - audit evidence
 - backup metadata
 
-## Actors & components
+## Actors
 
 | Component | Role | Architecture component | Canonical boundary |
 | --- | --- | --- | --- |
 | Documentation | static evidence projection | completion-evidence | durable-state |
 | Promoted evidence | sanitized canonical evidence | completion-evidence | durable-state |
 
-## Controls
+## Entry points
 
-| Control | Description | Status |
-| --- | --- | --- |
-| CTRL-EVIDENCE-SANITIZE | Runtime/scanner evidence is sanitized before canonical documentation ingestion. | control-observed |
-| CTRL-EXPLICIT-PROMOTION | Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote. | control-observed |
+- scanner-evidence → promoted-evidence — sanitize + promote
+- server-host → promoted-evidence — sanitized runtime evidence
 
 ## Data flows
 
@@ -45,7 +45,31 @@ confidence: generated
 | flow-17 | server-host | promoted-evidence | sanitized runtime evidence |
 | flow-18 | promoted-evidence | documentation | deterministic projection |
 
-## Evidence lineage
+## Allowed flows
+
+- scanner-evidence → promoted-evidence — sanitize + promote
+- server-host → promoted-evidence — sanitized runtime evidence
+- promoted-evidence → documentation — deterministic projection
+
+## Forbidden flows
+
+- documentation generator → live runtime (documentation → server-host)
+- raw scanner output → MkDocs (scanner-evidence → documentation)
+
+## Threats
+
+No canonical STRIDE threat is assigned directly to this projection zone because it is not a canonical threat boundary. Relevant threats remain owned by the canonical boundaries and controls that produce, sanitize, promote or consume the evidence.
+
+## Controls
+
+| Control | Description | Status |
+| --- | --- | --- |
+| CTRL-EVIDENCE-SANITIZE | Runtime/scanner evidence is sanitized before canonical documentation ingestion. | control-observed |
+| CTRL-EXPLICIT-PROMOTION | Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote. | control-observed |
+
+## Runtime evidence & provenance
+
+Promoted runtime evidence and canonical provenance are shown together here because this page explains how saved evidence reaches documentation. The table is lineage information, not a live feed.
 
 | Stage | Canonical/promoted source |
 | --- | --- |
@@ -55,6 +79,10 @@ confidence: generated
 | Normalized scanner/SBOM evidence | contracts/generated/supply-chain |
 | Threat posture projection | contracts/generated/documentation-enterprise/threat-posture.json |
 | Threat model diagram | docs/generated/assets/enterprise/threat-model.svg |
+
+## Residual risk
+
+No independent residual-risk score is assigned to this projection zone. Evidence adequacy, stale or missing observations, control effectiveness and acceptance remain human-review decisions owned by the canonical model.
 
 ## Guardrails
 

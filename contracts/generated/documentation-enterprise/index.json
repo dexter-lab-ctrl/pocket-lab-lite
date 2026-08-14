@@ -33293,8 +33293,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "39cfa39f60bf6b6d6661d2d1ae248c0e72dfe19e",
-          "head_tree": "67734a81605980c37e077cc49617963070fe09b5",
+          "head": "c61737886bb9ae761ed8fb19a5d38c68a84a49f2",
+          "head_tree": "445c8628aba06050451a38aebaef7da55c7b4965",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33976,7 +33976,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "9ec77720d9125bb8948c4ef8763863af2010dac3ceb5e212bf102e58d4d6d40c",
+        "documentation": "494cb8475d82562c05c264bcbbd516bd7c5639751003554f29cde6b2ece2ec23",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -35858,8 +35858,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "39cfa39f60bf6b6d6661d2d1ae248c0e72dfe19e",
-        "head_tree": "67734a81605980c37e077cc49617963070fe09b5",
+        "head": "c61737886bb9ae761ed8fb19a5d38c68a84a49f2",
+        "head_tree": "445c8628aba06050451a38aebaef7da55c7b4965",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -85062,5 +85062,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "1cec75e0362b1d2539f24516643c026d03ef1a014d0c1b461c8469507c659891"
+  "source_fingerprint": "03fb0f57208f161a82b66a0effda59c1f2526ec59da84dd02c80e3b56b066925"
 }

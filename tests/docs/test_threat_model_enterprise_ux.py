@@ -37,8 +37,22 @@ def test_evidence_projection_zone_is_explicit_without_becoming_a_canonical_bound
     assert "evidence-zone" not in {str(row.get("id")) for row in model.get("boundaries") or []}
     assert "[Promoted evidence → documentation](evidence-zone.md)" in architecture
     assert "# Promoted evidence → documentation" in evidence_zone
-    assert "not promoted into a new canonical threat boundary" in evidence_zone
-    for heading in ("## Assets", "## Actors & components", "## Controls", "## Data flows", "## Evidence lineage", "## Guardrails", "## Review status"):
+    assert "does not create a tenth canonical threat boundary" in evidence_zone
+    for heading in (
+        "## Boundary",
+        "## Assets",
+        "## Actors",
+        "## Entry points",
+        "## Data flows",
+        "## Allowed flows",
+        "## Forbidden flows",
+        "## Threats",
+        "## Controls",
+        "## Runtime evidence & provenance",
+        "## Residual risk",
+        "## Guardrails",
+        "## Review status",
+    ):
         assert heading in evidence_zone
 
 

@@ -745,3 +745,197 @@ def render_threat_model_subpages(threat: dict[str, Any], poster: dict[str, Any])
         "body": evidence_zone,
     }
     return pages
+
+
+# Threat Model boundary-detail polish. Canonical boundaries remain unchanged; this layer
+# only aligns generated presentation/anatomy and keeps the evidence lane explicitly
+# labeled as a projection zone.
+_threat_model_nav_boundary_polish_base = threat_model_nav
+_render_threat_model_subpages_boundary_polish_base = render_threat_model_subpages
+
+
+def threat_model_nav(*, nested: bool = False) -> str:
+    prefix = "../" if nested else ""
+    links = [
+        ("Overview", "../" if nested else "./"),
+        ("Architecture & trust zones", f"{prefix}architecture/"),
+        ("STRIDE", f"{prefix}stride/"),
+        ("Attack paths", f"{prefix}attack-paths/"),
+        ("Controls", f"{prefix}controls/"),
+        ("Assets & guardrails", f"{prefix}assets-guardrails/"),
+        ("Evidence & provenance", f"{prefix}evidence/"),
+        ("Promoted evidence → documentation", f"{prefix}evidence-zone/"),
+        ("Security Atlas catalog", f"{prefix}catalog/"),
+    ]
+    return '<nav class="pl-threat-subnav" aria-label="Threat Model sections">' + "".join(
+        f'<a class="pl-intent-link" href="{_esc(href)}">{_esc(label)}</a>' for label, href in links
+    ) + "</nav>"
+
+
+def _detail_list(values: Iterable[Any], empty: str) -> str:
+    items = [str(value).strip() for value in values if str(value).strip()]
+    return "\n".join(f"- {_esc(item)}" for item in items) if items else f"- {_esc(empty)}"
+
+
+def _detail_summary(*, kind: str, assets: int, controls: int, review: str) -> str:
+    return (
+        '<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary">'
+        f'<article><span>Type</span><strong>{_esc(kind)}</strong></article>'
+        f'<article><span>Assets</span><strong>{assets}</strong></article>'
+        f'<article><span>Controls</span><strong>{controls}</strong></article>'
+        f'<article><span>Review</span><strong>{_esc(review)}</strong></article>'
+        "</div>\n\n"
+    )
+
+
+def render_threat_boundary_page(
+    boundary: dict[str, Any],
+    boundary_threats: list[dict[str, Any]],
+    *,
+    table,
+) -> str:
+    """Render one canonical trust-boundary page with the shared enterprise detail anatomy."""
+    label = str(boundary.get("label") or boundary.get("id") or "Threat boundary")
+    assets = list(boundary.get("assets") or [])
+    controls = list(boundary.get("controls") or [])
+    review = str(boundary.get("review_status") or "human-review-required")
+    body = f"# {label}\n\n{threat_model_nav(nested=True)}\n\n"
+    body += (
+        '<div class="pl-page-lede pl-threat-boundary-lede">'
+        f'<strong>{_esc(label)} in the saved security model.</strong>'
+        '<p>This page keeps assets, actors, flows, threats, controls and evidence together so the boundary can be reviewed without leaving the canonical Threat Model context.</p>'
+        "</div>\n\n"
+    )
+    body += _detail_summary(kind="Canonical trust boundary", assets=len(assets), controls=len(controls), review=review)
+    body += f"## Boundary\n\n<div class=\"pl-threat-boundary-callout\"><strong>{_esc(label)}</strong><span>Canonical threat boundary · source-derived · not live monitoring</span></div>\n\n"
+    body += "## Assets\n\n" + _detail_list(assets, "No canonical assets are recorded.") + "\n\n"
+    body += "## Actors\n\n" + _detail_list(boundary.get("actors") or [], "No canonical actors are recorded.") + "\n\n"
+    body += "## Entry points\n\n" + _detail_list(boundary.get("entry_points") or [], "No canonical entry points are recorded.") + "\n\n"
+    body += "## Data flows\n\n" + _detail_list(boundary.get("data_flows") or [], "No canonical data flows are recorded.") + "\n\n"
+    body += "## Allowed flows\n\n" + _detail_list(boundary.get("allowed_flows") or [], "No canonical allowed flows are recorded.") + "\n\n"
+    body += "## Forbidden flows\n\n" + _detail_list(boundary.get("forbidden_flows") or [], "No boundary-specific forbidden flows are recorded.") + "\n\n"
+    body += "## Threats\n\n" + table(
+        ["STRIDE", "Scenario", "OWASP mapping", "Controls"],
+        [[row.get("stride"), row.get("scenario"), row.get("owasp_mappings"), row.get("controls")] for row in boundary_threats],
+    )
+    body += "\n## Controls\n\n" + _detail_list((f"`{item}`" for item in controls), "No canonical controls are recorded.") + "\n\n"
+    body += "## Runtime evidence & provenance\n\n" + table(
+        ["Signal", "State", "Source"],
+        [[row.get("signal"), row.get("state"), row.get("source")] for row in boundary.get("runtime_evidence") or []],
+    )
+    body += f"\n## Residual risk\n\n{boundary.get('residual_risk') or 'Unvalidated until human review.'}\n\n"
+    body += f"## Review status\n\n{review}\n"
+    return body
+
+
+def render_evidence_projection_page(threat: dict[str, Any], poster: dict[str, Any]) -> str:
+    """Render the evidence lane with boundary-like anatomy without redefining canonical topology."""
+    evidence_node_ids = {"promoted-evidence", "documentation"}
+    evidence_nodes = [row for row in poster.get("nodes") or [] if str(row.get("id")) in evidence_node_ids]
+    evidence_assets = _unique(asset for row in evidence_nodes for asset in (row.get("assets") or []))
+    evidence_control_ids = _unique(control for row in evidence_nodes for control in (row.get("controls") or []))
+    control_index = {str(row.get("id")): row for row in threat.get("controls") or []}
+    evidence_flows = [
+        row for row in poster.get("flows") or []
+        if str(row.get("from")) in evidence_node_ids or str(row.get("to")) in evidence_node_ids
+    ]
+    incoming = [
+        row for row in evidence_flows
+        if str(row.get("to")) in evidence_node_ids and str(row.get("from")) not in evidence_node_ids
+    ]
+    forbidden = [
+        row for row in poster.get("forbidden_flows") or []
+        if str(row.get("from")) in evidence_node_ids or str(row.get("to")) in evidence_node_ids
+    ]
+    body = f"# Promoted evidence → documentation\n\n{threat_model_nav(nested=True)}\n\n"
+    body += (
+        '<div class="pl-page-lede pl-threat-boundary-lede">'
+        '<strong>Saved evidence enters documentation through an explicit projection zone.</strong>'
+        '<p>This lane uses the same review anatomy as canonical boundaries while remaining a presentation/evidence projection. It does not create a tenth canonical threat boundary or imply live monitoring.</p>'
+        "</div>\n\n"
+    )
+    body += _detail_summary(
+        kind="Evidence projection zone",
+        assets=len(evidence_assets),
+        controls=len(evidence_control_ids),
+        review="Human review required",
+    )
+    body += (
+        '## Boundary\n\n<div class="pl-threat-boundary-callout">'
+        '<strong>Promoted evidence → documentation</strong>'
+        '<span>Presentation/evidence zone · canonical threat-boundary ownership unchanged</span>'
+        "</div>\n\n"
+    )
+    body += "## Assets\n\n" + _detail_list(evidence_assets, "No promoted/canonical evidence assets are currently projected.") + "\n\n"
+    body += "## Actors\n\n" + _table(
+        ["Component", "Role", "Architecture component", "Canonical boundary"],
+        [[row.get("label"), row.get("role"), row.get("architecture_component"), row.get("boundary")] for row in evidence_nodes],
+    )
+    body += "\n## Entry points\n\n" + _detail_list(
+        (
+            f"{row.get('from')} → {row.get('to')} — {row.get('label') or row.get('id')}"
+            for row in incoming
+        ),
+        "No source-derived incoming flow is mapped directly to this projection zone.",
+    ) + "\n\n"
+    body += "## Data flows\n\n" + _table(
+        ["Flow", "From", "To", "Meaning"],
+        [[row.get("id"), row.get("from"), row.get("to"), row.get("label")] for row in evidence_flows],
+    )
+    body += "\n## Allowed flows\n\n" + _detail_list(
+        (
+            f"{row.get('from')} → {row.get('to')} — {row.get('label') or row.get('id')}"
+            for row in evidence_flows
+        ),
+        "No source-derived allowed flow is mapped directly to this projection zone.",
+    ) + "\n\n"
+    body += "## Forbidden flows\n\n" + _detail_list(
+        (
+            f"{row.get('statement') or row.get('label') or row.get('id')} ({row.get('from')} → {row.get('to')})"
+            for row in forbidden
+        ),
+        "No additional canonical forbidden flow is mapped directly to this projection zone; global Threat Model guardrails still apply.",
+    ) + "\n\n"
+    body += (
+        "## Threats\n\n"
+        "No canonical STRIDE threat is assigned directly to this projection zone because it is not a canonical threat boundary. "
+        "Relevant threats remain owned by the canonical boundaries and controls that produce, sanitize, promote or consume the evidence.\n\n"
+    )
+    body += "## Controls\n\n" + _table(
+        ["Control", "Description", "Status"],
+        [
+            [cid, (control_index.get(cid) or {}).get("description"), (control_index.get(cid) or {}).get("status")]
+            for cid in evidence_control_ids
+        ],
+    )
+    body += "\n## Runtime evidence & provenance\n\n"
+    body += (
+        "Promoted runtime evidence and canonical provenance are shown together here because this page explains how saved evidence reaches documentation. "
+        "The table is lineage information, not a live feed.\n\n"
+    )
+    body += _table(
+        ["Stage", "Canonical/promoted source"],
+        [[row.get("label"), row.get("source")] for row in poster.get("evidence_lineage") or []],
+    )
+    body += (
+        "\n## Residual risk\n\n"
+        "No independent residual-risk score is assigned to this projection zone. Evidence adequacy, stale or missing observations, control effectiveness and acceptance remain human-review decisions owned by the canonical model.\n\n"
+    )
+    body += (
+        "## Guardrails\n\n"
+        "- Documentation does not capture or poll live runtime.\n"
+        "- Raw scanner output does not become documentation truth.\n"
+        "- Runtime/scanner evidence must be sanitized and explicitly promoted before canonical documentation ingestion.\n\n"
+    )
+    body += "## Review status\n\nHuman review remains required for evidence adequacy, exploitability, residual risk and acceptance.\n"
+    return body
+
+
+def render_threat_model_subpages(threat: dict[str, Any], poster: dict[str, Any]) -> dict[str, dict[str, str]]:
+    pages = _render_threat_model_subpages_boundary_polish_base(threat, poster)
+    pages["evidence-zone"] = {
+        "title": "Promoted evidence → documentation",
+        "description": "Projection-zone detail for promoted evidence flowing into static documentation without creating a new canonical trust boundary.",
+        "body": render_evidence_projection_page(threat, poster),
+    }
+    return pages
