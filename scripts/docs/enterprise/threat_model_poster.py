@@ -467,7 +467,7 @@ def render_threat_model_overview(threat: dict[str, Any], poster: dict[str, Any])
     body += '</div>\n'
     body += '<div class="pl-threat-poster-actions"><button type="button" class="md-button" data-threat-guardrails="toggle" aria-pressed="false">Show guardrails</button><button type="button" class="md-button" data-threat-motion="toggle">Pause animation</button></div>\n'
     body += '</div>\n'
-    body += '<div class="pl-threat-poster-layout"><div class="pl-threat-poster-canvas" role="region" aria-label="Pocket Lab Lite Security Architecture Poster" tabindex="0"><object id="pl-threat-model-svg" data="../../assets/enterprise/threat-model.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite Security Architecture Poster"><img src="../../assets/enterprise/threat-model.svg" alt="Pocket Lab Lite Security Architecture Poster"></object><p>Blue routes are modeled allowed/control flows. Red appears only for a selected modeled attack path. Shield markers are controls. Motion never means live traffic.</p></div><aside class="pl-threat-detail pl-threat-poster-detail" id="threat-selection" aria-live="polite"><span class="pl-card-kicker">Select the poster</span><strong>Start with the architecture story</strong><p>Choose a component or shield to focus the saved model. For full source/evidence detail, open the Security Atlas catalog.</p><a class="pl-intent-link" href="catalog/">Open Security Atlas catalog →</a></aside></div>\n'
+    body += '<div class="pl-threat-poster-layout"><div class="pl-threat-poster-canvas" role="region" aria-label="Pocket Lab Lite Security Architecture Poster" tabindex="0"><object id="pl-threat-model-svg" data-pl-base-src="../../assets/enterprise/threat-model.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite Security Architecture Poster"><img data-pl-base-src="../../assets/enterprise/threat-model.svg" alt="Pocket Lab Lite Security Architecture Poster"></object><p>Blue routes are modeled allowed/control flows. Red appears only for a selected modeled attack path. Shield markers are controls. Motion never means live traffic.</p></div><aside class="pl-threat-detail pl-threat-poster-detail" id="threat-selection" aria-live="polite"><span class="pl-card-kicker">Select the poster</span><strong>Start with the architecture story</strong><p>Choose a component or shield to focus the saved model. For full source/evidence detail, open the Security Atlas catalog.</p><a class="pl-intent-link" href="catalog/">Open Security Atlas catalog →</a></aside></div>\n'
     body += '</section>\n\n'
 
     body += '## How Pocket Lab protects control\n\n'
@@ -680,3 +680,68 @@ def render_security_poster_svg(
     poster: dict[str, Any], *, variant: str = "overview", layout: str = "wide"
 ) -> str:
     return _render_security_projection_svg(poster, variant=variant, layout=layout)
+
+
+# Enterprise Threat Model page extension. Keep canonical threat-boundary ownership unchanged;
+# the evidence lane below is explicitly a presentation/evidence projection zone.
+_render_threat_model_overview_enterprise_base = render_threat_model_overview
+_render_threat_model_subpages_enterprise_base = render_threat_model_subpages
+
+
+def render_threat_model_overview(threat: dict[str, Any], poster: dict[str, Any]) -> str:
+    body = _render_threat_model_overview_enterprise_base(threat, poster)
+    old = '<button type="button" class="md-button" data-threat-motion="toggle">Pause animation</button></div>'
+    new = '<button type="button" class="md-button" data-threat-motion="toggle">Pause animation</button><a class="md-button" data-threat-fullscreen="open" href="?poster-fullscreen=1#security-atlas" target="_blank" rel="noopener noreferrer">Full screen</a></div>'
+    if body.count(old) != 1:
+        raise ValueError("Threat Model poster action fence drifted")
+    return body.replace(old, new, 1)
+
+
+def render_threat_model_subpages(threat: dict[str, Any], poster: dict[str, Any]) -> dict[str, dict[str, str]]:
+    pages = _render_threat_model_subpages_enterprise_base(threat, poster)
+    architecture = str((pages.get("architecture") or {}).get("body") or "")
+    marker = "\n\n## Architecture ownership"
+    evidence_link = "\n- [Promoted evidence → documentation](evidence-zone.md) — presentation evidence zone; this does not create a new canonical trust boundary.\n"
+    if architecture.count(marker) != 1:
+        raise ValueError("Threat Model Architecture boundary-page fence drifted")
+    pages["architecture"]["body"] = architecture.replace(marker, evidence_link + marker, 1)
+
+    controls = list(threat.get("controls") or [])
+    evidence_node_ids = {"promoted-evidence", "documentation"}
+    evidence_nodes = [row for row in poster.get("nodes") or [] if str(row.get("id")) in evidence_node_ids]
+    evidence_assets = _unique(asset for row in evidence_nodes for asset in (row.get("assets") or []))
+    evidence_control_ids = _unique(control for row in evidence_nodes for control in (row.get("controls") or []))
+    control_index = {str(row.get("id")): row for row in controls}
+    evidence_flows = [
+        row for row in poster.get("flows") or []
+        if str(row.get("from")) in evidence_node_ids or str(row.get("to")) in evidence_node_ids
+    ]
+    nav = threat_model_nav(nested=True)
+    evidence_zone = "# Promoted evidence → documentation\n\n" + nav + "\n\n"
+    evidence_zone += '<div class="pl-page-lede"><strong>Saved evidence enters documentation through an explicit projection zone.</strong><p>This page explains the visual evidence lane in the Security Architecture Poster. It is a presentation/evidence zone backed by canonical and promoted inputs; it is not promoted into a new canonical threat boundary.</p></div>\n\n'
+    evidence_zone += "## Boundary\n\n**Projection zone:** Promoted evidence → documentation. Canonical threat-boundary ownership remains unchanged.\n\n"
+    evidence_zone += "## Assets\n\n" + ("\n".join(f"- {item}" for item in evidence_assets) if evidence_assets else "- unvalidated") + "\n\n"
+    evidence_zone += "## Actors & components\n\n" + _table(
+        ["Component", "Role", "Architecture component", "Canonical boundary"],
+        [[row.get("label"), row.get("role"), row.get("architecture_component"), row.get("boundary")] for row in evidence_nodes],
+    )
+    evidence_zone += "\n## Controls\n\n" + _table(
+        ["Control", "Description", "Status"],
+        [[cid, (control_index.get(cid) or {}).get("description"), (control_index.get(cid) or {}).get("status")] for cid in evidence_control_ids],
+    )
+    evidence_zone += "\n## Data flows\n\n" + _table(
+        ["Flow", "From", "To", "Meaning"],
+        [[row.get("id"), row.get("from"), row.get("to"), row.get("label")] for row in evidence_flows],
+    )
+    evidence_zone += "\n## Evidence lineage\n\n" + _table(
+        ["Stage", "Canonical/promoted source"],
+        [[row.get("label"), row.get("source")] for row in poster.get("evidence_lineage") or []],
+    )
+    evidence_zone += "\n## Guardrails\n\n- Documentation does not capture or poll live runtime.\n- Raw scanner output does not become documentation truth.\n- Runtime/scanner evidence must be sanitized and explicitly promoted before canonical documentation ingestion.\n\n"
+    evidence_zone += "## Review status\n\nHuman review remains required for evidence adequacy, exploitability, residual risk and acceptance.\n"
+    pages["evidence-zone"] = {
+        "title": "Promoted evidence → documentation",
+        "description": "Projection-zone detail for promoted evidence flowing into static documentation without creating a new canonical trust boundary.",
+        "body": evidence_zone,
+    }
+    return pages

@@ -487,3 +487,199 @@
   if (typeof document$ !== 'undefined') document$.subscribe(enhance);
   else document.addEventListener('DOMContentLoaded', enhance);
 })();
+
+/* Threat Model enterprise UX: explicit boundary drill-down, mobile detail sheet,
+ * and deterministic progressive disclosure. No polling, observers, timers, or runtime I/O. */
+(() => {
+  const THREAT_PATH = '/generated/enterprise/threat-model/';
+  const SVG_OBJECT = '#pl-threat-model-svg';
+  const MOBILE = '(max-width: 44.9844em)';
+  const SEMANTIC_KEYS = ['attack-path', 'control', 'system', 'boundary', 'threat', 'evidence', 'posture'];
+  const MOBILE_OPEN = new Set(['Boundary', 'Threat Model Diagram', 'Security Atlas', 'Current promoted threat posture']);
+
+  const onThreatPage = () => window.location.pathname.includes(THREAT_PATH);
+
+  const threatBasePath = () => {
+    const index = window.location.pathname.indexOf(THREAT_PATH);
+    if (index < 0) return THREAT_PATH;
+    return window.location.pathname.slice(0, index + THREAT_PATH.length);
+  };
+
+  const boundaryHref = (boundary) => `${threatBasePath()}${encodeURIComponent(boundary)}/`;
+
+  const clearSemanticUrl = () => {
+    const url = new URL(window.location.href);
+    SEMANTIC_KEYS.forEach((key) => url.searchParams.delete(`atlas-${key}`));
+    if (url.hash.includes('=')) url.hash = '#security-atlas';
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  };
+
+  const svgDocument = () => document.querySelector(SVG_OBJECT)?.contentDocument || null;
+
+  const clearVisualSelection = () => {
+    const doc = svgDocument();
+    Array.from(doc?.querySelectorAll('.node,.flow,.control') || []).forEach((element) => {
+      element.classList.remove('is-active', 'is-muted');
+    });
+    Array.from(doc?.querySelectorAll('.attack') || []).forEach((element) => element.classList.remove('is-active'));
+    document.querySelectorAll('[data-catalog-id],[data-attack-path-id]').forEach((element) => element.setAttribute('aria-pressed', 'false'));
+    document.documentElement.dataset.plThreatFocus = 'false';
+    clearSemanticUrl();
+  };
+
+  const hideDetail = () => {
+    const panel = document.querySelector('#threat-selection');
+    if (panel) panel.dataset.open = 'false';
+  };
+
+  const closeDetail = () => {
+    clearVisualSelection();
+    hideDetail();
+  };
+
+  const countLabel = (value, singular) => {
+    const count = Number.parseInt(String(value || '0'), 10) || 0;
+    return `${count} ${singular}${count === 1 ? '' : 's'}`;
+  };
+
+  const decorateDetail = (node = null) => {
+    const panel = document.querySelector('#threat-selection');
+    if (!panel) return;
+    panel.dataset.open = 'true';
+    panel.querySelectorAll('.pl-threat-detail-close,.pl-threat-boundary-action').forEach((element) => element.remove());
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'pl-threat-detail-close';
+    close.setAttribute('aria-label', 'Close selected component details');
+    close.textContent = '×';
+    close.addEventListener('click', closeDetail);
+    panel.prepend(close);
+
+    if (!node) return;
+    const boundary = node.dataset.boundary || '';
+    if (!boundary || boundary === 'unvalidated') return;
+    const action = document.createElement('a');
+    action.className = 'pl-intent-link pl-threat-boundary-action';
+    action.href = boundaryHref(boundary);
+    action.textContent = `Open boundary · ${countLabel(node.dataset.controlCount, 'control')} · ${countLabel(node.dataset.assetCount, 'asset')} →`;
+    panel.append(action);
+  };
+
+  const bindEmbeddedDiagram = () => {
+    const object = document.querySelector(SVG_OBJECT);
+    if (!object || object.dataset.plEnterpriseUxBound === 'true') return;
+    object.dataset.plEnterpriseUxBound = 'true';
+
+    const bind = () => {
+      const doc = object.contentDocument;
+      const root = doc?.documentElement;
+      if (!root || root.dataset.plEnterpriseUxBound === 'true') return;
+      root.dataset.plEnterpriseUxBound = 'true';
+
+      root.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        const cue = target.closest('.cue-link[data-boundary-link]');
+        if (!cue) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.location.assign(boundaryHref(cue.dataset.boundaryLink || ''));
+      }, true);
+
+      root.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        const node = target.closest('.node');
+        if (node) decorateDetail(node);
+        else if (target.closest('.control')) decorateDetail();
+        else if (target.closest('[data-reset-target="true"],.bg,.grid')) hideDetail();
+      });
+
+      root.addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const node = target.closest('.node');
+        if (node) decorateDetail(node);
+        else if (target.closest('.control')) decorateDetail();
+      });
+    };
+
+    object.addEventListener('load', bind);
+    bind();
+  };
+
+  const sectionHeadingText = (heading) => heading.textContent.replace('¶', '').trim();
+
+  const enhanceCollapsibleSections = () => {
+    if (!onThreatPage()) return;
+    const content = document.querySelector('.md-content__inner.md-typeset') || document.querySelector('.md-content');
+    if (!content) return;
+    const mobile = Boolean(window.matchMedia?.(MOBILE).matches);
+    const headings = Array.from(content.querySelectorAll('h2')).filter((heading) => (
+      heading.parentElement === content
+      && heading.dataset.plThreatSectionBound !== 'true'
+      && !heading.closest('.pl-threat-poster,.pl-atlas-layout,.pl-page-lede')
+    ));
+
+    headings.forEach((heading, index) => {
+      const label = sectionHeadingText(heading);
+      heading.dataset.plThreatSectionBound = 'true';
+      const body = document.createElement('div');
+      body.className = 'pl-threat-section-body';
+      body.id = `pl-threat-section-${heading.id || index}-body`;
+      heading.insertAdjacentElement('afterend', body);
+
+      let sibling = body.nextSibling;
+      while (sibling) {
+        if (sibling.nodeType === Node.ELEMENT_NODE && sibling.matches?.('h2')) break;
+        const next = sibling.nextSibling;
+        body.append(sibling);
+        sibling = next;
+      }
+
+      if (!body.childNodes.length) {
+        body.remove();
+        return;
+      }
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'pl-threat-section-toggle';
+      toggle.setAttribute('aria-controls', body.id);
+      const hashSelected = Boolean(heading.id && window.location.hash === `#${heading.id}`);
+      let open = !mobile || MOBILE_OPEN.has(label) || hashSelected;
+      const render = () => {
+        body.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? 'Collapse' : 'Expand';
+        toggle.setAttribute('aria-label', `${open ? 'Collapse' : 'Expand'} ${label}`);
+      };
+      toggle.addEventListener('click', () => { open = !open; render(); });
+      heading.append(toggle);
+      render();
+    });
+  };
+
+  const enhance = () => {
+    if (!onThreatPage()) return;
+    enhanceCollapsibleSections();
+    bindEmbeddedDiagram();
+  };
+
+  if (!window.__plThreatEnterpriseUxBound) {
+    window.__plThreatEnterpriseUxBound = true;
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!target || typeof target.closest !== 'function') return;
+      if (target.closest('[data-catalog-id],[data-attack-path-id]')) decorateDetail();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && onThreatPage()) hideDetail();
+    });
+  }
+
+  if (typeof document$ !== 'undefined') document$.subscribe(enhance);
+  else document.addEventListener('DOMContentLoaded', enhance);
+})();

@@ -488,3 +488,157 @@ def render_security_projection_svg(
     if PRIVATE_PROJECTION.search(rendered) or SECRET_PROJECTION.search(rendered):
         raise ValueError("security SVG rejected private-path or secret-like content")
     return rendered
+
+
+# Enterprise Threat Model presentation extension.
+#
+# This remains presentation-only. Repository-owned icons are embedded into the generated SVG so
+# posters rendered through <img> retain their brand marks. Node counts expose explicit labels and
+# a deterministic detail-page slug without changing canonical boundary ownership.
+import base64 as _base64
+from functools import lru_cache as _lru_cache
+from pathlib import Path as _Path
+
+_ICON_ROOT = _Path(__file__).resolve().parents[3] / "docs/assets/diagrams/production/icons"
+
+
+@_lru_cache(maxsize=64)
+def _icon_data_uri(filename: str) -> str:
+    raw_name = str(filename or "docs.svg")
+    safe_name = _Path(raw_name).name
+    if safe_name != raw_name or not safe_name.endswith(".svg"):
+        raise ValueError(f"security layout rejected unsafe icon name: {raw_name!r}")
+    path = _ICON_ROOT / safe_name
+    if not path.is_file():
+        raise ValueError(f"security layout brand icon missing: {safe_name}")
+    raw = path.read_bytes()
+    text = raw.decode("utf-8", errors="strict")
+    lowered = text.lower()
+    if "<script" in lowered or REMOTE_HREF.search(text):
+        raise ValueError(f"security layout brand icon is not self-contained: {safe_name}")
+    if PRIVATE_PROJECTION.search(text) or SECRET_PROJECTION.search(text):
+        raise ValueError(f"security layout brand icon rejected unsafe content: {safe_name}")
+    return "data:image/svg+xml;base64," + _base64.b64encode(raw).decode("ascii")
+
+
+def _node_svg(row: dict[str, Any], box: Box, *, layout: str) -> str:
+    icon = _icon_data_uri(str(row.get("icon") or "docs.svg"))
+    name_lines = _wrap(row.get("label") or row.get("id"), width=20 if layout == "wide" else 28)
+    role_lines = _wrap(row.get("role") or "architecture component", width=28 if layout == "wide" else 36, lines=1)
+    controls = list(row.get("controls") or [])
+    assets = list(row.get("assets") or [])
+    control_label = f'{len(controls)} control' + ("" if len(controls) == 1 else "s")
+    asset_label = f'{len(assets)} asset' + ("" if len(assets) == 1 else "s")
+    compact_state = {
+        "control-observed": "observed",
+        "control-partial": "partial",
+        "control-unvalidated": "unvalidated",
+        "evidence-stale": "stale",
+    }.get(str(row.get("posture")), str(row.get("posture") or "unvalidated"))
+    text_x = box.x + (48 if layout == "wide" else 56)
+    icon_size = 30 if layout == "wide" else 34
+    icon_x = box.x + 12
+    icon_y = box.y + 17
+    name_y = box.y + 28
+    tspans = "".join(
+        f'<tspan x="{text_x:.1f}" dy="{0 if index == 0 else 15}">{_esc(line)}</tspan>'
+        for index, line in enumerate(name_lines)
+    )
+    role_y = box.y + (59 if len(name_lines) > 1 else 47)
+    cue_y = box.y2 - 11
+    bounds = f"{box.x:.1f},{box.y:.1f},{box.w:.1f},{box.h:.1f}"
+    detail_slug = "evidence-zone" if str(row.get("id")) in {"promoted-evidence", "documentation"} else str(row.get("boundary") or "unvalidated")
+    return (
+        f'<g class="node" data-node="{_esc(row.get("id"))}" data-boundary="{_esc(row.get("boundary"))}" '
+        f'data-state="{_esc(row.get("posture"))}" data-architecture-component="{_esc(row.get("architecture_component"))}" '
+        f'data-stride="{_esc("|".join(row.get("stride") or []))}" data-threat-count="{len(row.get("stride") or [])}" '
+        f'data-control-count="{len(controls)}" data-asset-count="{len(assets)}" '
+        f'data-assets="{_esc(" | ".join(assets))}" data-layout-bounds="{bounds}" tabindex="0" role="button" '
+        f'aria-label="{_esc(row.get("label"))}; {_esc(row.get("role"))}; {_esc(row.get("posture"))}; {control_label}; {asset_label}">'
+        f'<rect x="{box.x:.1f}" y="{box.y:.1f}" width="{box.w:.1f}" height="{box.h:.1f}"/>'
+        f'<image class="brand-icon" href="{icon}" x="{icon_x:.1f}" y="{icon_y:.1f}" width="{icon_size}" height="{icon_size}" preserveAspectRatio="xMidYMid meet"/>'
+        f'<text class="name" x="{text_x:.1f}" y="{name_y:.1f}">{tspans}</text>'
+        f'<text class="role" x="{text_x:.1f}" y="{role_y:.1f}">{_esc(role_lines[0])}</text>'
+        f'<text class="cue cue-state" x="{box.x + 12:.1f}" y="{cue_y:.1f}">{_esc(compact_state)}</text>'
+        f'<text class="cue cue-link" data-boundary-link="{_esc(detail_slug)}" x="{box.x2 - 12:.1f}" y="{cue_y:.1f}" text-anchor="end">{_esc(control_label)} · {_esc(asset_label)}</text>'
+        '</g>'
+    )
+
+
+def _control_svg(row: dict[str, Any], boxes: dict[str, Box], *, layout: str) -> str:
+    owner, short, dx, _dy = CONTROL_OWNERS[str(row.get("id"))]
+    box = boxes[owner]
+    scale = .82 if layout == "stacked" else 1.0
+    x = box.cx + dx * scale
+    y = box.y2 + 15
+    caption_width = max(54, len(short) * 6.4 + 18)
+    return (
+        f'<g class="control" data-control="{_esc(row.get("id"))}" data-boundaries="{_esc(" ".join(row.get("boundaries") or []))}" '
+        f'data-threats="{_esc("|".join(row.get("stride") or []))}" data-stride="{_esc("|".join(row.get("stride") or []))}" '
+        f'tabindex="0" role="button" aria-label="Control {_esc(row.get("id"))}; {_esc(row.get("description"))}; {_esc(row.get("status"))}">'
+        f'<path class="shield" d="M {x:.1f} {y-14:.1f} l 13 4.5 v 10.5 c 0 10.5 -8.5 16 -13 19 c -4.5 -3 -13 -8.5 -13 -19 v -10.5 z"/>'
+        f'<path class="shield-mark" d="M {x-6:.1f} {y+1:.1f} l 4.5 4.5 l 8.5 -9"/>'
+        f'<g class="control-caption"><rect x="{x+18:.1f}" y="{y-10:.1f}" width="{caption_width:.1f}" height="22" rx="10"/>'
+        f'<text x="{x+26:.1f}" y="{y+5:.1f}">{_esc(short)}</text></g></g>'
+    )
+
+
+def _legend(_width: int, _height: int) -> str:
+    # The page-level accessible HTML legend is authoritative. Preserve legacy regression
+    # tokens only as non-rendering SVG metadata; no second visual/accessibility legend is emitted.
+    return (
+        '<metadata data-threat-legend="svg" aria-hidden="true">'
+        'Modeled allowed/control flow · Selected modeled attack path · Security control · '
+        'Trust zone · Saved relationship motion only'
+        '</metadata>'
+    )
+
+
+_render_security_projection_svg_enterprise_base = render_security_projection_svg
+
+
+def _enterprise_replace_once(value: str, old: str, new: str, label: str) -> str:
+    if value.count(old) != 1:
+        raise ValueError(f"security SVG presentation fence drifted: {label}")
+    return value.replace(old, new, 1)
+
+
+def render_security_projection_svg(
+    poster: dict[str, Any], *, variant: str = "overview", layout: str = "wide"
+) -> str:
+    rendered = _render_security_projection_svg_enterprise_base(poster, variant=variant, layout=layout)
+    replacements = (
+        (
+            '.node .cue{font:700 8.2px system-ui,sans-serif}',
+            '.node .cue{font:700 8.2px system-ui,sans-serif}.node .cue-link{cursor:pointer;text-decoration:underline;text-decoration-thickness:.7px;text-underline-offset:1.5px}.node .cue-link:hover{fill:#245f9c}',
+            'explicit control/asset cue',
+        ),
+        (
+            'svg[data-layout="stacked"] .control-caption text{font-size:10px}svg[data-layout="stacked"] .legend{font-size:11px}',
+            'svg[data-layout="stacked"] .control-caption text{font-size:10px}svg[data-layout="stacked"] .flow-caption text{font-size:11.5px}svg[data-layout="stacked"] .legend{font-size:11px}',
+            'stacked flow-label typography',
+        ),
+        (
+            '.flow-caption rect,.control-caption rect{fill:#f5f7fb;fill-opacity:.96;stroke:#cfd8e6}.flow-caption text{fill:#53647c;font:700 8.5px system-ui,sans-serif}',
+            '.flow-caption rect{fill:#fff;fill-opacity:.99;stroke:#91a5c0;stroke-width:1.25}.control-caption rect{fill:#f5f7fb;fill-opacity:.98;stroke:#b8c8dc}.flow-caption text{fill:#1f2d42;font:800 10px system-ui,sans-serif;paint-order:stroke;stroke:#fff;stroke-width:.35px}',
+            'flow-label contrast',
+        ),
+        (
+            '.control .shield{fill:#e9f6ef;stroke:#4d9a72;stroke-width:1.6}.control-caption text{fill:#326e51;font:700 8px system-ui,sans-serif}',
+            '.control .shield{fill:#e7f6ee;stroke:#367b59;stroke-width:2}.control .shield-mark{fill:none;stroke:#2f704f;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.control-caption text{fill:#285f45;font:800 8.5px system-ui,sans-serif}',
+            'shield geometry',
+        ),
+        (
+            '.zone-title-bg,.flow-caption rect,.control-caption rect{fill:#151f2e;stroke:#40516a}.zone-title{fill:#c6d2e4}',
+            '.zone-title-bg,.control-caption rect{fill:#151f2e;stroke:#40516a}.flow-caption rect{fill:#111b2a;fill-opacity:.99;stroke:#6f88aa}.zone-title{fill:#c6d2e4}',
+            'dark flow-label plate',
+        ),
+        (
+            '.flow-caption text,.legend{fill:#b6c2d3}.control-caption text{fill:#9be2ba}',
+            '.flow-caption text{fill:#edf3ff;stroke:#111b2a}.legend{fill:#b6c2d3}.control-caption text{fill:#9be2ba}',
+            'dark flow-label text',
+        ),
+    )
+    for old, new, label in replacements:
+        rendered = _enterprise_replace_once(rendered, old, new, label)
+    return rendered

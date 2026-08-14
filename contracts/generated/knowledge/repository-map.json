@@ -2752,6 +2752,12 @@
     },
     {
       "entities": [
+        "test:tests/docs/test_threat_model_enterprise_ux.py"
+      ],
+      "source": "tests/docs/test_threat_model_enterprise_ux.py"
+    },
+    {
+      "entities": [
         "test:tests/docs/test_threat_model_layout.py"
       ],
       "source": "tests/docs/test_threat_model_layout.py"
@@ -2761,6 +2767,12 @@
         "test:tests/docs/test_threat_model_poster.py"
       ],
       "source": "tests/docs/test_threat_model_poster.py"
+    },
+    {
+      "entities": [
+        "test:tests/docs/threat-model-enterprise-ux.spec.ts"
+      ],
+      "source": "tests/docs/threat-model-enterprise-ux.spec.ts"
     },
     {
       "entities": [
@@ -2919,6 +2931,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "61dd3f5622ac989557bcf2e3a0f44a0deed2a156bbb890aaa13e61894d3c96d0"
+    "source_fingerprint": "bdb643f79b416458e2b62092fc3f9f586218cc7500f8851de73664cdd29274e6"
   }
 }

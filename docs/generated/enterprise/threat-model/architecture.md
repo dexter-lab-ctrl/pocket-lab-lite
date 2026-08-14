@@ -44,6 +44,8 @@ This is a security overlay on the [canonical Pocket Lab Lite Architecture](../..
 - [Messaging and execution boundary](messaging-execution.md)
 - [Server-host boundary](server-host.md)
 - [Private network and Tailnet boundary](private-network.md)
+- [Promoted evidence → documentation](evidence-zone.md) — presentation evidence zone; this does not create a new canonical trust boundary.
+
 
 ## Architecture ownership
 

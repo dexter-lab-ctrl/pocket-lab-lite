@@ -19269,6 +19269,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_enterprise_ux.py",
+      "name": "tests/docs/test_threat_model_enterprise_ux.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_enterprise_ux.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_layout.py",
       "name": "tests/docs/test_threat_model_layout.py",
       "source_refs": [
@@ -19283,6 +19293,16 @@
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-enterprise-ux.spec.ts",
+      "name": "tests/docs/threat-model-enterprise-ux.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-enterprise-ux.spec.ts"
       ],
       "type": "test"
     },
@@ -22115,8 +22135,10 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_enterprise_ux.py",
         "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-enterprise-ux.spec.ts",
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
@@ -22999,8 +23021,10 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_enterprise_ux.py",
         "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-enterprise-ux.spec.ts",
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
@@ -61447,9 +61471,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "61dd3f5622ac989557bcf2e3a0f44a0deed2a156bbb890aaa13e61894d3c96d0",
+  "source_fingerprint": "bdb643f79b416458e2b62092fc3f9f586218cc7500f8851de73664cdd29274e6",
   "statistics": {
-    "entity_count": 847,
+    "entity_count": 849,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61466,7 +61490,7 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 172,
+      "test": 174,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
@@ -61474,6 +61498,6 @@
       "vocabulary": 39
     },
     "relation_count": 2140,
-    "source_count": 208
+    "source_count": 210
   }
 }
