@@ -8744,10 +8744,32 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_layout.py",
+      "name": "tests/docs/test_threat_model_layout.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_layout.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_poster.py",
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-layout.spec.ts",
+      "name": "tests/docs/threat-model-layout.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-layout.spec.ts"
       ],
       "type": "test"
     },
@@ -28992,6 +29014,20 @@
       "source": "component:api-guards",
       "target": "boundary:control-api",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_threat_model_layout.py"
+      ],
+      "id": "rel:a316053952428b22",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_threat_model_layout.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

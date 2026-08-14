@@ -272,11 +272,57 @@
     applyDeepLink();
   };
 
+  const enhanceThreatModelScrollableRegions = () => {
+    if (!document.querySelector('.pl-threat-subnav')) return;
+
+    Array.from(document.querySelectorAll('.md-typeset__table'))
+      .forEach((region, index) => {
+        const label = `Threat Model data table ${index + 1}`;
+        const table = region.querySelector(':scope > table');
+
+        region.dataset.plThreatScrollRegion = 'true';
+
+        /*
+         * Material can make the table itself the effective horizontal
+         * scrolling surface on narrow viewports. The real scroll owner must
+         * therefore be keyboard reachable; focusing only its wrapper does
+         * not satisfy Safari/WCAG keyboard-access semantics.
+         *
+         * Preserve native <table> semantics: do not replace its role.
+         */
+        if (table) {
+          if (!table.hasAttribute('tabindex')) {
+            table.setAttribute('tabindex', '0');
+          }
+
+          if (!table.hasAttribute('aria-label')) {
+            table.setAttribute('aria-label', label);
+          }
+        }
+
+        /*
+         * The wrapper remains a named structural region, but it is not an
+         * additional tab stop. The focusable child table satisfies keyboard
+         * access for both the table and any scrollable wrapper.
+         */
+        region.removeAttribute('tabindex');
+
+        if (!region.hasAttribute('role')) {
+          region.setAttribute('role', 'region');
+        }
+
+        if (!region.hasAttribute('aria-label')) {
+          region.setAttribute('aria-label', label);
+        }
+      });
+  };
+
   const enhanceThreatModel = () => {
+    enhanceThreatModelScrollableRegions();
     const object = document.querySelector(rootSelector);
     if (!object || object.dataset.plThreatBound === 'true') return;
     object.dataset.plThreatBound = 'true';
-    object.addEventListener('load', bindSvg, { once: true });
+    object.addEventListener('load', bindSvg);
     if (object.contentDocument) bindSvg();
 
     document.querySelectorAll('[data-atlas-view]').forEach((button) => button.addEventListener('click', () => {
@@ -319,4 +365,125 @@
   }
   if (typeof document$ !== 'undefined') document$.subscribe(enhanceThreatModel);
   else document.addEventListener('DOMContentLoaded', enhanceThreatModel);
+})();
+
+/* Security Atlas polish: explicit view selection and dismissible saved-model focus. */
+(() => {
+  const DEEP_LINK_KEYS = ['attack-path', 'control', 'system', 'boundary', 'threat', 'evidence', 'posture'];
+  const svgObject = () => document.querySelector('#pl-threat-model-svg');
+  const svgDocument = () => svgObject()?.contentDocument || null;
+  const svgAll = (selector) => Array.from(svgDocument()?.querySelectorAll(selector) || []);
+
+  const clearSemanticUrl = () => {
+    const url = new URL(window.location.href);
+    DEEP_LINK_KEYS.forEach((key) => url.searchParams.delete(`atlas-${key}`));
+    url.hash = '#security-atlas';
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  };
+
+  const defaultDetail = () => {
+    const panel = document.querySelector('#threat-selection');
+    if (!panel) return;
+    panel.replaceChildren();
+    const strong = document.createElement('strong');
+    strong.textContent = 'Explore the saved model';
+    const p = document.createElement('p');
+    p.textContent = 'Choose a component, control, catalog entry or reviewed attack path. Click empty diagram space or press Escape to clear focus.';
+    panel.append(strong, p);
+  };
+
+  const resetSelection = () => {
+    svgAll('.node,.flow,.control').forEach((element) => element.classList.remove('is-active', 'is-muted'));
+    svgAll('.attack').forEach((element) => element.classList.remove('is-active'));
+    document.querySelectorAll('[data-catalog-id],[data-attack-path-id]').forEach((element) => element.setAttribute('aria-pressed', 'false'));
+    clearSemanticUrl();
+    defaultDetail();
+    document.documentElement.dataset.plThreatFocus = 'false';
+  };
+
+  const syncAtlasTabs = () => {
+    document.querySelectorAll('[data-atlas-view]').forEach((button) => {
+      const selected = button.getAttribute('aria-selected') === 'true';
+      button.dataset.selected = String(selected);
+      button.classList.toggle('pl-is-selected', selected);
+    });
+  };
+
+  const selectDiagramMode = (selected) => {
+    document.querySelectorAll('[data-threat-mode]').forEach((button) => {
+      const active = button === selected;
+      button.setAttribute('aria-pressed', String(active));
+      button.dataset.selected = String(active);
+      button.classList.toggle('pl-is-selected', active);
+      button.classList.toggle('md-button--primary', active);
+    });
+    const mode = selected?.dataset.threatMode || 'system';
+    const root = svgDocument()?.documentElement;
+    if (root) {
+      ['system', 'controls', 'attack-paths', 'evidence'].forEach((name) => root.classList.toggle(`view-${name}`, name === mode));
+      root.dataset.viewMode = mode;
+    }
+  };
+
+  const bindSvgReset = () => {
+    const object = svgObject();
+    const bind = () => {
+      const doc = object?.contentDocument;
+      if (!doc || doc.documentElement.dataset.plAtlasResetBound === 'true') return;
+      doc.documentElement.dataset.plAtlasResetBound = 'true';
+      const onDiagramPointer = (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        if (target.closest('.node,.control')) {
+          document.documentElement.dataset.plThreatFocus = 'true';
+          return;
+        }
+        if (target.closest('[data-reset-target="true"],.bg,.grid') || target === doc.documentElement) resetSelection();
+      };
+      doc.documentElement.addEventListener('pointerdown', onDiagramPointer);
+      doc.documentElement.addEventListener('click', onDiagramPointer);
+      doc.documentElement.addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        if ((event.key === 'Enter' || event.key === ' ') && target.closest('.node,.control')) {
+          document.documentElement.dataset.plThreatFocus = 'true';
+        }
+      });
+      const current = document.querySelector('[data-threat-mode][aria-pressed="true"]') || document.querySelector('[data-threat-mode="system"]');
+      if (current) selectDiagramMode(current);
+    };
+    object?.addEventListener('load', bind);
+    bind();
+  };
+
+  const enhance = () => {
+    const atlasRoot = document.querySelector('.pl-atlas-layout');
+    if (!atlasRoot || atlasRoot.dataset.plAtlasPolishBound === 'true') return;
+    atlasRoot.dataset.plAtlasPolishBound = 'true';
+    syncAtlasTabs();
+    document.querySelectorAll('[data-atlas-view]').forEach((button) => button.addEventListener('click', syncAtlasTabs));
+    const system = document.querySelector('[data-threat-mode="system"]');
+    if (system) selectDiagramMode(system);
+    document.querySelectorAll('[data-threat-mode]').forEach((button) => button.addEventListener('click', () => selectDiagramMode(button)));
+    document.querySelectorAll('[data-catalog-id],[data-attack-path-id]').forEach((button) => button.addEventListener('click', () => {
+      document.documentElement.dataset.plThreatFocus = 'true';
+    }));
+    bindSvgReset();
+    if (!window.__plThreatAtlasPolishNavigationBound) {
+      window.__plThreatAtlasPolishNavigationBound = true;
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && document.querySelector('.pl-atlas-layout')) resetSelection();
+      });
+      document.addEventListener('pointerdown', (event) => {
+        if (document.documentElement.dataset.plThreatFocus !== 'true' || !document.querySelector('.pl-atlas-layout')) return;
+        const target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        if (target.closest('.pl-threat-canvas,.pl-atlas-layout,.pl-threat-toolbar,.pl-atlas-toolbar,[data-attack-path-id]')) return;
+        resetSelection();
+      });
+    }
+  };
+
+  if (typeof document$ !== 'undefined') document$.subscribe(enhance);
+  else document.addEventListener('DOMContentLoaded', enhance);
 })();

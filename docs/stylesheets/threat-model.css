@@ -462,3 +462,506 @@
   outline: 2px solid var(--md-accent-fg-color);
   outline-offset: 2px;
 }
+
+
+/* Threat Model enterprise polish v2
+ * One canonical security projection; one deterministic layout engine; multiple presentation modes.
+ * Keep every override local to Threat Model/Atlas surfaces. Never hide body overflow globally.
+ */
+.pl-threat-poster-canvas object,
+.pl-threat-poster-canvas img,
+.pl-threat-canvas object,
+.pl-threat-canvas img,
+.pl-threat-detail-diagram img {
+  display:block;
+  width:max(100%,72rem);
+  height:auto;
+  min-height:0;
+  box-sizing:border-box;
+}
+.pl-security-atlas-poster img {
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:0;
+  box-sizing:border-box;
+}
+.pl-threat-detail-diagram,
+.pl-security-atlas-poster,
+.pl-threat-canvas,
+.pl-threat-poster-canvas {
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+/* Strong, consistent segmented-control semantics. */
+.pl-threat-mode-group,
+.pl-threat-stride-lens,
+.pl-threat-toolbar,
+.pl-atlas-toolbar {
+  align-items:stretch;
+}
+.pl-threat-mode-group .md-button,
+.pl-threat-stride-lens .md-button,
+.pl-threat-toolbar .md-button,
+.pl-atlas-toolbar .md-button {
+  position:relative;
+  min-height:2.35rem;
+  border:1px solid var(--pl-border);
+  background:var(--pl-surface-raised);
+  color:var(--md-default-fg-color);
+  box-shadow:none;
+  transition:border-color var(--pl-duration-fast) var(--pl-ease-standard),box-shadow var(--pl-duration-fast) var(--pl-ease-standard),transform var(--pl-duration-fast) var(--pl-ease-standard);
+}
+.pl-threat-mode-group .md-button::before,
+.pl-threat-stride-lens .md-button::before,
+.pl-threat-toolbar .md-button::before,
+.pl-atlas-toolbar .md-button::before {
+  content:"";
+  width:.42rem;
+  height:.42rem;
+  margin-right:.38rem;
+  border:1px solid currentColor;
+  border-radius:50%;
+  opacity:.45;
+  flex:none;
+}
+.pl-threat-mode-group .md-button[aria-pressed="true"],
+.pl-threat-stride-lens .md-button[aria-pressed="true"],
+.pl-threat-toolbar .md-button[aria-pressed="true"],
+.pl-atlas-toolbar .md-button[aria-selected="true"],
+.pl-threat-mode-group .md-button.pl-is-selected,
+.pl-threat-stride-lens .md-button.pl-is-selected,
+.pl-threat-toolbar .md-button.pl-is-selected,
+.pl-atlas-toolbar .md-button.pl-is-selected {
+  color:var(--md-default-fg-color);
+  background:color-mix(in srgb,var(--md-accent-fg-color) 9%,var(--pl-surface-raised));
+  border-color:var(--md-accent-fg-color);
+  box-shadow:inset 0 -3px 0 var(--md-accent-fg-color),0 0 0 1px color-mix(in srgb,var(--md-accent-fg-color) 18%,transparent);
+  font-weight:750;
+}
+.pl-threat-mode-group .md-button[aria-pressed="true"]::before,
+.pl-threat-stride-lens .md-button[aria-pressed="true"]::before,
+.pl-threat-toolbar .md-button[aria-pressed="true"]::before,
+.pl-atlas-toolbar .md-button[aria-selected="true"]::before {
+  background:var(--md-accent-fg-color);
+  border-color:var(--md-accent-fg-color);
+  opacity:1;
+}
+.pl-threat-mode-group .md-button:hover,
+.pl-threat-stride-lens .md-button:hover,
+.pl-threat-toolbar .md-button:hover,
+.pl-atlas-toolbar .md-button:hover,
+.pl-threat-mode-group .md-button:focus-visible,
+.pl-threat-stride-lens .md-button:focus-visible,
+.pl-threat-toolbar .md-button:focus-visible,
+.pl-atlas-toolbar .md-button:focus-visible {
+  color:var(--md-default-fg-color);
+  background:var(--pl-surface-raised);
+  border-color:var(--md-accent-fg-color);
+  transform:translateY(-1px);
+  outline:2px solid color-mix(in srgb,var(--md-accent-fg-color) 28%,transparent);
+  outline-offset:2px;
+}
+
+
+/* Selected state stays explicit during hover/focus as well as at rest. */
+.pl-threat-mode-group .md-button[aria-pressed="true"]:hover,
+.pl-threat-stride-lens .md-button[aria-pressed="true"]:hover,
+.pl-threat-toolbar .md-button[aria-pressed="true"]:hover,
+.pl-atlas-toolbar .md-button[aria-selected="true"]:hover,
+.pl-threat-mode-group .md-button[aria-pressed="true"]:focus-visible,
+.pl-threat-stride-lens .md-button[aria-pressed="true"]:focus-visible,
+.pl-threat-toolbar .md-button[aria-pressed="true"]:focus-visible,
+.pl-atlas-toolbar .md-button[aria-selected="true"]:focus-visible {
+  color:var(--md-default-fg-color);
+  background:color-mix(in srgb,var(--md-accent-fg-color) 9%,var(--pl-surface-raised));
+  border-color:var(--md-accent-fg-color);
+  box-shadow:inset 0 -3px 0 var(--md-accent-fg-color),0 0 0 1px color-mix(in srgb,var(--md-accent-fg-color) 18%,transparent);
+}
+
+/* STRIDE is a filter rail, not seven anonymous buttons. */
+.pl-threat-stride-lens .md-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:2.4rem;
+}
+.pl-threat-stride-lens .md-button[title]::after {
+  content:attr(title);
+  max-width:0;
+  margin-left:0;
+  overflow:hidden;
+  white-space:nowrap;
+  opacity:0;
+  transition:max-width var(--pl-duration-fast) var(--pl-ease-standard),opacity var(--pl-duration-fast) var(--pl-ease-standard),margin-left var(--pl-duration-fast) var(--pl-ease-standard);
+}
+.pl-threat-stride-lens .md-button[aria-pressed="true"][title]::after,
+.pl-threat-stride-lens .md-button:focus-visible[title]::after {
+  max-width:11rem;
+  margin-left:.35rem;
+  opacity:1;
+}
+
+/* Real visual legend: these symbols mirror the generated SVG semantics. */
+.pl-threat-legend {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));
+  gap:.45rem .7rem;
+  align-items:center;
+  margin:.7rem 0 1rem;
+  padding:.7rem .8rem;
+  border:1px solid var(--pl-border);
+  border-radius:var(--pl-radius-md);
+  background:var(--pl-surface-raised);
+  color:var(--md-default-fg-color);
+  font-size:.69rem;
+}
+.pl-threat-legend-item {
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  min-width:0;
+}
+.pl-threat-legend-symbol {
+  position:relative;
+  display:inline-block;
+  flex:none;
+  width:2.7rem;
+  height:1.2rem;
+}
+.pl-threat-legend-symbol--flow::before,
+.pl-threat-legend-symbol--attack::before,
+.pl-threat-legend-symbol--motion::before {
+  content:"";
+  position:absolute;
+  left:.1rem;
+  right:.2rem;
+  top:.55rem;
+}
+.pl-threat-legend-symbol--flow::before { border-top:2px solid #4f8bd6; }
+.pl-threat-legend-symbol--flow::after {
+  content:"";
+  position:absolute;
+  right:.05rem;
+  top:.32rem;
+  border-left:.48rem solid #4f8bd6;
+  border-top:.25rem solid transparent;
+  border-bottom:.25rem solid transparent;
+}
+.pl-threat-legend-symbol--attack::before { border-top:3px dashed #c94c4c; }
+.pl-threat-legend-symbol--shield::before {
+  content:"";
+  position:absolute;
+  left:.82rem;
+  top:.05rem;
+  width:1rem;
+  height:1.05rem;
+  border:2px solid #4d9a72;
+  border-radius:.35rem .35rem .62rem .62rem;
+  background:color-mix(in srgb,#4d9a72 12%,var(--pl-surface-raised));
+  clip-path:polygon(50% 0,100% 18%,88% 72%,50% 100%,12% 72%,0 18%);
+}
+.pl-threat-legend-symbol--zone::before {
+  content:"";
+  position:absolute;
+  inset:.08rem .25rem;
+  border:1px solid #8bb4df;
+  border-radius:.45rem;
+  background:color-mix(in srgb,#8bb4df 10%,var(--pl-surface-raised));
+}
+.pl-threat-legend-symbol--motion::before { border-top:2px dotted #4f8bd6; }
+.pl-threat-legend-symbol--motion::after {
+  content:"";
+  position:absolute;
+  left:.1rem;
+  top:.38rem;
+  width:.38rem;
+  height:.38rem;
+  border-radius:50%;
+  background:#4f8bd6;
+}
+.pl-threat-legend-note {
+  grid-column:1/-1;
+  padding-top:.4rem;
+  border-top:1px solid var(--pl-border);
+  font-size:.66rem;
+  letter-spacing:.02em;
+}
+
+/* The side panel should never cover the poster or become a second viewport. */
+.pl-threat-poster-detail,
+.pl-atlas-detail {
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  box-sizing:border-box;
+}
+
+@media screen and (max-width:44.9844em) {
+  .pl-threat-poster-canvas object,
+  .pl-threat-poster-canvas img,
+  .pl-threat-canvas object,
+  .pl-threat-canvas img,
+  .pl-threat-detail-diagram img {
+    display:block;
+    width:100%;
+    min-width:0;
+    min-height:1px;
+    height:auto;
+  }
+
+  .pl-threat-detail-diagram img[data-pl-layout="stacked"] {
+    aspect-ratio:480 / 2360;
+    object-fit:contain;
+  }
+  .pl-security-atlas-poster img {
+    width:100%;
+    min-height:0;
+  }
+  .pl-threat-mode-group {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .pl-threat-stride-lens {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .pl-threat-stride-lens > span {
+    grid-column:1/-1;
+  }
+  .pl-threat-stride-lens .md-button[title]::after,
+  .pl-threat-stride-lens .md-button[aria-pressed="true"][title]::after {
+    max-width:none;
+    margin-left:.28rem;
+    opacity:1;
+    font-size:.62rem;
+  }
+  .pl-threat-toolbar,
+  .pl-atlas-toolbar {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  }
+  .pl-threat-toolbar .md-button,
+  .pl-atlas-toolbar .md-button {
+    justify-content:flex-start;
+  }
+  .pl-threat-legend {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .pl-threat-mode-group .md-button,
+  .pl-threat-stride-lens .md-button,
+  .pl-threat-toolbar .md-button,
+  .pl-atlas-toolbar .md-button,
+  .pl-threat-stride-lens .md-button[title]::after {
+    transition:none;
+  }
+  .pl-threat-mode-group .md-button:hover,
+  .pl-threat-stride-lens .md-button:hover,
+  .pl-threat-toolbar .md-button:hover,
+  .pl-atlas-toolbar .md-button:hover { transform:none; }
+}
+
+@media print {
+  .pl-threat-legend { break-inside:avoid; }
+  .pl-threat-poster-canvas object,
+  .pl-threat-poster-canvas img,
+  .pl-threat-canvas object,
+  .pl-threat-canvas img,
+  .pl-threat-detail-diagram img,
+  .pl-security-atlas-poster img { width:100%; }
+}
+/* Threat Model Catalog WCAG AA fence
+ *
+ * Material's inherited cyan kicker and muted small-text colors do not meet
+ * WCAG AA against the Pocket Lab light surface. Keep the correction local
+ * to Security Atlas / Threat Model cards rather than altering global theme
+ * tokens.
+ */
+.md-content .pl-atlas-card > .pl-card-kicker,
+.md-content .pl-threat-path-card > .pl-card-kicker,
+.md-content .pl-atlas-card > small,
+.md-content .pl-threat-path-card > small {
+  color: var(--md-default-fg-color);
+  opacity: 1;
+}
+
+/* Inline prose links in the Threat Model must remain distinguishable without
+ * relying on color alone.
+ */
+.md-content .pl-threat-inline-link {
+  text-decoration: underline;
+  text-decoration-thickness: .08em;
+  text-underline-offset: .14em;
+  text-decoration-skip-ink: auto;
+}
+
+.md-content .pl-threat-inline-link:hover,
+.md-content .pl-threat-inline-link:focus-visible {
+  text-decoration-thickness: .12em;
+}
+
+/* Keyboard users need a visible indication when a horizontally-scrollable
+ * generated table receives focus.
+ */
+.md-content .md-typeset__table[data-pl-threat-scroll-region="true"]:focus-visible,
+.md-content .pl-threat-canvas:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}
+
+/* Threat Model native responsive image fence
+ *
+ * Static Threat Model illustrations use native <picture> selection.
+ * Interactive <object> diagrams retain their separate responsive contract.
+ */
+.pl-threat-detail-diagram,
+.pl-security-atlas-poster {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.pl-threat-detail-diagram picture,
+.pl-security-atlas-poster picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.pl-threat-detail-diagram picture > img,
+.pl-security-atlas-poster picture > img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 1px;
+  visibility: visible;
+  opacity: 1;
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 44.9844em) {
+  .pl-threat-detail-diagram {
+    contain: none;
+    overflow-x: visible;
+  }
+}
+
+/* Threat Model scroll-owner focus fence
+ *
+ * On narrow Material layouts the <table> can own horizontal scrolling.
+ * Keep the native table semantic and make its keyboard focus visible.
+ */
+.md-content
+  .md-typeset__table[data-pl-threat-scroll-region="true"]
+  > table[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: -2px;
+}
+
+/* Threat Model mobile table containment fence
+ *
+ * Material's table presentation intentionally uses an outer scroll wrapper
+ * with negative inline margins plus inner padding. On narrow Threat Model
+ * pages that can make .md-content itself wider than its viewport even though
+ * the table is independently scrollable.
+ *
+ * Keep horizontal scrolling owned by the table wrapper and prevent it from
+ * escaping the Threat Model content box. This is deliberately scoped and
+ * does not globally hide overflow.
+ */
+@media screen and (max-width: 44.9844em) {
+  .md-content:has(.pl-threat-subnav) .md-typeset__scrollwrap {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .md-content:has(.pl-threat-subnav)
+    .md-typeset__scrollwrap
+    > .md-typeset__table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding-inline: 0;
+    margin-inline: 0;
+    box-sizing: border-box;
+  }
+
+  .md-content:has(.pl-threat-subnav)
+    .md-typeset__scrollwrap
+    > .md-typeset__table
+    > table {
+    margin-inline: 0;
+  }
+}
+
+/* Threat Model static diagram authoritative sizing fence
+ *
+ * Overview/Architecture static illustrations use native <picture>.
+ * This rule intentionally overrides older diagram sizing inherited from the
+ * pre-canonical-layout implementation. Both wide and stacked assets already
+ * carry intrinsic width/height/viewBox geometry, so the browser may preserve
+ * their aspect ratio without JS layout mutation.
+ */
+.md-content .pl-threat-detail-diagram {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+  box-sizing: border-box;
+  contain: none;
+}
+
+.md-content .pl-threat-detail-diagram > picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.md-content .pl-threat-detail-diagram > picture > img {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 1px !important;
+
+  height: auto !important;
+  min-height: 1px !important;
+
+  margin: 0 !important;
+  box-sizing: border-box;
+  object-fit: contain;
+  object-position: center top;
+}
+
+@media screen and (min-width: 44.9845em) {
+  .md-content .pl-threat-detail-diagram > picture > img {
+    aspect-ratio: 1280 / 1120;
+  }
+}
+
+@media screen and (max-width: 44.9844em) {
+  .md-content .pl-threat-detail-diagram > picture > img {
+    aspect-ratio: 480 / 2360;
+  }
+}

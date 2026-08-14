@@ -33293,8 +33293,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "f49743f47f3275750aa4948ac2c21e5c5b33524a",
-          "head_tree": "9b65ea37207b42466f0d9a108405d2d2aba72379",
+          "head": "2e1606c709fb61cffb60db453c0a6120aea1de8b",
+          "head_tree": "a97e662ec24aee0f4b7d97052cf2f597fba5f621",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33976,7 +33976,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "505c972ae6014cccc716eb304f594b851a4c60ff4ca617feee54fd283c4ec007",
+        "documentation": "85a4b8b62730e76bd2072fe56f750d8c45383d811d31e6b1a5f65c063316e6e8",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -35443,9 +35443,23 @@
       "architecture_model": "architecture/metadata/pocket-lab-architecture.json",
       "contract": "contracts/generated/documentation-enterprise/security-poster.json",
       "implementation_status": "implemented",
+      "layout_engine": "canonical-security-layout-v2",
+      "layouts": [
+        "wide",
+        "stacked"
+      ],
       "live_monitoring": false,
-      "presentation_modes": [],
-      "source_model": "contracts/security/threat-model.json"
+      "presentation_modes": [
+        "understand",
+        "threats",
+        "controls"
+      ],
+      "source_model": "contracts/security/threat-model.json",
+      "variants": [
+        "overview",
+        "architecture",
+        "catalog"
+      ]
     },
     "supply_chain": {
       "existing_checker": "scripts/dev/check-supply-chain.sh",
@@ -35844,8 +35858,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "f49743f47f3275750aa4948ac2c21e5c5b33524a",
-        "head_tree": "9b65ea37207b42466f0d9a108405d2d2aba72379",
+        "head": "2e1606c709fb61cffb60db453c0a6120aea1de8b",
+        "head_tree": "a97e662ec24aee0f4b7d97052cf2f597fba5f621",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -85048,5 +85062,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "1ee667f2480c76cbc45158ed61474fbd95ecd37ec7be55e4f36b5b9aa8766fe2"
+  "source_fingerprint": "aa3a92d53e41ce9f68e48632d5f019468baeb65b9384ba2d6f3259fb5bbccf78"
 }

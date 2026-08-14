@@ -1453,10 +1453,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_layout.py",
+      "name": "tests/docs/test_threat_model_layout.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_layout.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_poster.py",
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-layout.spec.ts",
+      "name": "tests/docs/threat-model-layout.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-layout.spec.ts"
       ],
       "type": "test"
     },
@@ -1707,6 +1727,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0836aee864aa31c612cf977655bcd6ba040a10270b2edc3525a0e5f41a0a22c2"
+    "source_fingerprint": "61dd3f5622ac989557bcf2e3a0f44a0deed2a156bbb890aaa13e61894d3c96d0"
   }
 }

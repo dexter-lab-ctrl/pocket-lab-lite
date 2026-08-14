@@ -136,6 +136,7 @@ def safe(label: str, text: str) -> None:
 def inputs() -> list[Path]:
     paths = [GENERATOR, ROOT / "scripts/docs/enterprise/enterprise_completion.py", ROOT / "scripts/docs/enterprise/threat_model_experience.py", ROOT / "scripts/docs/release_model.py", ROOT / "security/threat-model-scenarios.json", ROOT / "scripts/docs/enterprise/supply_chain_automation.py", ROOT / "scripts/docs/enterprise/release_provenance.py", SCHEMA, TOOLS, PLATFORM, EXPERIENCE, KNOWLEDGE, INTELLIGENCE, OP_HEALTH, RUNTIME, ARCH, ASYNCAPI, OPENAPI, REASONS, RELEASES, ADRS, RELEASE_CHANGES_KB]
     paths.append(ROOT / "scripts/docs/enterprise/threat_model_poster.py")
+    paths.append(ROOT / "scripts/docs/enterprise/threat_model_layout.py")
     paths += sorted((ROOT / "tasks").glob("Taskfile*.yml"))
     paths += sorted((ROOT / "operations").glob("*.yaml"))
     paths += sorted((ROOT / "runbooks").glob("*.yaml"))

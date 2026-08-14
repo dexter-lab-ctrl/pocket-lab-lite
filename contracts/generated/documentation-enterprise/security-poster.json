@@ -629,6 +629,8 @@
     "no_synthetic_risk_score": true,
     "sanitized_input_required": true
   },
+  "layout_authority": "scripts/docs/enterprise/threat_model_layout.py",
+  "layout_engine": "canonical-security-layout-v2",
   "live_monitoring": false,
   "motion_semantics": [
     "gentle canonical-flow pulse",
@@ -1165,10 +1167,19 @@
       "y": 335
     }
   ],
+  "presentation_layouts": [
+    "wide",
+    "stacked"
+  ],
   "presentation_modes": [
     "understand",
     "threats",
     "controls"
+  ],
+  "presentation_variants": [
+    "overview",
+    "architecture",
+    "catalog"
   ],
   "schema_version": "1.0.0",
   "source_model": "contracts/security/threat-model.json",

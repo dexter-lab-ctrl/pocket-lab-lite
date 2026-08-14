@@ -30,8 +30,6 @@ for _script_root in (DOCS_SCRIPT_ROOT, ENTERPRISE_SCRIPT_ROOT):
 from threat_model_experience import (
     build_security_atlas,
     enrich as enrich_threat_model,
-    render_security_atlas_svg,
-    render_svg as render_threat_svg,
 )
 from threat_model_poster import (
     build_security_poster,
@@ -1327,7 +1325,7 @@ def render_threat_model_page(
     body += f'Promoted runtime release: **{posture.get("promoted_runtime_release","unobserved")}** · authority: **{posture.get("authority","promoted/canonical evidence only")}**.\n\n'
     body += '## Security Atlas\n\n'
     body += '<div class="pl-page-lede"><strong>Architecture is the map.</strong><p>Security Atlas explains threats, assets, controls, trust boundaries, reviewed attack paths and evidence. Every view is generated from the canonical security model; the presentation layer never becomes a truth source.</p></div>\n\n'
-    body += f'<figure class="pl-security-atlas-poster"><img src="{asset_prefix}/security-atlas.svg" alt="Pocket Lab Lite Security Atlas poster showing Architecture, Threat Atlas, System Atlas, Attack Surface Atlas, Control Atlas and Evidence Atlas" loading="lazy"><figcaption>Canonical source → deterministic projection → human review. No live monitoring or automatic exploit prediction.</figcaption></figure>\n\n'
+    body += f'<figure class="pl-security-atlas-poster"><picture><source media="(max-width: 44.9844em)" srcset="{asset_prefix}/security-atlas-mobile.svg"><img src="{asset_prefix}/security-atlas.svg" alt="Pocket Lab Lite Security Atlas architecture overlay generated from the canonical saved security projection" loading="lazy"></picture><figcaption>One canonical security projection → deterministic Catalog layout → human review. No live monitoring or automatic exploit prediction.</figcaption></figure>\n\n'
     body += '<div class="pl-atlas-toolbar" role="tablist" aria-label="Security Atlas views">'
     for index,view in enumerate(atlas.get("views", [])):
         selected='true' if index == 0 else 'false'
@@ -1353,8 +1351,8 @@ def render_threat_model_page(
         body += '</div></section>\n'
     body += '</div><aside class="pl-threat-detail pl-atlas-detail" id="threat-selection" aria-live="polite"><strong>Select a catalog entry</strong><p>Threats, controls, boundaries, assets and paths remain evidence-bound and source-derived.</p></aside></div>\n\n'
     body += '## Threat Model Diagram\n\n'
-    body += '<div class="pl-threat-toolbar" role="toolbar" aria-label="Threat model diagram controls"><button type="button" data-threat-mode="system" class="md-button md-button--primary">System</button><button type="button" data-threat-mode="controls" class="md-button">Controls</button><button type="button" data-threat-mode="attack-paths" class="md-button">Attack paths</button><button type="button" data-threat-mode="evidence" class="md-button">Evidence posture</button><button type="button" data-threat-motion="toggle" class="md-button">Pause animation</button></div>\n'
-    body += f'<div class="pl-threat-canvas"><object id="pl-threat-model-svg" data="{asset_prefix}/threat-model-detail.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite threat model diagram"><img src="{asset_prefix}/threat-model-detail.svg" alt="Pocket Lab Lite threat model diagram"></object><p class="pl-muted">Blue = modeled allowed/control flow · red dashed = selected modeled attack path · shields = controls. Motion never means live traffic.</p></div>\n\n'
+    body += '<div class="pl-threat-toolbar" role="toolbar" aria-label="Threat model diagram controls"><button type="button" data-threat-mode="system" class="md-button md-button--primary" aria-pressed="true">System</button><button type="button" data-threat-mode="controls" class="md-button" aria-pressed="false">Controls</button><button type="button" data-threat-mode="attack-paths" class="md-button" aria-pressed="false">Attack paths</button><button type="button" data-threat-mode="evidence" class="md-button" aria-pressed="false">Evidence posture</button><button type="button" data-threat-motion="toggle" class="md-button">Pause animation</button></div>\n'
+    body += f'<div class="pl-threat-canvas" role="region" aria-label="Pocket Lab Lite threat model diagram" tabindex="0"><object id="pl-threat-model-svg" data="{asset_prefix}/security-atlas.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite Security Atlas architecture overlay"><img src="{asset_prefix}/security-atlas.svg" alt="Pocket Lab Lite Security Atlas architecture overlay"></object><p class="pl-muted">Blue = modeled allowed/control flow · red dashed = selected modeled attack path · shields = controls. Motion never means live traffic.</p></div>\n\n'
     body += '### Attack-path explorer\n\n<div class="pl-threat-path-grid">\n'
     for path in threat.get("attack_paths", []):
         body += f'<button class="pl-threat-path-card" type="button" data-attack-path-id="{_html_text(path.get("id"))}"><span class="pl-card-kicker">{_html_text(path.get("id"))}</span><strong>{_html_text(path.get("name"))}</strong><small>{_html_text(" · ".join(path.get("stride",[])))}</small></button>\n'
@@ -1380,7 +1378,7 @@ def render_threat_model_page(
     body += '\nThese are **reviewed modeled attack-path scenarios**, not confirmed exploits.\n\n'
     body += '## Architecture integration\n\n'
     ai=threat.get("architecture_integration",{})
-    body += f'The diagram is an overlay on the [canonical Pocket Lab Lite Architecture](../../production/architecture/index.md). {ai.get("rule")} It currently binds **{ai.get("component_count",0)}** architecture components into the security view.\n\n'
+    body += f'The diagram is an overlay on the [canonical Pocket Lab Lite Architecture](../../production/architecture/index.md){{ .pl-threat-inline-link }}. {ai.get("rule")} It currently binds **{ai.get("component_count",0)}** architecture components into the security view.\n\n'
     body += '## Current evidence posture\n\n'
     body += table(["Signal","Boundary","State","Observed","Source"],[[x.get("signal"),x.get("boundary"),x.get("state"),x.get("observed"),x.get("source")] for x in posture.get("signals",[])])
     body += '\n## What this threat model does not do\n\n' + '\n'.join(f'- {x}' for x in threat.get("exclusions",[])) + '\n\n'
@@ -1417,7 +1415,10 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
         "source_model":poster.get("source_model"),
         "architecture_model":poster.get("architecture_model"),
         "live_monitoring":False,
-        "presentation_modes":[row.get("id") for row in poster.get("modes",[])],
+        "presentation_modes":list(poster.get("presentation_modes") or []),
+        "layout_engine":poster.get("layout_engine") or "canonical-security-layout-v2",
+        "layouts":list(poster.get("presentation_layouts") or []),
+        "variants":list(poster.get("presentation_variants") or []),
         "contract":"contracts/generated/documentation-enterprise/security-poster.json",
     }
     index["schema_version"]="2.0.0"; index["items"].update(updates); index["implementation_status"]="implemented"
@@ -1492,7 +1493,12 @@ def complete(root:Path, index:dict[str,Any], outputs:dict[Path,str], *, frontmat
     dr_rows=[(x['scenario']," → ".join(x['dependency_order'])) for x in disaster]
     assets={"event-flows":("Event encyclopedia flow",event_rows),"api-ui-trace":("API-to-UI trace",trace_rows),"data-lifecycle":("Data lifecycle and sanitization",privacy_rows),"adr-relationships":("ADR intelligence",adr_rows),"security-controls":("Threat/control coverage",control_rows),"disaster-recovery":("Disaster recovery dependency order",dr_rows)}
     for name,(title,rows) in assets.items(): outputs[diagrams/f"{name}.dot"]=flow_dot(title,rows); outputs[diagrams/f"{name}.svg"]=flow_svg(title,rows)
-    outputs[diagrams/"threat-model-detail.svg"] = render_threat_svg(threat)
-    outputs[diagrams/"threat-model.svg"] = render_security_poster_svg(poster)
-    outputs[diagrams/"security-atlas.svg"] = render_security_atlas_svg(atlas)
+    # One normalized security projection, one deterministic layout engine. Wide and stacked
+    # assets are generated for each presentation variant; no second topology/layout system.
+    outputs[diagrams/"threat-model.svg"] = render_security_poster_svg(poster, variant="overview", layout="wide")
+    outputs[diagrams/"threat-model-mobile.svg"] = render_security_poster_svg(poster, variant="overview", layout="stacked")
+    outputs[diagrams/"threat-model-detail.svg"] = render_security_poster_svg(poster, variant="architecture", layout="wide")
+    outputs[diagrams/"threat-model-detail-mobile.svg"] = render_security_poster_svg(poster, variant="architecture", layout="stacked")
+    outputs[diagrams/"security-atlas.svg"] = render_security_poster_svg(poster, variant="catalog", layout="wide")
+    outputs[diagrams/"security-atlas-mobile.svg"] = render_security_poster_svg(poster, variant="catalog", layout="stacked")
     return index,outputs

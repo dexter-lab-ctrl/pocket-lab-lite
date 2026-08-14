@@ -17,7 +17,7 @@ confidence: generated
 
 This is a security overlay on the [canonical Pocket Lab Lite Architecture](../../production/architecture/index.md). Architecture continues to own topology and component ownership; this page only adds threat-model context.
 
-<figure class="pl-generated-diagram pl-threat-detail-diagram"><img src="../../../assets/enterprise/threat-model-detail.svg" alt="Detailed Pocket Lab Lite threat architecture overlay" loading="eager" decoding="async"><figcaption>Detailed source-derived architecture overlay. Open the Overview for the museum-style Security Poster.</figcaption></figure>
+<figure class="pl-threat-detail-diagram"><picture><source media="(max-width: 44.9844em)" srcset="../../../assets/enterprise/threat-model-detail-mobile.svg"><img src="../../../assets/enterprise/threat-model-detail.svg" alt="Detailed Pocket Lab Lite threat architecture overlay" loading="eager" decoding="async"></picture><figcaption>Detailed source-derived architecture overlay. Open the Overview for the museum-style Security Poster.</figcaption></figure>
 
 ## Trust zones
 
