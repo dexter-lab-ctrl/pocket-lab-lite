@@ -23,7 +23,7 @@ Promoted runtime release: **lite-2026.08.12.2** · authority: **promoted/canonic
 
 <div class="pl-page-lede"><strong>Architecture is the map.</strong><p>Security Atlas explains threats, assets, controls, trust boundaries, reviewed attack paths and evidence. Every view is generated from the canonical security model; the presentation layer never becomes a truth source.</p></div>
 
-<figure class="pl-security-atlas-poster"><img src="../../../assets/enterprise/security-atlas.svg" alt="Pocket Lab Lite Security Atlas poster showing Architecture, Threat Atlas, System Atlas, Attack Surface Atlas, Control Atlas and Evidence Atlas" loading="lazy"><figcaption>Canonical source → deterministic projection → human review. No live monitoring or automatic exploit prediction.</figcaption></figure>
+<figure class="pl-security-atlas-poster"><picture><source media="(max-width: 44.9844em)" srcset="../../../assets/enterprise/security-atlas-mobile.svg"><img src="../../../assets/enterprise/security-atlas.svg" alt="Pocket Lab Lite Security Atlas architecture overlay generated from the canonical saved security projection" loading="lazy"></picture><figcaption>One canonical security projection → deterministic Catalog layout → human review. No live monitoring or automatic exploit prediction.</figcaption></figure>
 
 <div class="pl-atlas-toolbar" role="tablist" aria-label="Security Atlas views"><button type="button" class="md-button md-button--primary" role="tab" aria-selected="true" data-atlas-view="threats">Threat Atlas<span>54</span></button><button type="button" class="md-button" role="tab" aria-selected="false" data-atlas-view="system">System Atlas<span>19</span></button><button type="button" class="md-button" role="tab" aria-selected="false" data-atlas-view="attack-surface">Attack Surface Atlas<span>17</span></button><button type="button" class="md-button" role="tab" aria-selected="false" data-atlas-view="controls">Control Atlas<span>7</span></button><button type="button" class="md-button" role="tab" aria-selected="false" data-atlas-view="evidence">Evidence Atlas<span>41</span></button></div>
 <div class="pl-atlas-layout"><div class="pl-atlas-catalog">
@@ -179,8 +179,8 @@ Promoted runtime release: **lite-2026.08.12.2** · authority: **promoted/canonic
 
 ## Threat Model Diagram
 
-<div class="pl-threat-toolbar" role="toolbar" aria-label="Threat model diagram controls"><button type="button" data-threat-mode="system" class="md-button md-button--primary">System</button><button type="button" data-threat-mode="controls" class="md-button">Controls</button><button type="button" data-threat-mode="attack-paths" class="md-button">Attack paths</button><button type="button" data-threat-mode="evidence" class="md-button">Evidence posture</button><button type="button" data-threat-motion="toggle" class="md-button">Pause animation</button></div>
-<div class="pl-threat-canvas"><object id="pl-threat-model-svg" data="../../../assets/enterprise/threat-model-detail.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite threat model diagram"><img src="../../../assets/enterprise/threat-model-detail.svg" alt="Pocket Lab Lite threat model diagram"></object><p class="pl-muted">Blue = modeled allowed/control flow · red dashed = selected modeled attack path · shields = controls. Motion never means live traffic.</p></div>
+<div class="pl-threat-toolbar" role="toolbar" aria-label="Threat model diagram controls"><button type="button" data-threat-mode="system" class="md-button md-button--primary" aria-pressed="true">System</button><button type="button" data-threat-mode="controls" class="md-button" aria-pressed="false">Controls</button><button type="button" data-threat-mode="attack-paths" class="md-button" aria-pressed="false">Attack paths</button><button type="button" data-threat-mode="evidence" class="md-button" aria-pressed="false">Evidence posture</button><button type="button" data-threat-motion="toggle" class="md-button">Pause animation</button></div>
+<div class="pl-threat-canvas" role="region" aria-label="Pocket Lab Lite threat model diagram" tabindex="0"><object id="pl-threat-model-svg" data="../../../assets/enterprise/security-atlas.svg" type="image/svg+xml" aria-label="Interactive Pocket Lab Lite Security Atlas architecture overlay"><img src="../../../assets/enterprise/security-atlas.svg" alt="Pocket Lab Lite Security Atlas architecture overlay"></object><p class="pl-muted">Blue = modeled allowed/control flow · red dashed = selected modeled attack path · shields = controls. Motion never means live traffic.</p></div>
 
 ### Attack-path explorer
 
@@ -270,7 +270,7 @@ These are **reviewed modeled attack-path scenarios**, not confirmed exploits.
 
 ## Architecture integration
 
-The diagram is an overlay on the [canonical Pocket Lab Lite Architecture](../../production/architecture/index.md). Threat visualization nodes reference canonical architecture component ids; security overlays never redefine topology ownership. It currently binds **16** architecture components into the security view.
+The diagram is an overlay on the [canonical Pocket Lab Lite Architecture](../../production/architecture/index.md){ .pl-threat-inline-link }. Threat visualization nodes reference canonical architecture component ids; security overlays never redefine topology ownership. It currently binds **16** architecture components into the security view.
 
 ## Current evidence posture
 

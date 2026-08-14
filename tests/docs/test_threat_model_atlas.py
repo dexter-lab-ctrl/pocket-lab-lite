@@ -73,8 +73,11 @@ def test_generated_security_atlas_page_and_poster_are_accessible_and_source_boun
     ]:
         assert text in page
 
-    assert '<title id="sa-title">Pocket Lab Lite Security Atlas</title>' in poster
-    assert '<desc id="sa-desc">' in poster
+    assert 'data-layout-engine="canonical-security-layout-v2"' in poster
+    assert 'data-variant="catalog"' in poster
+    assert '<title id="poster-title">Pocket Lab Lite · Security Atlas Architecture Overlay</title>' in poster
+    assert '<desc id="poster-desc">' in poster
+    assert 'data-threat-legend="svg"' in poster
     assert 'role="img"' in poster
     assert not re.search(r'(?:href|xlink:href)=["\'](?:https?:)?//', poster, re.I)
 

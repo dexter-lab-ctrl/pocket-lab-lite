@@ -8659,6 +8659,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_threat_model_layout.py": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_threat_model_poster.py": [
         {
           "source": "domain:security",
@@ -16833,6 +16839,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_threat_model_layout.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_threat_model_poster.py",
           "type": "verified_by"
         },
@@ -18965,6 +18975,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0836aee864aa31c612cf977655bcd6ba040a10270b2edc3525a0e5f41a0a22c2"
+    "source_fingerprint": "61dd3f5622ac989557bcf2e3a0f44a0deed2a156bbb890aaa13e61894d3c96d0"
   }
 }

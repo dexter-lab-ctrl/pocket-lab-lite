@@ -19269,10 +19269,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_layout.py",
+      "name": "tests/docs/test_threat_model_layout.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_layout.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_poster.py",
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-layout.spec.ts",
+      "name": "tests/docs/threat-model-layout.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-layout.spec.ts"
       ],
       "type": "test"
     },
@@ -22095,7 +22115,9 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
@@ -22977,7 +22999,9 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
@@ -31761,6 +31785,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_threat_model_layout.py": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_threat_model_poster.py": [
         {
           "source": "domain:security",
@@ -39932,6 +39962,10 @@
         },
         {
           "target": "test:tests/docs/test_threat_model_atlas.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_threat_model_layout.py",
           "type": "verified_by"
         },
         {
@@ -54353,6 +54387,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_threat_model_layout.py"
+      ],
+      "id": "rel:a316053952428b22",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_threat_model_layout.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:600"
       ],
       "id": "rel:a32d30d12a8f3763",
@@ -61404,9 +61447,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "0836aee864aa31c612cf977655bcd6ba040a10270b2edc3525a0e5f41a0a22c2",
+  "source_fingerprint": "61dd3f5622ac989557bcf2e3a0f44a0deed2a156bbb890aaa13e61894d3c96d0",
   "statistics": {
-    "entity_count": 845,
+    "entity_count": 847,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61423,14 +61466,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 170,
+      "test": 172,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2139,
-    "source_count": 206
+    "relation_count": 2140,
+    "source_count": 208
   }
 }

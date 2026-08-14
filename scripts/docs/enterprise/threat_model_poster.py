@@ -303,6 +303,10 @@ def build_security_poster(threat: dict[str, Any], atlas: dict[str, Any]) -> dict
         "architecture_rule": str((threat.get("architecture_integration") or {}).get("rule") or "Security overlays never redefine architecture ownership."),
         "live_monitoring": False,
         "generated_intelligence": "deterministic-presentation-projection-only",
+        "layout_engine": "canonical-security-layout-v2",
+        "layout_authority": "scripts/docs/enterprise/threat_model_layout.py",
+        "presentation_layouts": ["wide", "stacked"],
+        "presentation_variants": ["overview", "architecture", "catalog"],
         "presentation_modes": list(PRESENTATION_MODES),
         "stride_lens": list(STRIDE),
         "motion_semantics": [
@@ -338,7 +342,9 @@ def build_security_poster(threat: dict[str, Any], atlas: dict[str, Any]) -> dict
     return poster
 
 
-def render_security_poster_svg(poster: dict[str, Any]) -> str:
+# Legacy renderer retained only as source-history compatibility. Active generation is bound
+# to threat_model_layout.render_security_projection_svg below.
+def _render_security_poster_svg_legacy_unused(poster: dict[str, Any]) -> str:
     nodes = {row["id"]: row for row in poster["nodes"]}
     width, height = 1200, 790
     parts = [
@@ -518,7 +524,7 @@ def render_threat_model_subpages(threat: dict[str, Any], poster: dict[str, Any])
     architecture += '<div class="pl-page-lede"><strong>The canonical architecture remains the map.</strong><p>This page explains where trust changes. The security layer annotates architecture component IDs and canonical flows; it does not create a second topology.</p></div>\n\n'
     architecture += '## Threat Model Diagram\n\n'
     architecture += 'This is a security overlay on the [canonical Pocket Lab Lite Architecture](../../production/architecture/index.md). Architecture continues to own topology and component ownership; this page only adds threat-model context.\n\n'
-    architecture += '<figure class="pl-generated-diagram pl-threat-detail-diagram"><img src="../../../assets/enterprise/threat-model-detail.svg" alt="Detailed Pocket Lab Lite threat architecture overlay" loading="eager" decoding="async"><figcaption>Detailed source-derived architecture overlay. Open the Overview for the museum-style Security Poster.</figcaption></figure>\n\n'
+    architecture += '<figure class="pl-threat-detail-diagram"><picture><source media="(max-width: 44.9844em)" srcset="../../../assets/enterprise/threat-model-detail-mobile.svg"><img src="../../../assets/enterprise/threat-model-detail.svg" alt="Detailed Pocket Lab Lite threat architecture overlay" loading="eager" decoding="async"></picture><figcaption>Detailed source-derived architecture overlay. Open the Overview for the museum-style Security Poster.</figcaption></figure>\n\n'
     architecture += "## Trust zones\n\n" + _table(
         ["Boundary", "Assets", "Controls", "Review"],
         [[row.get("label"), row.get("assets"), row.get("controls"), row.get("review_status")] for row in boundaries],
@@ -663,3 +669,14 @@ def render_threat_model_subpages(threat: dict[str, Any], poster: dict[str, Any])
         "assets-guardrails": {"title": "Assets & Guardrails", "description": "Protected assets and canonical forbidden architecture paths.", "body": guardrails},
         "evidence": {"title": "Evidence & Provenance", "description": "Promoted/canonical evidence lineage for the saved threat model.", "body": evidence},
     }
+
+
+# Sole production renderer for Overview, Architecture and Catalog. The normalized poster
+# projection is the shared input; variant/layout only change deterministic presentation.
+from threat_model_layout import render_security_projection_svg as _render_security_projection_svg
+
+
+def render_security_poster_svg(
+    poster: dict[str, Any], *, variant: str = "overview", layout: str = "wide"
+) -> str:
+    return _render_security_projection_svg(poster, variant=variant, layout=layout)
