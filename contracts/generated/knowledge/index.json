@@ -19269,6 +19269,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_boundary_ux_polish.py",
+      "name": "tests/docs/test_threat_model_boundary_ux_polish.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_boundary_ux_polish.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_enterprise_ux.py",
       "name": "tests/docs/test_threat_model_enterprise_ux.py",
       "source_refs": [
@@ -19293,6 +19303,16 @@
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-boundary-ux-polish.spec.ts",
+      "name": "tests/docs/threat-model-boundary-ux-polish.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-boundary-ux-polish.spec.ts"
       ],
       "type": "test"
     },
@@ -22135,9 +22155,11 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_boundary_ux_polish.py",
         "test:tests/docs/test_threat_model_enterprise_ux.py",
         "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-boundary-ux-polish.spec.ts",
         "test:tests/docs/threat-model-enterprise-ux.spec.ts",
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
@@ -23021,9 +23043,11 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_boundary_ux_polish.py",
         "test:tests/docs/test_threat_model_enterprise_ux.py",
         "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-boundary-ux-polish.spec.ts",
         "test:tests/docs/threat-model-enterprise-ux.spec.ts",
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
@@ -61471,9 +61495,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "bdb643f79b416458e2b62092fc3f9f586218cc7500f8851de73664cdd29274e6",
+  "source_fingerprint": "fb40236a100b087d6abbfb308007b6581197081d4bc4b072771516a28ba12a88",
   "statistics": {
-    "entity_count": 849,
+    "entity_count": 851,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61490,7 +61514,7 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 174,
+      "test": 176,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
@@ -61498,6 +61522,6 @@
       "vocabulary": 39
     },
     "relation_count": 2140,
-    "source_count": 210
+    "source_count": 212
   }
 }

@@ -53,7 +53,9 @@ test('Threat Model enterprise labels drill into detail pages and remain mobile-s
 
   await page.goto(EVIDENCE_ZONE);
   await expect(page.getByRole('heading', { name: 'Promoted evidence → documentation' })).toBeVisible();
-  await expect(page.getByText('not promoted into a new canonical threat boundary')).toBeVisible();
+  await expect(
+    page.getByText('does not create a tenth canonical threat boundary')
+  ).toBeVisible();
   if (testInfo.project.name === 'docs-mobile') await noHorizontalOverflow(page);
 
   await page.goto(OVERVIEW);

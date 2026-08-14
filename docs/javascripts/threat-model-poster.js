@@ -359,3 +359,96 @@
   if (typeof document$ !== 'undefined') document$.subscribe(enhance);
   else document.addEventListener('DOMContentLoaded', enhance);
 })();
+
+
+/* Threat Model fullscreen routing guard.
+ * Desktop always opens a new named tab; mobile/touch keeps the existing in-page overlay.
+ * This corrects viewport-only classification without adding polling or runtime I/O.
+ */
+(() => {
+  const ROOT = '[data-pl-threat-poster="true"]';
+  const OPEN = '[data-threat-fullscreen="open"]';
+  const CLOSE = '[data-threat-fullscreen="close"]';
+  const MOBILE_WIDTH = '(max-width: 44.9844em)';
+  const COARSE_POINTER = '(pointer: coarse)';
+  const QUERY = 'poster-fullscreen';
+  const POPUP_PREFIX = 'pocketlab-threat-poster-';
+  let popupSequence = 0;
+
+  const isMobilePresentation = () => (
+    Boolean(window.matchMedia?.(MOBILE_WIDTH).matches)
+    && (
+      Number(navigator.maxTouchPoints || 0) > 0
+      || Boolean(window.matchMedia?.(COARSE_POINTER).matches)
+    )
+  );
+
+  const isDesktopPosterPopup = () => window.name.startsWith(POPUP_PREFIX);
+
+  const updateOpenLabel = () => {
+    const open = document.querySelector(OPEN);
+    if (!open) return;
+    open.textContent = isMobilePresentation() ? 'Full screen' : 'Open in new tab';
+    open.setAttribute(
+      'aria-label',
+      isMobilePresentation()
+        ? 'View Security Architecture Poster full screen'
+        : 'Open Security Architecture Poster full screen in a new tab',
+    );
+  };
+
+  const cancelSameTabDesktopFullscreen = () => {
+    if (isMobilePresentation() || isDesktopPosterPopup()) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get(QUERY) !== '1') return;
+    const root = document.querySelector(ROOT);
+    root?.classList.remove('is-fullscreen');
+    root?.removeAttribute('role');
+    root?.removeAttribute('aria-modal');
+    root?.removeAttribute('aria-label');
+    document.documentElement.dataset.plThreatFullscreen = 'false';
+    url.searchParams.delete(QUERY);
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  };
+
+  const openDesktopPoster = (link) => {
+    popupSequence += 1;
+    const name = `${POPUP_PREFIX}${Date.now()}-${popupSequence}`;
+    window.open(link.href, name, 'noopener,noreferrer');
+  };
+
+  if (!window.__plThreatFullscreenRoutingBound) {
+    window.__plThreatFullscreenRoutingBound = true;
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!target || typeof target.closest !== 'function') return;
+      const close = target.closest(CLOSE);
+      if (close && !isMobilePresentation() && isDesktopPosterPopup()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.close();
+        return;
+      }
+      const open = target.closest(OPEN);
+      if (!open || isMobilePresentation()) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openDesktopPoster(open);
+    }, true);
+
+    const media = window.matchMedia?.(MOBILE_WIDTH);
+    media?.addEventListener?.('change', updateOpenLabel);
+  }
+
+  const enhance = () => {
+    updateOpenLabel();
+    cancelSameTabDesktopFullscreen();
+  };
+
+  if (typeof document$ !== 'undefined') document$.subscribe(enhance);
+  else document.addEventListener('DOMContentLoaded', enhance);
+})();

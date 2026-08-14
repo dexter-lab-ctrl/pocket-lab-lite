@@ -1453,6 +1453,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_boundary_ux_polish.py",
+      "name": "tests/docs/test_threat_model_boundary_ux_polish.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_boundary_ux_polish.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_enterprise_ux.py",
       "name": "tests/docs/test_threat_model_enterprise_ux.py",
       "source_refs": [
@@ -1477,6 +1487,16 @@
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-boundary-ux-polish.spec.ts",
+      "name": "tests/docs/threat-model-boundary-ux-polish.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-boundary-ux-polish.spec.ts"
       ],
       "type": "test"
     },
@@ -1747,6 +1767,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bdb643f79b416458e2b62092fc3f9f586218cc7500f8851de73664cdd29274e6"
+    "source_fingerprint": "fb40236a100b087d6abbfb308007b6581197081d4bc4b072771516a28ba12a88"
   }
 }
