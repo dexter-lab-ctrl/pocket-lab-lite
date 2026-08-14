@@ -15,6 +15,8 @@ KNOWLEDGE = ROOT / "contracts/generated/knowledge"
 SCHEMAS = ROOT / "schemas/knowledge"
 DEV = ROOT / "docs/generated/development/knowledge"
 PROD = ROOT / "docs/generated/production/knowledge"
+ENTERPRISE_KB = ROOT / "docs/generated/enterprise/knowledgebase"
+KNOWLEDGE_ASSETS = ROOT / "docs/generated/assets/knowledge"
 GENERATOR = ROOT / "scripts/docs/knowledge/generate_knowledge.py"
 RUNTIME_BASELINE = ROOT / "contracts/parity/runtime-verification-baseline.json"
 MKDOCS = ROOT / "mkdocs.yml"
@@ -313,3 +315,105 @@ def test_mkdocs_release_nav_is_generator_owned_and_complete():
             assert path in block
         stale = set(re.findall(r"generated/(?:development|production)/knowledge/releases/[^\s]+\.md", block))
         assert stale == expected
+
+
+def test_knowledge_graph_is_enterprise_knowledgebase_surface(graph):
+    page = ENTERPRISE_KB / "knowledge-graph.md"
+    assert page.exists()
+    assert not (DEV / "knowledge-graph.md").exists()
+    text = page.read_text(encoding="utf-8")
+    assert "# Knowledge Graph" in text
+    assert 'class="pl-kpi-grid pl-kg-kpis"' in text
+    assert "## Graph integrity" in text
+    assert "## Entity taxonomy" in text
+    assert "## Relation taxonomy" in text
+    assert "## Domain connectivity" in text
+    assert "## Explore an entity" in text
+    assert "## Go deeper" in text
+    assert "## AI-ready canonical graph" in text
+    assert str(len(graph["entities"])) in text
+    assert str(len(graph["relations"])) in text
+
+    nav = MKDOCS.read_text(encoding="utf-8")
+    assert "Knowledge Graph: generated/enterprise/knowledgebase/knowledge-graph.md" in nav
+    assert "generated/development/knowledge/knowledge-graph.md" not in nav
+
+
+def test_knowledge_graph_explorer_projection_is_bounded_and_provenance_preserving(graph):
+    payload = json.loads((KNOWLEDGE_ASSETS / "knowledge-graph-explorer.json").read_text(encoding="utf-8"))
+    assert payload["source"] == "contracts/generated/knowledge/index.json"
+    assert payload["live_runtime"] is False
+    assert payload["max_hops"] == 1
+    assert len(payload["entities"]) == len(graph["entities"])
+    assert len(payload["relations"]) == len(graph["relations"])
+    entity_ids = {entity["id"] for entity in payload["entities"]}
+    assert entity_ids == {entity["id"] for entity in graph["entities"]}
+    assert all(relation["source"] in entity_ids and relation["target"] in entity_ids for relation in payload["relations"])
+    canonical_relations = {relation["id"]: relation for relation in graph["relations"]}
+    for relation in payload["relations"]:
+        canonical = canonical_relations[relation["id"]]
+        assert relation["type"] == canonical["type"]
+        assert relation["evidence"] == canonical["evidence"]
+        assert relation["derivation"]["method"] == "deterministic-canonical-correlation"
+        assert relation["derivation"]["generator"] == "scripts/docs/knowledge/generate_knowledge.py"
+
+
+def test_knowledge_graph_integrity_projection_matches_canonical_graph(graph):
+    page = (ENTERPRISE_KB / "knowledge-graph.md").read_text(encoding="utf-8")
+    entity_ids = {entity["id"] for entity in graph["entities"]}
+    dangling = [
+        relation for relation in graph["relations"]
+        if relation["source"] not in entity_ids or relation["target"] not in entity_ids
+    ]
+    entities_with_sources = sum(bool(entity.get("source_refs")) for entity in graph["entities"])
+    relations_with_evidence = sum(bool(relation.get("evidence")) for relation in graph["relations"])
+    assert not dangling
+    assert f"{entities_with_sources} / {len(graph['entities'])}" in page
+    assert f"{relations_with_evidence} / {len(graph['relations'])}" in page
+    assert "Dangling relations</span><strong>0</strong>" in page
+    assert "Unsupported predicates</span><strong>0</strong>" in page
+
+
+def test_knowledge_graph_ontology_svg_is_static_bounded_and_external_runtime_free():
+    svg = (KNOWLEDGE_ASSETS / "knowledge-graph-ontology.svg").read_text(encoding="utf-8")
+    assert "Pocket Lab Lite bounded knowledge graph ontology" in svg
+    assert "Entity taxonomy" in svg
+    assert "Relation taxonomy" in svg
+    assert "Domain mapping" in svg
+    assert "<script" not in svg.lower()
+    assert "foreignObject" not in svg
+    assert 'href="http' not in svg.lower()
+    assert 'xlink:href="http' not in svg.lower()
+    assert svg.count('<rect class="panel"') == 3
+
+
+def test_knowledge_graph_accessibility_contract_is_deterministic():
+    page = ROOT / "docs/generated/enterprise/knowledgebase/knowledge-graph.md"
+    text = page.read_text(encoding="utf-8")
+    assert 'width="1200" height="470" loading="eager" decoding="async"' in text
+    assert 'loading="lazy"' not in text
+    assert 'role="region" aria-label="Knowledge Graph domain connectivity table" tabindex="0"' in text
+
+    css = (ROOT / "docs/stylesheets/intelligence.css").read_text(encoding="utf-8")
+    assert ".pl-kg-domain-table .md-typeset__table { overflow: visible; }" in css
+    assert ".pl-kg-taxonomy-card .pl-card-kicker" in css
+    assert ".pl-kg-result small" in css
+
+
+def test_knowledge_graph_explorer_javascript_is_static_one_hop_and_has_fail_closed_guards():
+    script = (ROOT / "docs/javascripts/docs.js").read_text(encoding="utf-8")
+    start = script.index("const enhanceKnowledgeGraph")
+    end = script.index("const enhanceAudienceIdentity", start)
+    block = script[start:end]
+    assert "generated/assets/knowledge/knowledge-graph-explorer.json" in block
+    assert "payload.max_hops !== 1" in block
+    assert "payload.live_runtime !== false" in block
+    assert "dangling browser projection relation" in block
+    assert "entity count mismatch" in block
+    assert "relation count mismatch" in block
+    assert "credentials: 'same-origin'" in block
+    assert "api.github.com" not in block
+    assert "/api/lite/" not in block
+    assert "nats://" not in block
+    for forbidden in ("setInterval(", "setTimeout(", "requestAnimationFrame(", "WebSocket(", "EventSource("):
+        assert forbidden not in block

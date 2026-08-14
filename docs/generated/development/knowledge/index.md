@@ -7,7 +7,7 @@ confidence: generated
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/knowledge/generate_knowledge.py
-generator_version: 2
+generator_version: 3
 ---
 
 # Living Pocket Lab Lite knowledgebase
@@ -33,7 +33,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | runtime-topology | 9 |
 | subject | 201 |
 | table | 44 |
-| test | 167 |
+| test | 168 |
 | threat-boundary | 9 |
 | threat-model | 9 |
 | troubleshooting | 23 |

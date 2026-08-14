@@ -2,8 +2,8 @@
   "baseline_readiness": {
     "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
     "candidate_count": 1,
-    "head": "b8224fb277af3a515472850470f1c56e30c8c593",
-    "head_tree": "f0f6332e18f98f9fb946c29a877237112ddfaf62",
+    "head": "c6035c3fa317b8b5a854fa85475d19c1dbb12ae5",
+    "head_tree": "ea089d2f91d6fbab15d97d0cb8219426c501b6bf",
     "reason": "no second verified canonical release is available for release-to-release comparison",
     "selected_baseline": null,
     "status": "not-ready"

@@ -7,7 +7,7 @@ confidence: verified
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/knowledge/generate_knowledge.py
-generator_version: 2
+generator_version: 3
 ---
 
 # Identity, authentication, and invite guards

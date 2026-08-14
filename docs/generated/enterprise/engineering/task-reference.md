@@ -1145,7 +1145,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 ## `lite:docs:knowledge:check`
 
-**Purpose:** Check knowledge schemas, graph integrity, links, sanitization, and generated drift
+**Purpose:** Check knowledge schemas, graph integrity, Enterprise Knowledgebase graph projection, links, sanitization, and generated drift
 
 **Audience:** developer
 
@@ -1179,7 +1179,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 ## `lite:docs:knowledge:generate`
 
-**Purpose:** Generate the living Pocket Lab Lite knowledge graph, AI export, and Development/Production pages
+**Purpose:** Generate the living Pocket Lab Lite knowledge graph, AI export, Development/Production pages, and Enterprise Knowledgebase graph projection
 
 **Audience:** developer
 

@@ -239,12 +239,12 @@ tasks:
       - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all'
 
   lite:docs:knowledge:generate:
-    desc: Generate the living Pocket Lab Lite knowledge graph, AI export, and Development/Production pages
+    desc: Generate the living Pocket Lab Lite knowledge graph, AI export, Development/Production pages, and Enterprise Knowledgebase graph projection
     cmds:
       - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py generate'
 
   lite:docs:knowledge:check:
-    desc: Check knowledge schemas, graph integrity, links, sanitization, and generated drift
+    desc: Check knowledge schemas, graph integrity, Enterprise Knowledgebase graph projection, links, sanitization, and generated drift
     cmds:
       - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py check'
 

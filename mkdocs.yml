@@ -243,6 +243,7 @@ nav:
           - Current limitations: generated/production/limitations.md
   - Knowledgebase:
       - Overview: generated/enterprise/knowledgebase/index.md
+      - Knowledge Graph: generated/enterprise/knowledgebase/knowledge-graph.md
       - Components: generated/production/knowledge/index.md
       - How Pocket Lab Works: generated/production/knowledge/journeys.md
       - Troubleshooting: generated/production/knowledge/troubleshooting.md
@@ -375,7 +376,6 @@ nav:
           - Freshness: generated/development/knowledge/freshness.md
           - Vocabulary: generated/development/knowledge/vocabulary.md
           - Glossary: generated/development/knowledge/glossary.md
-          - Knowledge graph: generated/development/knowledge/knowledge-graph.md
       - Setup:
           - Repository and WSL2: generated/development/repository-setup.md
           - Local services: generated/development/local-services.md
