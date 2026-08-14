@@ -284,3 +284,78 @@
   if (typeof document$ !== 'undefined') document$.subscribe(enhance);
   else document.addEventListener('DOMContentLoaded', enhance);
 })();
+
+/* Fullscreen Security Architecture Poster.
+ * Desktop uses the native target=_blank link; mobile keeps the user on the same
+ * page. The query-param view in the new desktop tab enters the same local overlay.
+ */
+(() => {
+  const ROOT = '[data-pl-threat-poster="true"]';
+  const MOBILE = '(max-width: 44.9844em)';
+  const QUERY = 'poster-fullscreen';
+  let previousFocus = null;
+
+  const setFullscreen = (root, active) => {
+    if (!root) return;
+    root.classList.toggle('is-fullscreen', active);
+    document.documentElement.dataset.plThreatFullscreen = String(active);
+    if (active) {
+      previousFocus = document.activeElement;
+      root.setAttribute('role', 'dialog');
+      root.setAttribute('aria-modal', 'true');
+      root.setAttribute('aria-label', 'Pocket Lab Lite Security Architecture Poster full screen');
+      root.querySelector('[data-threat-fullscreen="close"]')?.focus();
+    } else {
+      root.removeAttribute('role');
+      root.removeAttribute('aria-modal');
+      root.removeAttribute('aria-label');
+      previousFocus?.focus?.();
+    }
+  };
+
+  const closeFullscreen = (root) => {
+    const url = new URL(window.location.href);
+    const standalone = url.searchParams.get(QUERY) === '1';
+    if (standalone && !window.matchMedia?.(MOBILE).matches) window.close();
+    url.searchParams.delete(QUERY);
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    setFullscreen(root, false);
+  };
+
+  const enhance = () => {
+    const root = document.querySelector(ROOT);
+    if (!root || root.dataset.plFullscreenBound === 'true') return;
+    root.dataset.plFullscreenBound = 'true';
+    const open = root.querySelector('[data-threat-fullscreen="open"]');
+    if (!open) return;
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'md-button pl-threat-fullscreen-close';
+    close.dataset.threatFullscreen = 'close';
+    close.textContent = 'Close ×';
+    close.addEventListener('click', () => closeFullscreen(root));
+    root.querySelector('.pl-threat-poster-head')?.append(close);
+
+    open.addEventListener('click', (event) => {
+      if (!window.matchMedia?.(MOBILE).matches) return;
+      event.preventDefault();
+      setFullscreen(root, true);
+    });
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.get(QUERY) === '1') setFullscreen(root, true);
+  };
+
+  if (!window.__plThreatFullscreenEscapeBound) {
+    window.__plThreatFullscreenEscapeBound = true;
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const root = document.querySelector(`${ROOT}.is-fullscreen`);
+      if (root) closeFullscreen(root);
+    });
+  }
+
+  if (typeof document$ !== 'undefined') document$.subscribe(enhance);
+  else document.addEventListener('DOMContentLoaded', enhance);
+})();

@@ -609,8 +609,27 @@ def test_threat_model_svg_is_semantic_architecture_integrated_and_not_live():
     text = (ROOT / "docs/generated/assets/enterprise/threat-model.svg").read_text(encoding="utf-8")
     for token in ["data-node=", "data-control=", "data-attack-path=", "Modeled flow — not live traffic", "prefers-reduced-motion"]:
         assert token in text
-    for icon in ["fastapi.svg", "nats.svg", "tailscale.svg", "android.svg", "photoprism.svg"]:
-        assert icon in text
+    # Threat Model brand icons are embedded into the generated SVG so the
+    # projection remains self-contained when rendered through <object>,
+    # <picture>, or <img>. Do not require filesystem icon filenames here.
+    assert 'class="brand-icon"' in text
+    assert 'href="data:image/svg+xml;base64,' in text
+
+    # Representative canonical systems must still be present as semantic
+    # nodes; icon embedding must not weaken architecture integration.
+    for node in [
+        "lite-api",
+        "nats-jetstream",
+        "tailscale",
+        "managed-device",
+        "photoprism",
+    ]:
+        assert f'data-node="{node}"' in text
+
+    # Embedded brand assets must remain self-contained. Browser rendering of
+    # generated Threat Model SVGs must not depend on remote/network resources.
+    assert 'href="http://' not in text
+    assert 'href="https://' not in text
 
 
 def test_threat_model_progressive_enhancement_never_polls_network():

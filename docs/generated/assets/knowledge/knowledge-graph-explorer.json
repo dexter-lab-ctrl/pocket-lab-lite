@@ -8744,6 +8744,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_enterprise_ux.py",
+      "name": "tests/docs/test_threat_model_enterprise_ux.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_enterprise_ux.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_layout.py",
       "name": "tests/docs/test_threat_model_layout.py",
       "source_refs": [
@@ -8759,6 +8770,17 @@
       "name": "tests/docs/test_threat_model_poster.py",
       "source_refs": [
         "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-enterprise-ux.spec.ts",
+      "name": "tests/docs/threat-model-enterprise-ux.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-enterprise-ux.spec.ts"
       ],
       "type": "test"
     },

@@ -965,3 +965,149 @@
     aspect-ratio: 480 / 2360;
   }
 }
+
+/* Threat Model enterprise interaction fence: readable cue drill-down, progressive
+ * disclosure, fullscreen presentation, and a mobile selection sheet. Scoped to
+ * Threat Model surfaces; no global overflow masking or runtime polling. */
+.pl-threat-section-toggle {
+  float: right;
+  min-height: 2rem;
+  margin: -.2rem 0 .1rem .65rem;
+  padding: .28rem .55rem;
+  border: 1px solid var(--pl-border);
+  border-radius: 999px;
+  background: var(--pl-surface-raised);
+  color: var(--md-default-fg-color);
+  font: inherit;
+  font-size: .64rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.pl-threat-section-toggle:hover,
+.pl-threat-section-toggle:focus-visible {
+  border-color: var(--md-accent-fg-color);
+  outline: 2px solid color-mix(in srgb, var(--md-accent-fg-color) 28%, transparent);
+  outline-offset: 2px;
+}
+.pl-threat-section-body {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  clear: both;
+}
+.pl-threat-section-body[hidden] { display: none !important; }
+
+.pl-threat-detail-close {
+  display: none;
+  position: absolute;
+  top: .45rem;
+  right: .45rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--pl-border);
+  border-radius: 50%;
+  background: var(--pl-surface-raised);
+  color: var(--md-default-fg-color);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.pl-threat-boundary-action {
+  display: inline-flex;
+  margin-top: .7rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: .16em;
+}
+
+.pl-threat-fullscreen-close { display: none; }
+html[data-pl-threat-fullscreen="true"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: color-mix(in srgb, #07101f 76%, transparent);
+  backdrop-filter: blur(3px);
+}
+.pl-threat-poster.is-fullscreen {
+  position: fixed;
+  inset: clamp(.35rem, 1.5vw, 1rem);
+  z-index: 9999;
+  width: auto;
+  max-width: none;
+  max-height: calc(100dvh - clamp(.7rem, 3vw, 2rem));
+  margin: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--md-default-bg-color);
+  box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, .38);
+}
+.pl-threat-poster.is-fullscreen .pl-threat-fullscreen-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.pl-threat-poster.is-fullscreen .pl-threat-poster-layout {
+  grid-template-columns: minmax(0, 3fr) minmax(17rem, 1fr);
+}
+.pl-threat-poster.is-fullscreen .pl-threat-poster-canvas object,
+.pl-threat-poster.is-fullscreen .pl-threat-poster-canvas img {
+  width: 100%;
+  min-height: 0;
+}
+
+@media screen and (max-width: 44.9844em) {
+  .pl-threat-section-toggle {
+    float: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.5rem;
+    margin: .35rem 0 .2rem;
+  }
+
+  .pl-threat-detail[data-open="true"] {
+    display: block;
+    position: fixed;
+    top: 4.1rem;
+    left: .65rem;
+    right: .65rem;
+    z-index: 1100;
+    max-height: min(46dvh, 25rem);
+    overflow: auto;
+    padding-right: 2.85rem;
+    border-color: var(--md-accent-fg-color);
+    box-shadow: 0 .9rem 2.5rem rgba(0, 0, 0, .28);
+  }
+  .pl-threat-detail[data-open="true"] .pl-threat-detail-close { display: grid; place-items: center; }
+  .pl-threat-poster-detail:not([data-open="true"]),
+  .pl-atlas-detail:not([data-open="true"]) { display: none; }
+
+  .pl-threat-poster.is-fullscreen {
+    inset: .25rem;
+    max-height: calc(100dvh - .5rem);
+    padding: .55rem;
+  }
+  .pl-threat-poster.is-fullscreen .pl-threat-poster-layout { grid-template-columns: minmax(0, 1fr); }
+  .pl-threat-poster.is-fullscreen .pl-threat-poster-canvas { contain: none; }
+  .pl-threat-poster.is-fullscreen .pl-threat-poster-canvas object,
+  .pl-threat-poster.is-fullscreen .pl-threat-poster-canvas img { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-threat-section-toggle { transition: none; }
+  html[data-pl-threat-fullscreen="true"] body::before { backdrop-filter: none; }
+}
+
+@media print {
+  .pl-threat-section-toggle,
+  .pl-threat-detail-close,
+  .pl-threat-fullscreen-close,
+  [data-threat-fullscreen="open"] { display: none !important; }
+  .pl-threat-section-body[hidden] { display: block !important; }
+  .pl-threat-poster.is-fullscreen { position: static; max-height: none; overflow: visible; box-shadow: none; }
+  html[data-pl-threat-fullscreen="true"] body::before { display: none; }
+}
