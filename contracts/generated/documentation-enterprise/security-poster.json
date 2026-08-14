@@ -1,0 +1,1233 @@
+{
+  "architecture_model": "architecture/metadata/pocket-lab-architecture.json",
+  "architecture_rule": "Threat visualization nodes reference canonical architecture component ids; security overlays never redefine topology ownership.",
+  "atlas_contract": "contracts/security/threat-model.json",
+  "attack_paths": [
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "control-plane bypass",
+        "loss of expected audit/control ownership",
+        "unauthorized command injection"
+      ],
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "AP-01",
+      "name": "Browser control-plane bypass",
+      "path_nodes": [
+        "browser",
+        "nats-jetstream",
+        "worker"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Spoofing",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "host mutation",
+        "runtime integrity loss",
+        "secret exposure"
+      ],
+      "controls": [
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "AP-02",
+      "name": "Browser shell execution",
+      "path_nodes": [
+        "browser",
+        "lite-api",
+        "server-host"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "audit attribution failure",
+        "command execution under a forged identity",
+        "unauthorized device enrollment"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "AP-03",
+      "name": "Forged managed-device identity",
+      "path_nodes": [
+        "managed-device",
+        "lite-api",
+        "nats-jetstream",
+        "node-agent"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Spoofing",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "device availability impact",
+        "incorrect or repeated device commands",
+        "loss of command integrity"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "AP-04",
+      "name": "Messaging command tampering or replay",
+      "path_nodes": [
+        "lite-api",
+        "nats-jetstream",
+        "worker",
+        "node-agent"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Denial of Service",
+        "Repudiation",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "compromised release execution",
+        "dependency or artifact integrity loss",
+        "misleading release posture"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "id": "AP-05",
+      "name": "Supply-chain artifact compromise",
+      "path_nodes": [
+        "github-release",
+        "release-artifacts",
+        "server-host"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "incorrect security posture",
+        "loss of evidence trust",
+        "secret or private-path disclosure"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "id": "AP-06",
+      "name": "Evidence poisoning",
+      "path_nodes": [
+        "scanner-evidence",
+        "promoted-evidence",
+        "documentation"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Information Disclosure",
+        "Repudiation",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "availability impact",
+        "service exposure",
+        "unexpected control-plane reachability"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "id": "AP-07",
+      "name": "Tailnet/private-network exposure",
+      "path_nodes": [
+        "private-network",
+        "tailscale",
+        "caddy",
+        "lite-api"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Denial of Service",
+        "Information Disclosure",
+        "Spoofing"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "loss of recovery evidence integrity",
+        "recovery unavailability",
+        "unsafe restore decisions"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-API-CONTROL"
+      ],
+      "id": "AP-08",
+      "name": "Recovery state tampering",
+      "path_nodes": [
+        "sqlite",
+        "recovery-state",
+        "lite-api"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Denial of Service",
+        "Repudiation",
+        "Tampering"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "messaging-execution"
+      ],
+      "description": "FastAPI remains the frontend-facing control API.",
+      "id": "CTRL-API-CONTROL",
+      "short_label": "API AUTH",
+      "status": "control-observed",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 445,
+      "y": 405
+    },
+    {
+      "boundaries": [
+        "browser",
+        "messaging-execution"
+      ],
+      "description": "Frontend does not connect directly to NATS.",
+      "id": "CTRL-BROWSER-NATS",
+      "short_label": "NO NATS",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 160,
+      "y": 405
+    },
+    {
+      "boundaries": [
+        "browser"
+      ],
+      "description": "Frontend does not execute shell commands.",
+      "id": "CTRL-BROWSER-SHELL",
+      "short_label": "NO SHELL",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 255,
+      "y": 405
+    },
+    {
+      "boundaries": [
+        "durable-state",
+        "external-release",
+        "server-host"
+      ],
+      "description": "Runtime/scanner evidence is sanitized before canonical documentation ingestion.",
+      "id": "CTRL-EVIDENCE-SANITIZE",
+      "short_label": "SANITIZE",
+      "status": "control-observed",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 465,
+      "y": 745
+    },
+    {
+      "boundaries": [
+        "managed-device",
+        "messaging-execution",
+        "server-host"
+      ],
+      "description": "Workers, agents and supervisors own execution and recovery.",
+      "id": "CTRL-EXECUTION-OWNERS",
+      "short_label": "EXEC OWN",
+      "status": "control-observed",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 795,
+      "y": 405
+    },
+    {
+      "boundaries": [
+        "durable-state",
+        "external-release",
+        "server-host"
+      ],
+      "description": "Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote.",
+      "id": "CTRL-EXPLICIT-PROMOTION",
+      "short_label": "PROMOTE",
+      "status": "control-observed",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 610,
+      "y": 745
+    },
+    {
+      "boundaries": [
+        "application-container",
+        "external-release"
+      ],
+      "description": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
+      "id": "CTRL-SUPPLY-CHAIN",
+      "short_label": "SUPPLY",
+      "status": "control-observed",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 285,
+      "y": 180
+    }
+  ],
+  "evidence_lineage": [
+    {
+      "id": "runtime",
+      "label": "Promoted runtime baseline",
+      "source": "contracts/parity/runtime-verification-baseline.json"
+    },
+    {
+      "id": "health",
+      "label": "Domain operational health",
+      "source": "contracts/generated/runtime/domain-operational-health.json"
+    },
+    {
+      "id": "dependencies",
+      "label": "Dependency health",
+      "source": "contracts/generated/documentation-intelligence/dependency-health.json"
+    },
+    {
+      "id": "supply-chain",
+      "label": "Normalized scanner/SBOM evidence",
+      "source": "contracts/generated/supply-chain"
+    },
+    {
+      "id": "threat-posture",
+      "label": "Threat posture projection",
+      "source": "contracts/generated/documentation-enterprise/threat-posture.json"
+    },
+    {
+      "id": "diagram",
+      "label": "Threat model diagram",
+      "source": "docs/generated/assets/enterprise/threat-model.svg"
+    }
+  ],
+  "flows": [
+    {
+      "core": true,
+      "from": "browser",
+      "id": "flow-01",
+      "kind": "allowed-flow",
+      "label": "HTTPS",
+      "to": "caddy"
+    },
+    {
+      "core": true,
+      "from": "caddy",
+      "id": "flow-02",
+      "kind": "allowed-flow",
+      "label": "same-origin",
+      "to": "lite-api"
+    },
+    {
+      "core": true,
+      "from": "lite-api",
+      "id": "flow-03",
+      "kind": "allowed-flow",
+      "label": "commands/events",
+      "to": "nats-jetstream"
+    },
+    {
+      "core": true,
+      "from": "nats-jetstream",
+      "id": "flow-04",
+      "kind": "allowed-flow",
+      "label": "JetStream",
+      "to": "worker"
+    },
+    {
+      "core": true,
+      "from": "worker",
+      "id": "flow-05",
+      "kind": "allowed-flow",
+      "label": "execution",
+      "to": "node-agent"
+    },
+    {
+      "core": false,
+      "from": "node-agent",
+      "id": "flow-06",
+      "kind": "allowed-flow",
+      "label": "recovery",
+      "to": "agent-supervisor"
+    },
+    {
+      "core": false,
+      "from": "managed-device",
+      "id": "flow-07",
+      "kind": "allowed-flow",
+      "label": "device identity/agent",
+      "to": "node-agent"
+    },
+    {
+      "core": false,
+      "from": "agent-supervisor",
+      "id": "flow-08",
+      "kind": "allowed-flow",
+      "label": "PM2 supervision",
+      "to": "server-host"
+    },
+    {
+      "core": false,
+      "from": "lite-api",
+      "id": "flow-09",
+      "kind": "allowed-flow",
+      "label": "durable state",
+      "to": "sqlite"
+    },
+    {
+      "core": false,
+      "from": "worker",
+      "id": "flow-10",
+      "kind": "allowed-flow",
+      "label": "app lifecycle",
+      "to": "photoprism"
+    },
+    {
+      "core": false,
+      "from": "photoprism",
+      "id": "flow-11",
+      "kind": "allowed-flow",
+      "label": "hosted runtime",
+      "to": "server-host"
+    },
+    {
+      "core": false,
+      "from": "private-network",
+      "id": "flow-12",
+      "kind": "allowed-flow",
+      "label": "private access",
+      "to": "tailscale"
+    },
+    {
+      "core": false,
+      "from": "tailscale",
+      "id": "flow-13",
+      "kind": "allowed-flow",
+      "label": "remote HTTPS",
+      "to": "caddy"
+    },
+    {
+      "core": false,
+      "from": "github-release",
+      "id": "flow-14",
+      "kind": "allowed-flow",
+      "label": "release",
+      "to": "release-artifacts"
+    },
+    {
+      "core": false,
+      "from": "release-artifacts",
+      "id": "flow-15",
+      "kind": "allowed-flow",
+      "label": "explicit install/update",
+      "to": "server-host"
+    },
+    {
+      "core": false,
+      "from": "scanner-evidence",
+      "id": "flow-16",
+      "kind": "allowed-flow",
+      "label": "sanitize + promote",
+      "to": "promoted-evidence"
+    },
+    {
+      "core": false,
+      "from": "server-host",
+      "id": "flow-17",
+      "kind": "allowed-flow",
+      "label": "sanitized runtime evidence",
+      "to": "promoted-evidence"
+    },
+    {
+      "core": false,
+      "from": "promoted-evidence",
+      "id": "flow-18",
+      "kind": "allowed-flow",
+      "label": "deterministic projection",
+      "to": "documentation"
+    },
+    {
+      "core": false,
+      "from": "sqlite",
+      "id": "flow-19",
+      "kind": "allowed-flow",
+      "label": "backup/recovery metadata",
+      "to": "recovery-state"
+    },
+    {
+      "core": false,
+      "from": "recovery-state",
+      "id": "flow-20",
+      "kind": "allowed-flow",
+      "label": "safe projection",
+      "to": "lite-api"
+    }
+  ],
+  "forbidden_flows": [
+    {
+      "boundaries": [
+        "application-container",
+        "browser",
+        "control-api",
+        "durable-state",
+        "external-release",
+        "managed-device",
+        "messaging-execution",
+        "private-network",
+        "server-host"
+      ],
+      "from": "browser",
+      "id": "forbidden-01",
+      "label": "Browser → NATS",
+      "statement": "frontend → NATS",
+      "to": "nats-jetstream"
+    },
+    {
+      "boundaries": [
+        "application-container",
+        "browser",
+        "control-api",
+        "durable-state",
+        "external-release",
+        "managed-device",
+        "messaging-execution",
+        "private-network",
+        "server-host"
+      ],
+      "from": "browser",
+      "id": "forbidden-02",
+      "label": "Browser → shell",
+      "statement": "frontend → shell",
+      "to": "server-host"
+    },
+    {
+      "boundaries": [
+        "application-container",
+        "browser",
+        "control-api",
+        "durable-state",
+        "external-release",
+        "managed-device",
+        "messaging-execution",
+        "private-network",
+        "server-host"
+      ],
+      "from": "documentation",
+      "id": "forbidden-03",
+      "label": "Docs → live runtime",
+      "statement": "documentation generator → live runtime",
+      "to": "server-host"
+    },
+    {
+      "boundaries": [
+        "application-container",
+        "browser",
+        "control-api",
+        "durable-state",
+        "external-release",
+        "managed-device",
+        "messaging-execution",
+        "private-network",
+        "server-host"
+      ],
+      "from": "scanner-evidence",
+      "id": "forbidden-04",
+      "label": "Raw scanner → docs",
+      "statement": "raw scanner output → MkDocs",
+      "to": "documentation"
+    }
+  ],
+  "generated_intelligence": "deterministic-presentation-projection-only",
+  "guardrails": {
+    "human_review_required": true,
+    "no_live_runtime": true,
+    "no_network_fetch": true,
+    "no_synthetic_risk_score": true,
+    "sanitized_input_required": true
+  },
+  "live_monitoring": false,
+  "motion_semantics": [
+    "gentle canonical-flow pulse",
+    "selected modeled attack-path tracing",
+    "selected control halo",
+    "focus fade transitions"
+  ],
+  "nodes": [
+    {
+      "architecture_component": "agent-supervisor",
+      "assets": [
+        "agent state",
+        "bootstrap state",
+        "device identity"
+      ],
+      "boundary": "managed-device",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "icon": "supervisor.svg",
+      "id": "agent-supervisor",
+      "label": "Supervisor",
+      "posture": "control-partial",
+      "role": "recovery supervision",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 1040,
+      "y": 505
+    },
+    {
+      "architecture_component": "pwa",
+      "assets": [
+        "PWA session/UI state",
+        "safe snapshots"
+      ],
+      "boundary": "browser",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-BROWSER-NATS",
+        "CTRL-BROWSER-SHELL"
+      ],
+      "icon": "react.svg",
+      "id": "browser",
+      "label": "Browser / PWA",
+      "posture": "control-observed",
+      "role": "request and presentation",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 100,
+      "y": 335
+    },
+    {
+      "architecture_component": "caddy",
+      "assets": [
+        "PM2 services",
+        "Termux runtime",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "icon": "caddy.svg",
+      "id": "caddy",
+      "label": "Caddy",
+      "posture": "control-partial",
+      "role": "same-origin proxy",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 270,
+      "y": 335
+    },
+    {
+      "architecture_component": "completion-evidence",
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "icon": "docs.svg",
+      "id": "documentation",
+      "label": "Documentation",
+      "posture": "evidence-stale",
+      "role": "static evidence projection",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 690,
+      "y": 690
+    },
+    {
+      "architecture_component": "github-release",
+      "assets": [
+        "SBOM",
+        "dist.zip",
+        "provenance",
+        "release manifest"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "icon": "github.svg",
+      "id": "github-release",
+      "label": "GitHub Release",
+      "posture": "control-observed",
+      "role": "release source",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 115,
+      "y": 115
+    },
+    {
+      "architecture_component": "lite-api",
+      "assets": [
+        "API request/response contracts",
+        "authorization/context"
+      ],
+      "boundary": "control-api",
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "icon": "fastapi.svg",
+      "id": "lite-api",
+      "label": "FastAPI",
+      "posture": "control-observed",
+      "role": "control authority",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 445,
+      "y": 335
+    },
+    {
+      "architecture_component": "node-agent",
+      "assets": [
+        "agent state",
+        "bootstrap state",
+        "device identity"
+      ],
+      "boundary": "managed-device",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "icon": "android.svg",
+      "id": "managed-device",
+      "label": "Managed device",
+      "posture": "control-partial",
+      "role": "joined edge device",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 1040,
+      "y": 245
+    },
+    {
+      "architecture_component": "nats-jetstream",
+      "assets": [
+        "commands",
+        "durable consumers",
+        "events"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-BROWSER-NATS",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "icon": "nats.svg",
+      "id": "nats-jetstream",
+      "label": "NATS / JetStream",
+      "posture": "control-partial",
+      "role": "message transport",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 620,
+      "y": 335
+    },
+    {
+      "architecture_component": "node-agent",
+      "assets": [
+        "agent state",
+        "bootstrap state",
+        "device identity"
+      ],
+      "boundary": "managed-device",
+      "controls": [
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "icon": "agent.svg",
+      "id": "node-agent",
+      "label": "Node agent",
+      "posture": "control-partial",
+      "role": "device execution",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 1040,
+      "y": 375
+    },
+    {
+      "architecture_component": "photoprism",
+      "assets": [
+        "PhotoPrism runtime/config",
+        "app route"
+      ],
+      "boundary": "application-container",
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "icon": "photoprism.svg",
+      "id": "photoprism",
+      "label": "PhotoPrism",
+      "posture": "control-observed",
+      "role": "managed app runtime",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 590,
+      "y": 535
+    },
+    {
+      "architecture_component": "tailscale",
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "icon": "network.svg",
+      "id": "private-network",
+      "label": "Private network",
+      "posture": "control-observed",
+      "role": "private access boundary",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 625,
+      "y": 115
+    },
+    {
+      "architecture_component": "completion-evidence",
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "icon": "evidence.svg",
+      "id": "promoted-evidence",
+      "label": "Promoted evidence",
+      "posture": "evidence-stale",
+      "role": "sanitized canonical evidence",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 470,
+      "y": 690
+    },
+    {
+      "architecture_component": "recovery-state",
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "icon": "recovery.svg",
+      "id": "recovery-state",
+      "label": "Recovery state",
+      "posture": "evidence-stale",
+      "role": "backup / restore evidence",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 220,
+      "y": 535
+    },
+    {
+      "architecture_component": "release-artifacts",
+      "assets": [
+        "SBOM",
+        "dist.zip",
+        "provenance",
+        "release manifest"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "icon": "release.svg",
+      "id": "release-artifacts",
+      "label": "Release artifacts",
+      "posture": "control-observed",
+      "role": "release bundle",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 270,
+      "y": 115
+    },
+    {
+      "architecture_component": "security-profiles",
+      "assets": [
+        "SBOM",
+        "dist.zip",
+        "provenance",
+        "release manifest"
+      ],
+      "boundary": "external-release",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "icon": "trivy.svg",
+      "id": "scanner-evidence",
+      "label": "Scanner / SBOM",
+      "posture": "control-observed",
+      "role": "normalized SBOM / scanner evidence",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 425,
+      "y": 115
+    },
+    {
+      "architecture_component": "pm2",
+      "assets": [
+        "PM2 services",
+        "Termux runtime",
+        "local secrets"
+      ],
+      "boundary": "server-host",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "icon": "terminal.svg",
+      "id": "server-host",
+      "label": "Termux host",
+      "posture": "control-partial",
+      "role": "Termux process host",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 780,
+      "y": 535
+    },
+    {
+      "architecture_component": "sqlite",
+      "assets": [
+        "SQLite state",
+        "audit evidence",
+        "backup metadata"
+      ],
+      "boundary": "durable-state",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "icon": "sqlite.svg",
+      "id": "sqlite",
+      "label": "SQLite",
+      "posture": "evidence-stale",
+      "role": "durable control state",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 400,
+      "y": 535
+    },
+    {
+      "architecture_component": "tailscale",
+      "assets": [
+        "Tailnet connectivity",
+        "same-origin remote access"
+      ],
+      "boundary": "private-network",
+      "controls": [],
+      "icon": "tailscale.svg",
+      "id": "tailscale",
+      "label": "Tailscale",
+      "posture": "control-observed",
+      "role": "Tailnet transport",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 785,
+      "y": 115
+    },
+    {
+      "architecture_component": "worker",
+      "assets": [
+        "commands",
+        "durable consumers",
+        "events"
+      ],
+      "boundary": "messaging-execution",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-BROWSER-NATS",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "icon": "python.svg",
+      "id": "worker",
+      "label": "Worker",
+      "posture": "control-partial",
+      "role": "execution orchestration",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 795,
+      "y": 335
+    }
+  ],
+  "presentation_modes": [
+    "understand",
+    "threats",
+    "controls"
+  ],
+  "schema_version": "1.0.0",
+  "source_model": "contracts/security/threat-model.json",
+  "stride_lens": [
+    "Spoofing",
+    "Tampering",
+    "Repudiation",
+    "Information Disclosure",
+    "Denial of Service",
+    "Elevation of Privilege"
+  ],
+  "zones": [
+    {
+      "h": 155,
+      "id": "external-release",
+      "label": "External release / supply chain",
+      "w": 500,
+      "x": 35,
+      "y": 35
+    },
+    {
+      "h": 155,
+      "id": "private-network",
+      "label": "Private network / Tailnet",
+      "w": 320,
+      "x": 560,
+      "y": 35
+    },
+    {
+      "h": 220,
+      "id": "control-plane",
+      "label": "Browser → control API → messaging / execution",
+      "w": 850,
+      "x": 35,
+      "y": 225
+    },
+    {
+      "h": 405,
+      "id": "managed-edge",
+      "label": "Managed device / edge",
+      "w": 245,
+      "x": 915,
+      "y": 175
+    },
+    {
+      "h": 145,
+      "id": "runtime-state",
+      "label": "Application / host / durable state",
+      "w": 735,
+      "x": 150,
+      "y": 470
+    },
+    {
+      "h": 105,
+      "id": "evidence",
+      "label": "Promoted evidence → documentation",
+      "w": 480,
+      "x": 365,
+      "y": 635
+    }
+  ]
+}

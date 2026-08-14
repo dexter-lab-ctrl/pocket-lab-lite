@@ -8744,6 +8744,28 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_poster.py",
+      "name": "tests/docs/test_threat_model_poster.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_poster.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/threat-model-poster.spec.ts",
+      "name": "tests/docs/threat-model-poster.spec.ts",
+      "source_refs": [
+        "tests/docs/threat-model-poster.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/global-setup.ts",
       "name": "tests/e2e/global-setup.ts",
       "source_refs": [
@@ -20882,6 +20904,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/threat-model-poster.spec.ts"
+      ],
+      "id": "rel:5ca6929d8eaebf69",
+      "source": "domain:security",
+      "target": "test:tests/docs/threat-model-poster.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
@@ -31263,6 +31299,20 @@
       "source": "domain:unknown",
       "target": "subject:pocketlab.commands.unknown",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_threat_model_poster.py"
+      ],
+      "id": "rel:b6afdd1e969c00f2",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_threat_model_poster.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

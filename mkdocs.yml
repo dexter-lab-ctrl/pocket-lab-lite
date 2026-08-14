@@ -110,6 +110,7 @@ extra_javascript:
   - javascripts/mermaid-local.js
   - javascripts/docs.js
   - javascripts/threat-model.js
+  - javascripts/threat-model-poster.js
 
 nav:
   - Home: index.md
@@ -263,6 +264,13 @@ nav:
       - Applications: generated/production/architecture/apps.md
   - Threat Model:
       - Overview: generated/enterprise/threat-model/index.md
+      - Architecture & Trust Zones: generated/enterprise/threat-model/architecture.md
+      - STRIDE Lens: generated/enterprise/threat-model/stride.md
+      - Modeled Attack Paths: generated/enterprise/threat-model/attack-paths.md
+      - Controls: generated/enterprise/threat-model/controls.md
+      - Assets & Guardrails: generated/enterprise/threat-model/assets-guardrails.md
+      - Evidence & Provenance: generated/enterprise/threat-model/evidence.md
+      - Security Atlas Catalog: generated/enterprise/threat-model/catalog.md
       - Application Containers: generated/enterprise/threat-model/application-container.md
       - Browser Boundary: generated/enterprise/threat-model/browser.md
       - Control API: generated/enterprise/threat-model/control-api.md

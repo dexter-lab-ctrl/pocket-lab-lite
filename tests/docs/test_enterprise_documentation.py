@@ -41,17 +41,71 @@ def test_tool_metadata_keeps_heavy_work_off_termux():
     assert meta['execution_policy']['docs_check_runs_heavy_tools'] is False
 
 
-def test_threat_model_page_exposes_framework_controls_paths_exclusions_and_architecture_link():
-    page=(ROOT/'docs/generated/enterprise/threat-model/index.md').read_text(encoding='utf-8')
-    for heading in [
-        '## Threat Model Diagram', '## Threat framework', '## How Pocket Lab applies STRIDE',
-        '## Three truth layers', '## Security controls', '## Where controls are used',
-        '## Modeled attack paths', '## What this threat model does not do',
-        '## Consequences of not threat modelling', '## Evidence lineage', '## Human review required',
+def test_threat_model_experience_preserves_reference_content_across_split_pages():
+    base = ROOT / "docs/generated/enterprise/threat-model"
+
+    overview = (base / "index.md").read_text(encoding="utf-8")
+    architecture = (base / "architecture.md").read_text(encoding="utf-8")
+    stride = (base / "stride.md").read_text(encoding="utf-8")
+    controls = (base / "controls.md").read_text(encoding="utf-8")
+    attack_paths = (base / "attack-paths.md").read_text(encoding="utf-8")
+    evidence = (base / "evidence.md").read_text(encoding="utf-8")
+    catalog = (base / "catalog.md").read_text(encoding="utf-8")
+
+    # Landing page stays intentionally simple and poster-oriented.
+    for marker in [
+        "# Threat Model",
+        "How Pocket Lab protects control",
+        "## Explore the model",
+        "## Model provenance",
+        'data-threat-poster-mode="understand"',
+        'data-threat-guardrails="toggle"',
     ]:
-        assert heading in page
-    assert '../../production/architecture/index.md' in page
-    assert 'not live monitoring' in page.lower()
+        assert marker in overview
+
+    # Detailed reference material remains present, but is distributed to
+    # purpose-built pages instead of being duplicated on the landing page.
+    for heading in [
+        "## Threat Model Diagram",
+        "## Trust zones",
+        "## Architecture ownership",
+    ]:
+        assert heading in architecture
+
+    for heading in [
+        "## Threat framework",
+        "## STRIDE definitions",
+        "## How Pocket Lab applies STRIDE",
+        "## Three truth layers",
+    ]:
+        assert heading in stride
+
+    for heading in [
+        "# Security controls",
+        "## Control evidence",
+        "## Where controls are used",
+    ]:
+        assert heading in controls
+
+    for heading in [
+        "# Modeled attack paths",
+        "## Review table",
+    ]:
+        assert heading in attack_paths
+
+    for heading in [
+        "## Evidence lineage",
+        "## Current promoted evidence posture",
+        "## Truth boundary",
+        "## What this threat model does not do",
+        "## Consequences of not threat modelling",
+        "## Human review required",
+    ]:
+        assert heading in evidence
+
+    assert "Security Atlas Catalog" in catalog
+    assert "../../production/architecture/index.md" in architecture
+    assert "not a live monitor" in overview.lower()
 
 
 def test_release_assurance_page_separates_evidence_authorities():

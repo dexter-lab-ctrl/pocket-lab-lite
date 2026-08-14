@@ -56,7 +56,7 @@ def test_security_atlas_covers_threats_system_attack_surface_controls_and_eviden
 
 
 def test_generated_security_atlas_page_and_poster_are_accessible_and_source_bound():
-    page = (ROOT / "docs/generated/enterprise/threat-model/index.md").read_text(encoding="utf-8")
+    page = (ROOT / "docs/generated/enterprise/threat-model/catalog.md").read_text(encoding="utf-8")
     poster = (ROOT / "docs/generated/assets/enterprise/security-atlas.svg").read_text(encoding="utf-8")
 
     for text in [
