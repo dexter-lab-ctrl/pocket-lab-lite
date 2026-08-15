@@ -4,6 +4,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CHECKER = ROOT / "scripts/docs/check_docs_runtime_network_fence.py"
 OVERRIDE = ROOT / "docs/overrides/partials/source.html"
+RELEASE_BADGE = ROOT / "docs/overrides/partials/release-badge.html"
+RELEASES = ROOT / "contracts/generated/knowledge/releases.json"
 
 
 def test_runtime_network_fence_exists_and_fails_closed():
@@ -27,6 +29,44 @@ def test_repository_source_override_remains_passive():
     assert "XMLHttpRequest" not in source
     assert "WebSocket" not in source
     assert "EventSource" not in source
+
+
+def test_repository_source_release_is_static_and_promoted():
+    import json
+
+    source = OVERRIDE.read_text(encoding="utf-8")
+    badge = RELEASE_BADGE.read_text(encoding="utf-8")
+    releases = json.loads(RELEASES.read_text(encoding="utf-8"))
+
+    promoted = [
+        item
+        for item in releases.get("items", [])
+        if item.get("confidence") == "release-promoted"
+        and item.get("sanitized") is True
+    ]
+
+    assert promoted
+    expected = max(
+        promoted,
+        key=lambda item: (
+            str(item.get("promoted_at") or ""),
+            str(item.get("name") or ""),
+        ),
+    )["name"]
+
+    assert '{% include "partials/release-badge.html" %}' in source
+    assert 'class="pl-source-release"' in badge
+    assert f'data-pl-release="{expected}"' in badge
+    assert f">{expected}</span>" in badge
+
+    # Restoring the release label must not restore Material's
+    # runtime hosting-provider source component.
+    combined = source + badge
+    assert 'data-md-component="source"' not in combined
+    assert "api.github.com" not in combined
+    assert "fetch(" not in combined
+    assert "XMLHttpRequest" not in combined
+
 
 
 def test_mermaid_runtime_is_repository_owned_and_pinned():

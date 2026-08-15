@@ -14766,6 +14766,24 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "SOURCE_RELEASE_BADGE",
+      "production": false,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "SOURCE_ROOT",
       "production": false,
       "required": false,
