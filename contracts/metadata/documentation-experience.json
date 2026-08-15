@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "product_name": "Pocket Lab Lite Documentation",
-  "information_architecture": ["understand", "operate", "evidence", "develop", "release", "reference"],
+  "information_architecture": ["start-here", "use", "operate", "understand", "build-test", "security-assurance", "release-change", "reference", "documentation-platform"],
   "page_anatomy": {
     "evidence": ["status-strip", "summary", "why-it-matters", "evidence", "provenance", "technical-details", "next-step"],
     "domain": ["summary", "current-health", "what-user-sees", "how-it-works", "dependencies", "capabilities", "evidence", "limitations", "failure-recovery", "provenance"],
@@ -49,7 +49,15 @@
     "remote-access": ["tailscale", "tailnet", "remote access not ready"],
     "security": ["safety", "lynis", "trivy", "safety check"],
     "operational-health": ["health", "degraded", "unavailable", "stale"],
-    "release-impact": ["what changed", "release delta", "change impact"]
+    "release-impact": ["what changed", "release delta", "change impact"],
+    "add device": ["join device", "device invite", "enroll device", "bootstrap device"],
+    "backup restore": ["backup", "restore", "recovery", "preview restore"],
+    "app install": ["install app", "photoprism install", "app catalog"],
+    "api frontend": ["api ui", "frontend api", "api to ui"],
+    "event nats": ["nats event", "jetstream event", "event encyclopedia"],
+    "why do we believe this": ["evidence", "evidence coverage", "provenance", "confidence"],
+    "documentation generator": ["docs generator", "documentation platform", "generation lifecycle"],
+    "release changed": ["what changed", "release delta", "upgrade impact"]
   },
   "responsive": {
     "reading_width_ch": 78,
@@ -79,5 +87,9 @@
     "no-continuous-decorative-animation",
     "no-raw-secrets-private-paths-or-runtime-identities",
     "no-heavy-monitoring-stack-in-documentation"
-  ]
+  ],
+  "audiences": ["user", "operator", "developer", "tester", "security-reviewer", "release-reviewer", "documentation-maintainer"],
+  "intents": ["learn", "use", "operate", "build", "test", "diagnose", "audit", "reference"],
+  "page_types": ["overview", "guide", "journey", "architecture", "reference", "runbook", "evidence", "catalog", "handbook"],
+  "authorities": ["canonical-source", "promoted-evidence", "derived", "human-review"]
 }

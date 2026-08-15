@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 0a14f0c090c5d23f4fb59a5a99d7cb0b7d640fb5b066684cfeb086b260df570a
+source_fingerprint: d2c746aef06578690fde91eed58cee472bf9824cb8897cea21662a62a0f1fb12
 schema_revision: 1
 validation_status: generated
 ---
@@ -69,6 +69,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate`
 - `lite:docs:health:check`
 - `lite:docs:health:generate`
+- `lite:docs:ia:check`
+- `lite:docs:ia:generate`
 - `lite:docs:intelligence:check`
 - `lite:docs:intelligence:generate`
 - `lite:docs:knowledge:ai-export`
@@ -214,6 +216,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:runtime-network:check`
 - `lite:docs:check` → `lite:docs:runtime:check`
 - `lite:docs:check` → `lite:docs:tools:check`
+- `lite:docs:enterprise:check` → `lite:docs:ia:check`
 - `lite:docs:generate` → `lite:contracts:generate`
 - `lite:docs:generate` → `lite:docs:architecture:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`

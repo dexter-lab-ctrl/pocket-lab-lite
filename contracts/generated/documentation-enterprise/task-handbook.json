@@ -936,6 +936,7 @@
       "captures_runtime": false,
       "commands": [
         "{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check",
+        "task lite:docs:ia:check",
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py"
       ],
       "dependencies": [],
@@ -957,8 +958,10 @@
       "name": "lite:docs:enterprise:check",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Check enterprise Documentation Platform determinism, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections",
-      "related_tasks": [],
+      "purpose": "Check enterprise Documentation Platform determinism, IA, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections",
+      "related_tasks": [
+        "lite:docs:ia:check"
+      ],
       "repository_mutation": true,
       "requires_termux": false,
       "requires_wsl2": false,
@@ -1241,6 +1244,88 @@
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "not-a-validation-task",
       "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py check",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_ia.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:ia:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/enterprise/documentation_ia.py",
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "name": "lite:docs:ia:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Check Documentation Platform IA determinism, canonical navigation ownership, bounded relationships, search destinations, and redaction fences",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Documentation loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py generate"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:ia:generate",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/enterprise/documentation_ia.py"
+      ],
+      "name": "lite:docs:ia:generate",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Generate deterministic Documentation Platform IA hubs, feature journeys, page inventory, cross-links, and static search metadata",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Documentation loop"
     },
     {
       "aliases": [],

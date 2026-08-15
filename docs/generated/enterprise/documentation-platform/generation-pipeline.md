@@ -1,14 +1,18 @@
 ---
-title: "Generation Pipeline"
-description: "Deterministic source/evidence generation pipeline."
+title: "Generation lifecycle"
+description: "Deterministic documentation generation and explicit evidence-promotion boundary."
 generated: true
 audience: development
 page_type: reference
 confidence: generated
 ---
 
-# Generation Pipeline
+# Generation lifecycle
 
-`canonical source → sanitized/promoted evidence → generated contracts → intelligence/knowledge → MkDocs`
+`repository source → canonical contracts → explicit runtime/security capture → sanitization → explicit promotion → deterministic generation → validation → MkDocs`
 
-`task lite:docs:sync` regenerates and checks documentation only; it never captures or promotes runtime evidence and never runs heavy scanners.
+## Hard boundary
+
+`task lite:docs:sync` regenerates/checks documentation. It does not capture runtime, promote evidence, run heavy scanners, or access secrets.
+
+Generated output remains derived and reproducible; it never becomes source authority.

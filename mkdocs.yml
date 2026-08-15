@@ -113,400 +113,182 @@ extra_javascript:
   - javascripts/threat-model-poster.js
 
 nav:
-  - Home: index.md
-  - Understand: generated/experience/understand.md
+  - Start Here:
+      - Overview: generated/enterprise/hubs/start-here.md
+      - What is Pocket Lab Lite?: index.md
+      - Quick start: getting-started/android-termux.md
+      - Key concepts: generated/production/knowledge/vocabulary.md
+      - Glossary: generated/production/knowledge/glossary.md
+  - Use:
+      - Overview: generated/enterprise/hubs/use.md
+      - Current tabs: generated/production/tabs.md
+      - Devices: generated/production/devices.md
+      - Apps: generated/production/apps.md
+      - Security & Safety: generated/production/security.md
+      - Backup & Restore: generated/production/recovery.md
+      - Identity: generated/production/identity.md
+      - Rules: generated/production/rules.md
+      - Feature Journeys:
+          - Devices: generated/enterprise/journeys/devices.md
+          - Apps: generated/enterprise/journeys/apps.md
+          - Security & Safety: generated/enterprise/journeys/security.md
+          - Backup & Restore: generated/enterprise/journeys/recovery.md
+          - Identity: generated/enterprise/journeys/identity.md
   - Operate:
-      - Overview: generated/production/index.md
+      - Overview: generated/enterprise/hubs/operate.md
       - Current health: generated/production/intelligence/current-health.md
       - Fleet readiness: generated/production/intelligence/fleet-readiness.md
       - Recovery readiness: generated/production/intelligence/recovery-readiness.md
-      - Known limitations: generated/production/intelligence/known-limitations.md
+      - Install & access:
+          - Installation: generated/production/installation.md
+          - Upgrade and release verification: generated/production/upgrade.md
+          - Android and Termux: generated/production/android-termux.md
+          - Android runtime verification: generated/production/android-termux-runtime.md
+          - Caddy and same-origin access: generated/production/caddy-access.md
+          - Remote access: generated/production/remote-access.md
+          - Remote access runtime verification: generated/production/remote-access-runtime.md
+      - Remote Access Journey: generated/enterprise/journeys/remote-access.md
+      - Services & PM2: generated/production/services-pm2.md
+      - Health & diagnostics: generated/production/health-diagnostics.md
+      - Incident runbooks: generated/enterprise/operate/incident-runbooks.md
+      - Troubleshooting: generated/enterprise/operate/troubleshooting.md
+      - Disaster recovery: generated/enterprise/reference/disaster-recovery.md
+      - Data retention: generated/production/data-retention.md
+      - Known limitations: generated/production/limitations.md
       - Supported platforms: generated/production/intelligence/supported-platforms.md
-      - Living knowledgebase:
-          - Start here: generated/production/knowledge/index.md
+  - Understand:
+      - Overview: generated/enterprise/hubs/understand.md
+      - System architecture: generated/production/architecture/index.md
+      - Enterprise architecture: generated/enterprise/architecture/index.md
+      - Complete system map: generated/production/architecture/complete-system.md
+      - Request and control flow: generated/production/architecture/request-control.md
+      - Runtime topology: generated/production/architecture/runtime-topology.md
+      - Trust boundaries: generated/production/architecture/network-boundaries.md
+      - Data & projections: generated/production/architecture/data-projections.md
+      - Event flows: generated/development/knowledge/events-nats.md
+      - Device lifecycle: generated/production/architecture/device-onboarding.md
+      - App lifecycle: generated/production/architecture/apps.md
+      - Component catalog: generated/production/architecture/component-catalog.md
+      - Living Knowledgebase:
+          - Overview: generated/production/knowledge/index.md
           - Current health: generated/production/knowledge/current-health.md
           - How Pocket Lab works: generated/production/knowledge/journeys.md
           - Troubleshooting: generated/production/knowledge/troubleshooting.md
           - Known issues: generated/production/knowledge/known-issues.md
-          - Releases:
-              - Overview: generated/production/knowledge/releases.md
-              # BEGIN GENERATED KNOWLEDGE RELEASE NAV: production
-              - lite-2026.08.12.2: generated/production/knowledge/releases/lite-2026-08-12-2.md
-              # END GENERATED KNOWLEDGE RELEASE NAV: production
           - Supported platforms: generated/production/knowledge/supported-platforms.md
           - Security model: generated/production/knowledge/security.md
-          - Vocabulary: generated/production/knowledge/vocabulary.md
-          - Glossary: generated/production/knowledge/glossary.md
-      - Pocket Lab Lite Architecture:
-          - Architecture overview: generated/production/architecture/index.md
-          - Complete system map: generated/production/architecture/complete-system.md
-          - Request and control flow: generated/production/architecture/request-control.md
-          - Runtime and process topology: generated/production/architecture/runtime-topology.md
-          - Network and trust boundaries: generated/production/architecture/network-boundaries.md
-          - Data and projection architecture: generated/production/architecture/data-projections.md
-          - Device onboarding: generated/production/architecture/device-onboarding.md
-          - Devices and recovery: generated/production/architecture/device-recovery.md
-          - Apps and lifecycle: generated/production/architecture/apps.md
-          - Security and safety: generated/production/architecture/security.md
-          - Backup and restore: generated/production/architecture/backup-recovery.md
-          - Remote access: generated/production/architecture/remote-access.md
-          - Release and rollback: generated/production/architecture/release-rollback.md
-          - Frontend state ownership: generated/production/architecture/frontend-state.md
-          - Audit and evidence flow: generated/production/architecture/audit-evidence.md
-          - Command acknowledgement and reconciliation: generated/production/architecture/command-reconciliation.md
-          - Component catalog: generated/production/architecture/component-catalog.md
-          - Components:
-              - App backup, restore preview, and update lifecycle: generated/production/architecture/components/app-recovery-update.md
-              - App Catalog: generated/production/architecture/components/app-catalog.md
-              - App lifecycle worker: generated/production/architecture/components/app-lifecycle-worker.md
-              - App, command, and workflow state: generated/production/architecture/components/app-workflow-state.md
-              - Atomic PWA promotion: generated/production/architecture/components/atomic-promotion.md
-              - Audit index, projection refresh, prepared projections, and domain revisions: generated/production/architecture/components/prepared-state.md
-              - Backup and verification engine: generated/production/architecture/components/backup-engine.md
-              - Backup, restore, and checkpoint state: generated/production/architecture/components/recovery-state.md
-              - Bounded queues and reconciliation: generated/production/architecture/components/bounded-reconciliation.md
-              - Browser: generated/production/architecture/components/browser.md
-              - Caddy same-origin proxy: generated/production/architecture/components/caddy.md
-              - Checkpoints and retention policy: generated/production/architecture/components/checkpoints-retention.md
-              - Command admission and lifecycle: generated/production/architecture/components/command-lifecycle.md
-              - Completion and audit evidence: generated/production/architecture/components/completion-evidence.md
-              - Date-based Lite tag, dist.zip, checksums, and release manifest: generated/production/architecture/components/release-artifacts.md
-              - Device command executor: generated/production/architecture/components/agent-command-executor.md
-              - Download staging and release verification: generated/production/architecture/components/release-staging.md
-              - Enrollment and device lifecycle state: generated/production/architecture/components/device-state.md
-              - Explicit retirement and database recovery: generated/production/architecture/components/retirement-database-recovery.md
-              - FastAPI /api/lite/*: generated/production/architecture/components/lite-api.md
-              - Fleet, Apps, Security, Recovery, and Release APIs: generated/production/architecture/components/api-domain-surfaces.md
-              - Frontend state ownership: generated/production/architecture/components/frontend-state.md
-              - GitHub Release: generated/production/architecture/components/github-release.md
-              - GitHub repository: generated/production/architecture/components/github-repository.md
-              - Heartbeat, telemetry, and health publishers: generated/production/architecture/components/agent-signals.md
-              - Identity, authentication, and invite guards: generated/production/architecture/components/api-guards.md
-              - Installed release and runtime state: generated/production/architecture/components/release-state.md
-              - Invite and identity lifecycle: generated/production/architecture/components/invite-state.md
-              - Last-known-good state and rollback: generated/production/architecture/components/last-known-good.md
-              - Lite agent supervisor: generated/production/architecture/components/agent-supervisor.md
-              - Lite node agent: generated/production/architecture/components/node-agent.md
-              - Local LAN: generated/production/architecture/components/lan.md
-              - Lynis and Trivy scanner adapters: generated/production/architecture/components/scanner-adapters.md
-              - Media readiness and app health probes: generated/production/architecture/components/media-app-health.md
-              - NATS / JetStream: generated/production/architecture/components/nats-jetstream.md
-              - PhotoPrism: generated/production/architecture/components/photoprism.md
-              - PM2 process manager: generated/production/architecture/components/pm2.md
-              - Post-switch health validation: generated/production/architecture/components/post-switch-health.md
-              - Prepared read, health, readiness, diagnostics, and evidence APIs: generated/production/architecture/components/api-read-surfaces.md
-              - Primary and secondary NATS listeners: generated/production/architecture/components/nats-listeners.md
-              - Projection subprocesses: generated/production/architecture/components/projection-subprocesses.md
-              - PROot Ubuntu application container: generated/production/architecture/components/proot-ubuntu.md
-              - Quick, Full, and App safety checks: generated/production/architecture/components/security-profiles.md
-              - React / Vite PWA: generated/production/architecture/components/pwa.md
-              - Reconnect watchdog and supervisor recovery: generated/production/architecture/components/agent-recovery.md
-              - Release subprocess: generated/production/architecture/components/release-subprocess.md
-              - Remote-access readiness checks: generated/production/architecture/components/remote-readiness.md
-              - Restore preview and confirmed restore: generated/production/architecture/components/restore-preview.md
-              - Security findings and run state: generated/production/architecture/components/security-state.md
-              - Security scan coordinator: generated/production/architecture/components/security-coordinator.md
-              - SQLite control-plane store: generated/production/architecture/components/sqlite.md
-              - Tailscale remote access: generated/production/architecture/components/tailscale.md
-              - tailscaled daemon: generated/production/architecture/components/tailscaled.md
-              - User: generated/production/architecture/components/user.md
-              - Worker process: generated/production/architecture/components/worker.md
-              - Workflow execution: generated/production/architecture/components/workflow-execution.md
-      - Install and access:
-          - Installation: generated/production/installation.md
-          - Upgrade and release verification: generated/production/upgrade.md
-          - Android and Termux: generated/production/android-termux.md
-          - Android and Termux runtime verification: generated/production/android-termux-runtime.md
-          - Caddy and same-origin access: generated/production/caddy-access.md
-          - Remote access: generated/production/remote-access.md
-          - Remote access runtime verification: generated/production/remote-access-runtime.md
-      - Use Pocket Lab Lite:
-          - Current tabs: generated/production/tabs.md
-          - Devices and onboarding: generated/production/devices.md
-          - Apps and PhotoPrism: generated/production/apps.md
-          - Security and Safety: generated/production/security.md
-          - Backup and restore: generated/production/recovery.md
-          - Identity: generated/production/identity.md
-          - Rules: generated/production/rules.md
-      - Operate and recover:
-          - Architecture: generated/production/architecture.md
-          - Security boundaries: generated/production/security-boundaries.md
-          - Bootstrap and install: generated/production/bootstrap.md
-          - Services and PM2: generated/production/services-pm2.md
-          - Services and PM2 runtime verification: generated/production/services-pm2-runtime.md
-          - Health and diagnostics: generated/production/health-diagnostics.md
-          - Incident runbooks: generated/production/incident-runbooks.md
-          - Data retention: generated/production/data-retention.md
-          - Release and dist.zip: generated/production/release.md
-          - Rollback: generated/production/rollback.md
-          - Troubleshooting: generated/production/troubleshooting.md
-          - Projection parity readiness: generated/production/parity-readiness.md
-          - Current limitations: generated/production/limitations.md
-  - Knowledgebase:
-      - Overview: generated/enterprise/knowledgebase/index.md
+      - Knowledgebase catalog: generated/enterprise/knowledgebase/index.md
       - Knowledge Graph: generated/enterprise/knowledgebase/knowledge-graph.md
-      - Components: generated/production/knowledge/index.md
-      - How Pocket Lab Works: generated/production/knowledge/journeys.md
-      - Troubleshooting: generated/production/knowledge/troubleshooting.md
-      - Known Limitations: generated/production/knowledge/known-issues.md
-      - Glossary: generated/production/knowledge/glossary.md
-      - Evidence: generated/production/intelligence/why-we-believe-this.md
-  - Architecture:
-      - Overview: generated/enterprise/architecture/index.md
-      - Complete System: generated/production/architecture/complete-system.md
-      - Runtime Topology: generated/production/architecture/runtime-topology.md
-      - Trust Boundaries: generated/production/architecture/network-boundaries.md
-      - Components: generated/production/architecture/component-catalog.md
-      - Data Flows: generated/production/architecture/data-projections.md
-      - Event Flows: generated/development/knowledge/events-nats.md
-      - Device Runtime: generated/production/architecture/device-recovery.md
-      - Remote Access: generated/production/architecture/remote-access.md
-      - Applications: generated/production/architecture/apps.md
-  - Threat Model:
-      - Overview: generated/enterprise/threat-model/index.md
-      - Architecture & Trust Zones: generated/enterprise/threat-model/architecture.md
-      - STRIDE Lens: generated/enterprise/threat-model/stride.md
-      - Modeled Attack Paths: generated/enterprise/threat-model/attack-paths.md
-      - Controls: generated/enterprise/threat-model/controls.md
-      - Assets & Guardrails: generated/enterprise/threat-model/assets-guardrails.md
-      - Evidence & Provenance: generated/enterprise/threat-model/evidence.md
-      - Security Atlas Catalog: generated/enterprise/threat-model/catalog.md
-      - Application Containers: generated/enterprise/threat-model/application-container.md
-      - Browser Boundary: generated/enterprise/threat-model/browser.md
-      - Control API: generated/enterprise/threat-model/control-api.md
-      - Durable State: generated/enterprise/threat-model/durable-state.md
-      - Release Supply Chain: generated/enterprise/threat-model/external-release.md
-      - Managed Devices: generated/enterprise/threat-model/managed-device.md
-      - Messaging & Execution: generated/enterprise/threat-model/messaging-execution.md
-      - Server Host: generated/enterprise/threat-model/server-host.md
-      - Tailnet / Private Network: generated/enterprise/threat-model/private-network.md
-      - Security Controls: generated/enterprise/reference/security-controls.md
-  - Evidence: generated/experience/evidence.md
-  - Documentation Platform:
-      - Overview: generated/enterprise/documentation-platform/index.md
-      - Information Architecture: generated/enterprise/documentation-platform/information-architecture.md
-      - Generation Pipeline: generated/enterprise/documentation-platform/generation-pipeline.md
-      - Evidence Model: generated/enterprise/documentation-platform/evidence-model.md
-      - Documentation UX Contract: generated/development/documentation-experience.md
-      - Design System: generated/enterprise/documentation-platform/design-system.md
-      - Page Types: generated/enterprise/documentation-platform/page-types.md
-      - Search Model: generated/enterprise/documentation-platform/search-model.md
-      - Dependency Health: generated/enterprise/reference/dependency-health.md
-      - Search Aliases: generated/enterprise/search-synonyms.md
-      - Living Knowledge: generated/development/knowledge/index.md
-      - Runtime Promotion: generated/development/runtime-verification.md
-      - Architecture Generation: generated/development/architecture.md
-      - Validation Gates: generated/enterprise/reference/validation-coverage.md
-      - Contributing: generated/enterprise/engineering/contribution-review.md
-  - Develop:
-      - Overview: generated/development/index.md
-      - Living knowledgebase:
-          - Start here: generated/development/knowledge/index.md
-          - Operational health: generated/development/knowledge/operational-health.md
-          - How Pocket Lab works: generated/development/knowledge/journeys.md
-          - Component encyclopedia:
-              - Overview: generated/development/knowledge/components/index.md
-              - Device command executor: generated/development/knowledge/components/agent-command-executor.md
-              - Reconnect watchdog and supervisor recovery: generated/development/knowledge/components/agent-recovery.md
-              - Heartbeat, telemetry, and health publishers: generated/development/knowledge/components/agent-signals.md
-              - Lite agent supervisor: generated/development/knowledge/components/agent-supervisor.md
-              - Fleet, Apps, Security, Recovery, and Release APIs: generated/development/knowledge/components/api-domain-surfaces.md
-              - Identity, authentication, and invite guards: generated/development/knowledge/components/api-guards.md
-              - Prepared read, health, readiness, diagnostics, and evidence APIs: generated/development/knowledge/components/api-read-surfaces.md
-              - App Catalog: generated/development/knowledge/components/app-catalog.md
-              - App lifecycle worker: generated/development/knowledge/components/app-lifecycle-worker.md
-              - App backup, restore preview, and update lifecycle: generated/development/knowledge/components/app-recovery-update.md
-              - App, command, and workflow state: generated/development/knowledge/components/app-workflow-state.md
-              - Atomic PWA promotion: generated/development/knowledge/components/atomic-promotion.md
-              - Backup and verification engine: generated/development/knowledge/components/backup-engine.md
-              - Bounded queues and reconciliation: generated/development/knowledge/components/bounded-reconciliation.md
-              - Browser: generated/development/knowledge/components/browser.md
-              - Caddy same-origin proxy: generated/development/knowledge/components/caddy.md
-              - Checkpoints and retention policy: generated/development/knowledge/components/checkpoints-retention.md
-              - Command admission and lifecycle: generated/development/knowledge/components/command-lifecycle.md
-              - Completion and audit evidence: generated/development/knowledge/components/completion-evidence.md
-              - Enrollment and device lifecycle state: generated/development/knowledge/components/device-state.md
-              - Frontend state ownership: generated/development/knowledge/components/frontend-state.md
-              - GitHub Release: generated/development/knowledge/components/github-release.md
-              - GitHub repository: generated/development/knowledge/components/github-repository.md
-              - Invite and identity lifecycle: generated/development/knowledge/components/invite-state.md
-              - Local LAN: generated/development/knowledge/components/lan.md
-              - Last-known-good state and rollback: generated/development/knowledge/components/last-known-good.md
-              - FastAPI /api/lite/*: generated/development/knowledge/components/lite-api.md
-              - Media readiness and app health probes: generated/development/knowledge/components/media-app-health.md
-              - NATS / JetStream: generated/development/knowledge/components/nats-jetstream.md
-              - Primary and secondary NATS listeners: generated/development/knowledge/components/nats-listeners.md
-              - Lite node agent: generated/development/knowledge/components/node-agent.md
-              - PhotoPrism: generated/development/knowledge/components/photoprism.md
-              - PM2 process manager: generated/development/knowledge/components/pm2.md
-              - Post-switch health validation: generated/development/knowledge/components/post-switch-health.md
-              - Audit index, projection refresh, prepared projections, and domain revisions: generated/development/knowledge/components/prepared-state.md
-              - Projection subprocesses: generated/development/knowledge/components/projection-subprocesses.md
-              - PROot Ubuntu application container: generated/development/knowledge/components/proot-ubuntu.md
-              - React / Vite PWA: generated/development/knowledge/components/pwa.md
-              - Backup, restore, and checkpoint state: generated/development/knowledge/components/recovery-state.md
-              - Date-based Lite tag, dist.zip, checksums, and release manifest: generated/development/knowledge/components/release-artifacts.md
-              - Download staging and release verification: generated/development/knowledge/components/release-staging.md
-              - Installed release and runtime state: generated/development/knowledge/components/release-state.md
-              - Release subprocess: generated/development/knowledge/components/release-subprocess.md
-              - Remote-access readiness checks: generated/development/knowledge/components/remote-readiness.md
-              - Restore preview and confirmed restore: generated/development/knowledge/components/restore-preview.md
-              - Explicit retirement and database recovery: generated/development/knowledge/components/retirement-database-recovery.md
-              - Lynis and Trivy scanner adapters: generated/development/knowledge/components/scanner-adapters.md
-              - Security scan coordinator: generated/development/knowledge/components/security-coordinator.md
-              - Quick, Full, and App safety checks: generated/development/knowledge/components/security-profiles.md
-              - Security findings and run state: generated/development/knowledge/components/security-state.md
-              - SQLite control-plane store: generated/development/knowledge/components/sqlite.md
-              - Tailscale remote access: generated/development/knowledge/components/tailscale.md
-              - tailscaled daemon: generated/development/knowledge/components/tailscaled.md
-              - User: generated/development/knowledge/components/user.md
-              - Worker process: generated/development/knowledge/components/worker.md
-              - Workflow execution: generated/development/knowledge/components/workflow-execution.md
-          - API ↔ UI reverse index: generated/development/knowledge/api-ui-index.md
+      - Architecture decisions: generated/enterprise/reference/adr-intelligence.md
+  - Build & Test:
+      - Overview: generated/enterprise/hubs/build-test.md
+      - Developer onboarding: generated/development/index.md
+      - Repository structure: generated/development/repository-setup.md
+      - Local services: generated/development/local-services.md
+      - Frontend API usage: generated/development/frontend-api-usage.md
+      - Backend / FastAPI contract: generated/development/api-contract.md
+      - NATS / events: generated/development/lite-events.md
+      - SQLite / data: generated/development/lite-sqlite-schema.md
+      - UI state ownership: generated/development/ui-state-catalog.md
+      - Testing matrix: generated/development/testing.md
+      - Accessibility & visual gates: generated/development/accessibility-visual.md
+      - Backend-to-Frontend parity: generated/development/validation/parity/index.md
+      - Validation coverage: generated/enterprise/reference/validation-coverage.md
+      - Change Impact Advisor: generated/enterprise/reference/change-advisor.md
+      - Development troubleshooting: generated/enterprise/engineering/troubleshooting.md
+      - Task Reference: generated/enterprise/engineering/task-reference.md
+      - Contribution & review: generated/development/contribution-review.md
+      - Development Knowledgebase:
+          - Overview: generated/development/knowledge/index.md
+          - API ↔ UI: generated/development/knowledge/api-ui-index.md
           - Data lineage: generated/development/knowledge/data-lineage.md
-          - SQLite encyclopedia: generated/development/knowledge/sqlite.md
-          - NATS and events: generated/development/knowledge/events-nats.md
-          - Runtime topology: generated/development/knowledge/runtime-topology.md
-          - Reason codes: generated/development/knowledge/reason-codes.md
-          - Decisions: generated/development/knowledge/decisions.md
-          - Ownership: generated/development/knowledge/ownership.md
           - Repository map: generated/development/knowledge/repository-map.md
-          - Tests and traceability: generated/development/knowledge/traceability.md
-          - Threat models: generated/development/knowledge/threat-models.md
           - Releases and changes:
               - Overview: generated/development/knowledge/releases.md
               # BEGIN GENERATED KNOWLEDGE RELEASE NAV: development
               - lite-2026.08.12.2: generated/development/knowledge/releases/lite-2026-08-12-2.md
               # END GENERATED KNOWLEDGE RELEASE NAV: development
-          - Limitations and incidents: generated/development/knowledge/limitations-incidents.md
-          - Troubleshooting: generated/development/knowledge/troubleshooting.md
-          - Platforms and capabilities: generated/development/knowledge/capabilities.md
           - Freshness: generated/development/knowledge/freshness.md
-          - Vocabulary: generated/development/knowledge/vocabulary.md
-          - Glossary: generated/development/knowledge/glossary.md
-      - Setup:
-          - Repository and WSL2: generated/development/repository-setup.md
-          - Local services: generated/development/local-services.md
-          - Coding standards: generated/development/coding-standards.md
-      - Architecture and contracts:
-          - Architecture: generated/development/architecture.md
-          - Architecture diagram catalog: generated/development/architecture-diagrams.md
-          - Detailed Lite API reference: reference/api/lite-api.md
-          - HTTP API summary: generated/development/api.md
-          - API contract detail: generated/development/api-contract.md
-          - API compatibility: generated/development/api-compatibility.md
-          - Frontend API usage: generated/development/frontend-api-usage.md
-          - Lite NATS and events: generated/development/lite-events.md
-          - Device capabilities: generated/development/device-capabilities.md
-          - Device roles: generated/development/device-roles.md
-          - SQLite schema: generated/development/lite-sqlite-schema.md
-          - Prepared projections: generated/development/projection-catalog.md
-          - Recovery contract: generated/development/recovery-contract.md
-          - Recovery state machine: generated/development/recovery-state-machine.md
-          - Security profiles: generated/development/security-profiles.md
-          - Existing SQLite and projection guide: generated/development/sqlite-projections.md
-      - UI and testing:
-          - Fixtures and schemas: generated/development/fixtures-schemas.md
-          - Canonical UI state catalog: generated/development/ui-state-catalog.md
-          - Storybook UI states: generated/development/ui-storybook.md
-          - Playwright and browser: generated/development/browser-testing.md
-          - Testing matrix: generated/development/testing.md
-          - Accessibility and visual gates: generated/development/accessibility-visual.md
-          - Documentation experience: generated/development/documentation-experience.md
-      - Validation and release:
-          - Task ownership audit: generated/development/task-audit.md
-          - Task Reference: generated/enterprise/engineering/task-reference.md
-          - HAR sanitization: generated/development/har-sanitization.md
-          - Allure-compatible evidence: generated/development/allure-evidence.md
-          - Configuration reference: generated/development/configuration-reference.md
-          - Service catalog: generated/development/service-catalog.md
-          - Existing configuration and services guide: generated/development/configuration-services.md
-          - Bootstrap stage catalog: generated/development/bootstrap-stages.md
-          - Bootstrap source guide: generated/development/bootstrap.md
-          - Reason codes: generated/development/reason-codes.md
-          - Readiness evidence:
-              - Lite readiness: generated/development/lite-readiness.md
-              - Backend-to-Frontend parity: generated/development/validation/parity/index.md
-              - Projection parity architecture: generated/development/validation/parity/architecture.md
-              - Domain parity catalog: generated/development/validation/parity/domain-catalog.md
-              - Home parity: generated/development/validation/parity/home.md
-              - Apps parity: generated/development/validation/parity/apps.md
-              - Devices parity: generated/development/validation/parity/devices.md
-              - Security parity: generated/development/validation/parity/security.md
-              - Identity parity: generated/development/validation/parity/identity.md
-              - Rules parity: generated/development/validation/parity/rules.md
-              - Backup & Restore parity: generated/development/validation/parity/backup-restore.md
-              - Backend data ownership: generated/development/validation/parity/backend-data-ownership.md
-              - API projections: generated/development/validation/parity/api-projections.md
-              - Backend-to-API mapping: generated/development/validation/parity/backend-api-field-mapping.md
-              - API-to-frontend mapping: generated/development/validation/parity/api-frontend-field-mapping.md
-              - Frontend state ownership: generated/development/validation/parity/frontend-state-ownership.md
-              - Scenario registry: generated/development/validation/parity/scenario-registry.md
-              - Storybook coverage: generated/development/validation/parity/storybook-coverage.md
-              - Playwright coverage: generated/development/validation/parity/playwright-coverage.md
-              - Live Termux verification: generated/development/validation/parity/live-termux-verification.md
-              - Runtime verification matrix: generated/development/validation/parity/runtime-verification-matrix.md
-              - Runtime semantic drift: generated/development/validation/parity/runtime-drift-report.md
-              - Accepted limitations: generated/development/validation/parity/accepted-limitations.md
-              - Test environment matrix: generated/development/validation/parity/test-environment-matrix.md
-              - Fixture governance: generated/development/validation/parity/fixture-governance.md
-              - OpenAPI compatibility: generated/development/validation/parity/openapi-compatibility.md
-              - API property tests: generated/development/validation/parity/api-property-tests.md
-              - Accessibility conformance: generated/development/validation/parity/accessibility.md
-              - Visual regression: generated/development/validation/parity/visual-regression.md
-              - Performance and edge budget: generated/development/validation/parity/performance-edge-budget.md
-              - Validation gates: generated/development/validation/parity/validation-gates.md
-              - CI workflow-to-gate map: generated/development/validation/parity/ci-gate-map.md
-              - Evidence and traceability: generated/development/validation/parity/evidence-traceability.md
-              - Failure triage: generated/development/validation/parity/failure-triage.md
-              - Parity failure runbook: generated/development/validation/parity/parity-failure-runbook.md
-              - Freshness and staleness: generated/development/validation/parity/freshness-staleness.md
-              - Sanitization and exposure: generated/development/validation/parity/sanitization-exposure.md
-              - Release readiness: generated/development/validation/parity/release-readiness.md
-              - Coverage and gaps: generated/development/validation/parity/coverage-gaps.md
-              - Maintenance ownership: generated/development/validation/parity/maintenance-ownership.md
-          - Redaction coverage: generated/development/redaction-coverage.md
-          - Validation and release: generated/development/validation-release.md
-          - CI workflows: generated/development/ci-workflows.md
-          - Release engineering: generated/development/release-engineering.md
-          - Contribution and review: generated/development/contribution-review.md
-          - Identity and Rules partial contracts: generated/development/partial-surfaces.md
-          - Events: generated/enterprise/engineering/events.md
-          - Release inventory: generated/development/release-inventory.md
-          - Termux runtime verification: generated/development/runtime-verification.md
-  - Release:
-      - Overview: generated/experience/release.md
-      - What changed: generated/production/intelligence/what-changed.md
+          - Limitations & incidents: generated/development/knowledge/limitations-incidents.md
+  - Security & Assurance:
+      - Overview: generated/enterprise/hubs/security-assurance.md
+      - Threat Model:
+          - Overview: generated/enterprise/threat-model/index.md
+          - Architecture & Trust Zones: generated/enterprise/threat-model/architecture.md
+          - STRIDE Lens: generated/enterprise/threat-model/stride.md
+          - Modeled Attack Paths: generated/enterprise/threat-model/attack-paths.md
+          - Controls: generated/enterprise/threat-model/controls.md
+          - Assets & Guardrails: generated/enterprise/threat-model/assets-guardrails.md
+          - Evidence & Provenance: generated/enterprise/threat-model/evidence.md
+          - Security Atlas Catalog: generated/enterprise/threat-model/catalog.md
+          - Application Containers: generated/enterprise/threat-model/application-container.md
+          - Browser Boundary: generated/enterprise/threat-model/browser.md
+          - Control API: generated/enterprise/threat-model/control-api.md
+          - Durable State: generated/enterprise/threat-model/durable-state.md
+          - Release Supply Chain: generated/enterprise/threat-model/external-release.md
+          - Managed Devices: generated/enterprise/threat-model/managed-device.md
+          - Messaging & Execution: generated/enterprise/threat-model/messaging-execution.md
+          - Server Host: generated/enterprise/threat-model/server-host.md
+          - Tailnet / Private Network: generated/enterprise/threat-model/private-network.md
+      - Security controls: generated/enterprise/reference/security-controls.md
+      - Data lifecycle & privacy: generated/enterprise/reference/data-lifecycle.md
+      - Evidence overview: generated/experience/evidence.md
+      - Evidence coverage: generated/development/intelligence/evidence-coverage.md
       - Why we believe this: generated/production/intelligence/why-we-believe-this.md
+      - Dependency health: generated/enterprise/reference/dependency-health.md
+      - Supply chain: generated/enterprise/reference/supply-chain.md
+      - Reliability & resilience: generated/enterprise/reference/reliability.md
+  - Release & Change:
+      - Overview: generated/enterprise/hubs/release-change.md
+      - What changed: generated/production/intelligence/what-changed.md
       - Release assurance: generated/enterprise/engineering/release-evidence.md
       - Upgrade & migration: generated/enterprise/reference/upgrade-migration.md
-      - Supply chain: generated/enterprise/reference/supply-chain.md
+      - API compatibility: generated/development/api-compatibility.md
+      - Supply-chain changes: generated/enterprise/reference/supply-chain-change.md
       - Provenance: generated/enterprise/release/index.md
-  - Enterprise Reference:
-      - Configuration Intelligence: generated/enterprise/reference/configuration.md
-      - API-to-UI Trace Explorer: generated/enterprise/reference/api-ui-trace.md
-      - Data Lifecycle & Privacy: generated/enterprise/reference/data-lifecycle.md
-      - Failure Modes & Resilience: generated/enterprise/reference/fmea.md
-      - Reliability Objectives: generated/enterprise/reference/reliability.md
-      - Security Controls: generated/enterprise/reference/security-controls.md
-      - Change Impact Advisor: generated/enterprise/reference/change-advisor.md
-      - Ownership: generated/enterprise/reference/ownership.md
-      - Validation Coverage: generated/enterprise/reference/validation-coverage.md
-      - Disaster Recovery: generated/enterprise/reference/disaster-recovery.md
-      - Documentation Quality: generated/enterprise/reference/documentation-quality.md
-      - ADR Intelligence: generated/enterprise/reference/adr-intelligence.md
-      - Supply-chain Changes: generated/enterprise/reference/supply-chain-change.md
-      - Development Troubleshooting: generated/enterprise/engineering/troubleshooting.md
-      - Production Incident Runbooks: generated/enterprise/operate/incident-runbooks.md
-      - Production Troubleshooting: generated/enterprise/operate/troubleshooting.md
+      - Rollback: generated/production/rollback.md
+      - Release inventory: generated/development/release-inventory.md
+      - Release Journey: generated/enterprise/journeys/release.md
+      - Release Knowledge:
+          - Overview: generated/production/knowledge/releases.md
+          # BEGIN GENERATED KNOWLEDGE RELEASE NAV: production
+          - lite-2026.08.12.2: generated/production/knowledge/releases/lite-2026-08-12-2.md
+          # END GENERATED KNOWLEDGE RELEASE NAV: production
   - Reference:
-      - Android / Termux: getting-started/android-termux.md
-      - Lite architecture: architecture/lite-architecture.md
+      - Overview: generated/enterprise/hubs/reference.md
+      - Lite API: reference/api/lite-api.md
+      - Events: generated/enterprise/engineering/events.md
+      - Configuration Intelligence: generated/enterprise/reference/configuration.md
+      - Failure Modes & Resilience: generated/enterprise/reference/fmea.md
+      - Documentation Quality: generated/enterprise/reference/documentation-quality.md
+      - Reason codes: generated/development/reason-codes.md
+      - Ownership: generated/enterprise/reference/ownership.md
+      - API-to-UI Trace Explorer: generated/enterprise/reference/api-ui-trace.md
+      - Configuration & services: generated/development/configuration-services.md
+      - Lite architecture reference: architecture/lite-architecture.md
       - Security SQLite design lock: architecture/lite-security-sqlite-design-lock.md
       - Bootstrap Lite: operations/bootstrap-lite.md
       - Durable device enrollment: operations/devices-durable-enrollment.md
       - Device production readiness: operations/devices-production-readiness.md
       - Lite Security model: security/lite-security-model.md
-      - Backup and restore: recovery/backup-restore.md
-      - Security S8 maintenance: recovery/security-s8-maintenance.md
+      - Backup & restore reference: recovery/backup-restore.md
       - Lite validation: validation/lite-validation.md
+  - Documentation Platform:
+      - Overview: generated/enterprise/documentation-platform/index.md
+      - How to use these docs: generated/enterprise/documentation-platform/how-to-use.md
+      - Architecture: generated/enterprise/documentation-platform/architecture.md
+      - Information Architecture: generated/enterprise/documentation-platform/information-architecture.md
+      - Audience & intent: generated/enterprise/documentation-platform/audience-intent.md
+      - Sources of truth: generated/enterprise/documentation-platform/sources-of-truth.md
+      - Content model: generated/enterprise/documentation-platform/content-model.md
+      - Page types: generated/enterprise/documentation-platform/page-types.md
+      - Generation lifecycle: generated/enterprise/documentation-platform/generation-pipeline.md
+      - Evidence & promotion: generated/enterprise/documentation-platform/evidence-model.md
+      - Cross-link model: generated/enterprise/documentation-platform/cross-link-model.md
+      - Search & discovery: generated/enterprise/documentation-platform/search-model.md
+      - Design system: generated/enterprise/documentation-platform/design-system.md
+      - Validation & testing: generated/enterprise/documentation-platform/validation-testing.md
+      - Contribution: generated/enterprise/documentation-platform/contribution.md
+      - Operations & troubleshooting: generated/enterprise/documentation-platform/operations-troubleshooting.md
+      - Security boundaries: generated/enterprise/documentation-platform/security-boundaries.md
+      - Known limitations: generated/enterprise/documentation-platform/known-limitations.md

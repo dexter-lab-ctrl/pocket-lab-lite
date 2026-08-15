@@ -24388,6 +24388,13 @@
         "troubleshooting": "complete"
       }
     ],
+    "documentation_search": {
+      "alias_groups": 11,
+      "contract": "contracts/generated/documentation-enterprise/documentation-search.json",
+      "implementation_status": "implemented",
+      "local_static": true,
+      "runtime_indexing": false
+    },
     "events": [
       {
         "acknowledgment": "incomplete",
@@ -32611,6 +32618,25 @@
         "user_impact": "Security may degrade, block writes or become unavailable"
       }
     ],
+    "information_architecture": {
+      "contract": "contracts/generated/documentation-enterprise/information-architecture.json",
+      "cross_link_count": 741,
+      "feature_journey_count": 7,
+      "implementation_status": "implemented",
+      "live_runtime": false,
+      "page_count": 414,
+      "top_level": [
+        "start-here",
+        "use",
+        "operate",
+        "understand",
+        "build-test",
+        "security-assurance",
+        "release-change",
+        "reference",
+        "documentation-platform"
+      ]
+    },
     "ownership": [
       {
         "architecture": [
@@ -33293,8 +33319,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "c61737886bb9ae761ed8fb19a5d38c68a84a49f2",
-          "head_tree": "445c8628aba06050451a38aebaef7da55c7b4965",
+          "head": "3f12932d4d9e5f7908f0e61885d1102b390b2a41",
+          "head_tree": "5aecaf18394c495fbaf9dc8638a8100e32b49f4a",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -33976,7 +34002,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "494cb8475d82562c05c264bcbbd516bd7c5639751003554f29cde6b2ece2ec23",
+        "documentation": "e1bc6fa1cd9fdc62101016429b6166da22a7999fedc564b49e5039b8e32e5620",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -34933,6 +34959,53 @@
     ],
     "search_synonyms": [
       {
+        "canonical": "add device",
+        "destinations": [
+          "/generated/production/devices/"
+        ],
+        "synonyms": [
+          "bootstrap device",
+          "device invite",
+          "enroll device",
+          "join device"
+        ]
+      },
+      {
+        "canonical": "api frontend",
+        "destinations": [
+          "/generated/development/frontend-api-usage/",
+          "/generated/enterprise/reference/api-ui-trace/"
+        ],
+        "synonyms": [
+          "api to ui",
+          "api ui",
+          "frontend api"
+        ]
+      },
+      {
+        "canonical": "app install",
+        "destinations": [
+          "/generated/production/apps/"
+        ],
+        "synonyms": [
+          "app catalog",
+          "install app",
+          "photoprism install"
+        ]
+      },
+      {
+        "canonical": "backup restore",
+        "destinations": [
+          "/generated/production/recovery/"
+        ],
+        "synonyms": [
+          "backup",
+          "preview restore",
+          "recovery",
+          "restore"
+        ]
+      },
+      {
         "canonical": "backup stale",
         "destinations": [
           "/generated/production/recovery/",
@@ -34970,6 +35043,29 @@
         ]
       },
       {
+        "canonical": "documentation generator",
+        "destinations": [
+          "/generated/enterprise/documentation-platform/generation-pipeline/"
+        ],
+        "synonyms": [
+          "docs generator",
+          "documentation platform",
+          "generation lifecycle"
+        ]
+      },
+      {
+        "canonical": "event nats",
+        "destinations": [
+          "/generated/enterprise/engineering/events/",
+          "/generated/development/lite-events/"
+        ],
+        "synonyms": [
+          "event encyclopedia",
+          "jetstream event",
+          "nats event"
+        ]
+      },
+      {
         "canonical": "operational-health",
         "destinations": [
           "/generated/production/intelligence/current-health/",
@@ -34992,6 +35088,17 @@
           "backup",
           "restore",
           "restore readiness"
+        ]
+      },
+      {
+        "canonical": "release changed",
+        "destinations": [
+          "/generated/production/intelligence/what-changed/"
+        ],
+        "synonyms": [
+          "release delta",
+          "upgrade impact",
+          "what changed"
         ]
       },
       {
@@ -35059,6 +35166,18 @@
         "synonyms": [
           "scan stuck",
           "worker safety check"
+        ]
+      },
+      {
+        "canonical": "why do we believe this",
+        "destinations": [
+          "/generated/production/intelligence/why-we-believe-this/"
+        ],
+        "synonyms": [
+          "confidence",
+          "evidence",
+          "evidence coverage",
+          "provenance"
         ]
       }
     ],
@@ -35858,8 +35977,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "c61737886bb9ae761ed8fb19a5d38c68a84a49f2",
-        "head_tree": "445c8628aba06050451a38aebaef7da55c7b4965",
+        "head": "3f12932d4d9e5f7908f0e61885d1102b390b2a41",
+        "head_tree": "5aecaf18394c495fbaf9dc8638a8100e32b49f4a",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -72483,6 +72602,8 @@
         "lite:docs:generate",
         "lite:docs:health:check",
         "lite:docs:health:generate",
+        "lite:docs:ia:check",
+        "lite:docs:ia:generate",
         "lite:docs:intelligence:check",
         "lite:docs:intelligence:generate",
         "lite:docs:knowledge:check",
@@ -73479,6 +73600,7 @@
         "captures_runtime": false,
         "commands": [
           "{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check",
+          "task lite:docs:ia:check",
           "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py"
         ],
         "dependencies": [],
@@ -73500,8 +73622,10 @@
         "name": "lite:docs:enterprise:check",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Check enterprise Documentation Platform determinism, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections",
-        "related_tasks": [],
+        "purpose": "Check enterprise Documentation Platform determinism, IA, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections",
+        "related_tasks": [
+          "lite:docs:ia:check"
+        ],
         "repository_mutation": true,
         "requires_termux": false,
         "requires_wsl2": false,
@@ -73784,6 +73908,88 @@
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "not-a-validation-task",
         "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py check",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_ia.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:ia:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/enterprise/documentation_ia.py",
+          "tests/docs/test_documentation_ia.py"
+        ],
+        "name": "lite:docs:ia:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Check Documentation Platform IA determinism, canonical navigation ownership, bounded relationships, search destinations, and redaction fences",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py generate"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:ia:generate",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/enterprise/documentation_ia.py"
+        ],
+        "name": "lite:docs:ia:generate",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Generate deterministic Documentation Platform IA hubs, feature journeys, page inventory, cross-links, and static search metadata",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
       },
       {
         "aliases": [],
@@ -85062,5 +85268,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "03fb0f57208f161a82b66a0effda59c1f2526ec59da84dd02c80e3b56b066925"
+  "source_fingerprint": "e62cdb0bf5a172acc454da4d85f08746d0ba67e7e157f37a26ffe55f57407b51"
 }

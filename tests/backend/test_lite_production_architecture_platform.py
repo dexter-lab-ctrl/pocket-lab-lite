@@ -306,7 +306,10 @@ def test_mkdocs_tasks_ci_and_browser_contract_are_wired():
         "generated/production/architecture/component-catalog.md",
     ):
         assert page in mkdocs
-    assert mkdocs.count("Pocket Lab Lite Architecture:") == 1
+    assert "      - System architecture: generated/production/architecture/index.md" in mkdocs
+    assert "      - Component catalog: generated/production/architecture/component-catalog.md" in mkdocs
+    nav_top_level = {line for line in mkdocs.split("\nnav:\n", 1)[1].splitlines() if line.startswith("  - ") and line.endswith(":")}
+    assert "  - Architecture:" not in nav_top_level
 
     taskfile = (ROOT / "tasks/Taskfile.docs.yml").read_text(encoding="utf-8")
     for task in (

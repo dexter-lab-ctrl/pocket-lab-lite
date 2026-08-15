@@ -1,6 +1,53 @@
 {
   "items": [
     {
+      "canonical": "add device",
+      "destinations": [
+        "/generated/production/devices/"
+      ],
+      "synonyms": [
+        "bootstrap device",
+        "device invite",
+        "enroll device",
+        "join device"
+      ]
+    },
+    {
+      "canonical": "api frontend",
+      "destinations": [
+        "/generated/development/frontend-api-usage/",
+        "/generated/enterprise/reference/api-ui-trace/"
+      ],
+      "synonyms": [
+        "api to ui",
+        "api ui",
+        "frontend api"
+      ]
+    },
+    {
+      "canonical": "app install",
+      "destinations": [
+        "/generated/production/apps/"
+      ],
+      "synonyms": [
+        "app catalog",
+        "install app",
+        "photoprism install"
+      ]
+    },
+    {
+      "canonical": "backup restore",
+      "destinations": [
+        "/generated/production/recovery/"
+      ],
+      "synonyms": [
+        "backup",
+        "preview restore",
+        "recovery",
+        "restore"
+      ]
+    },
+    {
       "canonical": "backup stale",
       "destinations": [
         "/generated/production/recovery/",
@@ -38,6 +85,29 @@
       ]
     },
     {
+      "canonical": "documentation generator",
+      "destinations": [
+        "/generated/enterprise/documentation-platform/generation-pipeline/"
+      ],
+      "synonyms": [
+        "docs generator",
+        "documentation platform",
+        "generation lifecycle"
+      ]
+    },
+    {
+      "canonical": "event nats",
+      "destinations": [
+        "/generated/enterprise/engineering/events/",
+        "/generated/development/lite-events/"
+      ],
+      "synonyms": [
+        "event encyclopedia",
+        "jetstream event",
+        "nats event"
+      ]
+    },
+    {
       "canonical": "operational-health",
       "destinations": [
         "/generated/production/intelligence/current-health/",
@@ -60,6 +130,17 @@
         "backup",
         "restore",
         "restore readiness"
+      ]
+    },
+    {
+      "canonical": "release changed",
+      "destinations": [
+        "/generated/production/intelligence/what-changed/"
+      ],
+      "synonyms": [
+        "release delta",
+        "upgrade impact",
+        "what changed"
       ]
     },
     {
@@ -127,6 +208,18 @@
       "synonyms": [
         "scan stuck",
         "worker safety check"
+      ]
+    },
+    {
+      "canonical": "why do we believe this",
+      "destinations": [
+        "/generated/production/intelligence/why-we-believe-this/"
+      ],
+      "synonyms": [
+        "confidence",
+        "evidence",
+        "evidence coverage",
+        "provenance"
       ]
     }
   ],

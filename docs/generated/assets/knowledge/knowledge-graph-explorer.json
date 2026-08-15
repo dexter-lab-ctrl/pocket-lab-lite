@@ -8612,6 +8612,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/documentation-ia.spec.ts",
+      "name": "tests/docs/documentation-ia.spec.ts",
+      "source_refs": [
+        "tests/docs/documentation-ia.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/knowledge-graph.spec.ts",
       "name": "tests/docs/knowledge-graph.spec.ts",
       "source_refs": [
@@ -8638,6 +8649,17 @@
       "name": "tests/docs/test_docs_runtime_network_fence.py",
       "source_refs": [
         "tests/docs/test_docs_runtime_network_fence.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/test_documentation_ia.py",
+      "name": "tests/docs/test_documentation_ia.py",
+      "source_refs": [
+        "tests/docs/test_documentation_ia.py"
       ],
       "type": "test"
     },
@@ -23171,6 +23193,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:6ffb9ecd128ad457",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:687"
       ],
       "id": "rel:7029047d31809239",
@@ -24017,6 +24053,20 @@
       "source": "component:github-release",
       "target": "threat-model:external-release",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:773788cacd6f483a",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -28903,6 +28953,20 @@
       "source": "component:last-known-good",
       "target": "boundary:server-host",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:a186fb5192a4ed8f",
+      "source": "domain:platform",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -35079,6 +35143,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/documentation-ia.spec.ts"
+      ],
+      "id": "rel:d6a787d7b4ad51f4",
+      "source": "domain:security",
+      "target": "test:tests/docs/documentation-ia.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:d6e91dc29ba2fff3",
@@ -38489,6 +38567,20 @@
       "id": "rel:f1f19799f015474e",
       "source": "reason:protected_server_host",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:f227b0fcb00be83f",
+      "source": "domain:platform",
+      "target": "test:tests/docs/test_documentation_ia.py",
       "type": "verified_by"
     },
     {

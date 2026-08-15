@@ -1,12 +1,12 @@
 ---
-title: "Design System"
-description: "Shared enterprise visual language for Production and Engineering references."
+title: "Design system"
+description: "Shared static documentation visual language and progressive disclosure rules."
 generated: true
 audience: development
 page_type: reference
 confidence: generated
 ---
 
-# Design System
+# Design system
 
-Production and Development keep one brand while using explicit audience banners, semantic status labels, responsive tables/cards, progressive disclosure, keyboard-safe navigation and reduced-motion support.
+Use existing Pocket Lab cards, chips, status semantics, responsive layouts, semantic HTML, keyboard-safe navigation, local assets, and reduced-motion support. Avoid remote fonts/scripts, giant tables without responsive treatment, continuous animation, or blanket overflow hiding.
