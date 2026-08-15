@@ -48,6 +48,7 @@ ENTERPRISE_KB = ROOT / "docs/generated/enterprise/knowledgebase"
 KNOWLEDGE_ASSETS = ROOT / "docs/generated/assets/knowledge"
 SCHEMA_ROOT = ROOT / "schemas/knowledge"
 MKDOCS = ROOT / "mkdocs.yml"
+SOURCE_RELEASE_BADGE = ROOT / "docs/overrides/partials/release-badge.html"
 
 NAV_MARKERS = {
     "development": (
@@ -1220,6 +1221,51 @@ def render_component_page(entity: dict[str, Any], indexes: dict[str, Any], graph
     return out.rstrip() + "\n"
 
 
+def render_source_release_badge(releases: list[dict[str, Any]]) -> str:
+    """Render the latest promoted sanitized release for the static MkDocs header.
+
+    The browser never discovers releases through GitHub or another runtime API.
+    Selection is deterministic and derived only from canonical generated
+    release knowledge.
+    """
+
+    candidates = [
+        release
+        for release in releases
+        if release.get("confidence") == "release-promoted"
+        and release.get("sanitized") is True
+        and str(release.get("name") or "").strip()
+    ]
+
+    if not candidates:
+        return (
+            "{# No promoted sanitized release is available; "
+            "no release label is fabricated. #}\n"
+        )
+
+    current = max(
+        candidates,
+        key=lambda release: (
+            str(release.get("promoted_at") or ""),
+            str(release.get("name") or ""),
+        ),
+    )
+
+    name = html.escape(str(current["name"]), quote=True)
+
+    return (
+        f'<span class="pl-source-release" '
+        f'data-pl-release="{name}">\n'
+        '  <span class="pl-source-release__icon md-icon" '
+        'aria-hidden="true">\n'
+        '    {% include ".icons/material/source-branch.svg" %}\n'
+        '  </span>\n'
+        f'  <span class="pl-source-release__label">{name}</span>\n'
+        '</span>\n'
+    )
+
+
+
 def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) -> dict[Path, str]:
     outputs: dict[Path, str] = {}
     stats = {k: len(v) for k, v in indexes["by_type"].items()}
@@ -1352,6 +1398,9 @@ def build_outputs() -> tuple[dict[Path, str], dict[str, Any]]:
     for name, value in sorted(exports.items()):
         outputs[OUT / f"{name}.json"] = stable_json({"metadata": envelope_meta, "items": value})
     outputs.update(render_docs(graph, indexes, exports))
+    outputs[SOURCE_RELEASE_BADGE] = render_source_release_badge(
+        exports["releases"]
+    )
     elapsed = time.perf_counter() - start
     report = {"entities": len(entities), "relations": len(relations), "pages": sum(1 for p in outputs if p.suffix == ".md"), "machine_artifacts": sum(1 for p in outputs if p.suffix == ".json"), "source_fingerprint": fp, "duration_seconds": round(elapsed, 3)}
     for path, text in outputs.items():
