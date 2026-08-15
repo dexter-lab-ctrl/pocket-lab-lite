@@ -266,7 +266,7 @@ def test_enterprise_mkdocs_theme_and_browser_gate_are_source_owned():
         "stylesheets/components.css",
         "stylesheets/print.css",
         "javascripts/docs.js",
-        "documentation-experience.md",
+        "generated/enterprise/documentation-platform/index.md",
     ):
         assert token in mkdocs
     for path in (

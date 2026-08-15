@@ -33319,8 +33319,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "3f12932d4d9e5f7908f0e61885d1102b390b2a41",
-          "head_tree": "5aecaf18394c495fbaf9dc8638a8100e32b49f4a",
+          "head": "77f35e7930cc02857c0fedca213c6d86f021d321",
+          "head_tree": "e463a4fe596d2ece094754a327b943aafd3c8295",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34002,7 +34002,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "e1bc6fa1cd9fdc62101016429b6166da22a7999fedc564b49e5039b8e32e5620",
+        "documentation": "7e0110c13681d519df0338efd8342767919e5987e9094b851d537d3a94ca5fd5",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -35977,8 +35977,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "3f12932d4d9e5f7908f0e61885d1102b390b2a41",
-        "head_tree": "5aecaf18394c495fbaf9dc8638a8100e32b49f4a",
+        "head": "77f35e7930cc02857c0fedca213c6d86f021d321",
+        "head_tree": "e463a4fe596d2ece094754a327b943aafd3c8295",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -73086,6 +73086,48 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_development_documentation_platform.py tests/backend/test_lite_complete_documentation_platform.py tests/backend/test_lite_production_architecture_platform.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:backend-tests",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/backend/test_lite_complete_documentation_platform.py",
+          "tests/backend/test_lite_development_documentation_platform.py",
+          "tests/backend/test_lite_production_architecture_platform.py"
+        ],
+        "name": "lite:docs:backend-tests",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run backend Documentation Platform ownership, wiring, and architecture contract tests",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section bootstrap"
         ],
         "dependencies": [],
@@ -73180,6 +73222,7 @@
           "task lite:docs:production:check",
           "{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check",
           "task lite:docs:diagrams:check",
+          "task lite:docs:backend-tests",
           "{{.PYTHON}} -m mkdocs build --strict",
           "task lite:docs:runtime-network:check"
         ],
@@ -73207,6 +73250,7 @@
           "lite:contracts:check",
           "lite:dev:scratch:prepare",
           "lite:docs:architecture:check",
+          "lite:docs:backend-tests",
           "lite:docs:development:check",
           "lite:docs:diagrams:check",
           "lite:docs:enterprise:check",
@@ -85268,5 +85312,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "e62cdb0bf5a172acc454da4d85f08746d0ba67e7e157f37a26ffe55f57407b51"
+  "source_fingerprint": "7b3c4be3f6d625a31d032299ce229e513f9a21d8ecd6bbae9a868c328942a1c1"
 }

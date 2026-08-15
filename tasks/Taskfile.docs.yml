@@ -514,8 +514,14 @@ tasks:
       - task: lite:docs:production:check
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
       - task: lite:docs:diagrams:check
+      - task: lite:docs:backend-tests
       - '{{.PYTHON}} -m mkdocs build --strict'
       - task: lite:docs:runtime-network:check
+
+  lite:docs:backend-tests:
+    desc: Run backend Documentation Platform ownership, wiring, and architecture contract tests
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_development_documentation_platform.py tests/backend/test_lite_complete_documentation_platform.py tests/backend/test_lite_production_architecture_platform.py'
 
   lite:test:docs:
     desc: Validate the MkDocs portal in external Chrome on desktop and mobile

@@ -161,11 +161,22 @@ def test_documentation_tasks_and_mkdocs_navigation_are_wired():
         assert f"  {task}:" in taskfile
     mkdocs = (ROOT / "mkdocs.yml").read_text()
     for page in (
-        "reference/api/lite-api.md", "generated/development/lite-events.md",
-        "generated/development/lite-sqlite-schema.md", "generated/development/projection-catalog.md",
-        "generated/development/ui-state-catalog.md", "generated/development/redaction-coverage.md",
+        "reference/api/lite-api.md",
+        "generated/development/lite-events.md",
+        "generated/development/lite-sqlite-schema.md",
+        "generated/development/ui-state-catalog.md",
+        "generated/enterprise/hubs/build-test.md",
+        "generated/enterprise/documentation-platform/index.md",
     ):
         assert page in mkdocs
+
+    # Specialist generated pages remain available through IA hubs,
+    # search, and cross-links without becoming primary nav entries.
+    for page in (
+        "docs/generated/development/projection-catalog.md",
+        "docs/generated/development/redaction-coverage.md",
+    ):
+        assert (ROOT / page).is_file(), page
 
 
 def test_generated_artifacts_exclude_absolute_paths_and_secret_values():

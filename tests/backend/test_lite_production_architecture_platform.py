@@ -323,7 +323,10 @@ def test_mkdocs_tasks_ci_and_browser_contract_are_wired():
     assert "task: lite:docs:architecture:check" in taskfile
 
     workflow = (ROOT / ".github/workflows/lite-quality.yml").read_text(encoding="utf-8")
-    assert "test_lite_production_architecture_platform.py" in workflow
+    assert "task lite:docs:check" in workflow
+
+    assert "lite:docs:backend-tests:" in taskfile
+    assert "test_lite_production_architecture_platform.py" in taskfile
 
     browser_test = (ROOT / "tests/docs/mkdocs.spec.ts").read_text(encoding="utf-8")
     for marker in (

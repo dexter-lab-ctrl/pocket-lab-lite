@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: d2c746aef06578690fde91eed58cee472bf9824cb8897cea21662a62a0f1fb12
+source_fingerprint: 8860aa47f7ee838a869621bffb8a225a7153151fe5162846dee559c874cd7da8
 schema_revision: 1
 validation_status: generated
 ---
@@ -160,6 +160,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:architecture:generate`
 - `lite:docs:architecture:icons:check`
 - `lite:docs:architecture:validate`
+- `lite:docs:backend-tests`
 - `lite:docs:bootstrap`
 - `lite:docs:capabilities`
 - `lite:docs:check`
