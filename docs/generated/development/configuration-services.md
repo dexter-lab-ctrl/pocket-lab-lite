@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 0a14f0c090c5d23f4fb59a5a99d7cb0b7d640fb5b066684cfeb086b260df570a
+source_fingerprint: 8860aa47f7ee838a869621bffb8a225a7153151fe5162846dee559c874cd7da8
 schema_revision: 1
 validation_status: generated
 ---
@@ -25,8 +25,11 @@ Only variable names and safe defaults are documented. Runtime values and private
 
 - `CHROME_PATH`
 - `EDGE_ASSETS`
+- `EDGE_DOMAINS`
+- `EDGE_JOURNEYS`
 - `EDGE_META`
 - `EDGE_STYLES`
+- `EDGE_XREFS`
 - `LITE_ANDROID_GATE`
 - `LITE_API_DIRECT_URL`
 - `LITE_BASE_URL`
@@ -270,9 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_S6_GATE_PM2`
 - `POCKETLAB_S6_GATE_PYTHON`
 - `POCKETLAB_S6_GATE_REPLAY_WAIT_SECONDS`
-- `POCKETLAB_S6_GATE_SCAN_TERMINAL_TIMEOUT_SECONDS`
-- `POCKETLAB_S6_GATE_SCAN_TIMEOUT_SECONDS`
-- `POCKETLAB_S6_GATE_SQLITE`
 
 ## Process roles
 

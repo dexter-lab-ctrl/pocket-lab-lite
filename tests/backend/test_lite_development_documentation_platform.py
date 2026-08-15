@@ -88,10 +88,15 @@ def test_development_and_production_docs_are_independent_and_mark_partial_surfac
     # The current Documentation Platform exposes question/task-oriented
     # top-level hubs rather than the legacy Development/Production tabs.
     for heading in (
-        "  - Understand:",
+        "  - Start Here:",
+        "  - Use:",
         "  - Operate:",
-        "  - Release:",
+        "  - Understand:",
+        "  - Build & Test:",
+        "  - Security & Assurance:",
+        "  - Release & Change:",
         "  - Reference:",
+        "  - Documentation Platform:",
     ):
         assert heading in mkdocs
 
@@ -261,7 +266,7 @@ def test_enterprise_mkdocs_theme_and_browser_gate_are_source_owned():
         "stylesheets/components.css",
         "stylesheets/print.css",
         "javascripts/docs.js",
-        "documentation-experience.md",
+        "generated/enterprise/documentation-platform/index.md",
     ):
         assert token in mkdocs
     for path in (

@@ -146,7 +146,17 @@ def test_home_dashboard_and_information_architecture_are_question_oriented():
     mkdocs = MKDOCS.read_text(encoding="utf-8")
     home = HOME.read_text(encoding="utf-8")
     fragment = HOME_FRAGMENT.read_text(encoding="utf-8")
-    for entry in ("Home", "Understand", "Operate", "Evidence", "Develop", "Release", "Reference"):
+    for entry in (
+        "Start Here",
+        "Use",
+        "Operate",
+        "Understand",
+        "Build & Test",
+        "Security & Assurance",
+        "Release & Change",
+        "Reference",
+        "Documentation Platform",
+    ):
         assert f"  - {entry}:" in mkdocs
     assert "navigation.instant" in mkdocs
     assert "navigation.instant.prefetch" in mkdocs

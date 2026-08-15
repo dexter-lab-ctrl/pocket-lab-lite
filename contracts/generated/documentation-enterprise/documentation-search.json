@@ -1,0 +1,171 @@
+{
+  "entries": [
+    {
+      "aliases": [
+        "bootstrap device",
+        "device invite",
+        "enroll device",
+        "join device"
+      ],
+      "canonical": "add device",
+      "destinations": [
+        "generated/enterprise/journeys/devices.md",
+        "generated/production/devices.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "api to ui",
+        "api ui",
+        "frontend api"
+      ],
+      "canonical": "api frontend",
+      "destinations": [
+        "generated/enterprise/reference/api-ui-trace.md",
+        "generated/development/frontend-api-usage.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "app catalog",
+        "install app",
+        "photoprism install"
+      ],
+      "canonical": "app install",
+      "destinations": [
+        "generated/enterprise/journeys/apps.md",
+        "generated/production/apps.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "backup",
+        "preview restore",
+        "recovery",
+        "restore"
+      ],
+      "canonical": "backup restore",
+      "destinations": [
+        "generated/enterprise/journeys/recovery.md",
+        "generated/production/recovery.md"
+      ],
+      "intent_priority": "operator-diagnostic"
+    },
+    {
+      "aliases": [
+        "agent stopped",
+        "device not reachable",
+        "node disconnected",
+        "restart agent"
+      ],
+      "canonical": "device offline",
+      "destinations": [
+        "generated/enterprise/hubs/operate.md",
+        "generated/production/troubleshooting.md",
+        "generated/enterprise/journeys/devices.md"
+      ],
+      "intent_priority": "operator-diagnostic"
+    },
+    {
+      "aliases": [
+        "docs generator",
+        "documentation platform",
+        "generation lifecycle"
+      ],
+      "canonical": "documentation generator",
+      "destinations": [
+        "generated/enterprise/documentation-platform/generation-pipeline.md",
+        "generated/enterprise/documentation-platform/architecture.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "event encyclopedia",
+        "jetstream event",
+        "nats event"
+      ],
+      "canonical": "event nats",
+      "destinations": [
+        "generated/enterprise/engineering/events.md",
+        "generated/development/knowledge/events-nats.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "release delta",
+        "upgrade impact",
+        "what changed"
+      ],
+      "canonical": "release changed",
+      "destinations": [
+        "generated/enterprise/hubs/release-change.md",
+        "generated/production/intelligence/what-changed.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "remote access broken",
+        "tailnet problem",
+        "tailscale unavailable"
+      ],
+      "canonical": "remote access not ready",
+      "destinations": [
+        "generated/enterprise/journeys/remote-access.md",
+        "generated/production/remote-access.md",
+        "generated/enterprise/operate/troubleshooting.md"
+      ],
+      "intent_priority": "operator-diagnostic"
+    },
+    {
+      "aliases": [
+        "lynis",
+        "safety check",
+        "security check",
+        "trivy"
+      ],
+      "canonical": "security scan",
+      "destinations": [
+        "generated/enterprise/journeys/security.md",
+        "generated/production/security.md"
+      ],
+      "intent_priority": "operator-diagnostic"
+    },
+    {
+      "aliases": [
+        "confidence",
+        "evidence",
+        "evidence coverage",
+        "provenance"
+      ],
+      "canonical": "why do we believe this",
+      "destinations": [
+        "generated/enterprise/hubs/security-assurance.md",
+        "generated/production/intelligence/why-we-believe-this.md"
+      ],
+      "intent_priority": "canonical-reference"
+    }
+  ],
+  "implementation": "static-local-search-metadata",
+  "ranking_model": {
+    "algorithm": "weighted-lexical-static",
+    "note": "MkDocs remains the local search engine; hub/search-term content is generated so task-intent pages are indexed before deep repository internals where practical.",
+    "weights": {
+      "alias_match": 80,
+      "audience_match": 10,
+      "canonical_bonus": 5,
+      "domain_match": 20,
+      "exact_title": 100,
+      "intent_match": 30,
+      "limitation_penalty": -5,
+      "page_type_priority": 10
+    }
+  },
+  "runtime_indexing": false,
+  "schema_version": "1.0.0"
+}

@@ -16,7 +16,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Workflow | Task count |
 | --- | --- |
 | Development loop | 50 |
-| Documentation loop | 50 |
+| Documentation loop | 53 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 24 |
 | Security-analysis loop | 8 |
@@ -364,6 +364,40 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Example:** `task lite:docs:architecture:validate`
 
+## `lite:docs:backend-tests`
+
+**Purpose:** Run backend Documentation Platform ownership, wiring, and architecture contract tests
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_development_documentation_platform.py tests/backend/test_lite_complete_documentation_platform.py tests/backend/test_lite_production_architecture_platform.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_complete_documentation_platform.py, tests/backend/test_lite_development_documentation_platform.py, tests/backend/test_lite_production_architecture_platform.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:backend-tests`
+
 ## `lite:docs:bootstrap`
 
 **Purpose:** Generate bootstrap-stage documentation without executing any stage
@@ -458,6 +492,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `task lite:docs:production:check`
 - `{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check`
 - `task lite:docs:diagrams:check`
+- `task lite:docs:backend-tests`
 - `{{.PYTHON}} -m mkdocs build --strict`
 - `task lite:docs:runtime-network:check`
 
@@ -473,7 +508,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
 
-**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:tools:check
+**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:backend-tests, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:tools:check
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 
@@ -789,7 +824,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 ## `lite:docs:enterprise:check`
 
-**Purpose:** Check enterprise Documentation Platform determinism, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections
+**Purpose:** Check enterprise Documentation Platform determinism, IA, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections
 
 **Audience:** developer
 
@@ -800,6 +835,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Commands:**
 
 - `{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check`
+- `task lite:docs:ia:check`
 - `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py`
 
 **Environment:** None source-discovered
@@ -814,7 +850,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
 
-**Related tasks:** None
+**Related tasks:** lite:docs:ia:check
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 
@@ -1039,6 +1075,75 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:docs:health:generate`
+
+## `lite:docs:ia:check`
+
+**Purpose:** Check Documentation Platform IA determinism, canonical navigation ownership, bounded relationships, search destinations, and redaction fences
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py check`
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_ia.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/enterprise/documentation_ia.py, tests/docs/test_documentation_ia.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:docs:ia:check`
+
+## `lite:docs:ia:generate`
+
+**Purpose:** Generate deterministic Documentation Platform IA hubs, feature journeys, page inventory, cross-links, and static search metadata
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py generate`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/enterprise/documentation_ia.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:ia:generate`
 
 ## `lite:docs:intelligence:check`
 

@@ -19149,6 +19149,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/documentation-ia.spec.ts",
+      "name": "tests/docs/documentation-ia.spec.ts",
+      "source_refs": [
+        "tests/docs/documentation-ia.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/knowledge-graph.spec.ts",
       "name": "tests/docs/knowledge-graph.spec.ts",
       "source_refs": [
@@ -19173,6 +19183,16 @@
       "name": "tests/docs/test_docs_runtime_network_fence.py",
       "source_refs": [
         "tests/docs/test_docs_runtime_network_fence.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_documentation_ia.py",
+      "name": "tests/docs/test_documentation_ia.py",
+      "source_refs": [
+        "tests/docs/test_documentation_ia.py"
       ],
       "type": "test"
     },
@@ -22143,9 +22163,11 @@
         "test:tests/dev/test_dev_scratch_policy.py",
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/dev/test_pytest_temp_policy.py",
+        "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_docs_runtime_network_fence.py",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -23031,9 +23053,11 @@
         "test:tests/dev/test_dev_scratch_policy.py",
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/dev/test_pytest_temp_policy.py",
+        "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_docs_runtime_network_fence.py",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -30497,6 +30521,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/documentation-ia.spec.ts": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/mkdocs.spec.ts": [
         {
           "source": "component:lite-api",
@@ -30529,6 +30559,20 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_documentation_ia.py": [
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:platform",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_documentation_intelligence.py": [
         {
           "source": "component:photoprism",
@@ -30552,6 +30596,10 @@
         },
         {
           "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:platform",
           "type": "verified_by"
         },
         {
@@ -38583,6 +38631,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_documentation_ia.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
@@ -39174,6 +39226,14 @@
         },
         {
           "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_ia.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
         {
@@ -39985,7 +40045,15 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/documentation-ia.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
         {
@@ -50640,6 +50708,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:6ffb9ecd128ad457",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:687"
       ],
       "id": "rel:7029047d31809239",
@@ -51186,6 +51263,15 @@
       "source": "component:github-release",
       "target": "threat-model:external-release",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:773788cacd6f483a",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -54332,6 +54418,15 @@
       "source": "component:last-known-good",
       "target": "boundary:server-host",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_intelligence.py"
+      ],
+      "id": "rel:a186fb5192a4ed8f",
+      "source": "domain:platform",
+      "target": "test:tests/docs/test_documentation_intelligence.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -58308,6 +58403,15 @@
     },
     {
       "evidence": [
+        "tests/docs/documentation-ia.spec.ts"
+      ],
+      "id": "rel:d6a787d7b4ad51f4",
+      "source": "domain:security",
+      "target": "test:tests/docs/documentation-ia.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:d6e91dc29ba2fff3",
@@ -60512,6 +60616,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:f227b0fcb00be83f",
+      "source": "domain:platform",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:f2320e84c8f57707",
@@ -61495,9 +61608,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "fb40236a100b087d6abbfb308007b6581197081d4bc4b072771516a28ba12a88",
+  "source_fingerprint": "1b064f4d2d441f9351c8c8b26977611f1175d8c85d953686da0e69575878f9ea",
   "statistics": {
-    "entity_count": 851,
+    "entity_count": 853,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61514,14 +61627,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 176,
+      "test": 178,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2140,
-    "source_count": 212
+    "relation_count": 2145,
+    "source_count": 214
   }
 }

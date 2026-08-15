@@ -2253,6 +2253,7 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -2385,6 +2386,8 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_ia.py",
+        "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -2519,7 +2522,9 @@
         "test:tests/backend/test_lite_startup_workload_isolation.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
+        "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_enterprise_documentation.py",
@@ -3038,6 +3043,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "fb40236a100b087d6abbfb308007b6581197081d4bc4b072771516a28ba12a88"
+    "source_fingerprint": "1b064f4d2d441f9351c8c8b26977611f1175d8c85d953686da0e69575878f9ea"
   }
 }

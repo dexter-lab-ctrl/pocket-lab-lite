@@ -24,6 +24,7 @@ import jsonschema
 import yaml
 
 from enterprise_completion import complete as complete_enterprise_projection
+from documentation_ia import build as build_documentation_ia
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = ROOT / "scripts/docs/enterprise/generate_enterprise_documentation.py"
@@ -49,7 +50,7 @@ THREAT_MODEL = ROOT / "contracts/security/threat-model.json"
 DIAGRAMS = ROOT / "docs/generated/assets/enterprise"
 INDEX = OUT / "index.json"
 
-PRIVATE = re.compile(r"(?:/home/[^/\s]+|/data/data/com\.termux/files/(?:home|usr)|[A-Za-z]:\\Users\\|nats://[^\s]+@)", re.I)
+PRIVATE = re.compile(r"(?:(?<![A-Za-z0-9._-])/home/[^/\s]+|/data/data/com\.termux/files/(?:home|usr)|[A-Za-z]:\\Users\\|nats://[^\s]+@)", re.I)
 SECRET = re.compile(r"(?:BEGIN [A-Z ]*PRIVATE KEY|(?:password|passwd|token|secret|api[_-]?key|credential|authorization)\s*[=:]\s*[^\s,}\]]{6,})", re.I)
 STRIDE = ["Spoofing", "Tampering", "Repudiation", "Information Disclosure", "Denial of Service", "Elevation of Privilege"]
 BOUNDARIES = [
@@ -134,7 +135,7 @@ def safe(label: str, text: str) -> None:
 
 
 def inputs() -> list[Path]:
-    paths = [GENERATOR, ROOT / "scripts/docs/enterprise/enterprise_completion.py", ROOT / "scripts/docs/enterprise/threat_model_experience.py", ROOT / "scripts/docs/release_model.py", ROOT / "security/threat-model-scenarios.json", ROOT / "scripts/docs/enterprise/supply_chain_automation.py", ROOT / "scripts/docs/enterprise/release_provenance.py", SCHEMA, TOOLS, PLATFORM, EXPERIENCE, KNOWLEDGE, INTELLIGENCE, OP_HEALTH, RUNTIME, ARCH, ASYNCAPI, OPENAPI, REASONS, RELEASES, ADRS, RELEASE_CHANGES_KB]
+    paths = [GENERATOR, ROOT / "scripts/docs/enterprise/enterprise_completion.py", ROOT / "scripts/docs/enterprise/documentation_ia.py", ROOT / "scripts/docs/enterprise/threat_model_experience.py", ROOT / "scripts/docs/release_model.py", ROOT / "security/threat-model-scenarios.json", ROOT / "scripts/docs/enterprise/supply_chain_automation.py", ROOT / "scripts/docs/enterprise/release_provenance.py", SCHEMA, TOOLS, PLATFORM, EXPERIENCE, KNOWLEDGE, INTELLIGENCE, OP_HEALTH, RUNTIME, ARCH, ASYNCAPI, OPENAPI, REASONS, RELEASES, ADRS, RELEASE_CHANGES_KB]
     paths.append(ROOT / "scripts/docs/enterprise/threat_model_poster.py")
     paths.append(ROOT / "scripts/docs/enterprise/threat_model_layout.py")
     paths += sorted((ROOT / "docs/assets/diagrams/production/icons").glob("*.svg"))
@@ -564,6 +565,14 @@ def search_synonyms() -> list[dict[str, Any]]:
       "recovery":["/generated/production/recovery/","/generated/production/intelligence/recovery-readiness/"],
       "operational-health":["/generated/production/intelligence/current-health/","/generated/development/knowledge/operational-health/"],
       "release-impact":["/generated/production/intelligence/what-changed/"],
+      "add device":["/generated/production/devices/"],
+      "backup restore":["/generated/production/recovery/"],
+      "app install":["/generated/production/apps/"],
+      "api frontend":["/generated/development/frontend-api-usage/","/generated/enterprise/reference/api-ui-trace/"],
+      "event nats":["/generated/enterprise/engineering/events/","/generated/development/lite-events/"],
+      "why do we believe this":["/generated/production/intelligence/why-we-believe-this/"],
+      "documentation generator":["/generated/enterprise/documentation-platform/generation-pipeline/"],
+      "release changed":["/generated/production/intelligence/what-changed/"],
     }
     return [{"canonical":k,"synonyms":sorted(set(v)),"destinations":destinations.get(k,[])} for k,v in sorted(defaults.items())]
 
@@ -602,12 +611,8 @@ def build() -> tuple[dict[Path,str], dict[str,Any]]:
 
     def doc_page(title:str, desc:str, audience:str, body:str, page_type:str="reference") -> str: return frontmatter(title,desc,audience,page_type)+body.strip()+"\n"
     task_rows=[[x["name"],x["purpose"],", ".join(x["dependencies"]) or "—", "yes" if x["captures_runtime"] else "no", "yes" if x["promotes_evidence"] else "no", "WSL2/CI" if x["requires_wsl2_or_ci"] else ("Termux" if x["requires_termux"] else "local"), x["runtime_class"]] for x in tasks]
-    outputs[DOC/"documentation-platform/index.md"]=doc_page("Documentation Platform","How Pocket Lab Lite generates evidence-backed documentation.","development","# Documentation Platform\n\nPocket Lab Lite documentation is a generated knowledge/evidence projection, not a control plane.\n\n## Generation pipeline\n\n`source + canonical contracts → promoted sanitized evidence → generators → validation → MkDocs`\n\n## Security boundary\n\nMkDocs does not capture runtime, poll NATS, run scanners, promote evidence, or access secrets.\n\n## Sections\n\n- Information architecture and UX contract\n- Evidence model and runtime promotion\n- Living Knowledge and Documentation Intelligence\n- Architecture generation\n- Validation gates and contributing\n")
-    outputs[DOC/"documentation-platform/information-architecture.md"]=doc_page("Information Architecture","Question-oriented Documentation Platform navigation and audience model.","development","# Information Architecture\n\nTop-level navigation separates understanding, operation, knowledge, architecture, threat posture, evidence, engineering, Documentation Platform, release, and reference concerns. Canonical pages are linked rather than copied.\n")
-    outputs[DOC/"documentation-platform/generation-pipeline.md"]=doc_page("Generation Pipeline","Deterministic source/evidence generation pipeline.","development","# Generation Pipeline\n\n`canonical source → sanitized/promoted evidence → generated contracts → intelligence/knowledge → MkDocs`\n\n`task lite:docs:sync` regenerates and checks documentation only; it never captures or promotes runtime evidence and never runs heavy scanners.\n")
-    outputs[DOC/"documentation-platform/evidence-model.md"]=doc_page("Evidence Model","Evidence authority, freshness and promotion boundaries.","development","# Evidence Model\n\nSource-derived semantics, promoted runtime observations, validation evidence and release manifests remain distinct authorities. Unknown or stale evidence remains explicit and must not be upgraded by presentation logic.\n")
-    outputs[DOC/"documentation-platform/design-system.md"]=doc_page("Design System","Shared enterprise visual language for Production and Engineering references.","development","# Design System\n\nProduction and Development keep one brand while using explicit audience banners, semantic status labels, responsive tables/cards, progressive disclosure, keyboard-safe navigation and reduced-motion support.\n")
-    outputs[DOC/"documentation-platform/search-model.md"]=doc_page("Documentation search model","Generated deterministic search synonyms and destinations.","development","# Search model\n\n"+table(["Canonical query","Synonyms","Destinations"],[[x["canonical"],x["synonyms"],x["destinations"]] for x in synonyms]))
+    # Documentation Platform system-manual pages are owned by documentation_ia.py.
+    # The enterprise generator merges that deterministic IA projection after completion.
     dep_summary = Counter(str(x.get("state") or "unvalidated") for x in deps)
     dep_body = '# Dependency Health\n\n<div class="pl-page-lede"><strong>Trace degradation without leaking implementation paths.</strong><p>Domain health and child dependency evidence stay independent. The diagram is rendered as a contained asset; local filesystem prefixes and Markdown renderer directives are never emitted as visible content.</p></div>\n\n'
     dep_body += '<div class="pl-kpi-grid">' + ''.join(f'<div class="pl-kpi"><span>{html.escape(state.replace("-", " ").title())}</span><strong>{count}</strong><small>dependency observations</small></div>' for state, count in sorted(dep_summary.items())) + '</div>\n\n'
@@ -615,19 +620,7 @@ def build() -> tuple[dict[Path,str], dict[str,Any]]:
     dep_body += '<div class="pl-wide-data">\n' + table(["Domain","Dependency","State","Evidence authority","Blocking","Root cause"],[[x["domain"],x["dependency"],x["state"],x["evidence_authority"],x["blocking"],x["root_cause"]] for x in deps]) + '</div>\n'
     outputs[DOC/"reference/dependency-health.md"]=doc_page("Dependency Health","Graphviz dependency-health visualization derived from canonical metadata and promoted evidence.","development",dep_body)
 
-    page_type_specs = [
-        ("Domain page", "Operational understanding", ["summary", "current state", "capabilities", "dependencies", "evidence", "known limitations", "recovery", "provenance"], "Use when explaining what an area is, what state it is in, and how to recover safely."),
-        ("Runbook page", "Incident response", ["symptom", "impact", "likely causes", "safe checks", "recovery", "verification", "rollback", "escalation", "evidence"], "Use when an operator needs a bounded diagnostic and recovery path."),
-        ("Threat model page", "Security reasoning", ["boundary", "assets", "actors", "entry points", "allowed flows", "forbidden flows", "threats", "controls", "runtime evidence", "residual risk", "review status"], "Use when reviewing trust boundaries, controls, and unresolved security risk."),
-    ]
-    page_types_body = '# Page types\n\n<div class="pl-page-lede"><strong>Consistent anatomy is a usability and evidence-control feature.</strong><p>Each generated page type has a predictable reading order so operators, developers and reviewers can find the same kind of information in the same place.</p></div>\n\n<div class="pl-page-type-grid">\n'
-    for title, purpose, anatomy, guidance in page_type_specs:
-        page_types_body += '<article class="pl-page-type-card">'
-        page_types_body += f'<span class="pl-card-kicker">{html.escape(purpose)}</span><h2>{html.escape(title)}</h2><p>{html.escape(guidance)}</p>'
-        page_types_body += '<div class="pl-anatomy-flow">' + ''.join(f'<span>{idx}<strong>{html.escape(part)}</strong></span>' for idx, part in enumerate(anatomy, 1)) + '</div>'
-        page_types_body += '</article>\n'
-    page_types_body += '</div>\n\n!!! info "Enforcement"\n    The generator remains the source of page anatomy. Generated pages should not bypass these structures with hand-maintained one-off layouts.\n'
-    outputs[DOC/"documentation-platform/page-types.md"]=doc_page("Documentation page types","Machine-enforced page anatomy contract.","development",page_types_body)
+    # Page-type documentation is generated by documentation_ia.py from one canonical taxonomy.
 
     task_details=[]
     for t in tasks:
@@ -704,6 +697,34 @@ def build() -> tuple[dict[Path,str], dict[str,Any]]:
     search_body += '</div>\n'
     outputs[DOC/"search-synonyms.md"]=doc_page("Search aliases","Searchable alias terms mapped to canonical documentation destinations.","all",search_body)
     index, outputs = complete_enterprise_projection(ROOT, index, outputs, frontmatter=frontmatter, table=table, deps=deps, base_config=config, supply=supply)
+    ia_overrides = {}
+    for key, path in {
+        "api-ui-trace": OUT / "api-ui-trace.json",
+        "event-encyclopedia": OUT / "event-encyclopedia.json",
+        "security-controls": OUT / "security-controls.json",
+    }.items():
+        if path in outputs:
+            ia_overrides[key] = json.loads(outputs[path])
+        elif path.exists():
+            ia_overrides[key] = read_json(path, {}) or {}
+    ia_outputs, ia_contract, ia_cross_links, ia_search = build_documentation_ia(ROOT, overrides=ia_overrides)
+    outputs.update(ia_outputs)
+    index["items"]["information_architecture"] = {
+        "implementation_status": "implemented",
+        "contract": "contracts/generated/documentation-enterprise/information-architecture.json",
+        "page_count": ia_contract["page_count"],
+        "feature_journey_count": len(ia_contract["feature_journeys"]),
+        "cross_link_count": len(ia_cross_links["relations"]),
+        "top_level": ia_contract["top_level"],
+        "live_runtime": False,
+    }
+    index["items"]["documentation_search"] = {
+        "implementation_status": "implemented",
+        "contract": "contracts/generated/documentation-enterprise/documentation-search.json",
+        "local_static": True,
+        "runtime_indexing": False,
+        "alias_groups": len(ia_search["entries"]),
+    }
     index["source_fingerprint"] = fp
     outputs[INDEX] = stable(index)
     outputs[OUT/"threat-dragon-export.json"] = stable(threat_dragon_export(index["items"]["threat_model"]))

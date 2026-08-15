@@ -284,15 +284,27 @@ tasks:
       - '{{.PYTHON}} scripts/docs/intelligence/generate_documentation_intelligence.py check'
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_intelligence.py'
 
+  lite:docs:ia:generate:
+    desc: Generate deterministic Documentation Platform IA hubs, feature journeys, page inventory, cross-links, and static search metadata
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py generate'
+
+  lite:docs:ia:check:
+    desc: Check Documentation Platform IA determinism, canonical navigation ownership, bounded relationships, search destinations, and redaction fences
+    cmds:
+      - '{{.PYTHON}} scripts/docs/enterprise/documentation_ia.py check'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_documentation_ia.py'
+
   lite:docs:enterprise:generate:
     desc: Generate enterprise documentation intelligence, threat model, dependency visualizations, engineering handbooks, and fail-closed release/supply-chain projections
     cmds:
       - '{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py generate'
 
   lite:docs:enterprise:check:
-    desc: Check enterprise Documentation Platform determinism, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections
+    desc: Check enterprise Documentation Platform determinism, IA, page anatomy, search synonyms, sanitization, and canonical threat/release/supply-chain projections
     cmds:
       - '{{.PYTHON}} scripts/docs/enterprise/generate_enterprise_documentation.py check'
+      - task: lite:docs:ia:check
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_enterprise_documentation.py tests/docs/test_enterprise_completion.py'
 
   lite:docs:enterprise-tools:plan:
@@ -502,8 +514,14 @@ tasks:
       - task: lite:docs:production:check
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
       - task: lite:docs:diagrams:check
+      - task: lite:docs:backend-tests
       - '{{.PYTHON}} -m mkdocs build --strict'
       - task: lite:docs:runtime-network:check
+
+  lite:docs:backend-tests:
+    desc: Run backend Documentation Platform ownership, wiring, and architecture contract tests
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_development_documentation_platform.py tests/backend/test_lite_complete_documentation_platform.py tests/backend/test_lite_production_architecture_platform.py'
 
   lite:test:docs:
     desc: Validate the MkDocs portal in external Chrome on desktop and mobile
