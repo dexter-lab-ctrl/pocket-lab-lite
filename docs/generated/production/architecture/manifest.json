@@ -411,10 +411,10 @@
     "docs/generated/production/architecture/security.md"
   ],
   "generator": "scripts/docs/graphviz/generate_lite_architecture.py",
-  "generator_sha256": "02de47c22b9356c7449db9ad73b49a94c16aa4f091e359238775908bbabe9dc7",
+  "generator_sha256": "cdcdf1a093360e793ed84c88419059141e30d227ddc82e764d3ab9e17a30f2e8",
   "generator_source_fingerprints": {
     "scripts/docs/graphviz/architecture_model.py": "e0be5293e08b43c7a4da2099a1a7ecbf72c66e4978edac28d4c63e9c487ec83d",
-    "scripts/docs/graphviz/architecture_pages.py": "c0e419005198ab0437e37080bfd218097ae8e809e3f77a8a618f815a6727a0fa",
+    "scripts/docs/graphviz/architecture_pages.py": "b39f9c1b88e930a2d966aed58ab0b7885389e49771427a875d81558e8c69e465",
     "scripts/docs/graphviz/architecture_source_verifier.py": "55befee2cee5033d2121564a95545b46225bb6094abbacfebbfd6ca4c88f1107",
     "scripts/docs/graphviz/generate_lite_architecture.py": "f481391ef95a2ea3b22fe6619f15e202a2c2701ce512ecb7382a49ad3073c7ef",
     "scripts/docs/graphviz/graphviz_renderer.py": "19326fd9eed67511edc6506e193bebc735be218e2d1e22ab297bc80c7eab76a9",
@@ -427,7 +427,7 @@
   "repository_source_fingerprint": "861cc470d342aef92a8169163444cf8a2072b9f47fa089f8c5b6ad1e35a6df0b",
   "schema_revision": 1,
   "sha256": {
-    "contracts/generated/architecture-catalog.json": "8fd6863ed7c6dfb9eb8654289f3cdf058bc498c5cae3eaca63a4362f4c70ab2a",
+    "contracts/generated/architecture-catalog.json": "40a648c1db69733fbe5be57baefa4378cf21ffd41068f7163f7cf596531f5da6",
     "docs/assets/diagrams/production/components/agent-command-executor.dark.dot": "e4492ff53914b5ade559cf3570f1156f7dd0a7937d693face54a0300be0e6a00",
     "docs/assets/diagrams/production/components/agent-command-executor.dark.svg": "7166a8fe28bada645ee7ccae2a519464cf43a37b87061b20949e279f04cd3f60",
     "docs/assets/diagrams/production/components/agent-command-executor.light.dot": "6ea3027e17ac5e49410112b822e09c423507a7b09f1b0d5cc19628b4b738ccb7",
@@ -820,7 +820,7 @@
     "docs/generated/production/architecture/device-onboarding.md": "c75f11d0fa8c1ce10c80aace803f2b5da0959847d0279f2821313fcd43037f60",
     "docs/generated/production/architecture/device-recovery.md": "8016a9be46592b2d08edda3b6cb4cbcd31422d3922bf9517fb763c06c256f92a",
     "docs/generated/production/architecture/frontend-state.md": "f4696729f135b7f20d5876363e7746d779cee613357b83ddb8da80e576a43cd8",
-    "docs/generated/production/architecture/index.md": "d14cd0b9d40b9fe995c8aa3c6e814063561ec62cced2ca763144403d0ae880ee",
+    "docs/generated/production/architecture/index.md": "b744667ab4f3db19a40a937ac0368519edca1a411f7a7dd486425979c040443f",
     "docs/generated/production/architecture/network-boundaries.md": "27128ec1794d754470bca49abbddf8b686cf420f78308295b7064d237ca1022f",
     "docs/generated/production/architecture/release-rollback.md": "2a33f9621082ea2b5c71f2d0e68ab0ad2d9034f181864f09820eef6672e3ed26",
     "docs/generated/production/architecture/remote-access.md": "2d9a3d8ccc1ec8c3538f22e2dbe77d21d54405490b8c2749f8f9ada1d4a13f1b",

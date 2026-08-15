@@ -1,0 +1,12 @@
+{
+  "added_paths": [],
+  "changed_paths": [],
+  "classification_changes": [],
+  "generator": "scripts/docs/knowledge/generate_codebase_map.py",
+  "note": "Generated state matches the current Git-tracked repository model. Check mode computes drift against this tracked baseline before failing.",
+  "relationship_changes": [],
+  "removed_paths": [],
+  "schema_version": "1.0.0",
+  "source_fingerprint": "9af7b665c742c146e801ebd545d31d7cd349292c637457beb78a4d7e9ce84008",
+  "status": "clean"
+}

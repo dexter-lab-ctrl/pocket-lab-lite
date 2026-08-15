@@ -32624,7 +32624,7 @@
       "feature_journey_count": 7,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 414,
+      "page_count": 415,
       "top_level": [
         "start-here",
         "use",
@@ -33319,8 +33319,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "e985aeddf485a7861f66de8c7ef747cc9aa7e25d",
-          "head_tree": "0f10b33263ffa0b1529d588abb499d124e18d589",
+          "head": "d9589168aa2166c09b39a52b982d827a089c3f59",
+          "head_tree": "a9a5288903ce137eab69fa3de64a981b9573ff23",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34002,7 +34002,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "e4b4fdaf1d26e461469e933d650e2a07ea1ad6cad82bb9d5bc66a33dec1e80a1",
+        "documentation": "7c0b9796f382e1a271952d09bfbfb97f89b1b6c185497bcce792e7207b7856dd",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -35977,8 +35977,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "e985aeddf485a7861f66de8c7ef747cc9aa7e25d",
-        "head_tree": "0f10b33263ffa0b1529d588abb499d124e18d589",
+        "head": "d9589168aa2166c09b39a52b982d827a089c3f59",
+        "head_tree": "a9a5288903ce137eab69fa3de64a981b9573ff23",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -72592,6 +72592,8 @@
         "lite:docs:architecture:generate",
         "lite:docs:architecture:icons:check",
         "lite:docs:check",
+        "lite:docs:codebase-map:check",
+        "lite:docs:codebase-map:generate",
         "lite:docs:development:check",
         "lite:docs:development:generate",
         "lite:docs:diagrams:check",
@@ -73215,6 +73217,7 @@
           "task lite:docs:parity:check",
           "task lite:docs:health:check",
           "task lite:docs:knowledge:check",
+          "task lite:docs:codebase-map:check",
           "task lite:docs:intelligence:check",
           "task lite:docs:enterprise:check",
           "task lite:docs:architecture:check",
@@ -73251,6 +73254,7 @@
           "lite:dev:scratch:prepare",
           "lite:docs:architecture:check",
           "lite:docs:backend-tests",
+          "lite:docs:codebase-map:check",
           "lite:docs:development:check",
           "lite:docs:diagrams:check",
           "lite:docs:enterprise:check",
@@ -73277,6 +73281,88 @@
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "gate-defined",
         "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py check",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_codebase_map.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:codebase-map:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/knowledge/generate_codebase_map.py",
+          "tests/docs/test_codebase_map.py"
+        ],
+        "name": "lite:docs:codebase-map:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py generate"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:codebase-map:generate",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/knowledge/generate_codebase_map.py"
+        ],
+        "name": "lite:docs:codebase-map:generate",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Generate the deterministic Git-tracked Codebase Map model, browser projection, documentation health, and clean structural delta",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
       },
       {
         "aliases": [],
@@ -73816,6 +73902,7 @@
           "task lite:docs:parity:generate",
           "task lite:docs:health:generate",
           "task lite:docs:knowledge:generate",
+          "task lite:docs:codebase-map:generate",
           "task lite:docs:intelligence:generate",
           "task lite:docs:enterprise:generate",
           "task lite:docs:architecture:generate",
@@ -73845,6 +73932,7 @@
         "related_tasks": [
           "lite:contracts:generate",
           "lite:docs:architecture:generate",
+          "lite:docs:codebase-map:generate",
           "lite:docs:development:generate",
           "lite:docs:diagrams:generate",
           "lite:docs:enterprise:generate",
@@ -85312,5 +85400,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "91497279b1b6a2530ddb1717fca49c803ea2b190269d4892bfe060553bb7bf31"
+  "source_fingerprint": "208153d53a393c4529f1807e2083eb6382298943b29c738456353a1f4469b9c5"
 }

@@ -14,7 +14,9 @@ generator_version: 3
 
 <div class="pl-page-lede"><strong>Start with a repository area, then drill into exact source ownership.</strong><p>This is a reverse lookup from source paths to generated knowledge entities. It is source-derived and does not expose local filesystem prefixes.</p></div>
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>20</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>77</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>20</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>175</strong><small>mapped sources</small></div></div>
+> Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
+
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>20</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>77</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>20</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>177</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -323,9 +325,11 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/dev/test_dev_scratch_policy.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/dev/test_dev_scratch_policy.py</span></div></article>
 <article class="pl-repository-card"><code>tests/dev/test_frontend_resource_policy.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/dev/test_frontend_resource_policy.py</span></div></article>
 <article class="pl-repository-card"><code>tests/dev/test_pytest_temp_policy.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/dev/test_pytest_temp_policy.py</span></div></article>
+<article class="pl-repository-card"><code>tests/docs/codebase-map.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/codebase-map.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/documentation-ia.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/documentation-ia.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/knowledge-graph.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/knowledge-graph.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/mkdocs.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/mkdocs.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/docs/test_codebase_map.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_codebase_map.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_docs_runtime_network_fence.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_docs_runtime_network_fence.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_documentation_ia.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_documentation_ia.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_documentation_intelligence.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_documentation_intelligence.py</span></div></article>

@@ -311,6 +311,10 @@ The [generated Threat Model](../../enterprise/threat-model/index.md) is a securi
 
 {links}
 
+## Repository implementation map
+
+Use the [Codebase Map](../../development/knowledge/codebase-map.md) to move from canonical architecture components and trust boundaries to the Git-tracked files that map to them. The Codebase Map consumes this architecture model; it does not redefine architecture ownership.
+
 ## Component catalog
 
 Open the [generated component catalog](component-catalog.md) for component function, protocols, ownership, runtime placement, health signals, evidence, source verification, and per-component mini diagrams.

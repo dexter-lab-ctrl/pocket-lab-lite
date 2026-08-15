@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.local/schemas/knowledge/repository-codebase-map.schema.json",
+  "title": "Pocket Lab Lite repository Codebase Map",
+  "type": "object",
+  "required": ["schema_version", "generator", "source_commit", "source_tree", "source_fingerprint", "statistics", "documentation_health", "topology", "nodes", "relationships", "indexes", "delta", "capabilities"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "generator": {"type": "string", "const": "scripts/docs/knowledge/generate_codebase_map.py"},
+    "generator_version": {"type": "integer", "minimum": 1},
+    "source_commit": {"type": "string", "minLength": 1},
+    "source_tree": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "source_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "statistics": {"type": "object"},
+    "documentation_health": {"type": "object"},
+    "topology": {"type": "object", "required": ["root_id", "external_entities"]},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path", "parent_id", "kind", "role", "facets", "execution_owner", "facts", "explanation", "architecture_refs", "trust_boundaries", "knowledge_refs", "critical"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^path:"},
+          "path": {"type": "string"},
+          "parent_id": {"type": ["string", "null"]},
+          "kind": {"enum": ["file", "directory"]},
+          "role": {"type": "string"},
+          "facets": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "execution_owner": {"type": "string"},
+          "facts": {"type": "object"},
+          "explanation": {
+            "type": "object",
+            "required": ["purpose", "responsibility", "architectural_role", "confidence", "status", "evidence_refs", "evidence_hash", "freshness_status"],
+            "properties": {
+              "purpose": {"type": "string", "minLength": 1},
+              "responsibility": {"type": "string", "minLength": 1},
+              "architectural_role": {"type": "string", "minLength": 1},
+              "confidence": {"enum": ["verified", "source-derived", "contract-derived", "path-derived", "generated", "stale", "unvalidated"]},
+              "status": {"type": "string"},
+              "evidence_refs": {"type": "array", "items": {"type": "string"}},
+              "evidence_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+              "freshness_status": {"enum": ["current", "stale", "unvalidated"]}
+            }
+          },
+          "architecture_refs": {"type": "array", "items": {"type": "string"}},
+          "trust_boundaries": {"type": "array", "items": {"type": "string"}},
+          "knowledge_refs": {"type": "array", "items": {"type": "string"}},
+          "critical": {"type": "boolean"}
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "source", "target", "evidence_refs", "confidence"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^rel:"},
+          "type": {"type": "string"},
+          "source": {"type": "string"},
+          "target": {"type": "string"},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "confidence": {"type": "string"}
+        }
+      }
+    },
+    "indexes": {"type": "object"},
+    "delta": {"type": "object"},
+    "capabilities": {"type": "object"}
+  },
+  "additionalProperties": false
+}

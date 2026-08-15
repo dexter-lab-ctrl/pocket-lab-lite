@@ -1096,7 +1096,10 @@ Pocket Lab Lite documentation is a deterministic engineering knowledge projectio
 <article class="pl-card"><span class="pl-card-kicker">Information Architecture</span><p>See audience, intent, primary navigation ownership, contextual links, and feature journeys.</p><a class="pl-intent-link" href="information-architecture/">Open IA</a></article>
 <article class="pl-card"><span class="pl-card-kicker">Sources of truth</span><p>Know which authority wins when source, generated docs, runtime evidence, and human review differ.</p><a class="pl-intent-link" href="sources-of-truth/">Open sources</a></article>
 <article class="pl-card"><span class="pl-card-kicker">Validation</span><p>Understand determinism, drift, navigation, redaction, browser, and security fences.</p><a class="pl-intent-link" href="validation-testing/">Open validation</a></article>
+<article class="pl-card"><span class="pl-card-kicker">Codebase Map</span><p>Inspect the Git-tracked repository model, ownership, source relationships, documentation health, and bounded static impact.</p><a class="pl-intent-link" href="../../development/knowledge/codebase-map/">Open Codebase Map</a></article>
 </div>
+
+The Codebase Map is a Documentation Platform projection. It consumes Git-tracked source plus existing Knowledge and Architecture contracts; it does not become a parallel runtime or architecture authority.
 
 ## Security boundary
 

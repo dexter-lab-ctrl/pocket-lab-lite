@@ -3986,7 +3986,7 @@
     "generated": true,
     "generated_at": "uncommitted",
     "generator": "scripts/docs/graphviz/generate_lite_architecture.py",
-    "generator_sha256": "02de47c22b9356c7449db9ad73b49a94c16aa4f091e359238775908bbabe9dc7",
+    "generator_sha256": "cdcdf1a093360e793ed84c88419059141e30d227ddc82e764d3ab9e17a30f2e8",
     "generator_version": 2,
     "repository_source_fingerprint": "861cc470d342aef92a8169163444cf8a2072b9f47fa089f8c5b6ad1e35a6df0b",
     "schema_revision": 1,

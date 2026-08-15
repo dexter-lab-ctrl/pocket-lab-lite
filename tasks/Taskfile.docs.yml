@@ -248,6 +248,17 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/docs/knowledge/generate_knowledge.py check'
 
+  lite:docs:codebase-map:generate:
+    desc: Generate the deterministic Git-tracked Codebase Map model, browser projection, documentation health, and clean structural delta
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py generate'
+
+  lite:docs:codebase-map:check:
+    desc: Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py check'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_codebase_map.py'
+
   lite:docs:knowledge:graph:
     desc: Validate the canonical knowledge graph and backlinks
     cmds:
@@ -475,6 +486,7 @@ tasks:
       - task: lite:docs:parity:generate
       - task: lite:docs:health:generate
       - task: lite:docs:knowledge:generate
+      - task: lite:docs:codebase-map:generate
       - task: lite:docs:intelligence:generate
       - task: lite:docs:enterprise:generate
       - task: lite:docs:architecture:generate
@@ -507,6 +519,7 @@ tasks:
       - task: lite:docs:parity:check
       - task: lite:docs:health:check
       - task: lite:docs:knowledge:check
+      - task: lite:docs:codebase-map:check
       - task: lite:docs:intelligence:check
       - task: lite:docs:enterprise:check
       - task: lite:docs:architecture:check
