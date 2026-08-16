@@ -187,3 +187,28 @@ def test_fixed_pairwise_style_classification_surface_is_deterministic():
     assert confidence <= {"verified", "source-derived", "contract-derived", "path-derived", "generated", "stale", "unvalidated"}
     for role, owner in list(product(sorted(roles)[:6], sorted(owners)[:6]))[:24]:
         assert "\n" not in role + owner
+
+def test_codebase_map_generation_runs_last_in_docs_generate() -> None:
+    taskfile = Path("tasks/Taskfile.docs.yml").read_text(encoding="utf-8")
+
+    start = taskfile.index("  lite:docs:generate:")
+    end = taskfile.index("\n  lite:docs:sync:", start)
+    block = taskfile[start:end]
+
+    codebase_map = block.index(
+        "- task: lite:docs:codebase-map:generate"
+    )
+
+    for source_generator in (
+        "- task: lite:docs:intelligence:generate",
+        "- task: lite:docs:enterprise:generate",
+        "- task: lite:docs:architecture:generate",
+        "- task: lite:docs:development:generate",
+        "- task: lite:docs:production:generate",
+        "scripts/docs/sqlite/generate_schemaspy.py generate",
+        "- task: lite:docs:diagrams:generate",
+    ):
+        assert block.index(source_generator) < codebase_map, (
+            f"{source_generator} must run before "
+            "lite:docs:codebase-map:generate"
+        )

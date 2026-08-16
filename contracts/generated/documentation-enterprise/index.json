@@ -33319,8 +33319,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "d9589168aa2166c09b39a52b982d827a089c3f59",
-          "head_tree": "a9a5288903ce137eab69fa3de64a981b9573ff23",
+          "head": "51cd2a007b01d4fa95541b84c44b2ad8f86e66fe",
+          "head_tree": "ebc593eca96d3d0d472658e0a83ab9b563c52f79",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34002,7 +34002,7 @@
       "fingerprints": {
         "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
         "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-        "documentation": "7c0b9796f382e1a271952d09bfbfb97f89b1b6c185497bcce792e7207b7856dd",
+        "documentation": "0949b7263ad57522a3cc15b365cf1a417e2f1a4bc2ea6f20f9e776d0170f0471",
         "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
         "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
       },
@@ -35977,8 +35977,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "d9589168aa2166c09b39a52b982d827a089c3f59",
-        "head_tree": "a9a5288903ce137eab69fa3de64a981b9573ff23",
+        "head": "51cd2a007b01d4fa95541b84c44b2ad8f86e66fe",
+        "head_tree": "ebc593eca96d3d0d472658e0a83ab9b563c52f79",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -73902,14 +73902,14 @@
           "task lite:docs:parity:generate",
           "task lite:docs:health:generate",
           "task lite:docs:knowledge:generate",
-          "task lite:docs:codebase-map:generate",
           "task lite:docs:intelligence:generate",
           "task lite:docs:enterprise:generate",
           "task lite:docs:architecture:generate",
           "task lite:docs:development:generate",
           "task lite:docs:production:generate",
           "{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate",
-          "task lite:docs:diagrams:generate"
+          "task lite:docs:diagrams:generate",
+          "task lite:docs:codebase-map:generate"
         ],
         "dependencies": [],
         "environment": [],
@@ -85400,5 +85400,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "208153d53a393c4529f1807e2083eb6382298943b29c738456353a1f4469b9c5"
+  "source_fingerprint": "36c13795c83d828ba315e9f98dfd2ef148da9004adfbf36d42e29807f6c6fb9f"
 }

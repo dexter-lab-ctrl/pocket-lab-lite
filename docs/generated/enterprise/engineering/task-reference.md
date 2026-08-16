@@ -1049,7 +1049,6 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `task lite:docs:parity:generate`
 - `task lite:docs:health:generate`
 - `task lite:docs:knowledge:generate`
-- `task lite:docs:codebase-map:generate`
 - `task lite:docs:intelligence:generate`
 - `task lite:docs:enterprise:generate`
 - `task lite:docs:architecture:generate`
@@ -1057,6 +1056,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `task lite:docs:production:generate`
 - `{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate`
 - `task lite:docs:diagrams:generate`
+- `task lite:docs:codebase-map:generate`
 
 **Environment:** None source-discovered
 

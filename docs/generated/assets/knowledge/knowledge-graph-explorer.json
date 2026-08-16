@@ -29306,6 +29306,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:a433100dae430e40",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_codebase_map.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:a43981fa15ceca7e",

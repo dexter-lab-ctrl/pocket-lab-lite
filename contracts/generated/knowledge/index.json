@@ -30585,6 +30585,10 @@
         {
           "source": "domain:security",
           "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
         }
       ],
       "test:tests/docs/test_docs_runtime_network_fence.py": [
@@ -40642,6 +40646,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_codebase_map.py",
           "type": "verified_by"
         },
         {
@@ -54671,6 +54679,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:a433100dae430e40",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_codebase_map.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:a43981fa15ceca7e",
@@ -61668,7 +61685,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "4f6116eae552e26734f2248ebb42c0b7ddc2b2595baf27726bf0777b4683d9dc",
+  "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3",
   "statistics": {
     "entity_count": 855,
     "entity_type_counts": {
@@ -61694,7 +61711,7 @@
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2147,
+    "relation_count": 2148,
     "source_count": 217
   }
 }

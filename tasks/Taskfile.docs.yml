@@ -486,7 +486,6 @@ tasks:
       - task: lite:docs:parity:generate
       - task: lite:docs:health:generate
       - task: lite:docs:knowledge:generate
-      - task: lite:docs:codebase-map:generate
       - task: lite:docs:intelligence:generate
       - task: lite:docs:enterprise:generate
       - task: lite:docs:architecture:generate
@@ -494,6 +493,7 @@ tasks:
       - task: lite:docs:production:generate
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate'
       - task: lite:docs:diagrams:generate
+      - task: lite:docs:codebase-map:generate
 
   lite:docs:sync:
     desc: Regenerate the complete tracked Documentation Platform from canonical sources and the promoted runtime baseline, then run the strict drift/safety/MkDocs gate
