@@ -7355,6 +7355,20 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_codebase_map.py": [
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_docs_runtime_network_fence.py": [
         {
           "source": "component:browser",
@@ -15433,6 +15447,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_codebase_map.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
@@ -16855,6 +16873,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_codebase_map.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
@@ -17402,6 +17424,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_codebase_map.py",
           "type": "verified_by"
         },
         {
@@ -19019,6 +19045,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bc7c161ec461c770afddfb07af1d1da24fdeacc67b83a1524dddd53008e7ba52"
+    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
   }
 }

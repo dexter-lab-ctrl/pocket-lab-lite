@@ -8612,6 +8612,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/codebase-map.spec.ts",
+      "name": "tests/docs/codebase-map.spec.ts",
+      "source_refs": [
+        "tests/docs/codebase-map.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/documentation-ia.spec.ts",
       "name": "tests/docs/documentation-ia.spec.ts",
       "source_refs": [
@@ -8638,6 +8649,17 @@
       "name": "tests/docs/mkdocs.spec.ts",
       "source_refs": [
         "tests/docs/mkdocs.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/test_codebase_map.py",
+      "name": "tests/docs/test_codebase_map.py",
+      "source_refs": [
+        "tests/docs/test_codebase_map.py"
       ],
       "type": "test"
     },
@@ -24776,6 +24798,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:7dce0d4c4b2e6e84",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_codebase_map.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_device_system_profile.py"
       ],
       "id": "rel:7ddadb517cf24777",
@@ -29261,6 +29297,20 @@
       "id": "rel:a43196e160b079b2",
       "source": "domain:security",
       "target": "test:tests/parity/test_intelligent_runtime_parity.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:a433100dae430e40",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_codebase_map.py",
       "type": "verified_by"
     },
     {
@@ -39718,6 +39768,20 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.command.running",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:fb5dacd02ccf83c6",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_codebase_map.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

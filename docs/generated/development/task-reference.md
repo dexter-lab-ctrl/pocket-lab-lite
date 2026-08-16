@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 8860aa47f7ee838a869621bffb8a225a7153151fe5162846dee559c874cd7da8
+source_fingerprint: 29e9c74dfdc556deb069f31fdfab7a21589f67ad7d6ceade6a332b18ad1e25c3
 schema_revision: 1
 validation_status: generated
 ---
@@ -54,6 +54,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:bootstrap`
 - `lite:docs:capabilities`
 - `lite:docs:check`
+- `lite:docs:codebase-map:check`
+- `lite:docs:codebase-map:generate`
 - `lite:docs:configuration`
 - `lite:docs:development:check`
 - `lite:docs:development:generate`
@@ -206,6 +208,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:dev:scratch:prepare`
 - `lite:docs:check` → `lite:docs:architecture:check`
 - `lite:docs:check` → `lite:docs:backend-tests`
+- `lite:docs:check` → `lite:docs:codebase-map:check`
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
 - `lite:docs:check` → `lite:docs:enterprise:check`
@@ -221,6 +224,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:enterprise:check` → `lite:docs:ia:check`
 - `lite:docs:generate` → `lite:contracts:generate`
 - `lite:docs:generate` → `lite:docs:architecture:generate`
+- `lite:docs:generate` → `lite:docs:codebase-map:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
 - `lite:docs:generate` → `lite:docs:enterprise:generate`

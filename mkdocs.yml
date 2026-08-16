@@ -103,12 +103,14 @@ extra_css:
   - stylesheets/components.css
   - stylesheets/intelligence.css
   - stylesheets/threat-model.css
+  - stylesheets/codebase-map.css
   - stylesheets/print.css
 
 extra_javascript:
   - javascripts/vendor/mermaid-11.16.1.min.js
   - javascripts/mermaid-local.js
   - javascripts/docs.js
+  - javascripts/codebase-map.js
   - javascripts/threat-model.js
   - javascripts/threat-model-poster.js
 
@@ -184,6 +186,7 @@ nav:
       - Overview: generated/enterprise/hubs/build-test.md
       - Developer onboarding: generated/development/index.md
       - Repository structure: generated/development/repository-setup.md
+      - Codebase Map: generated/development/knowledge/codebase-map.md
       - Local services: generated/development/local-services.md
       - Frontend API usage: generated/development/frontend-api-usage.md
       - Backend / FastAPI contract: generated/development/api-contract.md

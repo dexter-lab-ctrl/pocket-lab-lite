@@ -19149,6 +19149,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/codebase-map.spec.ts",
+      "name": "tests/docs/codebase-map.spec.ts",
+      "source_refs": [
+        "tests/docs/codebase-map.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/documentation-ia.spec.ts",
       "name": "tests/docs/documentation-ia.spec.ts",
       "source_refs": [
@@ -19173,6 +19183,16 @@
       "name": "tests/docs/mkdocs.spec.ts",
       "source_refs": [
         "tests/docs/mkdocs.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_codebase_map.py",
+      "name": "tests/docs/test_codebase_map.py",
+      "source_refs": [
+        "tests/docs/test_codebase_map.py"
       ],
       "type": "test"
     },
@@ -22163,9 +22183,11 @@
         "test:tests/dev/test_dev_scratch_policy.py",
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/dev/test_pytest_temp_policy.py",
+        "test:tests/docs/codebase-map.spec.ts",
         "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
@@ -23053,9 +23075,11 @@
         "test:tests/dev/test_dev_scratch_policy.py",
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/dev/test_pytest_temp_policy.py",
+        "test:tests/docs/codebase-map.spec.ts",
         "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
@@ -30550,6 +30574,20 @@
         },
         {
           "source": "reason:projection_too_old",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/docs/test_codebase_map.py": [
+        {
+          "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
           "type": "verified_by"
         }
       ],
@@ -38631,6 +38669,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_codebase_map.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
@@ -40053,6 +40095,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_codebase_map.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
@@ -40600,6 +40646,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_codebase_map.py",
           "type": "verified_by"
         },
         {
@@ -51726,6 +51776,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:7dce0d4c4b2e6e84",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_codebase_map.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_system_profile.py"
       ],
       "id": "rel:7ddadb517cf24777",
@@ -54616,6 +54675,15 @@
       "id": "rel:a43196e160b079b2",
       "source": "domain:security",
       "target": "test:tests/parity/test_intelligent_runtime_parity.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:a433100dae430e40",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_codebase_map.py",
       "type": "verified_by"
     },
     {
@@ -61356,6 +61424,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_codebase_map.py"
+      ],
+      "id": "rel:fb5dacd02ccf83c6",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_codebase_map.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteDevices.jsx"
       ],
       "id": "rel:fb7ba8cea32cdda8",
@@ -61608,9 +61685,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "bc7c161ec461c770afddfb07af1d1da24fdeacc67b83a1524dddd53008e7ba52",
+  "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3",
   "statistics": {
-    "entity_count": 853,
+    "entity_count": 855,
     "entity_type_counts": {
       "adr": 6,
       "api": 118,
@@ -61627,14 +61704,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 44,
-      "test": 178,
+      "test": 180,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2145,
-    "source_count": 214
+    "relation_count": 2148,
+    "source_count": 217
   }
 }

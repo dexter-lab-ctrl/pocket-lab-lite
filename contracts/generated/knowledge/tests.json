@@ -1333,6 +1333,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/codebase-map.spec.ts",
+      "name": "tests/docs/codebase-map.spec.ts",
+      "source_refs": [
+        "tests/docs/codebase-map.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/documentation-ia.spec.ts",
       "name": "tests/docs/documentation-ia.spec.ts",
       "source_refs": [
@@ -1357,6 +1367,16 @@
       "name": "tests/docs/mkdocs.spec.ts",
       "source_refs": [
         "tests/docs/mkdocs.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_codebase_map.py",
+      "name": "tests/docs/test_codebase_map.py",
+      "source_refs": [
+        "tests/docs/test_codebase_map.py"
       ],
       "type": "test"
     },
@@ -1787,6 +1807,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bc7c161ec461c770afddfb07af1d1da24fdeacc67b83a1524dddd53008e7ba52"
+    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
   }
 }

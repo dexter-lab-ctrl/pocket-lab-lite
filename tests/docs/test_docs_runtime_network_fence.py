@@ -186,3 +186,27 @@ def test_docs_source_has_no_external_mermaid_runtime():
         "External Mermaid runtime dependency detected:\n"
         + "\n".join(violations)
     )
+
+
+def test_codebase_map_runtime_is_static_same_origin_only():
+    """Codebase Map may fetch only its repository-generated same-origin projection."""
+    codebase = (ROOT / "docs/javascripts/codebase-map.js").read_text(encoding="utf-8")
+
+    assert "/generated/assets/knowledge/repository-codebase-map.json" in codebase
+    assert "fetch(" in codebase
+    assert "location.origin" in codebase or "new URL(" in codebase
+
+    forbidden = (
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "sourcegraph.com",
+        "WebSocket(",
+        "EventSource(",
+        "nats://",
+        "ws://",
+        "wss://",
+        "/api/lite/",
+        "/data/data/com.termux/files/home",
+    )
+    for token in forbidden:
+        assert token not in codebase

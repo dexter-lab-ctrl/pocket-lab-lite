@@ -3968,7 +3968,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 414,
+  "page_count": 415,
   "page_types": [
     "overview",
     "guide",
@@ -5018,6 +5018,32 @@
       "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
       "title": "Platforms and capabilities",
       "url": "/generated/development/knowledge/capabilities/"
+    },
+    {
+      "additional_audiences": [
+        "tester"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": true,
+      "id": "page:generated/development/knowledge/codebase-map",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "generated/development/knowledge/codebase-map.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
+      "title": "Codebase Map",
+      "url": "/generated/development/knowledge/codebase-map/"
     },
     {
       "additional_audiences": [],
@@ -15058,7 +15084,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "087af56bb1ffc247697b75bdecc96853ff99ffe5452324f205e3d2e2a960dc22",
+  "source_fingerprint": "6423c6d9ca4ea90453777a09c3db593f4d65a129dab417a9bd01b30adda0bee2",
   "top_level": [
     "start-here",
     "use",

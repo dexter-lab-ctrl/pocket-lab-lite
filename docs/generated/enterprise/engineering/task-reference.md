@@ -16,7 +16,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Workflow | Task count |
 | --- | --- |
 | Development loop | 50 |
-| Documentation loop | 53 |
+| Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 24 |
 | Security-analysis loop | 8 |
@@ -485,6 +485,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `task lite:docs:parity:check`
 - `task lite:docs:health:check`
 - `task lite:docs:knowledge:check`
+- `task lite:docs:codebase-map:check`
 - `task lite:docs:intelligence:check`
 - `task lite:docs:enterprise:check`
 - `task lite:docs:architecture:check`
@@ -508,13 +509,82 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
 
-**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:backend-tests, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:tools:check
+**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:backend-tests, lite:docs:codebase-map:check, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:tools:check
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:docs:check`
+
+## `lite:docs:codebase-map:check`
+
+**Purpose:** Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py check`
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_codebase_map.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/knowledge/generate_codebase_map.py, tests/docs/test_codebase_map.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:docs:codebase-map:check`
+
+## `lite:docs:codebase-map:generate`
+
+**Purpose:** Generate the deterministic Git-tracked Codebase Map model, browser projection, documentation health, and clean structural delta
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py generate`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/knowledge/generate_codebase_map.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:docs:codebase-map:generate`
 
 ## `lite:docs:configuration`
 
@@ -986,6 +1056,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `task lite:docs:production:generate`
 - `{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate`
 - `task lite:docs:diagrams:generate`
+- `task lite:docs:codebase-map:generate`
 
 **Environment:** None source-discovered
 
@@ -999,7 +1070,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
 
-**Related tasks:** lite:contracts:generate, lite:docs:architecture:generate, lite:docs:development:generate, lite:docs:diagrams:generate, lite:docs:enterprise:generate, lite:docs:health:generate, lite:docs:intelligence:generate, lite:docs:knowledge:generate, lite:docs:parity:generate, lite:docs:platform:generate, lite:docs:production:generate, lite:docs:runtime:generate, lite:docs:tools:check
+**Related tasks:** lite:contracts:generate, lite:docs:architecture:generate, lite:docs:codebase-map:generate, lite:docs:development:generate, lite:docs:diagrams:generate, lite:docs:enterprise:generate, lite:docs:health:generate, lite:docs:intelligence:generate, lite:docs:knowledge:generate, lite:docs:parity:generate, lite:docs:platform:generate, lite:docs:production:generate, lite:docs:runtime:generate, lite:docs:tools:check
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 

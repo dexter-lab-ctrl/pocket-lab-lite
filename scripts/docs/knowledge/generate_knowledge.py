@@ -50,6 +50,16 @@ SCHEMA_ROOT = ROOT / "schemas/knowledge"
 MKDOCS = ROOT / "mkdocs.yml"
 SOURCE_RELEASE_BADGE = ROOT / "docs/overrides/partials/release-badge.html"
 
+# Separately owned generated Codebase Map projections share the Knowledge output
+# directories but are produced and validated by generate_codebase_map.py. The
+# Knowledge generator must preserve them rather than treating them as stale
+# Knowledge Graph output.
+EXTERNAL_GENERATED_OUTPUTS = {
+    OUT / "repository-codebase-map.json",
+    OUT / "repository-codebase-delta.json",
+    DEV / "codebase-map.md",
+}
+
 NAV_MARKERS = {
     "development": (
         "# BEGIN GENERATED KNOWLEDGE RELEASE NAV: development",
@@ -1166,6 +1176,7 @@ def render_knowledge_graph_page(graph: Graph, indexes: dict[str, Any]) -> tuple[
     body += '\n\n### Explorer boundary\n\nThe browser is limited to **one hop**. It does not predict consequences, execute graph traversal beyond direct neighbors, mutate source/runtime, or invent missing relationships.\n\n'
     body += '## Go deeper\n\n<div class="pl-kg-specialist-grid">'
     specialist = [
+        ("Physical repository structure", "Codebase Map", "../../../development/knowledge/codebase-map/"),
         ("Change consequence", "Change Impact Advisor", "../../reference/change-advisor/"),
         ("End-to-end action", "API-to-UI Trace Explorer", "../../reference/api-ui-trace/"),
         ("Evidence completeness", "Evidence Coverage & Confidence", "../../../development/intelligence/evidence-coverage/"),
@@ -1318,6 +1329,7 @@ def render_docs(graph: Graph, indexes: dict[str, Any], exports: dict[str, Any]) 
         group = source.split("/", 1)[0] if "/" in source else source or "root"
         repo_groups[group].append(item)
     repo_body = '# Repository map\n\n<div class="pl-page-lede"><strong>Start with a repository area, then drill into exact source ownership.</strong><p>This is a reverse lookup from source paths to generated knowledge entities. It is source-derived and does not expose local filesystem prefixes.</p></div>\n\n'
+    repo_body += '> Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.\n\n'
     repo_body += '<div class="pl-repo-summary">' + ''.join(f'<div><span>{html.escape(group)}</span><strong>{len(items)}</strong><small>mapped sources</small></div>' for group, items in sorted(repo_groups.items())) + '</div>\n\n'
     for group, items in sorted(repo_groups.items()):
         repo_body += f'## {html.escape(group)}\n\n<div class="pl-repository-grid">\n'
@@ -1473,7 +1485,7 @@ def check_mkdocs_release_nav(outputs: dict[Path, str]) -> list[str]:
 
 def write_outputs(outputs: dict[Path, str]) -> int:
     changed = 0
-    expected = set(outputs)
+    expected = set(outputs) | EXTERNAL_GENERATED_OUTPUTS
     for root in (OUT, DEV, PROD):
         if root.exists():
             for path in sorted(root.rglob("*"), reverse=True):
@@ -1493,7 +1505,7 @@ def write_outputs(outputs: dict[Path, str]) -> int:
 
 def check_outputs(outputs: dict[Path, str]) -> list[str]:
     drift = []
-    expected = set(outputs)
+    expected = set(outputs) | EXTERNAL_GENERATED_OUTPUTS
     for path, text in sorted(outputs.items(), key=lambda x: str(x[0])):
         if not path.exists() or path.read_text(encoding="utf-8") != text:
             drift.append(str(path.relative_to(ROOT)))
