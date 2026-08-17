@@ -68,16 +68,21 @@
         "lite-api",
         "sqlite"
       ],
-      "confidence": "partial",
+      "confidence": "source-derived",
       "domain": "identity",
       "id": "journey:change-password",
-      "name": "Change Password / identity rotation",
+      "name": "Local owner password and session lifecycle",
       "routes": [
-        "POST /api/lite/identity/rotate"
+        "POST /api/lite/identity/setup",
+        "POST /api/lite/identity/login",
+        "POST /api/lite/identity/password",
+        "POST /api/lite/identity/logout",
+        "POST /api/lite/identity/recovery/regenerate",
+        "POST /api/lite/identity/recover"
       ],
       "source_refs": [
-        "contracts/generated/lite-openapi.json",
-        "contracts/parity/parity-model.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "type": "journey"
@@ -330,6 +335,30 @@
     },
     {
       "components": [
+        "api-guards",
+        "api-domain-surfaces",
+        "lite-api",
+        "sqlite",
+        "opa-policy-engine"
+      ],
+      "confidence": "source-derived",
+      "domain": "rules",
+      "id": "journey:rules-authorization",
+      "name": "Safety Rules authorization decision",
+      "routes": [
+        "GET /api/lite/policy",
+        "POST /api/lite/catalog/install",
+        "POST /api/lite/fleet/remove-device"
+      ],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
         "node-agent",
         "agent-supervisor",
         "nats-jetstream"
@@ -430,6 +459,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

@@ -8,6 +8,18 @@ import {
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
 const LITE_NOT_MODIFIED = '__liteNotModified';
 const liteEtagByPath = new Map();
+let liteCsrfToken = '';
+function readIdentityCsrfCookie() {
+  if (typeof document === 'undefined') return '';
+  const names = ['__Host-pocketlab_csrf', 'pocketlab_csrf'];
+  for (const name of names) {
+    const prefix = `${encodeURIComponent(name)}=`;
+    const match = String(document.cookie || '').split(';').map((item) => item.trim()).find((item) => item.startsWith(prefix));
+    if (match) return decodeURIComponent(match.slice(prefix.length));
+  }
+  return '';
+}
+
 
 function normalizeEtag(value) {
   const etag = String(value || '').trim();
@@ -70,6 +82,7 @@ async function readJson(path, options = {}) {
     Accept: 'application/json',
     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...(safeReadNonce ? { [LITE_SAFE_READ_NONCE_HEADER]: safeReadNonce } : {}),
+    ...(method !== 'GET' && (liteCsrfToken || readIdentityCsrfCookie()) ? { 'X-Pocket-Lab-CSRF': liteCsrfToken || readIdentityCsrfCookie() } : {}),
     ...(options.headers || {}),
   };
   const knownEtag = normalizeEtag(options.ifNoneMatch || (options.conditional ? getLiteEtag(conditionalEtagKey) : ''));
@@ -81,6 +94,7 @@ async function readJson(path, options = {}) {
   try {
     response = await fetch(endpoint(path), {
     cache: 'no-store',
+    credentials: 'same-origin',
     ...options,
     headers: requestHeaders,
   });
@@ -188,6 +202,26 @@ function putJson(path, body = {}) {
   return readJson(path, { method: 'PUT', body: JSON.stringify(body) });
 }
 
+function deleteJson(path, body = undefined) {
+  return readJson(path, {
+    method: 'DELETE',
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+}
+
+function rememberIdentityCsrf(payload) {
+  liteCsrfToken = String(payload?.csrf_token || '');
+  return payload;
+}
+
+export function clearLiteIdentityCsrf() {
+  liteCsrfToken = '';
+}
+
+export function hasLiteIdentityCsrf() {
+  return Boolean(liteCsrfToken);
+}
+
 function safeGet(path) {
   const loader = () => readJson(path);
   loader.safeSnapshotPath = path;
@@ -242,6 +276,14 @@ export const liteApi = {
   applyAppUpdate: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/update/apply`, payload),
   runAppAction: (appId = 'photoprism', actionId, payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/actions/${encodeURIComponent(actionId || '')}`, payload),
   identity: () => readJson('/api/lite/identity'),
+  setupIdentity: (payload = {}) => postJson('/api/lite/identity/setup', payload).then(rememberIdentityCsrf),
+  loginIdentity: (payload = {}) => postJson('/api/lite/identity/login', payload).then(rememberIdentityCsrf),
+  logoutIdentity: () => postJson('/api/lite/identity/logout', {}).then((payload) => { clearLiteIdentityCsrf(); return payload; }),
+  changeIdentityPassword: (payload = {}) => postJson('/api/lite/identity/password', payload).then(rememberIdentityCsrf),
+  revokeOtherIdentitySessions: () => postJson('/api/lite/identity/sessions/revoke-others', {}),
+  revokeIdentitySession: (sessionId) => deleteJson(`/api/lite/identity/sessions/${encodeURIComponent(sessionId || '')}`),
+  regenerateIdentityRecovery: () => postJson('/api/lite/identity/recovery/regenerate', {}),
+  recoverIdentity: (payload = {}) => postJson('/api/lite/identity/recover', payload).then(rememberIdentityCsrf),
   security: conditionalGet('/api/lite/security/summary'),
   securitySummary: conditionalGet('/api/lite/security/summary'),
   securityDetails: safeGet('/api/lite/security'),
@@ -331,7 +373,6 @@ export const liteApi = {
   photoprismStorageMappings: () => readJson('/api/lite/apps/photoprism/storage-mappings'),
   connectPhotoPrismStorage: (payload = {}) => postJson('/api/lite/apps/photoprism/storage-mappings', payload),
   disconnectPhotoPrismStorage: (mappingId) => readJson(`/api/lite/apps/photoprism/storage-mappings/${encodeURIComponent(mappingId || '')}`, { method: 'DELETE' }),
-  rotateIdentity: (target, options = {}) => postJson('/api/lite/identity/rotate', { target, ...options }),
   runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, profile: 'quick', ...options }),
   securityRun: (runId) => readJson(`/api/lite/security/runs/${encodeURIComponent(runId || '')}`),
   securityEvidence: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`),
@@ -343,7 +384,6 @@ export const liteApi = {
   }),
   restartDeviceAgent: (deviceId, payload = {}) => postJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId)}/restart-agent`, payload),
   restartDeviceAgentStatus: (deviceId, commandId) => readJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId)}/restart-agent/status?command_id=${encodeURIComponent(commandId || '')}`),
-  applyPolicy: (payload = {}) => postJson('/api/lite/policy/apply', payload),
   backupNow: (payload = {}) => postJson('/api/lite/recovery/backup', payload),
   backupDatabase: (payload = {}) => postJson('/api/lite/recovery/database/backup', payload),
   databaseBackups: () => readJson('/api/lite/recovery/database/backups'),

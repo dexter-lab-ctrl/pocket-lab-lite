@@ -17,6 +17,7 @@ generator_version: 3
 | API | Domain | UI consumers | Operation | Confidence |
 | --- | --- | --- | --- | --- |
 | `DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}` | apps | — | delete_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings__mapping_id__delete | contract-derived |
+| `DELETE /api/lite/identity/sessions/{session_id}` | identity | — | revoke_lite_identity_session_api_lite_identity_sessions__session_id__delete | contract-derived |
 | `GET /api/lite/apps/lifecycle` | apps | — | get_lite_app_lifecycle_profiles_api_lite_apps_lifecycle_get | contract-derived |
 | `GET /api/lite/apps/lifecycle/{app_id}` | apps | — | get_lite_app_lifecycle_profile_api_lite_apps_lifecycle__app_id__get | contract-derived |
 | `GET /api/lite/apps/photoprism/storage-mappings` | apps | — | get_photoprism_storage_mappings_api_lite_apps_photoprism_storage_mappings_get | contract-derived |
@@ -112,8 +113,15 @@ generator_version: 3
 | `POST /api/lite/fleet/devices/{node_id}/restart-agent` | devices | LiteDevices | restart_lite_fleet_agent_api_lite_fleet_devices__node_id__restart_agent_post | contract-derived |
 | `POST /api/lite/fleet/invites/{invite_id}/revoke` | devices | — | revoke_lite_fleet_invite_api_lite_fleet_invites__invite_id__revoke_post | contract-derived |
 | `POST /api/lite/fleet/remove-device` | devices | LiteDevices | remove_lite_device_api_lite_fleet_remove_device_post | contract-derived |
-| `POST /api/lite/identity/rotate` | identity | LiteIdentity | rotate_lite_identity_api_lite_identity_rotate_post | contract-derived |
-| `POST /api/lite/policy/apply` | rules | LiteRules | apply_lite_policy_api_lite_policy_apply_post | contract-derived |
+| `POST /api/lite/identity/login` | identity | LiteIdentity | login_lite_identity_api_lite_identity_login_post | contract-derived |
+| `POST /api/lite/identity/logout` | identity | LiteIdentity | logout_lite_identity_api_lite_identity_logout_post | contract-derived |
+| `POST /api/lite/identity/password` | identity | LiteIdentity | change_lite_identity_password_api_lite_identity_password_post | contract-derived |
+| `POST /api/lite/identity/recover` | identity | LiteIdentity | recover_lite_identity_api_lite_identity_recover_post | contract-derived |
+| `POST /api/lite/identity/recovery/regenerate` | identity | LiteIdentity | regenerate_lite_identity_recovery_api_lite_identity_recovery_regenerate_post | contract-derived |
+| `POST /api/lite/identity/rotate` | identity | — | rotate_lite_identity_api_lite_identity_rotate_post | contract-derived |
+| `POST /api/lite/identity/sessions/revoke-others` | identity | LiteIdentity | revoke_other_lite_identity_sessions_api_lite_identity_sessions_revoke_others_post | contract-derived |
+| `POST /api/lite/identity/setup` | identity | LiteIdentity | setup_lite_identity_api_lite_identity_setup_post | contract-derived |
+| `POST /api/lite/policy/apply` | rules | — | apply_lite_policy_api_lite_policy_apply_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/backup` | recovery | — | backup_lite_app_api_lite_recovery_apps__app_id__backup_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/backup-to-target` | recovery | — | backup_lite_app_to_target_api_lite_recovery_apps__app_id__backup_to_target_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/restore` | recovery | — | restore_lite_app_api_lite_recovery_apps__app_id__restore_post | contract-derived |
@@ -141,9 +149,9 @@ generator_version: 3
 | --- | --- |
 | LiteApp | GET /api/lite/catalog |
 | LiteDevices | GET /api/lite/devices/{device_id}/removal-assessment, GET /api/lite/fleet, GET /api/lite/fleet/devices/{node_id}/restart-agent/status, POST /api/lite/fleet/add-device, POST /api/lite/fleet/devices/{node_id}/restart-agent, POST /api/lite/fleet/remove-device |
-| LiteIdentity | GET /api/lite/identity, POST /api/lite/identity/rotate |
+| LiteIdentity | GET /api/lite/identity, POST /api/lite/identity/login, POST /api/lite/identity/logout, POST /api/lite/identity/password, POST /api/lite/identity/recover, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/sessions/revoke-others, POST /api/lite/identity/setup |
 | LiteRecovery | GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/apps/{app_id}/restore/preview, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
 | LiteReleaseUpdateCard | GET /api/lite/release, POST /api/lite/release/apply, POST /api/lite/release/check |
 | LiteRevisionSyncBridge | GET /api/lite/revisions |
-| LiteRules | GET /api/lite/policy, POST /api/lite/policy/apply |
+| LiteRules | GET /api/lite/policy |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |

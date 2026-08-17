@@ -14,7 +14,7 @@
     "scenario": "identity-role-aware-fixture",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "3128be7d1dcc8efa8fa4c8c5fcdbdb197c5bc873812352cf01cc80aaf4347c60",
+    "source_fingerprint": "9adfc958872933f6b5895d1b0052e6c60357c275131e60df9a64d934db0403fb",
     "validation_status": "generated"
   }
 }

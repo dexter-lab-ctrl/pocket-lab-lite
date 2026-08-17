@@ -2,7 +2,7 @@
   "database": "temporary data-free SQLite generated from repository migrations",
   "generated_at": "uncommitted",
   "generator": "scripts/docs/sqlite/generate_schemaspy.py",
-  "migration_count": 23,
+  "migration_count": 24,
   "migration_fingerprints": {
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -26,7 +26,8 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0020_release_runtime_process.sql": "e68d69668e67cf753f102317fdda5b1787c2051ed0ab0a74261ad4c47c3451af",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql": "6b7ccaf3fc0a3d4bc38cbbb3ddcde13494b9f77531e4aac2bb3532834982d6f9",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql": "c5c8bdc2f1c3ad764862fd6f034a67287fffdc1dc6ced852f602137a3480165c",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069"
   },
   "migrations": [
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
@@ -51,7 +52,8 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0020_release_runtime_process.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
   ],
   "row_count_enforced": 0,
   "schema_revision": 1,

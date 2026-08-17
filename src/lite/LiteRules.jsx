@@ -1,239 +1,94 @@
-import React, { useMemo, useState } from 'react';
-import {
-  Activity,
-  Copy,
-  Database,
-  Download,
-  EyeOff,
-  FileCheck,
-  Fingerprint,
-  LayoutGrid,
-  Lock,
-  Menu,
-  Network,
-  RefreshCw,
-  Server,
-  ShieldCheck,
-  Trash2,
-  WifiOff,
-  X,
-} from 'lucide-react';
+import './identityRules.css';
+import React from 'react';
+import { FileCheck, ShieldCheck } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
   GlassCard,
   StatusBadge,
   StateSurface,
-  DEVICE_ROLE_OPTIONS,
-  NAV_ITEMS,
-  roleLabel,
-  deviceConnectionLabel,
-  canRestartDeviceAgent,
-  canRemoveDevice,
-  normalizeDeviceName,
-  findDeviceNameConflict,
-  deviceDuplicateMessage,
-  deviceStatusLabel,
-  copyTextToClipboard,
-  serviceTone,
-  normalizeBackendState,
-  backendBadgeStatus,
-  backendLabel,
-  backendHeroTitle,
-  securityFindingTone,
-  securityFindingLabel,
-  clampSecurityProgress,
-  parseSecurityTimestamp,
-  formatSecurityRemainingSeconds,
-  liveSecurityProgress,
-  securityProgressStage,
-  scanInProgressValue,
-  triggerHapticFeedback,
-  shortRunId,
-  formatSecurityDuration,
-  securityTrendLabel,
-  securityTrendView,
-  securityDeltaTone,
-  isSecurityTimeoutFinding,
-  securityDeltaBadge,
-  securityDeltaTitle,
-  securityDeltaDescription,
-  securityDeltaAction,
-  securityDeltaSummary,
-  securityExecutionStateTone,
-  securityExecutionStepGlyph,
-  securityToolStatusLabel,
-  securityExecutionStateFromBackend,
-  securityExecutionStepLabel,
-  normalizeSecurityExecutionSteps,
-  securityExecutionTimeline,
   PageHeader,
-  LiteButton,
   LiteRefreshButton,
-  ResultNotice,
   LoadingCard,
-  friendlyOverallLabel,
-  deviceLinkState,
-  restartProgressTitle,
-  restartStepStateLabel,
-  safeRestartSteps
 } from './LiteUi.jsx';
 
 export default function RulesScreen() {
   const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.policy, []);
-  const [enabled, setEnabled] = useState(false);
-  const [result, setResult] = useState(null);
-  const [actionError, setActionError] = useState(null);
-  const [busy, setBusy] = useState(false);
-
-  React.useEffect(() => {
-    if (data) setEnabled(Boolean(data.protection_enabled));
-  }, [data]);
-
-  const rulesStatus = data ? (enabled ? 'healthy' : 'degraded') : 'unknown';
-
-  async function apply() {
-    setBusy(true);
-    setResult(null);
-    setActionError(null);
-    try {
-      setResult(await liteApi.applyPolicy({ protection_enabled: enabled, reason: 'Pocket Lab Lite rules update' }));
-      refresh();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const ready = data?.status === 'ready' && data?.engine?.healthy;
+  const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions : [];
 
   return (
     <>
       <PageHeader
         eyebrow="Rules"
         title="Safety Rules"
-        description="Choose how careful Pocket Lab should be before making changes. Keep protection on for everyday use."
+        description="Review the policy engine, the active repository policy, and recent allow or block decisions. Rules add protection; hard device and recovery safeguards remain enforced by FastAPI."
         actions={<LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-rules-hero">
         <div className="lite-rules-hero-copy">
-          <div className="lite-home-pill">
-            <span className="lite-ready-dot" />
-            {backendLabel(rulesStatus, {
-              ready: 'Protection on',
-              review: 'Ready to enable',
-              danger: 'Needs attention',
-              checking: 'Checking rules',
-            })}
-          </div>
-          <h2>Simple rules help prevent unwanted changes.</h2>
-          <p>
-            Pocket Lab can pause sensitive actions, ask for confirmation, and keep a clear record of important changes.
-          </p>
+          <div className="lite-home-pill"><span className="lite-ready-dot" />{ready ? 'Rules ready' : 'Protected changes paused'}</div>
+          <h2>{ready ? 'Safety Rules are active for protected changes.' : 'Safety Rules are not ready, so protected changes fail closed.'}</h2>
+          <p>{data?.summary || 'Pocket Lab is checking its local policy engine.'}</p>
         </div>
-
         <div className="lite-rules-status-card">
-          <div className="lite-rules-icon">
-            <FileCheck className="h-7 w-7" />
-          </div>
-          <span>Protection</span>
-          <strong>{enabled ? 'On' : 'Off'}</strong>
-          <StatusBadge status={backendBadgeStatus(rulesStatus)}>
-            {backendLabel(rulesStatus, {
-              ready: 'Enabled',
-              review: 'Review',
-              danger: 'Attention',
-              checking: 'Checking',
-            })}
-          </StatusBadge>
+          <div className="lite-rules-icon"><FileCheck className="h-7 w-7" /></div>
+          <span>Policy engine</span>
+          <strong>{ready ? 'Ready' : 'Unavailable'}</strong>
+          <StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Fail-closed ready' : 'Changes blocked'}</StatusBadge>
         </div>
       </section>
 
       {loading ? <LoadingCard label="Loading rules..." /> : null}
+      {error ? <StateSurface tone="degraded" title="Rules need a moment" description={error} className="mb-5" /> : null}
 
-      {error ? (
-        <StateSurface
-          tone="degraded"
-          title="Rules need a moment"
-          description={error}
-          className="mb-5"
-        />
+      {!loading ? (
+        <div className="lite-rules-grid">
+          <GlassCard className="lite-rules-card">
+            <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Healthy' : 'Not ready'}</StatusBadge></div>
+            <h2>Policy engine</h2>
+            <div className="lite-rules-facts">
+              <div><span>Engine</span><strong>{data?.engine?.name || 'Open Policy Agent'}</strong></div>
+              <div><span>Version</span><strong>{data?.engine?.version || 'unknown'}</strong></div>
+              <div><span>Network</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs review'}</strong></div>
+              <div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected' : 'Not exposed'}</strong></div>
+              <div><span>Policy package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div>
+              <div><span>Policy revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div>
+              <div><span>Last decision</span><strong>{data?.last_decision_at ? formatLiteTime(data.last_decision_at) : 'None yet'}</strong></div>
+              {!ready && data?.degraded_reason ? <div><span>Reason</span><strong className="lite-mono-value">{data.degraded_reason}</strong></div> : null}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="lite-rules-card lite-rules-guide-card">
+            <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Active scope</span></div>
+            <h2>Protected actions</h2>
+            <p>This first enforcement cut is intentionally small and testable.</p>
+            <div className="lite-rules-list">
+              {(data?.policy_groups || []).map((group, index) => (
+                <div key={group.id}><span>{index + 1}</span><p><strong>{group.label}</strong><small>{(group.actions || []).join(', ')}</small></p></div>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
       ) : null}
 
-      <div className="lite-rules-grid">
-        <GlassCard className="lite-rules-card lite-rules-toggle-card">
-          <div className="lite-rules-card-head">
-            <div className="lite-rules-mini-icon">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <StatusBadge status={backendBadgeStatus(rulesStatus)}>
-              {backendLabel(rulesStatus, {
-                ready: 'Protected',
-                review: 'Not enabled',
-                danger: 'Attention',
-                checking: 'Checking',
-              })}
-            </StatusBadge>
-          </div>
-
-          <h2>Protection mode</h2>
-          <p>
-            {data?.summary || 'Pocket Lab is checking whether protection is enabled.'}
-          </p>
-
-          <button
-            type="button"
-            className={`lite-rules-toggle ${enabled ? 'lite-rules-toggle-on' : ''}`}
-            onClick={() => setEnabled((value) => !value)}
-            aria-pressed={enabled}
-          >
-            <span className="lite-rules-toggle-track">
-              <span className="lite-rules-toggle-thumb" />
-            </span>
-            <span>
-              <strong>{enabled ? 'Protection is on' : 'Protection is off'}</strong>
-              <small>{enabled ? 'Recommended for everyday use' : 'Turn on to add an extra safety step'}</small>
-            </span>
-          </button>
-
-          <div className="mt-5">
-            <LiteButton onClick={apply} disabled={busy}>
-              {busy ? 'Saving...' : 'Save Rules'}
-            </LiteButton>
+      {!loading ? (
+        <GlassCard className="lite-rules-card mt-5">
+          <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Decision evidence</span></div>
+          <h2>Recent decisions</h2>
+          <p>Only bounded metadata is shown. Policy input, credentials, command payloads, and secrets stay hidden.</p>
+          <div className="lite-rules-decision-list">
+            {recent.length ? recent.map((decision) => (
+              <div key={decision.decision_id} className="lite-rules-decision-row">
+                <StatusBadge status={decision.allow ? 'healthy' : 'degraded'}>{decision.allow ? 'Allowed' : 'Blocked'}</StatusBadge>
+                <div><strong>{decision.action_id}</strong><span>{decision.target_type}: {decision.target_id}</span></div>
+                <div className="lite-rules-decision-meta"><span>{decision.reason_code}</span><small>{formatLiteTime(decision.occurred_at)}</small></div>
+              </div>
+            )) : <StateSurface tone="neutral" title="No policy decisions yet" description="A decision will appear after a protected app install or old-device removal is evaluated." />}
           </div>
         </GlassCard>
-
-        <GlassCard className="lite-rules-card lite-rules-guide-card">
-          <div className="lite-rules-card-head">
-            <div className="lite-rules-mini-icon">
-              <FileCheck className="h-5 w-5" />
-            </div>
-            <span className="lite-rules-soft-badge">Recommended</span>
-          </div>
-
-          <h2>What these rules do</h2>
-          <p>
-            Rules keep important actions intentional without making the app hard to use.
-          </p>
-
-          <div className="lite-rules-list">
-            <div>
-              <span>1</span>
-              <p>Ask before sensitive changes</p>
-            </div>
-            <div>
-              <span>2</span>
-              <p>Keep a clear record</p>
-            </div>
-            <div>
-              <span>3</span>
-              <p>Let safe everyday actions stay simple</p>
-            </div>
-          </div>
-        </GlassCard>
-      </div>
-
-      <ResultNotice result={result} error={actionError} />
+      ) : null}
     </>
   );
 }

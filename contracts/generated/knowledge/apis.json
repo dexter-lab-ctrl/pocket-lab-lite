@@ -6,13 +6,6 @@
       "domain": "apps",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -41,16 +34,32 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Revoke Lite Identity Session",
+      "domain": "identity",
+      "id": "api:delete:/api/lite/identity/sessions/{session_id}",
+      "method": "DELETE",
+      "name": "DELETE /api/lite/identity/sessions/{session_id}",
+      "operation_id": "revoke_lite_identity_session_api_lite_identity_sessions__session_id__delete",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/sessions/{session_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite App Lifecycle Profiles",
       "domain": "apps",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -81,13 +90,6 @@
       "description": "Get Lite App Lifecycle Profile",
       "domain": "apps",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.appLifecycleProfile",
@@ -129,13 +131,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.photoprismStorageMappings",
           "resolved": true,
           "source_module": "src/lite/catalog/AppCatalogScreen.jsx",
@@ -173,13 +168,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.photoprismStoragePreview",
           "resolved": true,
           "source_module": "src/lite/catalog/AppCatalogScreen.jsx",
@@ -214,15 +202,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite App Action History",
       "domain": "apps",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/apps/{app_id}/action-history",
       "method": "GET",
       "name": "GET /api/lite/apps/{app_id}/action-history",
@@ -248,20 +227,6 @@
       "description": "Get Lite App Actions",
       "domain": "apps",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.appActions",
@@ -307,15 +272,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite App Backup Status",
       "domain": "apps",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/apps/{app_id}/backup",
       "method": "GET",
       "name": "GET /api/lite/apps/{app_id}/backup",
@@ -339,15 +295,6 @@
       "confidence": "contract-derived",
       "description": "List Lite App Backups",
       "domain": "apps",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/apps/{app_id}/backups",
       "method": "GET",
       "name": "GET /api/lite/apps/{app_id}/backups",
@@ -371,15 +318,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite App Backup Receipt",
       "domain": "apps",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
       "method": "GET",
       "name": "GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt",
@@ -404,13 +342,6 @@
       "description": "Get Lite App Evidence",
       "domain": "apps",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -442,15 +373,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite App Restore Preview",
       "domain": "apps",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/apps/{app_id}/restore/previews/{preview_id}",
       "method": "GET",
       "name": "GET /api/lite/apps/{app_id}/restore/previews/{preview_id}",
@@ -475,13 +397,6 @@
       "description": "Get Lite App Update Status",
       "domain": "apps",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -515,13 +430,6 @@
       "domain": "apps",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -553,13 +461,6 @@
       "description": "Get Lite Catalog",
       "domain": "apps",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.catalog",
@@ -603,15 +504,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Command History",
       "domain": "commands",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/commands/history",
       "method": "GET",
       "name": "GET /api/lite/commands/history",
@@ -636,13 +528,6 @@
       "description": "Get Lite Device Details",
       "domain": "devices",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.device",
@@ -677,13 +562,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.deviceHealth",
           "resolved": true,
           "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
@@ -714,13 +592,6 @@
       "description": "Get Lite Device Health History",
       "domain": "devices",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.deviceHealthHistory",
@@ -756,13 +627,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.deviceHistory",
           "resolved": true,
           "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
@@ -796,13 +660,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.deviceRemovalAssessment",
           "resolved": true,
           "source_module": "src/lite/LiteDevices.jsx",
@@ -833,13 +690,6 @@
       "description": "Get Frontend Lifecycle Diagnostics Challenge",
       "domain": "diagnostics",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -875,13 +725,6 @@
           "owner": "liteApi.hotPathDiagnostics",
           "resolved": true,
           "source_module": "src/hooks/useLiteHotPathDiagnostics.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
           "usage": "query"
         }
       ],
@@ -960,13 +803,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.fleet",
           "resolved": true,
           "source_module": "src/lite/LiteDevices.jsx",
@@ -1026,15 +862,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Device Recovery History",
       "domain": "devices",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
       "method": "GET",
       "name": "GET /api/lite/fleet/devices/{device_id}/recovery-history",
@@ -1060,13 +887,6 @@
       "description": "Lite Fleet Agent Restart Status",
       "domain": "devices",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.restartDeviceAgentStatus",
@@ -1098,15 +918,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Fleet Health Summary",
       "domain": "devices",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/fleet/health-summary",
       "method": "GET",
       "name": "GET /api/lite/fleet/health-summary",
@@ -1152,13 +963,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.identity",
           "resolved": true,
           "source_module": "src/lite/LiteIdentity.jsx",
@@ -1194,13 +998,6 @@
       "description": "Get Lite Policy",
       "domain": "rules",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.policy",
@@ -1239,13 +1036,6 @@
       "domain": "recovery",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1276,13 +1066,6 @@
       "domain": "recovery",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1312,13 +1095,6 @@
       "description": "Get Lite Recovery App",
       "domain": "recovery",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1352,13 +1128,6 @@
       "domain": "recovery",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1389,15 +1158,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Backup Targets",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/backup-targets",
       "method": "GET",
       "name": "GET /api/lite/recovery/backup-targets",
@@ -1420,13 +1180,6 @@
       "description": "List Lite Backups",
       "domain": "recovery",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.recoveryHistory",
@@ -1467,13 +1220,6 @@
       "domain": "recovery",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1505,13 +1251,6 @@
       "description": "Get Lite Database Recovery",
       "domain": "recovery",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.databaseRecovery",
@@ -1548,15 +1287,6 @@
       "confidence": "contract-derived",
       "description": "List Lite Database Backups",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/database/backups",
       "method": "GET",
       "name": "GET /api/lite/recovery/database/backups",
@@ -1578,15 +1308,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Database Backup",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/database/backups/{backup_id}",
       "method": "GET",
       "name": "GET /api/lite/recovery/database/backups/{backup_id}",
@@ -1610,15 +1331,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Database Restore Preview",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/database/restore/previews/{preview_id}",
       "method": "GET",
       "name": "GET /api/lite/recovery/database/restore/previews/{preview_id}",
@@ -1642,15 +1354,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Database Restore Run",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/database/restore/{restore_id}",
       "method": "GET",
       "name": "GET /api/lite/recovery/database/restore/{restore_id}",
@@ -1675,13 +1378,6 @@
       "description": "Get Lite Recovery Details",
       "domain": "recovery",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.recoveryDetails",
@@ -1711,15 +1407,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Recovery Maintenance",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/maintenance",
       "method": "GET",
       "name": "GET /api/lite/recovery/maintenance",
@@ -1741,15 +1428,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Recovery Operation History",
       "domain": "recovery",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/recovery/operations",
       "method": "GET",
       "name": "GET /api/lite/recovery/operations",
@@ -1774,13 +1452,6 @@
       "description": "Get Lite Backup Receipt",
       "domain": "recovery",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1836,13 +1507,6 @@
       "description": "Get Lite Restore Preview",
       "domain": "recovery",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1900,13 +1564,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.recoverySummary",
           "resolved": true,
           "source_module": "src/lite/LiteRecovery.jsx",
@@ -1944,13 +1601,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.releaseStatus",
           "resolved": true,
           "source_module": "src/lite/LiteReleaseUpdateCard.jsx",
@@ -1985,15 +1635,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Remote Access Readiness",
       "domain": "remote-access",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/remote-access/readiness",
       "method": "GET",
       "name": "GET /api/lite/remote-access/readiness",
@@ -2016,13 +1657,6 @@
       "description": "Get Lite Domain Revisions",
       "domain": "home",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.domainRevisions",
@@ -2062,13 +1696,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.securityDetails",
           "resolved": true,
           "source_module": "src/lite/security/securityPreload.js",
@@ -2103,15 +1730,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Security Apps",
       "domain": "security",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/security/apps",
       "method": "GET",
       "name": "GET /api/lite/security/apps",
@@ -2134,13 +1752,6 @@
       "description": "Get Lite Security App",
       "domain": "security",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -2172,15 +1783,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Security Details",
       "domain": "security",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/security/details/{run_id}",
       "method": "GET",
       "name": "GET /api/lite/security/details/{run_id}",
@@ -2260,13 +1862,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.securityEvidenceSummary",
           "resolved": true,
           "source_module": "src/lite/LiteSecurity.jsx",
@@ -2297,13 +1892,6 @@
       "description": "Get Lite Security Freshness",
       "domain": "security",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.securityFreshness",
@@ -2341,13 +1929,6 @@
       "description": "Get Lite Security History",
       "domain": "security",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.securityHistory",
@@ -2389,13 +1970,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.securityProfile",
           "resolved": true,
           "source_module": "src/lite/LiteSecurity.jsx",
@@ -2427,13 +2001,6 @@
       "description": "Get Lite Security Progress",
       "domain": "security",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.securityProgress",
@@ -2470,15 +2037,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Security Run",
       "domain": "security",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/security/runs/{run_id}",
       "method": "GET",
       "name": "GET /api/lite/security/runs/{run_id}",
@@ -2503,13 +2061,6 @@
       "description": "Get Lite Security Summary",
       "domain": "security",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
         {
           "mocked": false,
           "owner": "liteApi.security",
@@ -2563,13 +2114,6 @@
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
           "owner": "liteApi.status",
           "resolved": true,
           "source_module": "src/hooks/useLiteStatus.js",
@@ -2604,15 +2148,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Activity Summary",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/activity-summary",
       "method": "GET",
       "name": "GET /api/lite/system/activity-summary",
@@ -2634,15 +2169,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite System Agent",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/agent",
       "method": "GET",
       "name": "GET /api/lite/system/agent",
@@ -2664,15 +2190,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite System Health",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/health",
       "method": "GET",
       "name": "GET /api/lite/system/health",
@@ -2694,15 +2211,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Nats Readiness",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/nats-readiness",
       "method": "GET",
       "name": "GET /api/lite/system/nats-readiness",
@@ -2724,15 +2232,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite System Processes",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/processes",
       "method": "GET",
       "name": "GET /api/lite/system/processes",
@@ -2754,15 +2253,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Sqlite Health",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/sqlite-health",
       "method": "GET",
       "name": "GET /api/lite/system/sqlite-health",
@@ -2784,15 +2274,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Storage Pressure",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/storage-pressure",
       "method": "GET",
       "name": "GET /api/lite/system/storage-pressure",
@@ -2814,15 +2295,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite System Supervisor",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/supervisor",
       "method": "GET",
       "name": "GET /api/lite/system/supervisor",
@@ -2844,15 +2316,6 @@
       "confidence": "contract-derived",
       "description": "Get Lite Telemetry Thresholds",
       "domain": "system",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "isLiteNotModified",
-          "resolved": true,
-          "source_module": "src/hooks/useLiteQuery.js",
-          "usage": "query"
-        }
-      ],
       "id": "api:get:/api/lite/system/telemetry-thresholds",
       "method": "GET",
       "name": "GET /api/lite/system/telemetry-thresholds",
@@ -3363,16 +2826,195 @@
     },
     {
       "confidence": "contract-derived",
-      "description": "Rotate Lite Identity",
+      "description": "Login Lite Identity",
       "domain": "identity",
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "liteApi.rotateIdentity",
+          "owner": "liteApi.loginIdentity",
           "resolved": true,
           "source_module": "src/lite/LiteIdentity.jsx",
           "usage": "mutation"
         },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/login",
+      "method": "POST",
+      "name": "POST /api/lite/identity/login",
+      "operation_id": "login_lite_identity_api_lite_identity_login_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/login",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Logout Lite Identity",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.logoutIdentity",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/logout",
+      "method": "POST",
+      "name": "POST /api/lite/identity/logout",
+      "operation_id": "logout_lite_identity_api_lite_identity_logout_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/logout",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Change Lite Identity Password",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.changeIdentityPassword",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/password",
+      "method": "POST",
+      "name": "POST /api/lite/identity/password",
+      "operation_id": "change_lite_identity_password_api_lite_identity_password_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/password",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Recover Lite Identity",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.recoverIdentity",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/recover",
+      "method": "POST",
+      "name": "POST /api/lite/identity/recover",
+      "operation_id": "recover_lite_identity_api_lite_identity_recover_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/recover",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Regenerate Lite Identity Recovery",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.regenerateIdentityRecovery",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/recovery/regenerate",
+      "method": "POST",
+      "name": "POST /api/lite/identity/recovery/regenerate",
+      "operation_id": "regenerate_lite_identity_recovery_api_lite_identity_recovery_regenerate_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/recovery/regenerate",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Rotate Lite Identity",
+      "domain": "identity",
+      "frontend_clients": [
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3386,8 +3028,8 @@
       "name": "POST /api/lite/identity/rotate",
       "operation_id": "rotate_lite_identity_api_lite_identity_rotate_post",
       "response_statuses": [
-        "202",
         "409",
+        "410",
         "422",
         "503"
       ],
@@ -3402,16 +3044,86 @@
     },
     {
       "confidence": "contract-derived",
-      "description": "Apply Lite Policy",
-      "domain": "rules",
+      "description": "Revoke Other Lite Identity Sessions",
+      "domain": "identity",
       "frontend_clients": [
         {
           "mocked": false,
-          "owner": "liteApi.applyPolicy",
+          "owner": "liteApi.revokeOtherIdentitySessions",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteIdentity.jsx",
           "usage": "mutation"
         },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/sessions/revoke-others",
+      "method": "POST",
+      "name": "POST /api/lite/identity/sessions/revoke-others",
+      "operation_id": "revoke_other_lite_identity_sessions_api_lite_identity_sessions_revoke_others_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/sessions/revoke-others",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Setup Lite Identity",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.setupIdentity",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/setup",
+      "method": "POST",
+      "name": "POST /api/lite/identity/setup",
+      "operation_id": "setup_lite_identity_api_lite_identity_setup_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/setup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Apply Lite Policy",
+      "domain": "rules",
+      "frontend_clients": [
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3425,8 +3137,8 @@
       "name": "POST /api/lite/policy/apply",
       "operation_id": "apply_lite_policy_api_lite_policy_apply_post",
       "response_statuses": [
-        "202",
         "409",
+        "410",
         "422",
         "503"
       ],
@@ -4083,6 +3795,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

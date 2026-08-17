@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
+source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -106,10 +106,12 @@ Exposes domain-specific read and command endpoints while preserving backend-owne
 ### Incoming
 
 - FastAPI /api/lite/* — dispatches domain request
+- OPA Safety Rules policy engine — returns allow/deny/constraints/reason code
 
 ### Outgoing
 
 - publishes validated command — NATS / JetStream
+- evaluates registered protected action — OPA Safety Rules policy engine
 
 ## Source verification
 

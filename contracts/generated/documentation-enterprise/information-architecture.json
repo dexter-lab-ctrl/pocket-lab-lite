@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 741,
+  "cross_link_count": 754,
   "feature_journeys": [
     {
       "api_entities": [
@@ -563,7 +563,9 @@
       "security_controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
-        "CTRL-EXECUTION-OWNERS"
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "slug": "apps",
       "source_journeys": [
@@ -1196,13 +1198,17 @@
       "api_entities": [
         "api:get:/api/lite/status",
         "api:post:/api/lite/fleet/add-device",
-        "api:post:/api/lite/identity/rotate"
+        "api:post:/api/lite/identity/login",
+        "api:post:/api/lite/identity/logout",
+        "api:post:/api/lite/identity/password",
+        "api:post:/api/lite/identity/recover",
+        "api:post:/api/lite/identity/recovery/regenerate",
+        "api:post:/api/lite/identity/setup"
       ],
       "architecture": "generated/production/architecture/components/api-guards.md",
       "audience": "user",
       "boundaries": [
-        "control-api",
-        "durable-state"
+        "control-api"
       ],
       "components": [
         "component:api-domain-surfaces",
@@ -1224,7 +1230,37 @@
           "depth": 1,
           "relation_type": "calls",
           "source": "journey:change-password",
-          "target": "api:post:/api/lite/identity/rotate"
+          "target": "api:post:/api/lite/identity/login"
+        },
+        {
+          "depth": 1,
+          "relation_type": "calls",
+          "source": "journey:change-password",
+          "target": "api:post:/api/lite/identity/logout"
+        },
+        {
+          "depth": 1,
+          "relation_type": "calls",
+          "source": "journey:change-password",
+          "target": "api:post:/api/lite/identity/password"
+        },
+        {
+          "depth": 1,
+          "relation_type": "calls",
+          "source": "journey:change-password",
+          "target": "api:post:/api/lite/identity/recover"
+        },
+        {
+          "depth": 1,
+          "relation_type": "calls",
+          "source": "journey:change-password",
+          "target": "api:post:/api/lite/identity/recovery/regenerate"
+        },
+        {
+          "depth": 1,
+          "relation_type": "calls",
+          "source": "journey:change-password",
+          "target": "api:post:/api/lite/identity/setup"
         },
         {
           "depth": 1,
@@ -1254,30 +1290,156 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_device_health_d4.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_f11_events_contract.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_f3_summary_contract.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_f7_split_read_contract.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_f9_etag_contract.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_s6_retention.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_security_s8_recovery.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/login",
           "target": "test:tests/backend/test_lite_development_documentation_platform.py"
         },
         {
-          "depth": 1,
+          "depth": 2,
           "relation_type": "verified_by",
-          "source": "journey:change-password",
-          "target": "test:tests/docs/test_operational_health_bridge.py"
-        },
-        {
-          "depth": 1,
-          "relation_type": "verified_by",
-          "source": "journey:change-password",
+          "source": "api:post:/api/lite/identity/login",
           "target": "test:tests/parity/test_api_contract_fences.py"
         },
         {
           "depth": 2,
           "relation_type": "verified_by",
-          "source": "api:post:/api/lite/identity/rotate",
+          "source": "api:post:/api/lite/identity/logout",
           "target": "test:tests/backend/test_lite_development_documentation_platform.py"
         },
         {
           "depth": 2,
           "relation_type": "verified_by",
-          "source": "api:post:/api/lite/identity/rotate",
+          "source": "api:post:/api/lite/identity/logout",
+          "target": "test:tests/parity/test_api_contract_fences.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/password",
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/password",
+          "target": "test:tests/parity/test_api_contract_fences.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/recover",
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/recover",
+          "target": "test:tests/parity/test_api_contract_fences.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/recovery/regenerate",
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/recovery/regenerate",
+          "target": "test:tests/parity/test_api_contract_fences.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/setup",
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:post:/api/lite/identity/setup",
           "target": "test:tests/parity/test_api_contract_fences.py"
         },
         {
@@ -1302,6 +1464,12 @@
           "depth": 2,
           "relation_type": "depends_on",
           "source": "component:api-guards",
+          "target": "table:auth_sessions"
+        },
+        {
+          "depth": 2,
+          "relation_type": "depends_on",
+          "source": "component:api-guards",
           "target": "table:device_identity_guards"
         },
         {
@@ -1309,6 +1477,36 @@
           "relation_type": "depends_on",
           "source": "component:api-guards",
           "target": "table:device_invite_lifecycle"
+        },
+        {
+          "depth": 2,
+          "relation_type": "depends_on",
+          "source": "component:api-guards",
+          "target": "table:human_credentials"
+        },
+        {
+          "depth": 2,
+          "relation_type": "depends_on",
+          "source": "component:api-guards",
+          "target": "table:human_identities"
+        },
+        {
+          "depth": 2,
+          "relation_type": "depends_on",
+          "source": "component:api-guards",
+          "target": "table:identity_audit_events"
+        },
+        {
+          "depth": 2,
+          "relation_type": "depends_on",
+          "source": "component:api-guards",
+          "target": "table:recovery_code_batches"
+        },
+        {
+          "depth": 2,
+          "relation_type": "depends_on",
+          "source": "component:api-guards",
+          "target": "table:recovery_codes"
         },
         {
           "depth": 2,
@@ -1345,6 +1543,12 @@
           "relation_type": "uses",
           "source": "component:api-guards",
           "target": "api:post:/api/lite/fleet/add-device"
+        },
+        {
+          "depth": 2,
+          "relation_type": "uses",
+          "source": "component:api-guards",
+          "target": "api:post:/api/lite/identity/login"
         },
         {
           "depth": 2,
@@ -1486,18 +1690,6 @@
         },
         {
           "depth": 2,
-          "relation_type": "related_to",
-          "source": "component:lite-api",
-          "target": "subject:pocketlab.commands.security.configure_opa"
-        },
-        {
-          "depth": 2,
-          "relation_type": "related_to",
-          "source": "component:lite-api",
-          "target": "subject:pocketlab.commands.vault.rotate"
-        },
-        {
-          "depth": 2,
           "relation_type": "uses",
           "source": "component:lite-api",
           "target": "api:get:/api/lite/status"
@@ -1513,180 +1705,6 @@
           "relation_type": "verified_by",
           "source": "component:lite-api",
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_device_health_d4.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_f3_summary_contract.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_f7_split_read_contract.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_f9_etag_contract.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_s6_retention.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_security_s8_recovery.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_termux_runtime_documentation.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/docs/mkdocs.spec.ts"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/docs/test_documentation_presentation_polish.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/docs/test_enterprise_completion.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/docs/test_living_knowledgebase.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "affected_by",
-          "source": "component:sqlite",
-          "target": "adr:adr-durable-sqlite-authority"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:sqlite",
-          "target": "boundary:durable-state"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:sqlite",
-          "target": "threat-model:durable-state"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/backend/test_lite_api.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/backend/test_lite_device_health_d4.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/backend/test_lite_devices_durable_enrollment.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/backend/test_lite_termux_runtime_documentation.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/docs/test_documentation_presentation_polish.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/docs/test_enterprise_completion.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:sqlite",
-          "target": "test:tests/docs/test_living_knowledgebase.py"
         }
       ],
       "expansion": {
@@ -1699,16 +1717,16 @@
       "id": "feature-journey:identity",
       "security_controls": [
         "CTRL-API-CONTROL",
-        "CTRL-EVIDENCE-SANITIZE",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "slug": "identity",
       "source_journeys": [
         "journey:change-password"
       ],
       "source_refs": [
-        "contracts/generated/lite-openapi.json",
-        "contracts/parity/parity-model.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "tests": [
@@ -1716,7 +1734,7 @@
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_device_health_d4.py",
-        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
@@ -1729,11 +1747,9 @@
         "test:tests/backend/test_lite_security_s6_retention.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
-        "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
-        "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Identity Feature Journey",
@@ -1742,7 +1758,7 @@
         "troubleshooting:caddy-unavailable"
       ],
       "user_journeys": [
-        "Change Password / identity rotation"
+        "Local owner password and session lifecycle"
       ]
     },
     {
@@ -2289,7 +2305,9 @@
         "CTRL-BROWSER-NATS",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "slug": "recovery",
       "source_journeys": [
@@ -2860,6 +2878,8 @@
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
         "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED",
         "CTRL-SUPPLY-CHAIN"
       ],
       "slug": "release",
@@ -3112,6 +3132,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:nats-listeners",
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:nats-listeners",
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py"
         },
         {
@@ -3349,7 +3375,9 @@
         "CTRL-API-CONTROL",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "slug": "remote-access",
       "source_journeys": [
@@ -3362,6 +3390,7 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
@@ -3914,7 +3943,9 @@
       "security_controls": [
         "CTRL-API-CONTROL",
         "CTRL-EVIDENCE-SANITIZE",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "slug": "security",
       "source_journeys": [
@@ -3968,7 +3999,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 415,
+  "page_count": 417,
   "page_types": [
     "overview",
     "guide",
@@ -5819,6 +5850,30 @@
       "canonical_source_references": [
         "scripts/docs/knowledge/generate_knowledge.py"
       ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/development/knowledge/components/opa-policy-engine",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "generated/development/knowledge/components/opa-policy-engine.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
+      "title": "OPA Safety Rules policy engine",
+      "url": "/generated/development/knowledge/components/opa-policy-engine/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
       "confidence": "verified",
       "contextual_navigation_owners": [],
       "domain": "apps",
@@ -7036,7 +7091,7 @@
       "primary_navigation_owner": "build-test",
       "related_pages": [],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
-      "title": "Identity and Rules partial contracts",
+      "title": "Identity and Rules implementation boundaries",
       "url": "/generated/development/partial-surfaces/"
     },
     {
@@ -12667,6 +12722,33 @@
       ],
       "confidence": "generated",
       "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/production/architecture/components/opa-policy-engine",
+      "intents": [
+        "learn",
+        "reference"
+      ],
+      "page_type": "architecture",
+      "path": "generated/production/architecture/components/opa-policy-engine.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "understand",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/graphviz/generate_lite_architecture.py",
+      "title": "OPA Safety Rules policy engine",
+      "url": "/generated/production/architecture/components/opa-policy-engine/"
+    },
+    {
+      "additional_audiences": [
+        "user",
+        "operator"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/graphviz/generate_lite_architecture.py"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
       "domain": "apps",
       "generated": true,
       "id": "page:generated/production/architecture/components/photoprism",
@@ -15084,7 +15166,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "6423c6d9ca4ea90453777a09c3db593f4d65a129dab417a9bd01b30adda0bee2",
+  "source_fingerprint": "d2b6dcbe73d4c68526d9386d97f30c56ab4d9e8cfe147fdf643cff0f67428927",
   "top_level": [
     "start-here",
     "use",

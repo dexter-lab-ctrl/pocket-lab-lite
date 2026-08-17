@@ -17,7 +17,7 @@ generator_version: 3
 | Add Device | devices | source-derived |
 | App installation | apps | source-derived |
 | Backup creation and verification | recovery | source-derived |
-| Change Password / identity rotation | identity | partial |
+| Local owner password and session lifecycle | identity | source-derived |
 | Device bootstrap and enrollment | devices | source-derived |
 | Device offline and reconnect recovery | devices | source-derived |
 | Documentation generation | documentation | source-derived |
@@ -31,6 +31,7 @@ generator_version: 3
 | Confirmed restore | recovery | source-derived |
 | Restore preview | recovery | source-derived |
 | Rollback | release | source-derived |
+| Safety Rules authorization decision | rules | source-derived |
 | Sanitized Termux runtime capture | validation | source-derived |
 | Runtime evidence promotion | validation | source-derived |
 | Security finding review | security | source-derived |

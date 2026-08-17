@@ -388,7 +388,8 @@
       "controls": [
         "CTRL-BROWSER-NATS",
         "CTRL-BROWSER-SHELL",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "data_classifications": [
         "sanitized operational metadata",
@@ -443,7 +444,9 @@
         "authorization/context"
       ],
       "controls": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "data_classifications": [
         "sanitized operational metadata",
@@ -507,6 +510,7 @@
         "backup metadata"
       ],
       "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXPLICIT-PROMOTION"
       ],
@@ -739,6 +743,7 @@
       "controls": [
         "CTRL-BROWSER-NATS",
         "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED",
         "CTRL-EXECUTION-OWNERS"
       ],
       "data_classifications": [
@@ -1138,6 +1143,105 @@
     },
     {
       "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "boundary": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Human browser writes require an authenticated local-owner session plus a separate same-site CSRF proof; session credentials remain HttpOnly and hash-only at rest.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "ambient browser session authority could be reused without a separate write-intent proof or reusable session material could be exposed"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-HUMAN-SESSION-CSRF",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Identity/session boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_identity_rules_authorization.py"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ]
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "messaging-execution"
+      ],
+      "boundary": [
+        "control-api",
+        "messaging-execution"
+      ],
+      "description": "FastAPI preserves hard domain invariants, then requires a valid loopback OPA allow decision for registered protected actions before NATS/worker execution; unavailable, timed-out, malformed, or unregistered decisions fail closed.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "a protected mutation could proceed without a valid authorization decision or while policy state is unavailable or ambiguous"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-OPA-FAIL-CLOSED",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Rules/OPA authorization boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_identity_rules_authorization.py",
+        "security/policies/opa/pocketlab/pocketlab_test.rego"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "control-api",
+        "messaging-execution"
+      ]
+    },
+    {
+      "boundaries": [
         "messaging-execution",
         "managed-device",
         "server-host"
@@ -1380,7 +1484,7 @@
   "posture_rule": "derived only from canonical source plus promoted sanitized runtime/security/release/dependency evidence; never live monitoring",
   "production_posture": {
     "authority": "promoted/canonical evidence only",
-    "controls_source_derived": 2,
+    "controls_source_derived": 4,
     "controls_verified": 5,
     "implementation_status": "implemented",
     "live_monitoring": false,
@@ -1872,12 +1976,14 @@
       "boundary": "browser",
       "controls": [
         "CTRL-BROWSER-NATS",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "id": "THR-BROWSER-SPOOFING",
       "mitigations": [
         "CTRL-BROWSER-NATS",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A07 Identification and Authentication Failures"
@@ -1903,13 +2009,15 @@
       "controls": [
         "CTRL-BROWSER-NATS",
         "CTRL-BROWSER-SHELL",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "id": "THR-BROWSER-TAMPERING",
       "mitigations": [
         "CTRL-BROWSER-NATS",
         "CTRL-BROWSER-SHELL",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A08 Software and Data Integrity Failures"
@@ -2008,13 +2116,15 @@
       "controls": [
         "CTRL-BROWSER-NATS",
         "CTRL-BROWSER-SHELL",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "id": "THR-BROWSER-ELEVATIONOFP",
       "mitigations": [
         "CTRL-BROWSER-NATS",
         "CTRL-BROWSER-SHELL",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A01 Broken Access Control"
@@ -2038,11 +2148,15 @@
       ],
       "boundary": "control-api",
       "controls": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "id": "THR-CONTROL-API-SPOOFING",
       "mitigations": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A07 Identification and Authentication Failures"
@@ -2067,11 +2181,15 @@
       ],
       "boundary": "control-api",
       "controls": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "id": "THR-CONTROL-API-TAMPERING",
       "mitigations": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A08 Software and Data Integrity Failures"
@@ -2172,11 +2290,15 @@
       ],
       "boundary": "control-api",
       "controls": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "id": "THR-CONTROL-API-ELEVATIONOFP",
       "mitigations": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A01 Broken Access Control"
@@ -2201,9 +2323,13 @@
         "backup metadata"
       ],
       "boundary": "durable-state",
-      "controls": [],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
       "id": "THR-DURABLE-STATE-SPOOFING",
-      "mitigations": [],
+      "mitigations": [
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
       "owasp_mappings": [
         "OWASP Top 10 A07 Identification and Authentication Failures"
       ],
@@ -2227,10 +2353,12 @@
       ],
       "boundary": "durable-state",
       "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
         "CTRL-EXPLICIT-PROMOTION"
       ],
       "id": "THR-DURABLE-STATE-TAMPERING",
       "mitigations": [
+        "CTRL-HUMAN-SESSION-CSRF",
         "CTRL-EXPLICIT-PROMOTION"
       ],
       "owasp_mappings": [
@@ -2343,9 +2471,13 @@
         "backup metadata"
       ],
       "boundary": "durable-state",
-      "controls": [],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
       "id": "THR-DURABLE-STATE-ELEVATIONOFP",
-      "mitigations": [],
+      "mitigations": [
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
       "owasp_mappings": [
         "OWASP Top 10 A01 Broken Access Control"
       ],
@@ -2762,12 +2894,14 @@
       "boundary": "messaging-execution",
       "controls": [
         "CTRL-BROWSER-NATS",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "id": "THR-MESSAGING-EXECUTION-SPOOFING",
       "mitigations": [
         "CTRL-BROWSER-NATS",
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "owasp_mappings": [
         "OWASP Top 10 A07 Identification and Authentication Failures"
@@ -2800,12 +2934,14 @@
       "controls": [
         "CTRL-BROWSER-NATS",
         "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED",
         "CTRL-EXECUTION-OWNERS"
       ],
       "id": "THR-MESSAGING-EXECUTION-TAMPERING",
       "mitigations": [
         "CTRL-BROWSER-NATS",
         "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED",
         "CTRL-EXECUTION-OWNERS"
       ],
       "owasp_mappings": [
@@ -2937,12 +3073,14 @@
       "controls": [
         "CTRL-BROWSER-NATS",
         "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED",
         "CTRL-EXECUTION-OWNERS"
       ],
       "id": "THR-MESSAGING-EXECUTION-ELEVATIONOFP",
       "mitigations": [
         "CTRL-BROWSER-NATS",
         "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED",
         "CTRL-EXECUTION-OWNERS"
       ],
       "owasp_mappings": [
@@ -3695,6 +3833,56 @@
         ]
       },
       {
+        "boundary": "browser",
+        "control": "CTRL-HUMAN-SESSION-CSRF",
+        "status": "mitigation-source-derived",
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundary": "control-api",
+        "control": "CTRL-HUMAN-SESSION-CSRF",
+        "status": "mitigation-source-derived",
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundary": "durable-state",
+        "control": "CTRL-HUMAN-SESSION-CSRF",
+        "status": "mitigation-source-derived",
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundary": "control-api",
+        "control": "CTRL-OPA-FAIL-CLOSED",
+        "status": "mitigation-source-derived",
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundary": "messaging-execution",
+        "control": "CTRL-OPA-FAIL-CLOSED",
+        "status": "mitigation-source-derived",
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      },
+      {
         "boundary": "messaging-execution",
         "control": "CTRL-EXECUTION-OWNERS",
         "status": "control-observed",
@@ -4178,9 +4366,9 @@
       "attack_paths": 8,
       "control_states": {
         "control-observed": 5,
-        "mitigation-source-derived": 2
+        "mitigation-source-derived": 4
       },
-      "controls": 7,
+      "controls": 9,
       "human_review_required": true,
       "posture_states": {
         "control-observed": 31,

@@ -94,8 +94,6 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 - related_to: `pocketlab.commands.lite.maintenance.retention`
 - related_to: `pocketlab.commands.lite.restore.apply`
 - related_to: `pocketlab.commands.lite.restore.preview`
-- related_to: `pocketlab.commands.security.configure_opa`
-- related_to: `pocketlab.commands.vault.rotate`
 - uses: `GET /api/lite/status`
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
@@ -120,8 +118,9 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 ## Used by / backlinks
 
 - depends_on: `Caddy same-origin proxy`
-- uses: `Change Password / identity rotation`
+- uses: `Local owner password and session lifecycle`
 - uses: `Backend-to-Frontend parity capture and verification`
+- uses: `Safety Rules authorization decision`
 - uses: `Pocket Lab Lite startup`
 
 ## Release history

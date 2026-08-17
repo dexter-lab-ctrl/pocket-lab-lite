@@ -59,6 +59,21 @@ Source-derived audit persistence object; detailed ownership is conservatively in
 | Indexes | idx_phase3c_audit_latest, idx_audit_operation_created, idx_audit_entity_created, sqlite_autoindex_audit_evidence_index_1 |
 | Confidence | inferred |
 
+## `auth_sessions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_auth_sessions_human_active, sqlite_autoindex_auth_sessions_2, sqlite_autoindex_auth_sessions_1 |
+| Confidence | inferred |
+
 ## `backup_manifest_index`
 
 Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -329,6 +344,51 @@ Source-derived projections persistence object; detailed ownership is conservativ
 | Indexes | sqlite_autoindex_domain_revisions_1 |
 | Confidence | inferred |
 
+## `human_credentials`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_human_credentials_active_password, sqlite_autoindex_human_credentials_1 |
+| Confidence | inferred |
+
+## `human_identities`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | sqlite_autoindex_human_identities_2, sqlite_autoindex_human_identities_1 |
+| Confidence | inferred |
+
+## `identity_audit_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_identity_audit_recent |
+| Confidence | inferred |
+
 ## `lite_installed_release_identity`
 
 Source-derived release persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -389,6 +449,21 @@ Source-derived prepared state persistence object; detailed ownership is conserva
 | Indexes | idx_phase3b_revision_events_domain_recent, idx_phase3b_revision_events_retention, idx_phase3b_revision_events_replay, sqlite_autoindex_phase3b_revision_events_1 |
 | Confidence | inferred |
 
+## `policy_decisions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_policy_decisions_action, idx_policy_decisions_recent, sqlite_autoindex_policy_decisions_1 |
+| Confidence | inferred |
+
 ## `projection_dirty_signals`
 
 Source-derived projections persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -418,6 +493,36 @@ Bounded projection scheduler state
 | Classification | internal metadata |
 | Indexes | idx_projection_refresh_ready, sqlite_autoindex_projection_refresh_state_1 |
 | Confidence | source-derived |
+
+## `recovery_code_batches`
+
+Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | recovery |
+| Owner | not a prepared projection |
+| Writer | Recovery services and worker completion handlers |
+| Readers | /api/lite/recovery, /api/lite/recovery/details |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_recovery_code_batch_generation, sqlite_autoindex_recovery_code_batches_1 |
+| Confidence | inferred |
+
+## `recovery_codes`
+
+Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | recovery |
+| Owner | not a prepared projection |
+| Writer | Recovery services and worker completion handlers |
+| Readers | /api/lite/recovery, /api/lite/recovery/details |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_recovery_codes_batch_active, sqlite_autoindex_recovery_codes_2, sqlite_autoindex_recovery_codes_1 |
+| Confidence | inferred |
 
 ## `recovery_current_state`
 

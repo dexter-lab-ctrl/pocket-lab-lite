@@ -114,6 +114,8 @@ def enrich(threat: dict[str, Any], root: Path) -> dict[str, Any]:
         "CTRL-BROWSER-NATS": ["browser could bypass the control API and attempt unauthorized messaging/command injection"],
         "CTRL-BROWSER-SHELL": ["browser-originated input could reach host shell execution and mutate the server host"],
         "CTRL-API-CONTROL": ["frontend intent could bypass centralized validation, authorization, reason codes and audit ownership"],
+        "CTRL-HUMAN-SESSION-CSRF": ["ambient browser session authority could be reused without a separate write-intent proof or reusable session material could be exposed"],
+        "CTRL-OPA-FAIL-CLOSED": ["a protected mutation could proceed without a valid authorization decision or while policy state is unavailable or ambiguous"],
         "CTRL-EXECUTION-OWNERS": ["commands or recovery could execute outside worker/agent/supervisor ownership and lose delivery/recovery guarantees"],
         "CTRL-EVIDENCE-SANITIZE": ["secret-bearing or private-path evidence could enter canonical documentation or mislead security posture"],
         "CTRL-EXPLICIT-PROMOTION": ["transient/unreviewed capture could be mistaken for canonical release/runtime evidence"],

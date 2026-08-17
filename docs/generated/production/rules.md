@@ -1,13 +1,13 @@
 ---
 title: "Rules"
-description: "The current Rules surface is partial and remains advisory/protection-oriented."
-status: unvalidated
+description: "Rules is the operator view of a loopback-only Open Policy Agent authorization layer. FastAPI remains authoritative and preserves hard domain invariants before any policy call."
+status: verified
 generated: true
 audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 29e9c74dfdc556deb069f31fdfab7a21589f67ad7d6ceade6a332b18ad1e25c3
+source_fingerprint: 04383ed1abfad1c58cab968bac756caf62249ff7d5e29664a762d4d0c4edf06e
 schema_revision: 1
 validation_status: generated
 ---
@@ -15,10 +15,22 @@ validation_status: generated
 # Rules
 
 <div class="pl-page-meta" markdown>
-<span class="pl-status pl-status--unvalidated">Unvalidated</span>
+<span class="pl-status pl-status--verified">Verified</span>
 <span class="pl-status pl-status--patch-provided">Production guidance</span>
 </div>
 
-The current Rules surface is partial and remains advisory/protection-oriented.
+Rules is the operator view of a loopback-only Open Policy Agent authorization layer. FastAPI remains authoritative and preserves hard domain invariants before any policy call.
 
-Generated documentation does not claim browser-owned rule execution, advanced approvals, or unsupported automation. FastAPI and backend execution boundaries remain mandatory.
+## Runtime model
+
+- OPA is installed as a pinned ARM64 runtime dependency and is not packaged in `dist.zip`.
+- Startup validates repository Rego with `opa fmt`, `opa check --strict`, and `opa test --fail-on-empty` before atomically activating a revision and starting `pocket-opa` on `127.0.0.1:8181`.
+- OPA is not routed through Caddy and is not called by the browser or NATS.
+- FastAPI constructs bounded authorization input from server-owned actor/session and target state, asks OPA, reuses existing domain invariants/revision checks, and only then reaches the existing execution path.
+
+## Current enforcement scope
+
+- `catalog.install`
+- `device.remove`
+
+Unknown registered-action gaps, OPA unavailability, timeouts, and malformed decisions fail closed. Decision evidence stores bounded identifiers, allow/block state, stable reason code, policy revision, and evaluation duration; raw policy input, credentials, command payloads, and secrets are excluded. The current action set is deliberately narrow; advanced execution is not claimed. This authorization layer is not an Approval Model.

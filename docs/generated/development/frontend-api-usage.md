@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ce36b319f348e6a42b0330bcab5c12a5c32e3b1624a66d80768487ae700e914c
+source_fingerprint: 8957396808f68a4c73bf282d1e1316e1d4ca2c6726a779d7d84d2b078e29aa88
 schema_revision: 1
 validation_status: generated
 ---
@@ -23,107 +23,6 @@ validation_status: generated
 | Source module | Owner | Method | Route | Kind | Mocked | Resolution |
 | --- | --- | --- | --- | --- | --- | --- |
 | src/hooks/useLiteHotPathDiagnostics.js | liteApi.hotPathDiagnostics | GET | `/api/lite/diagnostics/runtime` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/lifecycle` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/lifecycle/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/photoprism/actions` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | DELETE | `/api/lite/apps/photoprism/storage-mappings` | mutation | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/photoprism/storage-mappings` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | DELETE | `/api/lite/apps/photoprism/storage-mappings/{param}` | mutation | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/photoprism/storage-preview` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/action-history` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/actions` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/actions/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/backup` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/backup/storage-device` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/backups` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/backups/{param}/receipt` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/evidence` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/restore/preview` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/restore/previews/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/update` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/update/apply` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/apps/{param}/update/receipts/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/catalog` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/catalog/install` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/commands/history` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/devices/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/devices/{param}/health` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/devices/{param}/health/history` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/devices/{param}/history` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/devices/{param}/removal-assessment` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/diagnostics/frontend-lifecycle` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/diagnostics/frontend-lifecycle/challenge` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/diagnostics/runtime` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/add-device` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/devices/{param}/display-model` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/devices/{param}/recovery-history` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/devices/{param}/restart-agent` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/devices/{param}/restart-agent/status` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/health-summary` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/invites/{param}/revoke` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/fleet/remove-device` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/identity` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | DELETE | `/api/lite/identity/rotate` | mutation | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/policy` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/policy/apply` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/apps` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/apps/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/apps/{param}/backup-targets` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/apps/{param}/restore` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/backup` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/backup-targets` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/backups` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/backups/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/backups/{param}/verify` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/backup` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/backups` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/backups/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/backups/{param}/preview` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/backups/{param}/restore` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/backups/{param}/verify` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/restore/previews/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/database/restore/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/details` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/maintenance` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/maintenance/checkpoint` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/maintenance/retention` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/operations` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/receipts/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/restore` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/restore/preview` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/restore/previews/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/recovery/summary` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/release` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/release/apply` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/release/check` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/remote-access/readiness` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/revisions` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/apps` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/apps/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/apps/{param}/check` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | DELETE | `/api/lite/security/check` | mutation | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/details/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/evidence/{param}/summary` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/freshness` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/history` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/profiles/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/progress` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/runs/{param}` | query | no | dynamic |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/security/summary` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/status` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/activity-summary` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/agent` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/health` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/nats-readiness` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/processes` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/sqlite-health` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/storage-pressure` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/supervisor` | query | no | static |
-| src/hooks/useLiteQuery.js | isLiteNotModified | GET | `/api/lite/system/telemetry-thresholds` | query | no | static |
 | src/hooks/useLiteSecurityEvents.js | liteApi.securityProgress | GET | `/api/lite/security/progress` | query | no | static |
 | src/hooks/useLiteStatus.js | liteApi.status | GET | `/api/lite/status` | query | no | static |
 | src/lite/LiteApp.jsx | liteApi.catalog | GET | `/api/lite/catalog` | query | no | static |
@@ -134,7 +33,14 @@ validation_status: generated
 | src/lite/LiteDevices.jsx | liteApi.restartDeviceAgentStatus | GET | `/api/lite/fleet/devices/{param}/restart-agent/status` | query | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.removeDevice | POST | `/api/lite/fleet/remove-device` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.identity | GET | `/api/lite/identity` | query | no | static |
-| src/lite/LiteIdentity.jsx | liteApi.rotateIdentity | POST | `/api/lite/identity/rotate` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.loginIdentity | POST | `/api/lite/identity/login` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.logoutIdentity | POST | `/api/lite/identity/logout` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.changeIdentityPassword | POST | `/api/lite/identity/password` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.recoverIdentity | POST | `/api/lite/identity/recover` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.regenerateIdentityRecovery | POST | `/api/lite/identity/recovery/regenerate` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.revokeOtherIdentitySessions | POST | `/api/lite/identity/sessions/revoke-others` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.revokeIdentitySession | GET | `/api/lite/identity/sessions/{param}` | query | no | dynamic |
+| src/lite/LiteIdentity.jsx | liteApi.setupIdentity | POST | `/api/lite/identity/setup` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.previewAppRestore | POST | `/api/lite/apps/{param}/restore/preview` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
@@ -153,7 +59,6 @@ validation_status: generated
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.checkRelease | POST | `/api/lite/release/check` | mutation | no | static |
 | src/lite/LiteRevisionSyncBridge.jsx | liteApi.domainRevisions | GET | `/api/lite/revisions` | query | no | static |
 | src/lite/LiteRules.jsx | liteApi.policy | GET | `/api/lite/policy` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.applyPolicy | POST | `/api/lite/policy/apply` | mutation | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.checkSecurityApp | POST | `/api/lite/security/apps/{param}/check` | mutation | no | dynamic |
 | src/lite/LiteSecurity.jsx | liteApi.runSecurityScan | POST | `/api/lite/security/check` | mutation | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.securityEvidenceSummary | GET | `/api/lite/security/evidence/{param}/summary` | query | no | dynamic |
@@ -201,7 +106,15 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/devices/:nodeId/restart-agent` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/remove-device` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/identity` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/login` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/logout` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/password` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/recover` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | DELETE | `/api/lite/identity/recovery/regenerate` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/rotate` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/sessions/:sessionId` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/setup` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/policy` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/policy/apply` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery` | mock | yes | static |
@@ -241,18 +154,64 @@ validation_status: generated
 
 ## Backend Lite routes with no detected frontend consumer
 
+- `/api/lite/apps/lifecycle`
+- `/api/lite/apps/photoprism/storage-mappings/{mapping_id}`
+- `/api/lite/apps/{app_id}/backup/storage-device`
+- `/api/lite/apps/{app_id}/backups/{backup_id}/receipt`
+- `/api/lite/apps/{app_id}/restore/previews/{preview_id}`
+- `/api/lite/apps/{app_id}/update/apply`
+- `/api/lite/apps/{app_id}/update/receipts/{operation_id}`
 - `/api/lite/catalog/remove`
+- `/api/lite/commands/history`
+- `/api/lite/diagnostics/frontend-lifecycle`
+- `/api/lite/diagnostics/frontend-lifecycle/challenge`
 - `/api/lite/diagnostics/runtime/full`
 - `/api/lite/events`
 - `/api/lite/fleet/agent/bootstrap-blocked`
 - `/api/lite/fleet/agent/bootstrap.env`
 - `/api/lite/fleet/agent/bootstrap.sh`
+- `/api/lite/fleet/devices/{device_id}/recovery-history`
+- `/api/lite/fleet/health-summary`
 - `/api/lite/fleet/invites/latest`
+- `/api/lite/fleet/invites/{invite_id}/revoke`
+- `/api/lite/identity/rotate`
+- `/api/lite/policy/apply`
+- `/api/lite/recovery`
+- `/api/lite/recovery/apps`
+- `/api/lite/recovery/apps/{app_id}`
 - `/api/lite/recovery/apps/{app_id}/backup`
+- `/api/lite/recovery/apps/{app_id}/backup-targets`
 - `/api/lite/recovery/apps/{app_id}/backup-to-target`
+- `/api/lite/recovery/apps/{app_id}/restore`
 - `/api/lite/recovery/apps/{app_id}/restore/preview`
+- `/api/lite/recovery/backup-targets`
+- `/api/lite/recovery/backups/{backup_id}`
+- `/api/lite/recovery/database/backups`
+- `/api/lite/recovery/database/backups/{backup_id}`
+- `/api/lite/recovery/database/restore/previews/{preview_id}`
+- `/api/lite/recovery/database/restore/{restore_id}`
+- `/api/lite/recovery/maintenance`
+- `/api/lite/recovery/maintenance/checkpoint`
+- `/api/lite/recovery/maintenance/retention`
+- `/api/lite/recovery/operations`
+- `/api/lite/recovery/receipts/{backup_id}`
 - `/api/lite/recovery/restore/checkpoints/{checkpoint_id}`
+- `/api/lite/recovery/restore/previews/{preview_id}`
 - `/api/lite/recovery/restore/runs/{restore_id}`
+- `/api/lite/remote-access/readiness`
+- `/api/lite/security/apps`
+- `/api/lite/security/apps/{app_id}`
+- `/api/lite/security/details/{run_id}`
 - `/api/lite/security/events`
 - `/api/lite/security/evidence/{run_id}`
+- `/api/lite/security/runs/{run_id}`
 - `/api/lite/security/scan`
+- `/api/lite/system/activity-summary`
+- `/api/lite/system/agent`
+- `/api/lite/system/health`
+- `/api/lite/system/nats-readiness`
+- `/api/lite/system/processes`
+- `/api/lite/system/sqlite-health`
+- `/api/lite/system/storage-pressure`
+- `/api/lite/system/supervisor`
+- `/api/lite/system/telemetry-thresholds`

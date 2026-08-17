@@ -52,6 +52,7 @@ CORE_SERVICES: tuple[ServiceSpec, ...] = (
     ServiceSpec("pocket-nats", "nats", True),
     ServiceSpec("pocket-api", "api", True),
     ServiceSpec("pocket-worker", "worker", True),
+    ServiceSpec("pocket-opa", "policy", True),
     ServiceSpec("caddy-proxy", "proxy", True),
     ServiceSpec("pocket-telemetry", "telemetry", False),
 )

@@ -88,6 +88,8 @@ Execution ownership: FastAPI → NATS/JetStream → worker; FastAPI/Caddy read p
 - `CTRL-API-CONTROL`
 - `CTRL-BROWSER-NATS`
 - `CTRL-EXECUTION-OWNERS`
+- `CTRL-HUMAN-SESSION-CSRF`
+- `CTRL-OPA-FAIL-CLOSED`
 
 ## Tests and validation
 

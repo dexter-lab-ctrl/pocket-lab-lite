@@ -360,38 +360,56 @@
     },
     {
       "confidence": "verified",
-      "data_owner": "SQLite identity and invite state",
-      "description": "Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.",
+      "data_owner": "SQLite human identity/session state plus device identity and invite state",
+      "description": "Applies human authentication/session/CSRF guards plus device identity, duplicate, protected-host, and fail-closed invite/bootstrap acceptance guards.",
       "documentation_links": [
-        "docs/generated/production/devices.md"
+        "docs/generated/production/devices.md",
+        "docs/generated/production/identity.md",
+        "docs/generated/production/rules.md"
       ],
       "domain": null,
       "durable_state_dependencies": [
+        "auth_sessions",
         "device_identity_guards",
-        "device_invite_lifecycle"
+        "device_invite_lifecycle",
+        "human_credentials",
+        "human_identities",
+        "identity_audit_events",
+        "recovery_code_batches",
+        "recovery_codes"
       ],
       "evidence": [
-        "invite lifecycle",
-        "bootstrap blocked"
+        "bootstrap blocked",
+        "identity audit reason codes",
+        "invite lifecycle"
       ],
       "execution_owner": "FastAPI",
       "failure_modes": [
+        "CSRF rejected",
+        "authentication required",
+        "duplicate device",
         "identity mismatch",
-        "duplicate device"
+        "session expired"
       ],
       "health_signals": [
-        "invite status"
+        "authenticated session state",
+        "invite status",
+        "owner configured"
       ],
       "icon": "semantic-api-guard",
       "id": "component:api-guards",
       "inputs": [
+        "CSRF token",
         "Device invite request",
+        "Owner login/session credential",
         "identity claim"
       ],
       "name": "Identity, authentication, and invite guards",
       "outputs": [
         "Accepted bootstrap artifact",
-        "blocked evidence"
+        "Authenticated human context",
+        "blocked evidence",
+        "safe identity projection"
       ],
       "owner": "Lite API",
       "protocols": [
@@ -408,7 +426,8 @@
       "security_boundary": "control-api",
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
       ],
       "status_dimensions": {
         "capability_status": "implemented",
@@ -2136,6 +2155,84 @@
       "type": "component"
     },
     {
+      "confidence": "source-derived",
+      "data_owner": "Repository Rego source and bounded SQLite policy decision metadata",
+      "description": "Evaluates only registered protected actions after FastAPI hard invariants and before existing NATS/worker execution; it never owns command execution.",
+      "documentation_links": [
+        "docs/generated/production/rules.md",
+        "docs/generated/production/security-boundaries.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "policy_decisions"
+      ],
+      "evidence": [
+        "bounded authorization decision metadata"
+      ],
+      "execution_owner": "pocket-opa",
+      "failure_modes": [
+        "OPA unavailable",
+        "OPA timeout",
+        "invalid decision",
+        "policy activation validation failure"
+      ],
+      "health_signals": [
+        "loopback /health",
+        "engine version",
+        "active policy revision",
+        "last decision"
+      ],
+      "icon": "semantic-decision",
+      "id": "component:opa-policy-engine",
+      "inputs": [
+        "bounded FastAPI authorization input"
+      ],
+      "name": "OPA Safety Rules policy engine",
+      "outputs": [
+        "allow/deny/constraints/reason code/policy revision"
+      ],
+      "owner": "Rules authorization",
+      "protocols": [
+        "Loopback HTTP JSON",
+        "Rego"
+      ],
+      "recovery_behavior": [
+        "fail closed",
+        "preserve last-known-good policy",
+        "restart only after validated activation"
+      ],
+      "recovery_owner": "Startup validation and PM2 core supervisor",
+      "runtime_owner": "PM2",
+      "runtime_platform": "Server host loopback",
+      "runtime_process": "pocket-opa",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
       "confidence": "verified",
       "data_owner": "PhotoPrism application data",
       "description": "Provides the verified managed photo application under a same-origin Caddy path.",
@@ -3841,6 +3938,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

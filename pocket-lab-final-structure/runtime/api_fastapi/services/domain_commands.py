@@ -419,7 +419,12 @@ async def handle_vault_rotate(command: Dict[str, Any]) -> Dict[str, Any]:
         "command_id": command_id,
         "job_id": run.get("job_id"),
         "secret": target,
-        "artifacts": run.get("artifacts") or {},
+        "artifacts": {
+            "version": (run.get("artifacts") or {}).get("version"),
+            "rotated_at": (run.get("artifacts") or {}).get("rotated_at"),
+            "lease_duration": (run.get("artifacts") or {}).get("lease_duration"),
+            "secret_material": "hidden",
+        },
     }
     await _publish(
         "pocketlab.events.vault.secret_rotated",

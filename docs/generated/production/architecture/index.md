@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
+source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -61,16 +61,16 @@ The [generated Threat Model](../../enterprise/threat-model/index.md) is a securi
 
 | Measure | Count |
 | --- | ---: |
-| Components | 56 |
-| Connections | 93 |
+| Components | 57 |
+| Connections | 95 |
 | Trust boundaries | 9 |
 | Domain views | 15 |
-| Component mini diagrams | 52 |
-| Verified source references | 136 |
+| Component mini diagrams | 53 |
+| Verified source references | 146 |
 
-**Architecture source fingerprint:** `20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee`
+**Architecture source fingerprint:** `765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672`
 
-**Repository source inventory fingerprint:** `861cc470d342aef92a8169163444cf8a2072b9f47fa089f8c5b6ad1e35a6df0b`
+**Repository source inventory fingerprint:** `84e90abb85b546b52200bb7a2b87603d31fd2bc0b3c21ae4b4cb2b8f8aeefbfa`
 
 ## Operational guarantees
 

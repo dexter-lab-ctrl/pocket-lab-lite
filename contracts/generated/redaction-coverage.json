@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "8b9242129e27bdacca7c346a6db5caada0802305d13a8c8d078844869537ac43",
+    "aggregate_fingerprint": "c5c489180787afb64e61b7af8df23f3ad3ea3ea096fee70f9b23996a76cae6d6",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,11 +10,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "e3fe370d9b039c813d031300a9f90d5796dc808552a04a57c6d02d7d9e662113",
+      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
       "scripts/dev/lite/har_tool.py": "593c19a5821dd4b8dbec0ecb29e33c4a2d120c6a799a64e7f67e76c76a7ec091",
       "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
-      "tests/backend/test_lite_api.py": "a0a113a08ee4a4f2c1f789a053b9a6953cef1132014c1aaea5b490a431885525",
+      "tests/backend/test_lite_api.py": "2846e0b7b90b3b69cf2b4a5319eb3d1e5f18f15eb8a4b3cc6f59bc99f74307b2",
       "tests/backend/test_lite_security.py": "5b94f748a2b89a2a4468e47a2598d57bd71a9f2c938b8f4e8ddc3b5ea8c5583a"
     },
     "validation_state": "generated"

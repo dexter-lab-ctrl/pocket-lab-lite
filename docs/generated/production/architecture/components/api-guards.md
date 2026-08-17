@@ -1,12 +1,12 @@
 ---
 title: "Identity, authentication, and invite guards"
-description: "Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance."
+description: "Applies human authentication/session/CSRF guards plus device identity, duplicate, protected-host, and fail-closed invite/bootstrap acceptance guards."
 audience: production
 status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
+source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -16,7 +16,7 @@ validation_status: generated
 
 # Identity, authentication, and invite guards
 
-Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.
+Applies human authentication/session/CSRF guards plus device identity, duplicate, protected-host, and fail-closed invite/bootstrap acceptance guards.
 
 <div class="pl-architecture-component-icons"><span class="pl-architecture-icon pl-architecture-icon--component pl-architecture-icon--semantic"><img src="../../../../../assets/diagrams/production/icons/api-guard.svg" alt="" loading="lazy" decoding="async" /><span>API guard</span></span><span class="pl-architecture-icon pl-architecture-icon--small pl-architecture-icon--brand"><img src="../../../../../assets/diagrams/production/icons/python.svg" alt="" loading="lazy" decoding="async" /><span>Python</span></span></div>
 
@@ -35,11 +35,11 @@ Applies identity guards, duplicate checks, protected-host checks, and fail-close
 
 | Field | Value |
 | --- | --- |
-| Function | Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance. |
-| Primary inputs | Device invite request, identity claim |
-| Primary outputs | Accepted bootstrap artifact, blocked evidence |
+| Function | Applies human authentication/session/CSRF guards plus device identity, duplicate, protected-host, and fail-closed invite/bootstrap acceptance guards. |
+| Primary inputs | CSRF token, Device invite request, Owner login/session credential |
+| Primary outputs | Accepted bootstrap artifact, Authenticated human context, blocked evidence |
 | Protocols / uses | HTTP JSON |
-| Evidence | invite lifecycle, bootstrap blocked |
+| Evidence | bootstrap blocked, identity audit reason codes, invite lifecycle |
 
 ## Ownership and placement
 
@@ -50,7 +50,7 @@ Applies identity guards, duplicate checks, protected-host checks, and fail-close
 | Started / runtime owner | pocket-api |
 | Process owner | FastAPI |
 | Execution owner | Lite API |
-| Data owner | SQLite identity and invite state |
+| Data owner | SQLite human identity/session state plus device identity and invite state |
 | Recovery owner | Explicit repair/rejoin |
 | Security boundary | Control API boundary |
 | Supported platforms | Android/Termux, ARM64, Ubuntu, WSL2 development |
@@ -65,13 +65,17 @@ Applies identity guards, duplicate checks, protected-host checks, and fail-close
 
 ## Inputs
 
+- CSRF token
 - Device invite request
+- Owner login/session credential
 - identity claim
 
 ## Outputs
 
 - Accepted bootstrap artifact
+- Authenticated human context
 - blocked evidence
+- safe identity projection
 
 ## Protocols
 
@@ -79,22 +83,34 @@ Applies identity guards, duplicate checks, protected-host checks, and fail-close
 
 ## Durable state
 
+- auth_sessions
 - device_identity_guards
 - device_invite_lifecycle
+- human_credentials
+- human_identities
+- identity_audit_events
+- recovery_code_batches
+- recovery_codes
 
 ## Health and readiness
 
+- authenticated session state
 - invite status
+- owner configured
 
 ## Evidence
 
-- invite lifecycle
 - bootstrap blocked
+- identity audit reason codes
+- invite lifecycle
 
 ## Failure behavior
 
-- identity mismatch
+- CSRF rejected
+- authentication required
 - duplicate device
+- identity mismatch
+- session expired
 
 ## Recovery behavior
 
@@ -117,10 +133,16 @@ Applies identity guards, duplicate checks, protected-host checks, and fail-close
 - `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py`
 - `route` — `POST /api/lite/fleet/add-device`
 - `sqlite_table` — `device_identity_guards`
+- `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py`
+- `route` — `POST /api/lite/identity/login`
+- `sqlite_table` — `human_identities`
+- `sqlite_table` — `auth_sessions`
 
 ## Existing documentation
 
 - [devices.md](../../devices.md)
+- [identity.md](../../identity.md)
+- [rules.md](../../rules.md)
 
 ## Related architecture views
 

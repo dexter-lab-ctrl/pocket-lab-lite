@@ -76,6 +76,7 @@ Exposes local and verified Tailnet-reachable NATS listeners for agents without h
 - recovers_with: `Remote access not ready`
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_device_system_profile.py`
+- verified_by: `tests/backend/test_lite_identity_rules_authorization.py`
 - verified_by: `tests/backend/test_lite_security_s6_frontend_contract.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`

@@ -98,6 +98,35 @@
       "writer": "audit evidence indexing services"
     },
     {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:auth_sessions",
+      "indexes": [
+        "idx_auth_sessions_human_active",
+        "sqlite_autoindex_auth_sessions_2",
+        "sqlite_autoindex_auth_sessions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "auth_sessions",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "csrf_hash",
+        "token_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "internal operational metadata",
       "confidence": "inferred",
       "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -672,6 +701,82 @@
     {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:human_credentials",
+      "indexes": [
+        "idx_human_credentials_active_password",
+        "sqlite_autoindex_human_credentials_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "human_credentials",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:human_identities",
+      "indexes": [
+        "sqlite_autoindex_human_identities_2",
+        "sqlite_autoindex_human_identities_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "human_identities",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:identity_audit_events",
+      "indexes": [
+        "idx_identity_audit_recent"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "identity_audit_events",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived release persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "release",
       "id": "table:lite_installed_release_identity",
@@ -795,6 +900,32 @@
     {
       "classification": "internal operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:policy_decisions",
+      "indexes": [
+        "idx_policy_decisions_action",
+        "idx_policy_decisions_recent",
+        "sqlite_autoindex_policy_decisions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "policy_decisions",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived projections persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "projections",
       "id": "table:projection_dirty_signals",
@@ -848,6 +979,65 @@
       ],
       "type": "table",
       "writer": "projection scheduler"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:recovery_code_batches",
+      "indexes": [
+        "idx_recovery_code_batch_generation",
+        "sqlite_autoindex_recovery_code_batches_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "recovery_code_batches",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:recovery_codes",
+      "indexes": [
+        "idx_recovery_codes_batch_active",
+        "sqlite_autoindex_recovery_codes_2",
+        "sqlite_autoindex_recovery_codes_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "name": "recovery_codes",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "code_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
     },
     {
       "classification": "internal operational metadata",
@@ -1360,6 +1550,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

@@ -401,11 +401,11 @@
   "evidence_status": "source-and-canonical-evidence",
   "exact_tag": "lite-2026.08.12.2",
   "fingerprints": {
-    "architecture": "dd345150406899d8a505e1fdfc3c1cd7407018e0f41e33538662e33db0c76c89",
-    "asyncapi": "ec70890c09d869067fdd12bffe3948ee9d2de4fe7cfe7d235f24ce5f3d885d84",
-    "documentation": "0949b7263ad57522a3cc15b365cf1a417e2f1a4bc2ea6f20f9e776d0170f0471",
-    "openapi": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
-    "operational_health": "551db43fddd73c42077686bdfca21d05eefd4ed5603da7800f44f57f286c344b"
+    "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
+    "asyncapi": "89b7d973feb5acd67e7d09b233d9ae3d89e50861770b026c84f7a2b6a4ce417c",
+    "documentation": "7d57fa4ae756d02c72f65f53cf8e6a78671a9ad5b3801d1467207d0c491a91e8",
+    "openapi": "76cd6bfd789bc8735bb9a0aa4c650ef4bb7eecc4a4bfe09b949e148b555568dd",
+    "operational_health": "b66e01681b7e19d308c9b98761c2e1fffcb88596c0a0f17f6700959d0ad6391f"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",

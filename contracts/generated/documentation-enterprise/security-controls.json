@@ -140,6 +140,105 @@
     },
     {
       "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "boundary": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Human browser writes require an authenticated local-owner session plus a separate same-site CSRF proof; session credentials remain HttpOnly and hash-only at rest.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "ambient browser session authority could be reused without a separate write-intent proof or reusable session material could be exposed"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-HUMAN-SESSION-CSRF",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "src/lib/liteApi.js"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Identity/session boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_identity_rules_authorization.py"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ]
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "messaging-execution"
+      ],
+      "boundary": [
+        "control-api",
+        "messaging-execution"
+      ],
+      "description": "FastAPI preserves hard domain invariants, then requires a valid loopback OPA allow decision for registered protected actions before NATS/worker execution; unavailable, timed-out, malformed, or unregistered decisions fail closed.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "a protected mutation could proceed without a valid authorization decision or while policy state is unavailable or ambiguous"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-OPA-FAIL-CLOSED",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Rules/OPA authorization boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_identity_rules_authorization.py",
+        "security/policies/opa/pocketlab/pocketlab_test.rego"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "control-api",
+        "messaging-execution"
+      ]
+    },
+    {
+      "boundaries": [
         "messaging-execution",
         "managed-device",
         "server-host"

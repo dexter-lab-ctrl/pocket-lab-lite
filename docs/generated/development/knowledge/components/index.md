@@ -45,6 +45,7 @@ generator_version: 3
 | [NATS / JetStream](./nats-jetstream.md) | Messaging backbone | Server host | messaging-execution | verified |
 | [Primary and secondary NATS listeners](./nats-listeners.md) | NATS runtime | Server host | server-host | verified |
 | [Lite node agent](./node-agent.md) | Device runtime | Server host or joined device | managed-device | verified |
+| [OPA Safety Rules policy engine](./opa-policy-engine.md) | Rules authorization | Server host loopback | control-api | source-derived |
 | [PhotoPrism](./photoprism.md) | Managed application | PROot Ubuntu on server host | application-container | verified |
 | [PM2 process manager](./pm2.md) | Runtime process management | Server host and joined devices | server-host | verified |
 | [Post-switch health validation](./post-switch-health.md) | Release validation | Release subprocess against local services | server-host | verified |

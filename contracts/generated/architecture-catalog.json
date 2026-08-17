@@ -283,21 +283,32 @@
       },
       {
         "category": "service",
-        "data_owner": "SQLite identity and invite state",
+        "data_owner": "SQLite human identity/session state plus device identity and invite state",
         "documentation_links": [
-          "docs/generated/production/devices.md"
+          "docs/generated/production/devices.md",
+          "docs/generated/production/identity.md",
+          "docs/generated/production/rules.md"
         ],
         "durable_state_dependencies": [
+          "auth_sessions",
           "device_identity_guards",
-          "device_invite_lifecycle"
+          "device_invite_lifecycle",
+          "human_credentials",
+          "human_identities",
+          "identity_audit_events",
+          "recovery_code_batches",
+          "recovery_codes"
         ],
         "evidence_produced": [
-          "invite lifecycle",
-          "bootstrap blocked"
+          "bootstrap blocked",
+          "identity audit reason codes",
+          "invite lifecycle"
         ],
         "generated_page": "docs/generated/production/architecture/components/api-guards.md",
         "health_signals": [
-          "invite status"
+          "authenticated session state",
+          "invite status",
+          "owner configured"
         ],
         "icon": "semantic-api-guard",
         "id": "api-guards",
@@ -315,7 +326,7 @@
           "HTTP JSON"
         ],
         "recovery_owner": "Explicit repair/rejoin",
-        "responsibility": "Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.",
+        "responsibility": "Applies human authentication/session/CSRF guards plus device identity, duplicate, protected-host, and fail-closed invite/bootstrap acceptance guards.",
         "runtime_location": "FastAPI process",
         "runtime_owner": "pocket-api",
         "security_boundary": "control-api",
@@ -1330,6 +1341,53 @@
           "brand-python"
         ],
         "verification_status": "verified"
+      },
+      {
+        "category": "decision",
+        "data_owner": "Repository Rego source and bounded SQLite policy decision metadata",
+        "documentation_links": [
+          "docs/generated/production/rules.md",
+          "docs/generated/production/security-boundaries.md"
+        ],
+        "durable_state_dependencies": [
+          "policy_decisions"
+        ],
+        "evidence_produced": [
+          "bounded authorization decision metadata"
+        ],
+        "generated_page": "docs/generated/production/architecture/components/opa-policy-engine.md",
+        "health_signals": [
+          "loopback /health",
+          "engine version",
+          "active policy revision",
+          "last decision"
+        ],
+        "icon": "semantic-decision",
+        "id": "opa-policy-engine",
+        "mini_diagram": true,
+        "name": "OPA Safety Rules policy engine",
+        "owner": "Rules authorization",
+        "platforms": [
+          "Android/Termux",
+          "ARM64",
+          "Ubuntu",
+          "WSL2 development"
+        ],
+        "process_owner": "pocket-opa",
+        "protocols": [
+          "Loopback HTTP JSON",
+          "Rego"
+        ],
+        "recovery_owner": "Startup validation and PM2 core supervisor",
+        "responsibility": "Evaluates only registered protected actions after FastAPI hard invariants and before existing NATS/worker execution; it never owns command execution.",
+        "runtime_location": "Server host loopback",
+        "runtime_owner": "PM2",
+        "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python",
+          "semantic-decision"
+        ],
+        "verification_status": "patch-provided"
       },
       {
         "category": "external-app",
@@ -2401,6 +2459,16 @@
         "target": "nats-jetstream"
       },
       {
+        "evidence": true,
+        "id": "api-policy-evaluation",
+        "kind": "control",
+        "label": "evaluates registered protected action",
+        "protocol": "Loopback HTTP JSON",
+        "recovery": false,
+        "source": "api-domain-surfaces",
+        "target": "opa-policy-engine"
+      },
+      {
         "evidence": false,
         "id": "api-reads",
         "kind": "data",
@@ -2749,6 +2817,16 @@
         "recovery": true,
         "source": "pm2",
         "target": "agent-supervisor"
+      },
+      {
+        "evidence": true,
+        "id": "policy-api-decision",
+        "kind": "control",
+        "label": "returns allow/deny/constraints/reason code",
+        "protocol": "Loopback HTTP JSON",
+        "recovery": false,
+        "source": "opa-policy-engine",
+        "target": "api-domain-surfaces"
       },
       {
         "evidence": false,
@@ -3273,8 +3351,8 @@
     ],
     "counts": {
       "boundaries": 9,
-      "components": 56,
-      "connections": 93,
+      "components": 57,
+      "connections": 95,
       "views": 15
     },
     "description": "Canonical production architecture model generated into diagrams, pages, catalogs, and drift manifests.",
@@ -3982,13 +4060,13 @@
     ]
   },
   "metadata": {
-    "architecture_source_fingerprint": "20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee",
+    "architecture_source_fingerprint": "765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672",
     "generated": true,
     "generated_at": "uncommitted",
     "generator": "scripts/docs/graphviz/generate_lite_architecture.py",
     "generator_sha256": "cdcdf1a093360e793ed84c88419059141e30d227ddc82e764d3ab9e17a30f2e8",
     "generator_version": 2,
-    "repository_source_fingerprint": "861cc470d342aef92a8169163444cf8a2072b9f47fa089f8c5b6ad1e35a6df0b",
+    "repository_source_fingerprint": "84e90abb85b546b52200bb7a2b87603d31fd2bc0b3c21ae4b4cb2b8f8aeefbfa",
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "validation_state": "generated"

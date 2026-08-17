@@ -463,7 +463,9 @@ def test_join_invite_browser_page_does_not_consume_token(monkeypatch):
     script = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
     assert script.status_code == 200
     assert "text/x-shellscript" in script.headers.get("content-type", "")
-    assert "POCKETLAB_AGENT_TOKEN" in script.text
+    assert "INTENDED_NODE_ID=phone-two" in script.text
+    assert "ALLOW_REJOIN" in script.text
+    assert "/api/lite/fleet/agent/bootstrap.env" in script.text
 
 
 def test_join_invite_shell_access_is_single_use(monkeypatch):
@@ -481,9 +483,17 @@ def test_join_invite_shell_access_is_single_use(monkeypatch):
     first = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
     assert first.status_code == 200
 
+    # Script retrieval itself is now non-consuming so the device-local identity
+    # guard can run before the atomic bootstrap.env accept step.
     second = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
-    assert second.status_code == 410
-    assert "already been used" in second.text
+    assert second.status_code == 200
+    token = invite_url.split("token=", 1)[1].split("&", 1)[0]
+    accepted = api.post("/api/lite/fleet/agent/bootstrap.env", json={"role": "storage", "token": token})
+    assert accepted.status_code == 200
+
+    third = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
+    assert third.status_code == 410
+    assert "already been used" in third.text
 
     browser_after_use = api.get(path, headers={"accept": "text/html", "user-agent": "Mozilla/5.0"})
     assert browser_after_use.status_code == 410
@@ -569,9 +579,14 @@ def test_join_sh_returns_non_empty_script_and_marks_joining(monkeypatch):
     assert response.status_code == 200
     assert "text/x-shellscript" in response.headers.get("content-type", "")
     assert len(response.text.strip()) > 100
-    assert "Pocket Lab Lite device join" in response.text
-    assert 'POCKETLAB_NODE_ID="phone-join-script"' in response.text
+    assert "Pocket Lab Lite device bootstrap" in response.text
+    assert "INTENDED_NODE_ID=phone-join-script" in response.text
+    assert "ALLOW_REJOIN" in response.text
     assert ".pocketlab-lite-agent.env" in response.text
+
+    token = invite_url.split("token=", 1)[1].split("&", 1)[0]
+    accepted = api.post("/api/lite/fleet/agent/bootstrap.env", json={"role": "compute", "token": token})
+    assert accepted.status_code == 200
 
     fleet = api.get("/api/lite/fleet")
     assert fleet.status_code == 200
@@ -603,7 +618,60 @@ def test_join_sh_reuse_is_rejected_after_consumption(monkeypatch):
     assert len(first.text.strip()) > 100
 
     second = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
-    assert second.status_code == 410
+    assert second.status_code == 200
+
+    token = invite_url.split("token=", 1)[1].split("&", 1)[0]
+    accepted = api.post("/api/lite/fleet/agent/bootstrap.env", json={"role": "storage", "token": token})
+    assert accepted.status_code == 200
+    third = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
+    assert third.status_code == 410
+
+
+def test_legacy_join_script_identity_mismatch_does_not_consume_or_overwrite(monkeypatch, tmp_path):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.62:8443")
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "intended-phone"},
+    )
+    assert created.status_code == 202
+    invite_url = created.json()["invite"]["url"]
+    script_path = invite_url.split("http://100.64.0.62:8443", 1)[1]
+    token = invite_url.split("token=", 1)[1].split("&", 1)[0]
+
+    response = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
+    assert response.status_code == 200
+
+    home = tmp_path / "home"
+    home.mkdir()
+    env_file = home / ".pocketlab-lite-agent.env"
+    original = "export POCKETLAB_NODE_ID=already-enrolled\nexport POCKETLAB_NODE_NAME=Already Enrolled\n"
+    env_file.write_text(original, encoding="utf-8")
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_python = fake_bin / "python3"
+    fake_python.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    fake_python.chmod(0o755)
+    script_file = tmp_path / "join.sh"
+    script_file.write_text(response.text, encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(script_file)],
+        cwd=tmp_path,
+        env={**os.environ, "HOME": str(home), "PATH": f"{fake_bin}:{os.environ.get('PATH', '')}"},
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 42
+    assert "did not change this phone" in result.stdout
+    assert env_file.read_text(encoding="utf-8") == original
+
+    ensure_runtime_path()
+    from api_fastapi.services import lite_invites
+    status, _ = lite_invites.invite_token_status(token, role="compute")
+    assert status == "valid"
 
 
 def test_lite_bootstrap_script_uses_request_host_for_public_nats_url(monkeypatch):

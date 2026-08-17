@@ -89,12 +89,15 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `CTRL-EVIDENCE-SANITIZE`
 - `CTRL-EXECUTION-OWNERS`
 - `CTRL-EXPLICIT-PROMOTION`
+- `CTRL-HUMAN-SESSION-CSRF`
+- `CTRL-OPA-FAIL-CLOSED`
 
 ## Tests and validation
 
 - `test:tests/backend/test_lite_api.py`
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_device_system_profile.py`
+- `test:tests/backend/test_lite_identity_rules_authorization.py`
 - `test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py`
 - `test:tests/backend/test_lite_security_s6_frontend_contract.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`

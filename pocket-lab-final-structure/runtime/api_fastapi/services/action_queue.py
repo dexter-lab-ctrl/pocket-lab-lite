@@ -12,6 +12,7 @@ from .. import deps
 from ..services.nats_bus import BUS, PocketLabEventBus
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from ..services.workload_admission import WORKLOAD_ADMISSION
+from ..services.lite_security_policy import redact_value
 
 OperationRequestLike = Any
 DomainFallback = Callable[[Dict[str, Any]], Dict[str, Any]]
@@ -240,11 +241,14 @@ def _prepare_domain_publish_bundle(
     )
     payload.setdefault("command_id", command_id)
     payload.setdefault("trace_id", trace_id or command_id)
-    evidence_payload = {
+    evidence_payload = redact_value({
         "command_id": command_id,
         "command_subject": subject,
         **payload,
-    }
+    })
+    if any(marker in subject.casefold() for marker in (".vault.", ".identity.")) and isinstance(evidence_payload, dict):
+        if "value" in evidence_payload:
+            evidence_payload["value"] = "***REDACTED***"
     command_event, command_encoded = BUS.prepare_json_event(
         subject, event_type, payload, trace_id=payload["trace_id"]
     )
@@ -340,8 +344,11 @@ async def submit_domain_command(
         payload.setdefault("trace_id", trace_id or command_id)
         evidence_payload, _ = await WORKLOAD_ADMISSION.run(
             "control.command_envelope.prepare",
-            lambda: {"command_id": command_id, "command_subject": subject, **payload},
+            lambda: redact_value({"command_id": command_id, "command_subject": subject, **payload}),
         )
+        if any(marker in subject.casefold() for marker in (".vault.", ".identity.")) and isinstance(evidence_payload, dict):
+            if "value" in evidence_payload:
+                evidence_payload["value"] = "***REDACTED***"
         bundle = {
             "command_id": command_id,
             "trace_id": payload["trace_id"],

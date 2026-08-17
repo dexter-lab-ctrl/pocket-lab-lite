@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -109,6 +109,113 @@ def _lite_payload_dict(payload):
         return payload.dict()
     return {}
 
+
+def _request_source(request: Request) -> str:
+    return str(request.client.host if request.client else "unknown")[:80]
+
+
+def _raise_identity_error(exc: lite_identity_auth.IdentityError) -> None:
+    headers = {"Cache-Control": "no-store"}
+    if exc.retry_after:
+        headers["Retry-After"] = str(exc.retry_after)
+    raise HTTPException(
+        status_code=exc.status_code,
+        headers=headers,
+        detail={"reason_code": exc.reason_code, "message": exc.message},
+    ) from exc
+
+
+def _set_identity_cookie(response: Response, session_token: str, csrf_token: str) -> None:
+    response.set_cookie(
+        key=lite_identity_auth.cookie_name(),
+        value=session_token,
+        max_age=lite_identity_auth.session_cookie_max_age(),
+        httponly=True,
+        secure=lite_identity_auth.cookie_secure(),
+        samesite="strict",
+        path="/",
+    )
+    response.set_cookie(
+        key=lite_identity_auth.csrf_cookie_name(),
+        value=csrf_token,
+        max_age=lite_identity_auth.session_cookie_max_age(),
+        httponly=False,
+        secure=lite_identity_auth.cookie_secure(),
+        samesite="strict",
+        path="/",
+    )
+    response.headers["Cache-Control"] = "no-store"
+
+
+def _clear_identity_cookie(response: Response) -> None:
+    response.delete_cookie(
+        key=lite_identity_auth.cookie_name(),
+        httponly=True,
+        secure=lite_identity_auth.cookie_secure(),
+        samesite="strict",
+        path="/",
+    )
+    response.delete_cookie(
+        key=lite_identity_auth.csrf_cookie_name(),
+        secure=lite_identity_auth.cookie_secure(),
+        samesite="strict",
+        path="/",
+    )
+    response.headers["Cache-Control"] = "no-store"
+
+
+def _identity_projection(request: Request) -> dict[str, Any]:
+    auth_context = deps.resolve_auth_context(request)
+    projection = lite_identity_auth.identity_projection(auth_context)
+    projection["identity_classes"] = {
+        "human": {"label": "Owner", "managed_by": "Identity", "configured": bool(projection.get("owner"))},
+        "device": {"label": "Device identities", "managed_by": "Devices", "summary": "Device enrollment identity remains protected by the Devices flow."},
+        "service": {
+            "label": "Service identities",
+            "managed_by": "FastAPI runtime",
+            "api_token_configured": bool(deps.settings().api_token.strip()),
+            "summary": "Service access is separate from the human owner session.",
+        },
+    }
+    return projection
+
+
+async def _enforce_lite_policy(
+    *,
+    auth_context: dict[str, Any],
+    action_id: str,
+    target_type: str,
+    target_id: str,
+    target_revision: str,
+    target: dict[str, Any],
+    correlation_id: str,
+) -> dict[str, Any]:
+    try:
+        return await asyncio.to_thread(
+            lite_policy_opa.evaluate_authorization,
+            auth_context=auth_context,
+            action_id=action_id,
+            target_type=target_type,
+            target_id=target_id,
+            target_revision=target_revision,
+            target=target,
+            request_context={"source": "lite_api"},
+            correlation_id=correlation_id,
+        )
+    except lite_policy_opa.PolicyDecisionError as exc:
+        decision = exc.decision or {}
+        raise HTTPException(
+            status_code=exc.status_code,
+            headers={"Cache-Control": "no-store"},
+            detail={
+                "status": "blocked",
+                "accepted": False,
+                "reason_code": exc.reason_code,
+                "message": exc.message,
+                "decision_id": decision.get("decision_id"),
+                "policy_revision": decision.get("policy_revision"),
+            },
+        ) from exc
 
 
 
@@ -621,6 +728,29 @@ class LiteIdentityRotateRequest(BaseModel):
     target: str = "default"
     value: str | None = None
     lease_duration: str | None = None
+
+
+class LiteIdentitySetupRequest(BaseModel):
+    username: str = Field(default="owner", min_length=1, max_length=64)
+    display_name: str = Field(default="Pocket Lab Owner", max_length=120)
+    password: str = Field(min_length=12, max_length=256)
+    setup_token: str = Field(min_length=1, max_length=512)
+
+
+class LiteIdentityLoginRequest(BaseModel):
+    username: str = Field(default="owner", min_length=1, max_length=64)
+    password: str = Field(min_length=1, max_length=256)
+
+
+class LiteIdentityPasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=256)
+    new_password: str = Field(min_length=12, max_length=256)
+
+
+class LiteIdentityRecoveryRequest(BaseModel):
+    username: str = Field(default="owner", min_length=1, max_length=64)
+    recovery_code: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=12, max_length=256)
 
 
 class LiteSecurityScanRequest(BaseModel):
@@ -1415,7 +1545,7 @@ def start_lite_app_backup_to_storage_device(app_id: str, payload: LiteAppActionR
 
 @router.post("/apps/{app_id}/actions/{action_id}")
 async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     action = lite_app_actions.prepare_action(app_id, action_id, payload=_lite_payload_dict(payload))
     kind = action.get("kind")
 
@@ -1627,6 +1757,30 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
 
     if kind == "install_app":
         command = action["command"]
+        policy_revision = hashlib.sha256(
+            json.dumps(
+                {
+                    "app_id": command.get("app_id"),
+                    "target_node_id": command.get("target_node_id"),
+                    "action_id": "install_app",
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()[:24]
+        policy_decision = await _enforce_lite_policy(
+            auth_context=auth_context,
+            action_id="catalog.install",
+            target_type="app",
+            target_id=str(command.get("app_id") or app_id),
+            target_revision=policy_revision,
+            target={
+                "target_node_id": command.get("target_node_id"),
+                "dry_run": bool(command.get("dry_run")),
+                "already_installed": False,
+            },
+            correlation_id=str(command.get("operation_id") or uuid.uuid4().hex),
+        )
         await ensure_worker_execution_ready()
         lite_catalog.record_install_queued(command)
         try:
@@ -1648,6 +1802,11 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "summary": "PhotoPrism install started.",
             "progress": {"phase": "queued", "step": "Install queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend install record pending."},
+            "authorization": {
+                "decision_id": policy_decision.get("decision_id"),
+                "reason_code": policy_decision.get("reason_code"),
+                "policy_revision": policy_decision.get("policy_revision"),
+            },
         })
         return queued
 
@@ -1698,7 +1857,7 @@ def delete_photoprism_storage_mapping(mapping_id: str, request: Request) -> dict
 
 @router.post("/catalog/install", status_code=202)
 async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     app_ref = (payload.app_id or "").strip()
     if not app_ref:
         raise HTTPException(status_code=400, detail="Choose an app to install.")
@@ -1715,6 +1874,32 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
     )
     if command.get("already_installed"):
         return lite_catalog.already_installed_response(command)
+
+    policy_revision = hashlib.sha256(
+        json.dumps(
+            {
+                "app_id": command.get("app_id"),
+                "target_node_id": command.get("target_node_id"),
+                "version": params.get("version"),
+                "dry_run": bool(payload.dry_run),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()[:24]
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="catalog.install",
+        target_type="app",
+        target_id=str(command.get("app_id") or app_ref),
+        target_revision=policy_revision,
+        target={
+            "target_node_id": command.get("target_node_id"),
+            "dry_run": bool(payload.dry_run),
+            "already_installed": False,
+        },
+        correlation_id=str(command.get("operation_id") or uuid.uuid4().hex),
+    )
 
     await ensure_worker_execution_ready()
     lite_catalog.record_install_queued(command)
@@ -1736,6 +1921,11 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
             "app_id": lite_catalog.PHOTOPRISM_APP_ID,
             "target_node_id": command["target_node_id"],
             "message": "PhotoPrism install started.",
+            "authorization": {
+                "decision_id": policy_decision.get("decision_id"),
+                "reason_code": policy_decision.get("reason_code"),
+                "policy_revision": policy_decision.get("policy_revision"),
+            },
         }
     )
     return queued
@@ -1756,24 +1946,168 @@ def remove_lite_catalog_item(payload: LiteCatalogRemoveRequest, request: Request
 
 
 @router.get("/identity")
-def get_lite_identity(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
-    return lite_status.lite_identity()
+def get_lite_identity(request: Request, response: Response) -> dict[str, Any]:
+    response.headers["Cache-Control"] = "no-store"
+    return _identity_projection(request)
 
 
-@router.post("/identity/rotate", status_code=202)
-async def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
-    data: dict[str, Any] = {"target": payload.target}
-    if payload.value is not None:
-        data["value"] = payload.value
-    if payload.lease_duration:
-        data["lease_duration"] = payload.lease_duration
-    return await submit_domain_command(
-        "pocketlab.commands.vault.rotate",
-        "vault.rotate.requested",
-        data,
+@router.post("/identity/setup", status_code=201)
+def setup_lite_identity(payload: LiteIdentitySetupRequest, request: Request, response: Response) -> dict[str, Any]:
+    try:
+        lite_identity_auth.setup_owner(
+            username=payload.username,
+            display_name=payload.display_name,
+            password=payload.password,
+            setup_token=payload.setup_token,
+        )
+        session = lite_identity_auth.login(
+            username=payload.username,
+            password=payload.password,
+            source=_request_source(request),
+        )
+    except lite_identity_auth.IdentityError as exc:
+        _raise_identity_error(exc)
+    _set_identity_cookie(response, session["session_token"], session["csrf_token"])
+    auth_context = lite_identity_auth.authenticate_session_token(session["session_token"])
+    projection = lite_identity_auth.identity_projection(auth_context)
+    projection["csrf_token"] = session["csrf_token"]
+    projection["setup_completed"] = True
+    return projection
+
+
+@router.post("/identity/login")
+def login_lite_identity(payload: LiteIdentityLoginRequest, request: Request, response: Response) -> dict[str, Any]:
+    try:
+        session = lite_identity_auth.login(
+            username=payload.username,
+            password=payload.password,
+            source=_request_source(request),
+        )
+    except lite_identity_auth.IdentityError as exc:
+        _raise_identity_error(exc)
+    _set_identity_cookie(response, session["session_token"], session["csrf_token"])
+    auth_context = lite_identity_auth.authenticate_session_token(session["session_token"])
+    projection = lite_identity_auth.identity_projection(auth_context)
+    projection["csrf_token"] = session["csrf_token"]
+    return projection
+
+
+@router.post("/identity/logout")
+def logout_lite_identity(request: Request, response: Response) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    actor = auth_context.get("actor") or {}
+    session = auth_context.get("session") or {}
+    if actor.get("type") != "human" or not session.get("session_id"):
+        raise HTTPException(status_code=403, detail={"reason_code": "human_session_required", "message": "A signed-in owner session is required."})
+    lite_identity_auth.logout(human_id=str(actor["identity_id"]), session_id=str(session["session_id"]))
+    _clear_identity_cookie(response)
+    return {"status": "signed_out", "summary": "Signed out of Pocket Lab."}
+
+
+@router.post("/identity/password")
+def change_lite_identity_password(payload: LiteIdentityPasswordRequest, request: Request, response: Response) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    actor = auth_context.get("actor") or {}
+    session_context = auth_context.get("session") or {}
+    if actor.get("type") != "human" or not session_context.get("session_id"):
+        raise HTTPException(status_code=403, detail={"reason_code": "human_session_required", "message": "A signed-in owner session is required."})
+    try:
+        session = lite_identity_auth.change_password(
+            human_id=str(actor["identity_id"]),
+            session_id=str(session_context["session_id"]),
+            current_password=payload.current_password,
+            new_password=payload.new_password,
+        )
+    except lite_identity_auth.IdentityError as exc:
+        _raise_identity_error(exc)
+    _set_identity_cookie(response, session["session_token"], session["csrf_token"])
+    response.headers["Cache-Control"] = "no-store"
+    return {
+        "status": "changed",
+        "summary": "Password changed. Other owner sessions were signed out.",
+        "csrf_token": session["csrf_token"],
+    }
+
+
+@router.post("/identity/sessions/revoke-others")
+def revoke_other_lite_identity_sessions(request: Request, response: Response) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    actor = auth_context.get("actor") or {}
+    session_context = auth_context.get("session") or {}
+    if actor.get("type") != "human" or not session_context.get("session_id"):
+        raise HTTPException(status_code=403, detail={"reason_code": "human_session_required", "message": "A signed-in owner session is required."})
+    count = lite_identity_auth.revoke_other_sessions(
+        human_id=str(actor["identity_id"]), current_session_id=str(session_context["session_id"])
     )
+    response.headers["Cache-Control"] = "no-store"
+    return {"status": "completed", "revoked_sessions": count, "summary": "Other owner sessions were signed out."}
+
+
+@router.delete("/identity/sessions/{session_id}")
+def revoke_lite_identity_session(session_id: str, request: Request, response: Response) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    actor = auth_context.get("actor") or {}
+    current = auth_context.get("session") or {}
+    if actor.get("type") != "human":
+        raise HTTPException(status_code=403, detail={"reason_code": "human_session_required", "message": "A signed-in owner session is required."})
+    revoked = lite_identity_auth.revoke_session(human_id=str(actor["identity_id"]), session_id=session_id)
+    if not revoked:
+        raise HTTPException(status_code=404, detail={"reason_code": "session_not_found", "message": "That session is no longer active."})
+    if session_id == current.get("session_id"):
+        _clear_identity_cookie(response)
+    else:
+        response.headers["Cache-Control"] = "no-store"
+    return {"status": "revoked", "session_id": session_id, "summary": "Session signed out."}
+
+
+@router.post("/identity/recovery/regenerate")
+def regenerate_lite_identity_recovery(request: Request, response: Response) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    actor = auth_context.get("actor") or {}
+    session_context = auth_context.get("session") or {}
+    if actor.get("type") != "human" or not session_context.get("session_id"):
+        raise HTTPException(status_code=403, detail={"reason_code": "human_session_required", "message": "A signed-in owner session is required."})
+    result = lite_identity_auth.regenerate_recovery_codes(
+        human_id=str(actor["identity_id"]), session_id=str(session_context["session_id"])
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return {
+        "status": "generated",
+        "generation": result["generation"],
+        "codes": result["codes"],
+        "created_at": result["created_at"],
+        "summary": "New one-time recovery codes were generated. Save them somewhere private; Pocket Lab will not show them again.",
+    }
+
+
+@router.post("/identity/recover")
+def recover_lite_identity(payload: LiteIdentityRecoveryRequest, request: Request, response: Response) -> dict[str, Any]:
+    try:
+        session = lite_identity_auth.recover_with_code(
+            username=payload.username,
+            recovery_code=payload.recovery_code,
+            new_password=payload.new_password,
+            source=_request_source(request),
+        )
+    except lite_identity_auth.IdentityError as exc:
+        _raise_identity_error(exc)
+    _set_identity_cookie(response, session["session_token"], session["csrf_token"])
+    auth_context = lite_identity_auth.authenticate_session_token(session["session_token"])
+    projection = lite_identity_auth.identity_projection(auth_context)
+    projection["csrf_token"] = session["csrf_token"]
+    projection["recovered"] = True
+    return projection
+
+
+@router.post("/identity/rotate", status_code=410)
+def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return {
+        "status": "retired",
+        "accepted": False,
+        "reason_code": "legacy_secret_rotation_retired",
+        "summary": "Generic secret rotation is no longer used for human sign-in. Use the Identity password flow instead.",
+    }
 
 
 @router.get("/security/summary")
@@ -2646,7 +2980,7 @@ async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> di
 
 @router.post("/fleet/remove-device")
 async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     device_id = (payload.device_id or "").strip()
     if not device_id:
         raise HTTPException(status_code=400, detail="Choose a device to remove.")
@@ -2681,6 +3015,21 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
     removal_generation = hashlib.sha256(
         f"{device_id}:{current_assessment.get('assessment_revision')}:{current_assessment.get('awareness_revision')}".encode("utf-8")
     ).hexdigest()[:24]
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="device.remove",
+        target_type="device",
+        target_id=device_id,
+        target_revision=str(current_assessment.get("assessment_revision") or removal_generation),
+        target={
+            "confirmed": True,
+            "revision_validated": True,
+            "protected_server_host": False,
+            "awareness_revision": int(current_assessment.get("awareness_revision") or 0),
+            "removal_class": current_assessment.get("removal_class"),
+        },
+        correlation_id=removal_generation,
+    )
     try:
         prepared_details = CONTROL_PLANE.device_details(device_id)
         removal_state = (
@@ -2759,24 +3108,31 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         "removed_invite_records": removed_invites,
         "message": "Old device record removed.",
         "summary": "Old device record removed. The phone was not wiped and Pocket Lab was not uninstalled from that device.",
+        "authorization": {
+            "decision_id": policy_decision.get("decision_id"),
+            "reason_code": policy_decision.get("reason_code"),
+            "policy_revision": policy_decision.get("policy_revision"),
+        },
         "updated_at": deps.now_utc_iso(),
     }
 
 
 @router.get("/policy")
-def get_lite_policy(request: Request) -> dict[str, Any]:
+async def get_lite_policy(request: Request, response: Response) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_status.lite_policy()
+    response.headers["Cache-Control"] = "no-cache"
+    return await asyncio.to_thread(lite_policy_opa.policy_status)
 
 
-@router.post("/policy/apply", status_code=202)
-async def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -> dict[str, Any]:
+@router.post("/policy/apply", status_code=410)
+def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return await submit_domain_command(
-        "pocketlab.commands.security.configure_opa",
-        "security.configure_opa.requested",
-        {"enforce_mode": payload.protection_enabled, "reason": payload.reason},
-    )
+    return {
+        "status": "retired",
+        "accepted": False,
+        "reason_code": "generic_policy_toggle_retired",
+        "summary": "The old protection toggle is retired. Safety Rules are repository-owned and activated only after OPA validation.",
+    }
 
 
 def _lite_recovery_details_payload() -> dict[str, Any]:

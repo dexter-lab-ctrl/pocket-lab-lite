@@ -80,6 +80,9 @@
     "data_owner:Release runtime state": [
       "component:post-switch-health"
     ],
+    "data_owner:Repository Rego source and bounded SQLite policy decision metadata": [
+      "component:opa-policy-engine"
+    ],
     "data_owner:SQLite": [
       "component:app-workflow-state",
       "component:device-state",
@@ -107,7 +110,7 @@
     "data_owner:SQLite evidence index and sanitized files": [
       "component:completion-evidence"
     ],
-    "data_owner:SQLite identity and invite state": [
+    "data_owner:SQLite human identity/session state plus device identity and invite state": [
       "component:api-guards"
     ],
     "data_owner:SQLite lifecycle state": [
@@ -225,6 +228,9 @@
     ],
     "execution_owner:pocket-nats": [
       "component:nats-jetstream"
+    ],
+    "execution_owner:pocket-opa": [
+      "component:opa-policy-engine"
     ],
     "execution_owner:pocket-worker": [
       "component:app-lifecycle-worker",
@@ -411,6 +417,9 @@
     "owner:Repository maintainers": [
       "component:github-repository"
     ],
+    "owner:Rules authorization": [
+      "component:opa-policy-engine"
+    ],
     "owner:Runtime process management": [
       "component:pm2"
     ],
@@ -561,6 +570,9 @@
       "component:caddy",
       "component:nats-jetstream"
     ],
+    "recovery_owner:Startup validation and PM2 core supervisor": [
+      "component:opa-policy-engine"
+    ],
     "recovery_owner:TanStack revalidation and UI workflows": [
       "component:frontend-state"
     ],
@@ -620,6 +632,7 @@
       "component:lite-api",
       "component:nats-jetstream",
       "component:node-agent",
+      "component:opa-policy-engine",
       "component:pm2",
       "component:worker"
     ],
@@ -707,6 +720,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

@@ -52,6 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services import lite_security
     from .services import lite_database_recovery
     from .services import fleet_registry
+    from .services import lite_identity_auth
     from .services.lite_control_plane_store import CONTROL_PLANE
     from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
     from .services.workload_admission import WORKLOAD_ADMISSION
@@ -76,6 +77,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         deps.settings().ensure_dirs()
         await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "api")
         await asyncio.to_thread(CONTROL_PLANE.initialize)
+        await asyncio.to_thread(lite_identity_auth.initialize_identity_runtime)
         idle_governor_started = await IDLE_EFFICIENCY.start()
         admission_started = await WORKLOAD_ADMISSION.start()
         await asyncio.to_thread(PROJECTION_SCHEDULER.start)

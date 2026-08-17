@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 27ba3b5681a9ce20f8275667dce39878d825ca940a686b02ea59d0863ac99884
+source_fingerprint: b8f367015c0be51bda7af7d9f623683949a8dc0f1dd39f0140eaf2b8c3c73f00
 schema_revision: 1
 validation_status: generated
 ---
@@ -1100,6 +1100,107 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="post-api-lite-identity-login"></a>
+## POST `/api/lite/identity/login`
+
+- Operation ID: `login_lite_identity_api_lite_identity_login_post`
+- Summary: Login Lite Identity
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteIdentityLoginRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-logout"></a>
+## POST `/api/lite/identity/logout`
+
+- Operation ID: `logout_lite_identity_api_lite_identity_logout_post`
+- Summary: Logout Lite Identity
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-password"></a>
+## POST `/api/lite/identity/password`
+
+- Operation ID: `change_lite_identity_password_api_lite_identity_password_post`
+- Summary: Change Lite Identity Password
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteIdentityPasswordRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-recover"></a>
+## POST `/api/lite/identity/recover`
+
+- Operation ID: `recover_lite_identity_api_lite_identity_recover_post`
+- Summary: Recover Lite Identity
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteIdentityRecoveryRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-recovery-regenerate"></a>
+## POST `/api/lite/identity/recovery/regenerate`
+
+- Operation ID: `regenerate_lite_identity_recovery_api_lite_identity_recovery_regenerate_post`
+- Summary: Regenerate Lite Identity Recovery
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="post-api-lite-identity-rotate"></a>
 ## POST `/api/lite/identity/rotate`
 
@@ -1118,7 +1219,69 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 410 | Successful Response | application/json: `object` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-sessions-revoke-others"></a>
+## POST `/api/lite/identity/sessions/revoke-others`
+
+- Operation ID: `revoke_other_lite_identity_sessions_api_lite_identity_sessions_revoke_others_post`
+- Summary: Revoke Other Lite Identity Sessions
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="delete-api-lite-identity-sessions-session-id"></a>
+## DELETE `/api/lite/identity/sessions/{session_id}`
+
+- Operation ID: `revoke_lite_identity_session_api_lite_identity_sessions__session_id__delete`
+- Summary: Revoke Lite Identity Session
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| session_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-setup"></a>
+## POST `/api/lite/identity/setup`
+
+- Operation ID: `setup_lite_identity_api_lite_identity_setup_post`
+- Summary: Setup Lite Identity
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteIdentitySetupRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
@@ -1156,8 +1319,8 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 202 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 410 | Successful Response | application/json: `object` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 

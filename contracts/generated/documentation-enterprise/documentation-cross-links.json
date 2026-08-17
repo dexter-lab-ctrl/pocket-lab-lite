@@ -1682,6 +1682,28 @@
       "target_type": "control"
     },
     {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:control:CTRL-HUMAN-SESSION-CSRF",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-HUMAN-SESSION-CSRF",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:control:CTRL-OPA-FAIL-CLOSED",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -3154,15 +3176,59 @@
       "target_type": "page"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:022fdcd29c66d02d",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_security_f3_summary_contract.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:03a6e3a187664b0a",
-      "relation_type": "related_to",
+      "id": "link:journey:identity:0284592762510824",
+      "relation_type": "depends_on",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "subject:pocketlab.commands.security.configure_opa",
-      "target_type": "subject"
+      "target": "table:human_identities",
+      "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:031928f391a1d234",
+      "relation_type": "depends_on",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "table:recovery_code_batches",
+      "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:05f2462b4f9b71c0",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:0665fbc891ed6663",
+      "relation_type": "depends_on",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "table:auth_sessions",
+      "target_type": "table"
     },
     {
       "depth": 2,
@@ -3180,10 +3246,10 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:074759b32d3ee377",
+      "id": "link:journey:identity:110fcb4126e6eb84",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/mkdocs.spec.ts",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
@@ -3213,10 +3279,10 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:1a81340c29134147",
+      "id": "link:journey:identity:1d46e4864ecabb91",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
@@ -3253,36 +3319,14 @@
       "target_type": "component"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:26603538af9a6d1a",
+      "id": "link:journey:identity:2b78c21dfe42d4a5",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_f7_split_read_contract.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:28c5cbe6d3373fd3",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_living_knowledgebase.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:2fb81b1148b2c4b4",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_device_health_d4.py",
+      "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
       "target_type": "test"
     },
     {
@@ -3312,33 +3356,33 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:36b6d4f0d68ad1bd",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:372cc8fc129ebd30",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_f3_summary_contract.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:identity:3afea6aefd18e319",
       "relation_type": "related_to",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "subject:pocketlab.commands.lite.backup.verify",
       "target_type": "subject"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:3b6743670320310a",
+      "relation_type": "depends_on",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "table:human_credentials",
+      "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:3c91fa605d2fd818",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
     },
     {
       "depth": 2,
@@ -3356,44 +3400,22 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:3dcc893bc673b189",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "threat-model:durable-state",
-      "target_type": "threat-model"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:3e9329406e8bd125",
+      "id": "link:journey:identity:452013b783c8f339",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:44c0e776e944d2c6",
+      "id": "link:journey:identity:45ba0d1aa8272bd6",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "target": "test:tests/backend/test_lite_security_f7_split_read_contract.py",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:468fcb35b85f56cc",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "boundary:durable-state",
-      "target_type": "boundary"
     },
     {
       "depth": 2,
@@ -3418,14 +3440,14 @@
       "target_type": "adr"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:4b72ec35492cb250",
+      "id": "link:journey:identity:4a9094ec091926bb",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+      "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
       "target_type": "test"
     },
     {
@@ -3444,22 +3466,22 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:4ec68ae9e414596c",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/parity/test_api_contract_fences.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:identity:522833a829443130",
       "relation_type": "protected_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "threat-model:control-api",
       "target_type": "threat-model"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:528ad3b3fe7597a2",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+      "target_type": "test"
     },
     {
       "depth": 2,
@@ -3470,6 +3492,28 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "test:tests/backend/test_lite_api.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:55ebbe14b9fc6517",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:57903ee972ddef41",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_device_health_d4.py",
       "target_type": "test"
     },
     {
@@ -3495,15 +3539,15 @@
       "target_type": "component"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:5b081a300bd469df",
-      "relation_type": "verified_by",
+      "id": "link:journey:identity:5d9fa95cb1ac6e91",
+      "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_s6_retention.py",
-      "target_type": "test"
+      "target": "api:post:/api/lite/identity/recover",
+      "target_type": "api"
     },
     {
       "depth": 1,
@@ -3521,55 +3565,11 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:5fec1caa6043f786",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_f9_etag_contract.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:661df1c91c3471c0",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_enterprise_completion.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:6ab38db4d251d30c",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:identity:6f3efdf1db321228",
       "relation_type": "depends_on",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "table:device_identity_guards",
       "target_type": "table"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:70136b03ee6becdb",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_living_knowledgebase.py",
-      "target_type": "test"
     },
     {
       "depth": 2,
@@ -3620,10 +3620,43 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:identity:814c153690877280",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:identity:82c6dffac4cfa308",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:83ef53a43d819bb5",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:84906bbf6c295f0f",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_security_s8_recovery.py",
       "target_type": "test"
     },
     {
@@ -3647,28 +3680,6 @@
       "source": "page:generated/enterprise/journeys/identity",
       "target": "component:api-guards",
       "target_type": "component"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:8ab357ade1390db6",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 1,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:8ee9857e194b9cd1",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_operational_health_bridge.py",
-      "target_type": "test"
     },
     {
       "depth": 2,
@@ -3704,15 +3715,59 @@
       "target_type": "component"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:97285408a6f8b2ba",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:9bd2fe18cf368906",
-      "relation_type": "related_to",
+      "id": "link:journey:identity:9920cd579a8153c0",
+      "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "subject:pocketlab.commands.vault.rotate",
-      "target_type": "subject"
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:9a47d054b31760bc",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:9f45617bf36b6f9a",
+      "relation_type": "calls",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "api:post:/api/lite/identity/logout",
+      "target_type": "api"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:a413d4823d02aedb",
+      "relation_type": "depends_on",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "table:recovery_codes",
+      "target_type": "table"
     },
     {
       "depth": 2,
@@ -3748,14 +3803,14 @@
       "target_type": "component"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:ac6f576dbef83c1f",
+      "id": "link:journey:identity:a74d75ea20478e99",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "target": "test:tests/backend/test_lite_security_f9_etag_contract.py",
       "target_type": "test"
     },
     {
@@ -3763,11 +3818,22 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:adfdcf91d3faabab",
+      "id": "link:journey:identity:ad124f9a7a0af1a3",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:ada140785e9e8112",
+      "relation_type": "calls",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "api:post:/api/lite/identity/password",
+      "target_type": "api"
     },
     {
       "depth": 2,
@@ -3804,15 +3870,15 @@
       "target_type": "subject"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:b7a92ec0fcf0b68c",
-      "relation_type": "verified_by",
+      "id": "link:journey:identity:b50f671306ff5dcb",
+      "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_device_health_d4.py",
-      "target_type": "test"
+      "target": "api:post:/api/lite/identity/recovery/regenerate",
+      "target_type": "api"
     },
     {
       "depth": 2,
@@ -3830,28 +3896,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:b8393e83c059d70a",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/docs/test_enterprise_completion.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:bc92e191b3835436",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_devices_durable_enrollment.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:identity:bd1ba5d3eb69361c",
       "relation_type": "related_to",
       "source": "page:generated/enterprise/journeys/identity",
@@ -3863,32 +3907,10 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:be2db2c6760fa7f1",
+      "id": "link:journey:identity:be05a0e1e7e3065b",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:c713c6429d5d3570",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_api.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:c71cc22b1943925b",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
@@ -3918,6 +3940,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:identity:ce542a7a3fd8b4ac",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:identity:cedb125a379f6e2f",
       "relation_type": "depends_on",
       "source": "page:generated/enterprise/journeys/identity",
@@ -3940,10 +3973,10 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:control:CTRL-EVIDENCE-SANITIZE",
+      "id": "link:journey:identity:control:CTRL-HUMAN-SESSION-CSRF",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "CTRL-EVIDENCE-SANITIZE",
+      "target": "CTRL-HUMAN-SESSION-CSRF",
       "target_type": "control"
     },
     {
@@ -3951,22 +3984,11 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:control:CTRL-EXPLICIT-PROMOTION",
+      "id": "link:journey:identity:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "CTRL-EXPLICIT-PROMOTION",
+      "target": "CTRL-OPA-FAIL-CLOSED",
       "target_type": "control"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:d727c5baf964ab2e",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
-      "target_type": "test"
     },
     {
       "depth": 2,
@@ -3980,15 +4002,26 @@
       "target_type": "boundary"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:e36a907c3ad6674a",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_security_s6_retention.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:e6f9bafb8644e980",
-      "relation_type": "verified_by",
+      "id": "link:journey:identity:e3d7acb9c856bf3c",
+      "relation_type": "depends_on",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
-      "target_type": "test"
+      "target": "table:identity_audit_events",
+      "target_type": "table"
     },
     {
       "depth": 2,
@@ -4002,59 +4035,70 @@
       "target_type": "subject"
     },
     {
-      "depth": 1,
+      "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:ea997d92eff38ab6",
+      "id": "link:journey:identity:eaea54ffe4805417",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:f0c0b44bf6a1ac9e",
-      "relation_type": "affected_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "adr:adr-durable-sqlite-authority",
-      "target_type": "adr"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:fda31b2ccc2f155e",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/parity/test_api_contract_fences.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 1,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:fe1b2b1f441c5d2b",
+      "id": "link:journey:identity:f12a40082d791ac9",
       "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "api:post:/api/lite/identity/rotate",
+      "target": "api:post:/api/lite/identity/setup",
       "target_type": "api"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:f177f1fe8f5fde42",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:f7489aa9eb8eb0dd",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:fe8b0e97d1e0911b",
-      "relation_type": "verified_by",
+      "id": "link:journey:identity:f82a50123a965694",
+      "relation_type": "uses",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-      "target_type": "test"
+      "target": "api:post:/api/lite/identity/login",
+      "target_type": "api"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:fc2e892da13b6b11",
+      "relation_type": "calls",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "api:post:/api/lite/identity/login",
+      "target_type": "api"
     },
     {
       "evidence": [
@@ -4870,6 +4914,28 @@
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "CTRL-EXPLICIT-PROMOTION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:control:CTRL-HUMAN-SESSION-CSRF",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-HUMAN-SESSION-CSRF",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:control:CTRL-OPA-FAIL-CLOSED",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-OPA-FAIL-CLOSED",
       "target_type": "control"
     },
     {
@@ -5935,6 +6001,28 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:release:control:CTRL-HUMAN-SESSION-CSRF",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-HUMAN-SESSION-CSRF",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:release:control:CTRL-OPA-FAIL-CLOSED",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:release:control:CTRL-SUPPLY-CHAIN",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/release",
@@ -6605,6 +6693,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:remote-access:7a2ab6dc5a7b03a9",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:remote-access:7c2058ad2e68f4c9",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/remote-access",
@@ -6885,6 +6984,28 @@
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/remote-access",
       "target": "CTRL-EXPLICIT-PROMOTION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:control:CTRL-HUMAN-SESSION-CSRF",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-HUMAN-SESSION-CSRF",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:control:CTRL-OPA-FAIL-CLOSED",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-OPA-FAIL-CLOSED",
       "target_type": "control"
     },
     {
@@ -7885,6 +8006,28 @@
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/security",
       "target": "CTRL-EXPLICIT-PROMOTION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:control:CTRL-HUMAN-SESSION-CSRF",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-HUMAN-SESSION-CSRF",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:control:CTRL-OPA-FAIL-CLOSED",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-OPA-FAIL-CLOSED",
       "target_type": "control"
     },
     {

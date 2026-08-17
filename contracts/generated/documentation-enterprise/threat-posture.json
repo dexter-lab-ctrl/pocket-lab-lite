@@ -1,6 +1,6 @@
 {
   "authority": "promoted/canonical evidence only",
-  "controls_source_derived": 2,
+  "controls_source_derived": 4,
   "controls_verified": 5,
   "implementation_status": "implemented",
   "live_monitoring": false,

@@ -86,6 +86,8 @@ Execution ownership: FastAPI → NATS/JetStream → worker.
 - `CTRL-API-CONTROL`
 - `CTRL-EVIDENCE-SANITIZE`
 - `CTRL-EXPLICIT-PROMOTION`
+- `CTRL-HUMAN-SESSION-CSRF`
+- `CTRL-OPA-FAIL-CLOSED`
 
 ## Tests and validation
 

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import hmac
+import json
 import pathlib
 import sys
 from typing import Any, Dict
@@ -65,29 +67,87 @@ def bearer_token(request: Request) -> str:
     return request.headers.get("x-pocket-lab-token", "").strip()
 
 
-def require_auth(request: Request, *, write: bool = False) -> None:
-    # Unit/contract tests use an explicit bypass header so backend tests can
-    # exercise operation validation and NATS-required behavior without needing
-    # a real user token. This is inert in production unless both the env var
-    # and test-only header are deliberately present.
+def resolve_auth_context(request: Request, *, write: bool = False) -> Dict[str, Any]:
     if (
         os.environ.get("POCKETLAB_TEST_AUTH_BYPASS") == "1"
         and request.headers.get("x-pocket-lab-test") == "1"
     ):
-        return
+        return {
+            "actor": {"identity_id": "test-harness", "type": "test", "display_name": "Test Harness"},
+            "session": {"authenticated": True, "auth_method": "test_bypass"},
+            "auth_method": "test_bypass",
+        }
+
+    from .services import lite_identity_auth
+
+    session_token = request.cookies.get(lite_identity_auth.cookie_name(), "")
+    session_context = lite_identity_auth.authenticate_session_token(session_token) if session_token else None
+    if session_context:
+        if write:
+            csrf = request.headers.get("x-pocket-lab-csrf", "").strip()
+            if not lite_identity_auth.csrf_matches(session_context, csrf):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={"reason_code": "csrf_required", "message": "Refresh the page and try again."},
+                )
+        return {
+            **session_context,
+            "auth_method": str((session_context.get("session") or {}).get("auth_method") or "session"),
+        }
+
     cfg = settings()
-    token = cfg.api_token.strip()
-    if write and not token and cfg.allow_local_write and loopback_client(request):
-        return
-    if not token:
-        if not write or loopback_client(request):
-            return
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
-        )
-    if bearer_token(request) == token:
-        return
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    configured_token = cfg.api_token.strip()
+    supplied = bearer_token(request)
+    if configured_token and supplied and hmac.compare_digest(supplied, configured_token):
+        return {
+            "actor": {"identity_id": "api-token", "type": "service", "display_name": "Pocket Lab API client"},
+            "session": {"authenticated": True, "auth_method": "api_token"},
+            "auth_method": "api_token",
+        }
+
+    if not write:
+        return {
+            "actor": {"identity_id": "anonymous", "type": "anonymous", "display_name": "Signed out"},
+            "session": {"authenticated": False, "auth_method": ""},
+            "auth_method": "anonymous",
+        }
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail={"reason_code": "authentication_required", "message": "Sign in before making this change."},
+    )
+
+
+def require_auth(request: Request, *, write: bool = False) -> Dict[str, Any]:
+    return resolve_auth_context(request, write=write)
+
+
+def _safe_operation_projection(payload: Dict[str, Any]) -> Dict[str, Any]:
+    from .services.lite_security_policy import redact_value
+
+    def _redact_text_projection(value: Any) -> Any:
+        if not isinstance(value, str) or not value.strip():
+            return redact_value(value)
+        try:
+            parsed = json.loads(value)
+        except (TypeError, ValueError):
+            return redact_value(value)
+        redacted = redact_value(parsed)
+        try:
+            return json.dumps(redacted, separators=(",", ":"), sort_keys=True)
+        except (TypeError, ValueError):
+            return "***REDACTED***"
+
+    clean = redact_value(payload)
+    for key in ("stdout", "stderr"):
+        if key in payload:
+            clean[key] = _redact_text_projection(payload.get(key))
+    if str(payload.get("operation") or "") == "rotate_secret":
+        artifacts = dict(clean.get("artifacts") or {}) if isinstance(clean.get("artifacts"), dict) else {}
+        if "value" in artifacts:
+            artifacts["value"] = "***REDACTED***"
+        clean["artifacts"] = artifacts
+    return clean
 
 
 def status_response(job_id: str) -> Dict[str, Any]:
@@ -96,7 +156,7 @@ def status_response(job_id: str) -> Dict[str, Any]:
         raise HTTPException(
             status_code=404, detail=f"Operation job not found: {job_id}"
         )
-    return {
+    return _safe_operation_projection({
         "job_id": job.get("job_id"),
         "operation": job.get("operation"),
         "status": job.get("status"),
@@ -109,7 +169,7 @@ def status_response(job_id: str) -> Dict[str, Any]:
         "artifacts": job.get("artifacts", {}),
         "events": job.get("events", []),
         "task_id": job.get("task_id"),
-    }
+    })
 
 
 def job_response(job_id: str) -> Dict[str, Any]:
@@ -118,4 +178,4 @@ def job_response(job_id: str) -> Dict[str, Any]:
         raise HTTPException(
             status_code=404, detail=f"Operation job not found: {job_id}"
         )
-    return job
+    return _safe_operation_projection(dict(job))

@@ -962,16 +962,16 @@ echo "Join accepted. This device should show as Joining, then Online after heart
 
 @router.get("/api/join.sh", include_in_schema=False)
 def join_script(role: str = "compute", token: str = "", request: Request = None):
-    """Shell-consumable Lite device invite.
+    """Backward-compatible alias for the guarded Lite bootstrap script.
 
-    Browser access is treated as a preview/instruction flow and does not consume
-    the invite. Curl/Termux access consumes the invite, marks the device as
-    joining, and returns a non-empty shell script with stable node identity.
+    The legacy route no longer consumes an invite before device-local identity
+    validation. Curl/Termux callers receive the same guarded script as
+    `/api/lite/fleet/agent/bootstrap.sh`; that script checks the existing local
+    identity first and only then POSTs to the atomic bootstrap.env accept path.
+    Browser callers keep the non-consuming invite preview.
     """
     if not deps.settings().enable_join_script:
-        raise HTTPException(
-            status_code=403, detail="Join script generation is disabled"
-        )
+        raise HTTPException(status_code=403, detail="Join script generation is disabled")
 
     role = (role or "compute").strip() or "compute"
     token = (token or "").strip()
@@ -979,7 +979,6 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
         raise HTTPException(status_code=400, detail="Missing token")
 
     status, invite = lite_invites.invite_token_status(token, role=role)
-
     if _is_browser_join_request(request):
         return _join_invite_html(
             status=status,
@@ -993,99 +992,7 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
         raise HTTPException(status_code=410, detail="Invite token has expired")
     if status == "used":
         raise HTTPException(status_code=410, detail="Invite token has already been used")
-    if status != "valid":
+    if status != "valid" or not invite:
         raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
 
-    consumed = lite_invites.consume_invite_token(token, role=role)
-    if consumed is None:
-        raise HTTPException(status_code=410, detail="Invite token is no longer available")
-
-    role = str(consumed.get("role") or role)
-    node_id = str(consumed.get("node_id") or "")
-    hostname = str(consumed.get("hostname") or node_id or "Pocket Lab Device")
-
-    # Ensure the UI immediately moves from Invite sent / waiting to Joining.
-    fleet_registry.upsert_agent(
-        {
-            "node_id": node_id,
-            "name": hostname,
-            "hostname": hostname,
-            "role": role,
-            "status": "joining",
-            "agent_status": "joining",
-            "accepted_at": deps.now_utc_iso(),
-            "capabilities": consumed.get("capabilities") or [],
-            "auth_token_hash": str(consumed.get("token_hash") or "")[:16],
-        },
-        event_type="fleet.agent_join_started",
-    )
-
-    internal_nats_url = BUS.servers[0] if BUS.servers else "nats://127.0.0.1:4222"
-    nats_url = _public_nats_url_for_invite(request, internal_nats_url)
-    nats_user = os.environ.get(
-        "POCKETLAB_AGENT_NATS_USER",
-        os.environ.get("POCKETLAB_NATS_AGENT_USER", "pocketlab_agent"),
-    )
-    nats_password = os.environ.get(
-        "POCKETLAB_AGENT_NATS_PASSWORD",
-        os.environ.get("POCKETLAB_NATS_AGENT_PASSWORD", ""),
-    )
-
-    bash_script = f"""#!/usr/bin/env bash
-set -Eeuo pipefail
-
-echo "== Pocket Lab Lite device join =="
-echo "Device name: {hostname}"
-echo "Device role: {role}"
-echo ""
-echo "This invite has been accepted by the Pocket Lab Lite server."
-echo "The device will show as Joining until a Pocket Lab node agent heartbeat is received."
-
-export POCKETLAB_NODE_ROLE={json.dumps(role)}
-export POCKETLAB_NODE_ID={json.dumps(node_id)}
-export POCKETLAB_NODE_NAME={json.dumps(hostname)}
-export POCKETLAB_AGENT_TOKEN={json.dumps(token)}
-export POCKETLAB_NATS_URL={json.dumps(nats_url)}
-export POCKETLAB_NATS_USER={json.dumps(nats_user)}
-export POCKETLAB_NATS_PASSWORD={json.dumps(nats_password)}
-
-if ! python3 - <<'PYCHECK' >/dev/null 2>&1
-import importlib.util, sys
-sys.exit(0 if importlib.util.find_spec("nats") else 1)
-PYCHECK
-then
-  python3 -m pip install --user 'nats-py>=2.7.2'
-fi
-
-cat > "$HOME/.pocketlab-lite-agent.env" <<EOF_ENV
-export POCKETLAB_NODE_ROLE={role}
-export POCKETLAB_NODE_ID={node_id}
-export POCKETLAB_NODE_NAME={hostname}
-export POCKETLAB_AGENT_TOKEN={token}
-export POCKETLAB_NATS_URL={nats_url}
-export POCKETLAB_NATS_USER={nats_user}
-export POCKETLAB_NATS_PASSWORD={nats_password}
-EOF_ENV
-
-echo ""
-echo "Saved agent environment to:"
-echo "  $HOME/.pocketlab-lite-agent.env"
-echo ""
-echo "Next step on this device:"
-echo "  source $HOME/.pocketlab-lite-agent.env"
-echo "  python3 pocketlab_node_agent.py"
-echo ""
-echo "If this device has the Pocket Lab Lite repo cloned, run:"
-echo "  cd $HOME/pocket-lab-lite/pocket-lab-final-structure/runtime"
-echo "  source $HOME/.pocketlab-lite-agent.env"
-echo "  python3 agents/pocketlab_node_agent.py"
-echo ""
-"""
-
-    if not bash_script.strip():
-        raise HTTPException(status_code=500, detail="Join script generation produced an empty response")
-
-    return Response(
-        content=bash_script,
-        media_type="text/x-shellscript; charset=utf-8",
-    )
+    return lite_fleet_agent_bootstrap_script(role=role, token=token, request=request)

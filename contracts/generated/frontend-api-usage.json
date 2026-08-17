@@ -18,1420 +18,6 @@
       {
         "dynamic": false,
         "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/lifecycle",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/lifecycle/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/photoprism/actions",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "DELETE",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/photoprism/storage-mappings",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/photoprism/storage-mappings",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "DELETE",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/photoprism/storage-mappings/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/photoprism/storage-preview",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/action-history",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/actions",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/actions/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/backup",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/backup/storage-device",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/backups",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/backups/{param}/receipt",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/evidence",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/restore/preview",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/restore/previews/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/update",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/update/apply",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/apps/{param}/update/receipts/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/catalog",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/catalog/install",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/commands/history",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/devices/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/devices/{param}/health",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/devices/{param}/health/history",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/devices/{param}/history",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/devices/{param}/removal-assessment",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/diagnostics/frontend-lifecycle",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/diagnostics/frontend-lifecycle/challenge",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/diagnostics/runtime",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/add-device",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/devices/{param}/display-model",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/devices/{param}/recovery-history",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/devices/{param}/restart-agent",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/devices/{param}/restart-agent/status",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/health-summary",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/invites/{param}/revoke",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/fleet/remove-device",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/identity",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "DELETE",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/identity/rotate",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/policy",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/policy/apply",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/apps",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/apps/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/apps/{param}/backup-targets",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/apps/{param}/restore",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/backup",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/backup-targets",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/backups",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/backups/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/backups/{param}/verify",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/backup",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/backups",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/backups/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/backups/{param}/preview",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/backups/{param}/restore",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/backups/{param}/verify",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/restore/previews/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/database/restore/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/details",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/maintenance",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/maintenance/checkpoint",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/maintenance/retention",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/operations",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/receipts/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/restore",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/restore/preview",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/restore/previews/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/recovery/summary",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/release",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/release/apply",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/release/check",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/remote-access/readiness",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/revisions",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/apps",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/apps/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/apps/{param}/check",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "DELETE",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/check",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/details/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/evidence/{param}/summary",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/freshness",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/history",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/profiles/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/progress",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/runs/{param}",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/security/summary",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/status",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/activity-summary",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/agent",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/health",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/nats-readiness",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/processes",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/sqlite-health",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/storage-pressure",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/supervisor",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/hooks/useLiteQuery.js",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "isLiteNotModified",
-        "resolved": true,
-        "route": "/api/lite/system/telemetry-thresholds",
-        "source_module": "src/hooks/useLiteQuery.js",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
           "src/hooks/useLiteSecurityEvents.js",
           "src/lib/liteApi.js"
         ],
@@ -1577,9 +163,107 @@
         ],
         "method": "POST",
         "mocked": false,
-        "owner": "liteApi.rotateIdentity",
+        "owner": "liteApi.loginIdentity",
         "resolved": true,
-        "route": "/api/lite/identity/rotate",
+        "route": "/api/lite/identity/login",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.logoutIdentity",
+        "resolved": true,
+        "route": "/api/lite/identity/logout",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.changeIdentityPassword",
+        "resolved": true,
+        "route": "/api/lite/identity/password",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.recoverIdentity",
+        "resolved": true,
+        "route": "/api/lite/identity/recover",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.regenerateIdentityRecovery",
+        "resolved": true,
+        "route": "/api/lite/identity/recovery/regenerate",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.revokeOtherIdentitySessions",
+        "resolved": true,
+        "route": "/api/lite/identity/sessions/revoke-others",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.revokeIdentitySession",
+        "resolved": true,
+        "route": "/api/lite/identity/sessions/{param}",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.setupIdentity",
+        "resolved": true,
+        "route": "/api/lite/identity/setup",
         "source_module": "src/lite/LiteIdentity.jsx",
         "usage": "mutation"
       },
@@ -1834,20 +518,6 @@
         "route": "/api/lite/policy",
         "source_module": "src/lite/LiteRules.jsx",
         "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.applyPolicy",
-        "resolved": true,
-        "route": "/api/lite/policy/apply",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
       },
       {
         "dynamic": true,
@@ -2496,7 +1166,111 @@
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
+        "route": "/api/lite/identity/login",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/logout",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/password",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/recover",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "DELETE",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/recovery/regenerate",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
         "route": "/api/lite/identity/rotate",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/sessions/:sessionId",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/sessions/revoke-others",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/setup",
         "source_module": "src/mocks/handlers.js",
         "usage": "mock"
       },
@@ -2919,25 +1693,71 @@
     ],
     "unsupported_frontend_routes": [],
     "unused_backend_routes": [
+      "/api/lite/apps/lifecycle",
+      "/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+      "/api/lite/apps/{app_id}/backup/storage-device",
+      "/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+      "/api/lite/apps/{app_id}/restore/previews/{preview_id}",
+      "/api/lite/apps/{app_id}/update/apply",
+      "/api/lite/apps/{app_id}/update/receipts/{operation_id}",
       "/api/lite/catalog/remove",
+      "/api/lite/commands/history",
+      "/api/lite/diagnostics/frontend-lifecycle",
+      "/api/lite/diagnostics/frontend-lifecycle/challenge",
       "/api/lite/diagnostics/runtime/full",
       "/api/lite/events",
       "/api/lite/fleet/agent/bootstrap-blocked",
       "/api/lite/fleet/agent/bootstrap.env",
       "/api/lite/fleet/agent/bootstrap.sh",
+      "/api/lite/fleet/devices/{device_id}/recovery-history",
+      "/api/lite/fleet/health-summary",
       "/api/lite/fleet/invites/latest",
+      "/api/lite/fleet/invites/{invite_id}/revoke",
+      "/api/lite/identity/rotate",
+      "/api/lite/policy/apply",
+      "/api/lite/recovery",
+      "/api/lite/recovery/apps",
+      "/api/lite/recovery/apps/{app_id}",
       "/api/lite/recovery/apps/{app_id}/backup",
+      "/api/lite/recovery/apps/{app_id}/backup-targets",
       "/api/lite/recovery/apps/{app_id}/backup-to-target",
+      "/api/lite/recovery/apps/{app_id}/restore",
       "/api/lite/recovery/apps/{app_id}/restore/preview",
+      "/api/lite/recovery/backup-targets",
+      "/api/lite/recovery/backups/{backup_id}",
+      "/api/lite/recovery/database/backups",
+      "/api/lite/recovery/database/backups/{backup_id}",
+      "/api/lite/recovery/database/restore/previews/{preview_id}",
+      "/api/lite/recovery/database/restore/{restore_id}",
+      "/api/lite/recovery/maintenance",
+      "/api/lite/recovery/maintenance/checkpoint",
+      "/api/lite/recovery/maintenance/retention",
+      "/api/lite/recovery/operations",
+      "/api/lite/recovery/receipts/{backup_id}",
       "/api/lite/recovery/restore/checkpoints/{checkpoint_id}",
+      "/api/lite/recovery/restore/previews/{preview_id}",
       "/api/lite/recovery/restore/runs/{restore_id}",
+      "/api/lite/remote-access/readiness",
+      "/api/lite/security/apps",
+      "/api/lite/security/apps/{app_id}",
+      "/api/lite/security/details/{run_id}",
       "/api/lite/security/events",
       "/api/lite/security/evidence/{run_id}",
-      "/api/lite/security/scan"
+      "/api/lite/security/runs/{run_id}",
+      "/api/lite/security/scan",
+      "/api/lite/system/activity-summary",
+      "/api/lite/system/agent",
+      "/api/lite/system/health",
+      "/api/lite/system/nats-readiness",
+      "/api/lite/system/processes",
+      "/api/lite/system/sqlite-health",
+      "/api/lite/system/storage-pressure",
+      "/api/lite/system/supervisor",
+      "/api/lite/system/telemetry-thresholds"
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "05fa471d554bfc3f7ed9013758a2d2549a4f304020580deb07651ccea04de2eb",
+    "aggregate_fingerprint": "abcde35608f117061647195be873e8c40a0ace0929cb4ef12a04f76593931726",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2947,10 +1767,10 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
-      "contracts/metadata/documentation-platform.json": "e3fe370d9b039c813d031300a9f90d5796dc808552a04a57c6d02d7d9e662113",
+      "contracts/generated/lite-openapi.json": "76cd6bfd789bc8735bb9a0aa4c650ef4bb7eecc4a4bfe09b949e148b555568dd",
+      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
-      "src/lib/liteApi.js": "e9c651772f399dc73fdb418a4531a230e49b02a3f8616223c7fad1f8da0533dd",
+      "src/lib/liteApi.js": "8031c51e4c2284928a5e0c40321087ce35c5348535e2ee34487a27016faad05c",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
       "src/lite/LiteApp.jsx": "3979db90fbd79f2222c2579c9261808270eba437a8338328f49ca679ec08a832",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
@@ -2959,7 +1779,7 @@
       "src/lite/LiteDevices.stories.jsx": "87895ccbb3ee837f93e642bab7cd03de09d8b4451f978871c0c2ae5a159c4256",
       "src/lite/LiteHome.jsx": "85add6143e4cd13a2836ed16b706a97a2aa10a5d19489aa328a0d10140d05955",
       "src/lite/LiteHome.stories.jsx": "ead9e092e4eb37399202682d42ec165f7af473d22d684ea3e75f2c55a1910062",
-      "src/lite/LiteIdentity.jsx": "0a2539db595580f9f5422097ec725edf39c469b4fec499d10b25e518bf2ebf11",
+      "src/lite/LiteIdentity.jsx": "d1f8ce8c01eef0982603b48d7d589b9541ef510e6fc70d56b47e8f0a121814ab",
       "src/lite/LiteIdentity.stories.jsx": "a5c53468c8e8da6ae2c1f4365803c0eb5a7a30181c28bd7620eb5dbc6e220236",
       "src/lite/LiteMotion.jsx": "8dc0089c7a175701b33e96afac566efbde31c6eda1202ef5ed0f00ff968e72ba",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
@@ -2969,7 +1789,7 @@
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
       "src/lite/LiteRevisionSyncBridge.jsx": "68176390944b13955111b702c03f8e06d399628f88ba6174909eddda99f9398e",
-      "src/lite/LiteRules.jsx": "b574e763a01961ff9f936b920fb6dfda7891f3bec2759746c21e18839983cca3",
+      "src/lite/LiteRules.jsx": "60a6c9f8804f160b2938a73b93bd4ae59e4f62d657b0412df3c5b388ade94dc3",
       "src/lite/LiteRules.stories.jsx": "e0c1670434e62a0ef2d323a550e680e0e7fc9fda721679baced5600b811426e1",
       "src/lite/LiteScreenBoundary.jsx": "933ae31bc9100302cbce4a037093a2fc876338571d6c104941b4826de365bc95",
       "src/lite/LiteSecurity.jsx": "7695675d564398f9f7aad5296b8deaaa8b5fcecf1453489741d6ec79746b522b",
@@ -2977,7 +1797,7 @@
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "e68c96ecbf88fdbb4d407792fd5fd879ab5d775bbbb576b5940001f1e817b2aa",
       "src/lite/LiteToastHost.jsx": "d3aa3121467bf99ebf130d551f17dc14e36a05d0b48b202f919f7eb0036fde5b",
       "src/lite/LiteUi.jsx": "b8f627a61a6e1cb92892861dd52249c22a9027b272a7637d8c933474e441ad0c",
-      "src/mocks/handlers.js": "ceaff206ce6158d499fff9e95640c3ff3a1fde73b4d2f4a934bd8678b0e82bc3"
+      "src/mocks/handlers.js": "fd1b6bc56744ca6a492a4180595ba96ea7edf06fa3af8a943b6fd0da705ad37c"
     },
     "validation_state": "generated"
   }

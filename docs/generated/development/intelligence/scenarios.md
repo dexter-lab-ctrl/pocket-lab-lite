@@ -61,9 +61,9 @@ Use scenarios when you want to understand **what happens**, **who owns execution
 
 </details>
 
-## Change Password / identity rotation
+## Local owner password and session lifecycle
 
-**Area:** identity · **Flow:** write/execution · **Confidence:** partial
+**Area:** identity · **Flow:** write/execution · **Confidence:** source-derived
 
 <div class="pl-flow"><div>User intent</div><span aria-hidden="true">→</span><div>Pocket Lab Lite UI</div><span aria-hidden="true">→</span><div>FastAPI /api/lite/*</div><span aria-hidden="true">→</span><div>Identity, authentication, and invite guards</div><span aria-hidden="true">→</span><div>SQLite control-plane store</div><span aria-hidden="true">→</span><div>Sanitized evidence/state</div><span aria-hidden="true">→</span><div>FastAPI projection</div><span aria-hidden="true">→</span><div>UI result</div></div>
 
@@ -74,7 +74,7 @@ Use scenarios when you want to understand **what happens**, **who owns execution
 
 | Routes | Source refs |
 | --- | --- |
-| POST /api/lite/identity/rotate | contracts/parity/parity-model.json, contracts/generated/lite-openapi.json, src/lite/LiteIdentity.jsx |
+| POST /api/lite/identity/setup, POST /api/lite/identity/login, POST /api/lite/identity/password, POST /api/lite/identity/logout, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/recover | src/lite/LiteIdentity.jsx, pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py, pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
 
 </details>
 
@@ -296,6 +296,23 @@ Use scenarios when you want to understand **what happens**, **who owns execution
 | Routes | Source refs |
 | --- | --- |
 | GET /api/lite/release | runbooks/release_rollback.yaml |
+
+</details>
+
+## Safety Rules authorization decision
+
+**Area:** rules · **Flow:** write/execution · **Confidence:** source-derived
+
+<div class="pl-flow"><div>User intent</div><span aria-hidden="true">→</span><div>Pocket Lab Lite UI</div><span aria-hidden="true">→</span><div>FastAPI /api/lite/*</div><span aria-hidden="true">→</span><div>Identity, authentication, and invite guards</div><span aria-hidden="true">→</span><div>Fleet, Apps, Security, Recovery, and Release APIs</div><span aria-hidden="true">→</span><div>SQLite control-plane store</div><span aria-hidden="true">→</span><div>OPA Safety Rules policy engine</div><span aria-hidden="true">→</span><div>Sanitized evidence/state</div><span aria-hidden="true">→</span><div>FastAPI projection</div><span aria-hidden="true">→</span><div>UI result</div></div>
+
+!!! info "Boundary"
+    The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.
+
+<details class="pl-disclosure"><summary>Routes and source evidence</summary>
+
+| Routes | Source refs |
+| --- | --- |
+| GET /api/lite/policy, POST /api/lite/catalog/install, POST /api/lite/fleet/remove-device | src/lite/LiteRules.jsx, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py, security/policies/opa/pocketlab/pocketlab.rego |
 
 </details>
 

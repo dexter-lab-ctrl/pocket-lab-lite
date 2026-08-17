@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "782c3ec59b1f31543579222feb673637e177abcf9c924360fccef001ee5f01a7",
+    "aggregate_fingerprint": "47eb4ad96c226844eb5d3e27ac6be7384772c847e16b079c58dccbd1fcec1c89",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,9 +10,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "e3fe370d9b039c813d031300a9f90d5796dc808552a04a57c6d02d7d9e662113",
+      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "bbaf13b2ddc1fc624e27b8bd36e1bced0bb6f04fa92ada489407cbc54a60b3ef",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "258e96b36e430044e7a522ddb0462e856f5e27ebe3adef57db911f42604455cb",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "e07fddd46fe27a7e5a978d9ef992b0ffad38ef9a9d6d69bd6d94f13afb4a1706",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "generated"
@@ -41,33 +41,6 @@
       ],
       "related_events": [],
       "restart_policy": "PM2 exponential backoff and bounded memory restart",
-      "startup": "scripts/start-dashboard.sh"
-    },
-    {
-      "environment_source": "generated runtime environment",
-      "health_evidence": [
-        "durable consumer health"
-      ],
-      "heartbeat_evidence": [
-        "worker heartbeat"
-      ],
-      "log_policy": "structured sanitized lifecycle only",
-      "memory_limit": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
-      "nats_dependency": "required",
-      "owner": "worker execution plane",
-      "pattern": "pocket-worker",
-      "platform": [
-        "Android/Termux",
-        "Ubuntu/WSL2"
-      ],
-      "purpose": "Consume durable commands and own backend execution",
-      "recovery": "consumer re-enrollment before process restart",
-      "related_api": [],
-      "related_events": [
-        "pocketlab.commands.*",
-        "pocketlab.events.*"
-      ],
-      "restart_policy": "PM2 plus durable-consumer watchdog",
       "startup": "scripts/start-dashboard.sh"
     },
     {
@@ -120,6 +93,60 @@
         "device command result"
       ],
       "restart_policy": "PM2 and core supervisor",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "repository policy plus generated runtime environment",
+      "health_evidence": [
+        "loopback OPA /health",
+        "GET /api/lite/policy"
+      ],
+      "heartbeat_evidence": [],
+      "log_policy": "bounded PM2 logs; no policy input, credentials, or secrets",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "none",
+      "owner": "Rules policy service",
+      "pattern": "pocket-opa",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Evaluate registered protected actions on loopback before FastAPI dispatch",
+      "recovery": "fail closed, preserve last-known-good policy, validate before restart",
+      "related_api": [
+        "GET /api/lite/policy",
+        "POST /api/lite/catalog/install",
+        "POST /api/lite/fleet/remove-device"
+      ],
+      "related_events": [],
+      "restart_policy": "PM2 core supervisor after validated policy activation",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "generated runtime environment",
+      "health_evidence": [
+        "durable consumer health"
+      ],
+      "heartbeat_evidence": [
+        "worker heartbeat"
+      ],
+      "log_policy": "structured sanitized lifecycle only",
+      "memory_limit": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
+      "nats_dependency": "required",
+      "owner": "worker execution plane",
+      "pattern": "pocket-worker",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Consume durable commands and own backend execution",
+      "recovery": "consumer re-enrollment before process restart",
+      "related_api": [],
+      "related_events": [
+        "pocketlab.commands.*",
+        "pocketlab.events.*"
+      ],
+      "restart_policy": "PM2 plus durable-consumer watchdog",
       "startup": "scripts/start-dashboard.sh"
     },
     {

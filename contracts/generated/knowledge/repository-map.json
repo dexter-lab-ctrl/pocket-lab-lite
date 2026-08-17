@@ -46,6 +46,7 @@
         "component:nats-jetstream",
         "component:nats-listeners",
         "component:node-agent",
+        "component:opa-policy-engine",
         "component:photoprism",
         "component:pm2",
         "component:post-switch-health",
@@ -353,6 +354,7 @@
     {
       "entities": [
         "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+        "api:delete:/api/lite/identity/sessions/{session_id}",
         "api:get:/api/lite/apps/lifecycle",
         "api:get:/api/lite/apps/lifecycle/{app_id}",
         "api:get:/api/lite/apps/photoprism/storage-mappings",
@@ -448,7 +450,14 @@
         "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
         "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
         "api:post:/api/lite/fleet/remove-device",
+        "api:post:/api/lite/identity/login",
+        "api:post:/api/lite/identity/logout",
+        "api:post:/api/lite/identity/password",
+        "api:post:/api/lite/identity/recover",
+        "api:post:/api/lite/identity/recovery/regenerate",
         "api:post:/api/lite/identity/rotate",
+        "api:post:/api/lite/identity/sessions/revoke-others",
+        "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/policy/apply",
         "api:post:/api/lite/recovery/apps/{app_id}/backup",
         "api:post:/api/lite/recovery/apps/{app_id}/backup-to-target",
@@ -504,8 +513,7 @@
         "domain:vocabulary",
         "domain:websocket",
         "domain:worker",
-        "domain:workflow",
-        "journey:change-password"
+        "domain:workflow"
       ],
       "source": "contracts/generated/lite-openapi.json"
     },
@@ -550,6 +558,7 @@
         "table:app_action_lifecycle",
         "table:app_current_state",
         "table:audit_evidence_index",
+        "table:auth_sessions",
         "table:backup_manifest_index",
         "table:command_lifecycle",
         "table:device_awareness_state",
@@ -568,12 +577,18 @@
         "table:device_supervisor_state",
         "table:device_system_profiles",
         "table:domain_revisions",
+        "table:human_credentials",
+        "table:human_identities",
+        "table:identity_audit_events",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
         "table:phase3b_current_state",
         "table:phase3b_revision_events",
+        "table:policy_decisions",
         "table:projection_dirty_signals",
         "table:projection_refresh_state",
+        "table:recovery_code_batches",
+        "table:recovery_codes",
         "table:recovery_current_state",
         "table:recovery_operations",
         "table:release_runtime_projection",
@@ -620,12 +635,16 @@
     {
       "entities": [
         "reason:already_tuned",
+        "reason:authentication_required",
         "reason:cold_start_validation",
         "reason:command_undeliverable",
+        "reason:csrf_required",
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
         "reason:generation_changed",
+        "reason:generic_policy_toggle_retired",
+        "reason:human_session_required",
         "reason:identity_mismatch",
         "reason:insufficient_storage",
         "reason:interrupted",
@@ -634,10 +653,12 @@
         "reason:invite_identity_mismatch",
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
+        "reason:legacy_secret_rotation_retired",
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
         "reason:payload_too_large",
+        "reason:policy_unavailable",
         "reason:projection_too_old",
         "reason:projection_unavailable",
         "reason:protected_server_host",
@@ -646,10 +667,12 @@
         "reason:release_projection_unavailable",
         "reason:remote_access_not_ready",
         "reason:service_unavailable",
+        "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
         "reason:submit_failed",
         "reason:target_not_allowed",
+        "reason:test_bypass_explicit",
         "reason:unregistered_domain",
         "reason:worker_failed",
         "reason:worker_start_timeout"
@@ -730,12 +753,16 @@
         "capability:media-storage",
         "capability:security-scanner",
         "reason:already_tuned",
+        "reason:authentication_required",
         "reason:cold_start_validation",
         "reason:command_undeliverable",
+        "reason:csrf_required",
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
         "reason:generation_changed",
+        "reason:generic_policy_toggle_retired",
+        "reason:human_session_required",
         "reason:identity_mismatch",
         "reason:insufficient_storage",
         "reason:interrupted",
@@ -744,10 +771,12 @@
         "reason:invite_identity_mismatch",
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
+        "reason:legacy_secret_rotation_retired",
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
         "reason:payload_too_large",
+        "reason:policy_unavailable",
         "reason:projection_too_old",
         "reason:projection_unavailable",
         "reason:protected_server_host",
@@ -756,10 +785,12 @@
         "reason:release_projection_unavailable",
         "reason:remote_access_not_ready",
         "reason:service_unavailable",
+        "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
         "reason:submit_failed",
         "reason:target_not_allowed",
+        "reason:test_bypass_explicit",
         "reason:unregistered_domain",
         "reason:worker_failed",
         "reason:worker_start_timeout"
@@ -832,7 +863,6 @@
         "domain:recovery",
         "domain:rules",
         "domain:security",
-        "journey:change-password",
         "journey:parity-capture",
         "journey:recovery-reconciliation",
         "vocabulary:accepted-limitation",
@@ -928,6 +958,12 @@
         "component:proot-ubuntu"
       ],
       "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh"
+    },
+    {
+      "entities": [
+        "component:opa-policy-engine"
+      ],
+      "source": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh"
     },
     {
       "entities": [
@@ -1165,6 +1201,18 @@
     },
     {
       "entities": [
+        "table:auth_sessions",
+        "table:human_credentials",
+        "table:human_identities",
+        "table:identity_audit_events",
+        "table:policy_decisions",
+        "table:recovery_code_batches",
+        "table:recovery_codes"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+    },
+    {
+      "entities": [
         "subject:pocketlab.events.api.started",
         "subject:pocketlab.events.api.stopped"
       ],
@@ -1214,6 +1262,7 @@
       "entities": [
         "adr:adr-fastapi-control-api",
         "component:lite-api",
+        "journey:change-password",
         "subject:pocketlab.commands.lite.backup.create",
         "subject:pocketlab.commands.lite.backup.verify",
         "subject:pocketlab.commands.lite.database.backup",
@@ -1223,9 +1272,7 @@
         "subject:pocketlab.commands.lite.maintenance.checkpoint",
         "subject:pocketlab.commands.lite.maintenance.retention",
         "subject:pocketlab.commands.lite.restore.apply",
-        "subject:pocketlab.commands.lite.restore.preview",
-        "subject:pocketlab.commands.security.configure_opa",
-        "subject:pocketlab.commands.vault.rotate"
+        "subject:pocketlab.commands.lite.restore.preview"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
     },
@@ -1477,6 +1524,13 @@
     },
     {
       "entities": [
+        "component:api-guards",
+        "journey:change-password"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+    },
+    {
+      "entities": [
         "adr:adr-backend-generated-bootstrap",
         "journey:add-device",
         "subject:pocketlab.commands.fleet.join",
@@ -1492,6 +1546,13 @@
         "subject:pocketlab.commands.lite.app.media"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py"
+    },
+    {
+      "entities": [
+        "component:opa-policy-engine",
+        "journey:rules-authorization"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
     },
     {
       "entities": [
@@ -1861,6 +1922,7 @@
     },
     {
       "entities": [
+        "journey:rules-authorization",
         "ui:literules"
       ],
       "source": "src/lite/LiteRules.jsx"
@@ -2107,6 +2169,12 @@
         "test:tests/backend/test_lite_hot_path_profiler.py"
       ],
       "source": "tests/backend/test_lite_hot_path_profiler.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_identity_rules_authorization.py"
+      ],
+      "source": "tests/backend/test_lite_identity_rules_authorization.py"
     },
     {
       "entities": [
@@ -2967,6 +3035,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

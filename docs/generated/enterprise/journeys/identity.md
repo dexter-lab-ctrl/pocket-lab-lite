@@ -17,7 +17,7 @@ Canonical user guide: [Identity guide](../../production/identity.md).
 
 ## What the user sees
 
-Source-derived journeys in the canonical Knowledge Graph: Change Password / identity rotation.
+Source-derived journeys in the canonical Knowledge Graph: Local owner password and session lifecycle.
 
 ## Typical user journey
 
@@ -41,15 +41,20 @@ Primary architecture: [open architecture](../../production/architecture/componen
 
 ### Source ownership
 
-- `contracts/generated/lite-openapi.json`
-- `contracts/parity/parity-model.json`
+- `pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py`
 - `src/lite/LiteIdentity.jsx`
 
 ### API relationships
 
 - `api:get:/api/lite/status`
 - `api:post:/api/lite/fleet/add-device`
-- `api:post:/api/lite/identity/rotate`
+- `api:post:/api/lite/identity/login`
+- `api:post:/api/lite/identity/logout`
+- `api:post:/api/lite/identity/password`
+- `api:post:/api/lite/identity/recover`
+- `api:post:/api/lite/identity/recovery/regenerate`
+- `api:post:/api/lite/identity/setup`
 
 ## Events and execution
 
@@ -70,13 +75,12 @@ Execution ownership: use the component/API ownership links above; no additional 
 ### Boundaries
 
 - `control-api`
-- `durable-state`
 
 ### Controls
 
 - `CTRL-API-CONTROL`
-- `CTRL-EVIDENCE-SANITIZE`
-- `CTRL-EXPLICIT-PROMOTION`
+- `CTRL-HUMAN-SESSION-CSRF`
+- `CTRL-OPA-FAIL-CLOSED`
 
 ## Tests and validation
 
@@ -84,7 +88,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_control_plane_sqlite_p3.py`
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_device_health_d4.py`
-- `test:tests/backend/test_lite_devices_durable_enrollment.py`
+- `test:tests/backend/test_lite_identity_rules_authorization.py`
 - `test:tests/backend/test_lite_long_gate_submission_recovery.py`
 - `test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py`
 - `test:tests/backend/test_lite_phase3c_system_aggregates.py`
@@ -97,11 +101,9 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_security_s6_retention.py`
 - `test:tests/backend/test_lite_security_s8_recovery.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
-- `test:tests/docs/mkdocs.spec.ts`
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`
-- `test:tests/docs/test_operational_health_bridge.py`
 - `test:tests/parity/test_api_contract_fences.py`
 
 ## Failure modes and recovery

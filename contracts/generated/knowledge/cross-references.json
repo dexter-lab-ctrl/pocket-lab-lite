@@ -83,6 +83,12 @@
           "type": "owns"
         }
       ],
+      "api:delete:/api/lite/identity/sessions/{session_id}": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/apps/lifecycle": [
         {
           "source": "domain:apps",
@@ -359,12 +365,20 @@
       ],
       "api:get:/api/lite/policy": [
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "ui:literules",
           "type": "calls"
         },
         {
           "source": "domain:rules",
           "type": "owns"
+        },
+        {
+          "source": "component:opa-policy-engine",
+          "type": "uses"
         }
       ],
       "api:get:/api/lite/recovery": [
@@ -841,6 +855,10 @@
           "type": "calls"
         },
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "domain:apps",
           "type": "owns"
         }
@@ -913,6 +931,10 @@
           "type": "calls"
         },
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "ui:litedevices",
           "type": "calls"
         },
@@ -925,7 +947,97 @@
           "type": "uses"
         }
       ],
+      "api:post:/api/lite/identity/login": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        },
+        {
+          "source": "component:api-guards",
+          "type": "uses"
+        }
+      ],
+      "api:post:/api/lite/identity/logout": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/password": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/recover": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/recovery/regenerate": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/identity/rotate": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/sessions/revoke-others": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/setup": [
         {
           "source": "journey:change-password",
           "type": "calls"
@@ -940,10 +1052,6 @@
         }
       ],
       "api:post:/api/lite/policy/apply": [
-        {
-          "source": "ui:literules",
-          "type": "calls"
-        },
         {
           "source": "domain:rules",
           "type": "owns"
@@ -1219,6 +1327,10 @@
           "type": "protected_by"
         },
         {
+          "source": "component:opa-policy-engine",
+          "type": "protected_by"
+        },
+        {
           "source": "component:remote-readiness",
           "type": "protected_by"
         },
@@ -1483,6 +1595,14 @@
         {
           "source": "component:lite-api",
           "type": "depends_on"
+        },
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "uses"
         }
       ],
       "component:api-guards": [
@@ -1500,6 +1620,10 @@
         },
         {
           "source": "journey:device-enrollment",
+          "type": "uses"
+        },
+        {
+          "source": "journey:rules-authorization",
           "type": "uses"
         }
       ],
@@ -1743,6 +1867,10 @@
           "type": "uses"
         },
         {
+          "source": "journey:rules-authorization",
+          "type": "uses"
+        },
+        {
           "source": "journey:startup",
           "type": "uses"
         }
@@ -1832,6 +1960,16 @@
         },
         {
           "source": "journey:startup",
+          "type": "uses"
+        }
+      ],
+      "component:opa-policy-engine": [
+        {
+          "source": "component:api-domain-surfaces",
+          "type": "depends_on"
+        },
+        {
+          "source": "journey:rules-authorization",
           "type": "uses"
         }
       ],
@@ -2153,6 +2291,10 @@
         {
           "source": "journey:recovery-reconciliation",
           "type": "uses"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "uses"
         }
       ],
       "component:tailscale": [
@@ -2305,6 +2447,12 @@
           "type": "owns"
         }
       ],
+      "journey:rules-authorization": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "journey:runtime-capture": [
         {
           "source": "domain:validation",
@@ -2449,6 +2597,12 @@
           "type": "owns"
         }
       ],
+      "reason:authentication_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:cold_start_validation": [
         {
           "source": "domain:validation",
@@ -2458,6 +2612,12 @@
       "reason:command_undeliverable": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:csrf_required": [
+        {
+          "source": "domain:identity",
           "type": "owns"
         }
       ],
@@ -2482,6 +2642,18 @@
       "reason:generation_changed": [
         {
           "source": "domain:projections",
+          "type": "owns"
+        }
+      ],
+      "reason:generic_policy_toggle_retired": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:human_session_required": [
+        {
+          "source": "domain:identity",
           "type": "owns"
         }
       ],
@@ -2533,6 +2705,12 @@
           "type": "owns"
         }
       ],
+      "reason:legacy_secret_rotation_retired": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:metadata_only": [
         {
           "source": "domain:validation",
@@ -2554,6 +2732,12 @@
       "reason:payload_too_large": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_unavailable": [
+        {
+          "source": "domain:rules",
           "type": "owns"
         }
       ],
@@ -2605,6 +2789,12 @@
           "type": "owns"
         }
       ],
+      "reason:session_not_found": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:shutdown": [
         {
           "source": "domain:system",
@@ -2626,6 +2816,12 @@
       "reason:target_not_allowed": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:test_bypass_explicit": [
+        {
+          "source": "domain:rules",
           "type": "owns"
         }
       ],
@@ -3141,10 +3337,6 @@
         {
           "source": "domain:security",
           "type": "owns"
-        },
-        {
-          "source": "component:lite-api",
-          "type": "related_to"
         }
       ],
       "subject:pocketlab.commands.security.scan": [
@@ -3177,10 +3369,6 @@
         {
           "source": "domain:vault",
           "type": "owns"
-        },
-        {
-          "source": "component:lite-api",
-          "type": "related_to"
         }
       ],
       "subject:pocketlab.events": [
@@ -4549,6 +4737,16 @@
           "type": "owns"
         }
       ],
+      "table:auth_sessions": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:backup_manifest_index": [
         {
           "source": "component:app-recovery-update",
@@ -4857,6 +5055,36 @@
           "type": "reads"
         }
       ],
+      "table:human_credentials": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:human_identities": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:identity_audit_events": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_installed_release_identity": [
         {
           "source": "component:atomic-promotion",
@@ -4905,6 +5133,16 @@
           "type": "reads"
         }
       ],
+      "table:policy_decisions": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:projection_dirty_signals": [
         {
           "source": "component:bounded-reconciliation",
@@ -4939,6 +5177,42 @@
         {
           "source": "domain:projections",
           "type": "owns"
+        }
+      ],
+      "table:recovery_code_batches": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/recovery",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/recovery/details",
+          "type": "reads"
+        }
+      ],
+      "table:recovery_codes": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/recovery",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/recovery/details",
+          "type": "reads"
         }
       ],
       "table:recovery_current_state": [
@@ -5321,6 +5595,10 @@
           "type": "verified_by"
         },
         {
+          "source": "journey:rules-authorization",
+          "type": "verified_by"
+        },
+        {
           "source": "journey:security-review",
           "type": "verified_by"
         },
@@ -5338,6 +5616,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
           "type": "verified_by"
         },
         {
@@ -5397,11 +5679,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:cold_start_validation",
           "type": "verified_by"
         },
         {
           "source": "reason:command_undeliverable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:csrf_required",
           "type": "verified_by"
         },
         {
@@ -5418,6 +5708,14 @@
         },
         {
           "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:generic_policy_toggle_retired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:human_session_required",
           "type": "verified_by"
         },
         {
@@ -5453,6 +5751,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_secret_rotation_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:metadata_only",
           "type": "verified_by"
         },
@@ -5466,6 +5768,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_unavailable",
           "type": "verified_by"
         },
         {
@@ -5501,6 +5807,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:session_not_found",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:shutdown",
           "type": "verified_by"
         },
@@ -5514,6 +5824,10 @@
         },
         {
           "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:test_bypass_explicit",
           "type": "verified_by"
         },
         {
@@ -5567,6 +5881,10 @@
           "type": "verified_by"
         },
         {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
           "source": "journey:restart-agent",
           "type": "verified_by"
         },
@@ -5600,6 +5918,10 @@
       "test:tests/backend/test_lite_development_documentation_platform.py": [
         {
           "source": "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:delete:/api/lite/identity/sessions/{session_id}",
           "type": "verified_by"
         },
         {
@@ -5983,7 +6305,35 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/identity/login",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/logout",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/password",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/recover",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/recovery/regenerate",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/identity/rotate",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/sessions/revoke-others",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/setup",
           "type": "verified_by"
         },
         {
@@ -6095,10 +6445,6 @@
           "type": "verified_by"
         },
         {
-          "source": "journey:change-password",
-          "type": "verified_by"
-        },
-        {
           "source": "journey:documentation-generation",
           "type": "verified_by"
         }
@@ -6122,6 +6468,10 @@
         },
         {
           "source": "component:sqlite",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -6345,6 +6695,60 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_identity_rules_authorization.py": [
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:opa-policy-engine",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_unavailable",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_idle_efficiency_runtime.py": [
         {
           "source": "reason:shutdown",
@@ -6378,6 +6782,10 @@
       "test:tests/backend/test_lite_long_gate_submission_recovery.py": [
         {
           "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -6443,6 +6851,10 @@
         {
           "source": "component:sqlite",
           "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_phase3c_system_aggregates.py": [
@@ -6456,6 +6868,10 @@
         },
         {
           "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         }
       ],
@@ -6553,6 +6969,10 @@
         {
           "source": "component:lite-api",
           "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_security_f11_events_contract.py": [
@@ -6574,6 +6994,10 @@
         },
         {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -6629,6 +7053,10 @@
           "type": "verified_by"
         },
         {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
           "source": "journey:security-review",
           "type": "verified_by"
         },
@@ -6656,6 +7084,10 @@
         },
         {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -6689,6 +7121,10 @@
           "type": "verified_by"
         },
         {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
           "source": "journey:security-review",
           "type": "verified_by"
         },
@@ -6704,6 +7140,10 @@
         },
         {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -6770,6 +7210,10 @@
         },
         {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         }
       ],
@@ -6864,6 +7308,10 @@
         },
         {
           "source": "journey:backup-create",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -7078,6 +7526,10 @@
         },
         {
           "source": "component:node-agent",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:opa-policy-engine",
           "type": "verified_by"
         },
         {
@@ -7565,6 +8017,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:opa-policy-engine",
+          "type": "verified_by"
+        },
+        {
           "source": "component:photoprism",
           "type": "verified_by"
         },
@@ -7856,6 +8312,10 @@
         },
         {
           "source": "component:node-agent",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:opa-policy-engine",
           "type": "verified_by"
         },
         {
@@ -8167,6 +8627,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:opa-policy-engine",
+          "type": "verified_by"
+        },
+        {
           "source": "component:photoprism",
           "type": "verified_by"
         },
@@ -8327,11 +8791,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:cold_start_validation",
           "type": "verified_by"
         },
         {
           "source": "reason:command_undeliverable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:csrf_required",
           "type": "verified_by"
         },
         {
@@ -8348,6 +8820,14 @@
         },
         {
           "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:generic_policy_toggle_retired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:human_session_required",
           "type": "verified_by"
         },
         {
@@ -8383,6 +8863,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_secret_rotation_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:metadata_only",
           "type": "verified_by"
         },
@@ -8396,6 +8880,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_unavailable",
           "type": "verified_by"
         },
         {
@@ -8431,6 +8919,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:session_not_found",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:shutdown",
           "type": "verified_by"
         },
@@ -8444,6 +8936,10 @@
         },
         {
           "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:test_bypass_explicit",
           "type": "verified_by"
         },
         {
@@ -8529,10 +9025,6 @@
           "type": "verified_by"
         },
         {
-          "source": "journey:change-password",
-          "type": "verified_by"
-        },
-        {
           "source": "journey:documentation-generation",
           "type": "verified_by"
         },
@@ -8549,11 +9041,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:cold_start_validation",
           "type": "verified_by"
         },
         {
           "source": "reason:command_undeliverable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:csrf_required",
           "type": "verified_by"
         },
         {
@@ -8570,6 +9070,14 @@
         },
         {
           "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:generic_policy_toggle_retired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:human_session_required",
           "type": "verified_by"
         },
         {
@@ -8605,6 +9113,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_secret_rotation_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:metadata_only",
           "type": "verified_by"
         },
@@ -8618,6 +9130,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_unavailable",
           "type": "verified_by"
         },
         {
@@ -8653,6 +9169,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:session_not_found",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:shutdown",
           "type": "verified_by"
         },
@@ -8666,6 +9186,10 @@
         },
         {
           "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:test_bypass_explicit",
           "type": "verified_by"
         },
         {
@@ -8735,6 +9259,10 @@
       ],
       "test:tests/e2e/lite-mocked.spec.ts": [
         {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
           "type": "verified_by"
         }
@@ -8762,6 +9290,10 @@
       "test:tests/parity/test_api_contract_fences.py": [
         {
           "source": "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:delete:/api/lite/identity/sessions/{session_id}",
           "type": "verified_by"
         },
         {
@@ -9145,7 +9677,35 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/identity/login",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/logout",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/password",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/recover",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/recovery/regenerate",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/identity/rotate",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/sessions/revoke-others",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/setup",
           "type": "verified_by"
         },
         {
@@ -9230,10 +9790,6 @@
         },
         {
           "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
-          "type": "verified_by"
-        },
-        {
-          "source": "journey:change-password",
           "type": "verified_by"
         }
       ],
@@ -9336,6 +9892,10 @@
         },
         {
           "source": "component:media-app-health",
+          "type": "protected_by"
+        },
+        {
+          "source": "component:opa-policy-engine",
           "type": "protected_by"
         },
         {
@@ -9885,6 +10445,16 @@
           "type": "verified_by"
         }
       ],
+      "api:delete:/api/lite/identity/sessions/{session_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/apps/lifecycle": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -10347,6 +10917,14 @@
           "type": "reads"
         },
         {
+          "target": "table:recovery_code_batches",
+          "type": "reads"
+        },
+        {
+          "target": "table:recovery_codes",
+          "type": "reads"
+        },
+        {
           "target": "table:recovery_current_state",
           "type": "reads"
         },
@@ -10476,6 +11054,14 @@
       "api:get:/api/lite/recovery/details": [
         {
           "target": "table:backup_manifest_index",
+          "type": "reads"
+        },
+        {
+          "target": "table:recovery_code_batches",
+          "type": "reads"
+        },
+        {
+          "target": "table:recovery_codes",
           "type": "reads"
         },
         {
@@ -11091,7 +11677,77 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/identity/login": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/logout": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/password": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/recover": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/recovery/regenerate": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/identity/rotate": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/sessions/revoke-others": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/setup": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -11669,6 +12325,10 @@
           "type": "depends_on"
         },
         {
+          "target": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "target": "boundary:control-api",
           "type": "protected_by"
         },
@@ -11727,11 +12387,35 @@
           "type": "depends_on"
         },
         {
+          "target": "table:auth_sessions",
+          "type": "depends_on"
+        },
+        {
           "target": "table:device_identity_guards",
           "type": "depends_on"
         },
         {
           "target": "table:device_invite_lifecycle",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:human_credentials",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:human_identities",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:identity_audit_events",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:recovery_code_batches",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:recovery_codes",
           "type": "depends_on"
         },
         {
@@ -11756,6 +12440,10 @@
         },
         {
           "target": "api:post:/api/lite/fleet/add-device",
+          "type": "uses"
+        },
+        {
+          "target": "api:post:/api/lite/identity/login",
           "type": "uses"
         },
         {
@@ -12451,6 +13139,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -13045,14 +13737,6 @@
           "type": "related_to"
         },
         {
-          "target": "subject:pocketlab.commands.security.configure_opa",
-          "type": "related_to"
-        },
-        {
-          "target": "subject:pocketlab.commands.vault.rotate",
-          "type": "related_to"
-        },
-        {
           "target": "api:get:/api/lite/status",
           "type": "uses"
         },
@@ -13263,6 +13947,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -13358,6 +14046,48 @@
         },
         {
           "target": "test:tests/backend/test_lite_devices_production_readiness.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        }
+      ],
+      "component:opa-policy-engine": [
+        {
+          "target": "component:api-domain-surfaces",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_decisions",
+          "type": "depends_on"
+        },
+        {
+          "target": "boundary:control-api",
+          "type": "protected_by"
+        },
+        {
+          "target": "threat-model:control-api",
+          "type": "protected_by"
+        },
+        {
+          "target": "api:get:/api/lite/policy",
+          "type": "uses"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -13486,6 +14216,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_device_system_profile.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -13760,6 +14494,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -15087,11 +15825,31 @@
       ],
       "domain:control_plane": [
         {
+          "target": "table:auth_sessions",
+          "type": "owns"
+        },
+        {
           "target": "table:command_lifecycle",
           "type": "owns"
         },
         {
+          "target": "table:human_credentials",
+          "type": "owns"
+        },
+        {
+          "target": "table:human_identities",
+          "type": "owns"
+        },
+        {
+          "target": "table:identity_audit_events",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_revision_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:policy_decisions",
           "type": "owns"
         }
       ],
@@ -15609,7 +16367,31 @@
           "type": "observed_by"
         },
         {
+          "target": "api:delete:/api/lite/identity/sessions/{session_id}",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/identity",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/login",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/logout",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/password",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/recover",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/recovery/regenerate",
           "type": "owns"
         },
         {
@@ -15617,7 +16399,35 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/identity/sessions/revoke-others",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/setup",
+          "type": "owns"
+        },
+        {
           "target": "journey:change-password",
+          "type": "owns"
+        },
+        {
+          "target": "reason:authentication_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:csrf_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:human_session_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:legacy_secret_rotation_retired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:session_not_found",
           "type": "owns"
         },
         {
@@ -15633,6 +16443,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
@@ -15642,6 +16456,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
         {
@@ -16307,6 +17125,14 @@
           "type": "owns"
         },
         {
+          "target": "table:recovery_code_batches",
+          "type": "owns"
+        },
+        {
+          "target": "table:recovery_codes",
+          "type": "owns"
+        },
+        {
           "target": "table:recovery_current_state",
           "type": "owns"
         },
@@ -16462,6 +17288,22 @@
         },
         {
           "target": "api:post:/api/lite/policy/apply",
+          "type": "owns"
+        },
+        {
+          "target": "journey:rules-authorization",
+          "type": "owns"
+        },
+        {
+          "target": "reason:generic_policy_toggle_retired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:test_bypass_explicit",
           "type": "owns"
         },
         {
@@ -17293,7 +18135,27 @@
       ],
       "journey:change-password": [
         {
-          "target": "api:post:/api/lite/identity/rotate",
+          "target": "api:post:/api/lite/identity/login",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/logout",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/password",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/recover",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/recovery/regenerate",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/setup",
           "type": "calls"
         },
         {
@@ -17313,15 +18175,59 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
           "type": "verified_by"
         },
         {
-          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "target": "test:tests/backend/test_lite_device_health_d4.py",
           "type": "verified_by"
         },
         {
-          "target": "test:tests/parity/test_api_contract_fences.py",
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_f3_summary_contract.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_f9_etag_contract.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_s6_retention.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_s8_recovery.py",
           "type": "verified_by"
         }
       ],
@@ -17751,6 +18657,48 @@
           "type": "uses"
         }
       ],
+      "journey:rules-authorization": [
+        {
+          "target": "api:get:/api/lite/policy",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/catalog/install",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/fleet/remove-device",
+          "type": "calls"
+        },
+        {
+          "target": "component:api-domain-surfaces",
+          "type": "uses"
+        },
+        {
+          "target": "component:api-guards",
+          "type": "uses"
+        },
+        {
+          "target": "component:lite-api",
+          "type": "uses"
+        },
+        {
+          "target": "component:opa-policy-engine",
+          "type": "uses"
+        },
+        {
+          "target": "component:sqlite",
+          "type": "uses"
+        },
+        {
+          "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        }
+      ],
       "journey:runtime-capture": [
         {
           "target": "component:agent-supervisor",
@@ -17965,6 +18913,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -17999,6 +18951,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:authentication_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:cold_start_validation": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -18016,6 +18986,24 @@
       "reason:command_undeliverable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:csrf_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -18056,6 +19044,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -18127,7 +19119,39 @@
           "type": "verified_by"
         }
       ],
+      "reason:generic_policy_toggle_retired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:human_session_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -18283,6 +19307,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:legacy_secret_rotation_retired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:metadata_only": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -18332,6 +19370,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -18551,6 +19607,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:session_not_found": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:shutdown": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -18634,6 +19704,20 @@
         }
       ],
       "reason:target_not_allowed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:test_bypass_explicit": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -18915,7 +19999,31 @@
           "type": "calls"
         },
         {
-          "target": "api:post:/api/lite/identity/rotate",
+          "target": "api:post:/api/lite/identity/login",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/logout",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/password",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/recover",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/recovery/regenerate",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/sessions/revoke-others",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/setup",
           "type": "calls"
         }
       ],
@@ -18997,10 +20105,6 @@
         {
           "target": "api:get:/api/lite/policy",
           "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/policy/apply",
-          "type": "calls"
         }
       ],
       "ui:litesecurity": [
@@ -19045,6 +20149,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "24669a0008c6b65c17b1176aaf6321f3c97bd72333c080a2631be13933a0fdd5"
   }
 }

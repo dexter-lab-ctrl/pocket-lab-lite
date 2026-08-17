@@ -118,6 +118,41 @@
             <column ascending="true" name="evidence_ref"/>
          </index>
       </table>
+      <table name="auth_sessions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="session_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="identity_audit_events"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="token_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="csrf_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="auth_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="auth_method" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="last_seen_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="idle_expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="absolute_expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="revoke_reason" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="session_id" sequenceNumberInPK="1"/>
+         <index name="auth_sessions_s_pk" unique="true">
+            <column ascending="true" name="session_id"/>
+         </index>
+         <index name="idx_auth_sessions_human_active" unique="false">
+            <column ascending="true" name="human_id"/>
+            <column ascending="true" name="revoked_at"/>
+            <column ascending="true" name="absolute_expires_at"/>
+         </index>
+         <index name="sqlite_autoindex_auth_sessions_1" unique="true">
+            <column ascending="true" name="session_id"/>
+         </index>
+         <index name="sqlite_autoindex_auth_sessions_2" unique="true">
+            <column ascending="true" name="token_hash"/>
+         </index>
+      </table>
       <table name="backup_manifest_index" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="'lite'" digits="0" id="1" name="backup_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -817,6 +852,79 @@
             <column ascending="true" name="domain"/>
          </index>
       </table>
+      <table name="human_credentials" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="credential_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="verifier" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="salt" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="algorithm" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="parameters_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="rotated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="disabled_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="credential_id" sequenceNumberInPK="1"/>
+         <index name="human_credentials_s_pk" unique="true">
+            <column ascending="true" name="credential_id"/>
+         </index>
+         <index name="idx_human_credentials_active_password" unique="true">
+            <column ascending="true" name="human_id"/>
+            <column ascending="true" name="kind"/>
+         </index>
+         <index name="sqlite_autoindex_human_credentials_1" unique="true">
+            <column ascending="true" name="credential_id"/>
+         </index>
+      </table>
+      <table name="human_identities" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_sessions"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_credentials"/>
+            <child column="human_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="identity_audit_events"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="recovery_code_batches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="username_normalized" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'active'" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="4" name="auth_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="last_authenticated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="human_id" sequenceNumberInPK="1"/>
+         <index name="human_identities_s_pk" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+         <index name="sqlite_autoindex_human_identities_1" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+         <index name="sqlite_autoindex_human_identities_2" unique="true">
+            <column ascending="true" name="username_normalized"/>
+         </index>
+      </table>
+      <table name="identity_audit_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="session_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="auth_sessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="identity_audit_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_identity_audit_recent" unique="false">
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
       <table name="lite_installed_release_identity" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="owner" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
@@ -950,6 +1058,36 @@
             <column ascending="true" name="projection_revision"/>
          </index>
       </table>
+      <table name="policy_decisions" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="decision_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="actor_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="actor_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="action_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="target_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="target_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="target_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="allow" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="10" id="13" name="evaluation_ms" nullable="false" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <primaryKey column="decision_row_id" sequenceNumberInPK="1"/>
+         <index name="policy_decisions_s_pk" unique="true">
+            <column ascending="true" name="decision_row_id"/>
+         </index>
+         <index name="idx_policy_decisions_action" unique="false">
+            <column ascending="true" name="action_id"/>
+            <column ascending="true" name="decision_row_id"/>
+         </index>
+         <index name="idx_policy_decisions_recent" unique="false">
+            <column ascending="true" name="decision_row_id"/>
+         </index>
+         <index name="sqlite_autoindex_policy_decisions_1" unique="true">
+            <column ascending="true" name="decision_id"/>
+         </index>
+      </table>
       <table name="projection_dirty_signals" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="domain" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="1" name="signal_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
@@ -1015,6 +1153,51 @@
          </index>
          <index name="sqlite_autoindex_projection_refresh_state_1" unique="true">
             <column ascending="true" name="domain"/>
+         </index>
+      </table>
+      <table name="recovery_code_batches" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="batch_id" foreignKey="" implied="false" onDeleteCascade="true" table="recovery_codes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="invalidated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="batch_id" sequenceNumberInPK="1"/>
+         <index name="recovery_code_batches_s_pk" unique="true">
+            <column ascending="true" name="batch_id"/>
+         </index>
+         <index name="idx_recovery_code_batch_generation" unique="true">
+            <column ascending="true" name="human_id"/>
+            <column ascending="true" name="generation"/>
+         </index>
+         <index name="sqlite_autoindex_recovery_code_batches_1" unique="true">
+            <column ascending="true" name="batch_id"/>
+         </index>
+      </table>
+      <table name="recovery_codes" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="batch_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="batch_id" foreignKey="" implied="false" onDeleteCascade="true" table="recovery_code_batches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="code_id" sequenceNumberInPK="1"/>
+         <index name="recovery_codes_s_pk" unique="true">
+            <column ascending="true" name="code_id"/>
+         </index>
+         <index name="idx_recovery_codes_batch_active" unique="false">
+            <column ascending="true" name="batch_id"/>
+            <column ascending="true" name="consumed_at"/>
+         </index>
+         <index name="sqlite_autoindex_recovery_codes_1" unique="true">
+            <column ascending="true" name="code_id"/>
+         </index>
+         <index name="sqlite_autoindex_recovery_codes_2" unique="true">
+            <column ascending="true" name="code_hash"/>
          </index>
       </table>
       <table name="recovery_current_state" remarks="" type="TABLE">
@@ -1156,8 +1339,10 @@
       <table name="schema_migrations" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="version" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4">
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_current_state"/>
+            <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="auth_sessions"/>
             <child column="evidence_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_supervisor_state"/>
             <child column="profile_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_system_profiles"/>
+            <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_installed_release_identity"/>
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_revision_events"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="release_runtime_projection"/>
