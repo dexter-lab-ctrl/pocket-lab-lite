@@ -92,9 +92,12 @@ jobs:
           chmod 0755 "$RUNNER_TEMP/opa"
           sudo install -m 0755 "$RUNNER_TEMP/opa" /usr/local/bin/opa
           opa version
+          opa fmt --write security/policies/opa/pocketlab/pocketlab.rego security/policies/opa/pocketlab/pocketlab_test.rego
           opa fmt --fail --check-result security/policies/opa/pocketlab/pocketlab.rego security/policies/opa/pocketlab/pocketlab_test.rego
           opa check --strict security/policies/opa/pocketlab
           opa test --fail-on-empty security/policies/opa/pocketlab
+          git add security/policies/opa/pocketlab/pocketlab.rego security/policies/opa/pocketlab/pocketlab_test.rego
+          git diff --cached --check
 
       - name: Static and focused Identity Rules validation
         shell: bash
