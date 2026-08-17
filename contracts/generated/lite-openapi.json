@@ -5043,7 +5043,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Legacy Identity secret rotation is retired; use the human Identity password flow."
           },
           "422": {
             "content": {
@@ -5359,7 +5359,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Legacy policy mutation is retired; Rules policy activation is repository-owned."
           },
           "422": {
             "content": {

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: b8f367015c0be51bda7af7d9f623683949a8dc0f1dd39f0140eaf2b8c3c73f00
+source_fingerprint: e400925a2410df7d28dadc0db958a83cb9862b05048dbb7f0bafa05932312184
 schema_revision: 1
 validation_status: generated
 ---
@@ -1220,7 +1220,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
-| 410 | Successful Response | application/json: `object` |
+| 410 | Legacy Identity secret rotation is retired; use the human Identity password flow. | application/json: `object` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
@@ -1320,7 +1320,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
-| 410 | Successful Response | application/json: `object` |
+| 410 | Legacy policy mutation is retired; Rules policy activation is repository-owned. | application/json: `object` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 

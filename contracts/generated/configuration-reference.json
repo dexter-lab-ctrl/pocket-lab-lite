@@ -15327,7 +15327,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "dfab414250316efacf0cded42dc98829e1774a2a01ef7029a60d42905b43e766",
+    "aggregate_fingerprint": "f791b1407809437e18dc8a3ba8a4c59fe0ec2b237a5695b6ec777a44e2f8316b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15359,7 +15359,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py": "430e2cfa0b5e3b19b92bc197155cf564940e84fdc8fe92129e0c26883c5d2473",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/gitops.py": "ebbdf1850a5d29caecb50a016d2533621e723f0c4b0554e12004a94ec6e8384e",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py": "df656e61d4d78e6ee9b95348a839118a85995edbaa449c23dd075aaaacf86e6d",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "931e5fc5e6b0188569211f1b43c799359f29c07d9ae29267e2ff494bbce705ea",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "1d476a780b9a4c06a908650d62e8a5e52f4180bbe0b6b45f58ba1c9afb80e535",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/observability.py": "cef5f52b05a937a22359a992e81b7597e12d3d13c2a78520b3ab3675e2ad90c7",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py": "8e3d21bd463e5a26315a1f1dd8ef1755434e1cf5c68291013084dec35698a30a",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py": "38dc49d1afacb269f2b3235eac8ab85688064a26e30a8a4572fdafd329fad67b",

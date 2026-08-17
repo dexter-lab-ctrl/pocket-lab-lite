@@ -466,12 +466,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".github/workflows/identity-rules-materialize.yml",
         ".github/workflows/lite-quality.yml",
         "playwright.config.ts",
         "scripts/dev/lite/run-playwright-mocked.sh",
         "scripts/test/parity/promote_runtime_verification.py",
-        "tasks/Taskfile.parity.yml"
+        "tasks/Taskfile.parity.yml",
+        "tests/dev/test_frontend_resource_policy.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

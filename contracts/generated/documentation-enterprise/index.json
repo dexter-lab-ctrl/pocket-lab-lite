@@ -1921,12 +1921,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          ".github/workflows/identity-rules-materialize.yml",
           ".github/workflows/lite-quality.yml",
           "playwright.config.ts",
           "scripts/dev/lite/run-playwright-mocked.sh",
           "scripts/test/parity/promote_runtime_verification.py",
-          "tasks/Taskfile.parity.yml"
+          "tasks/Taskfile.parity.yml",
+          "tests/dev/test_frontend_resource_policy.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -25792,7 +25792,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3726",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3734",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1391"
         ],
         "tests": [],
@@ -25830,7 +25830,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3798",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3806",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1398"
         ],
         "tests": [],
@@ -25906,7 +25906,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3431",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3439",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1401"
         ],
         "tests": [],
@@ -25944,7 +25944,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3474",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3482",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1402"
         ],
         "tests": [],
@@ -25982,7 +25982,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3532",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3540",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1404"
         ],
         "tests": [],
@@ -26020,7 +26020,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3492",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3500",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1403"
         ],
         "tests": [],
@@ -26098,7 +26098,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3600",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3608",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1406"
         ],
         "tests": [],
@@ -26136,7 +26136,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3574",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3582",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1405"
         ],
         "tests": [],
@@ -26174,7 +26174,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3912",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3920",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1400"
         ],
         "tests": [],
@@ -26212,7 +26212,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3818",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3826",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1399"
         ],
         "tests": [],
@@ -33951,8 +33951,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "1ed8eca2ee9eca8324b96d4292a24f901cb88a79",
-          "head_tree": "83ab131f15b52ab771d713a9445acab29b00861e",
+          "head": "13d864776c9207a4e253d20f33dd8a62c9100948",
+          "head_tree": "f5508ec91efc93c3fac891ca5159c1da274215d6",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34633,10 +34633,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
-        "asyncapi": "89b7d973feb5acd67e7d09b233d9ae3d89e50861770b026c84f7a2b6a4ce417c",
-        "documentation": "7d57fa4ae756d02c72f65f53cf8e6a78671a9ad5b3801d1467207d0c491a91e8",
-        "openapi": "76cd6bfd789bc8735bb9a0aa4c650ef4bb7eecc4a4bfe09b949e148b555568dd",
-        "operational_health": "b66e01681b7e19d308c9b98761c2e1fffcb88596c0a0f17f6700959d0ad6391f"
+        "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
+        "documentation": "8313a50632f535bc3a795e28f591f46417eefa466539303de37d72b5820ff5ad",
+        "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
+        "operational_health": "4742fdf2344e8fdcf310ebe61839bcfbbda04bf59e5a41119b3e77697a2989ad"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -36708,8 +36708,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "1ed8eca2ee9eca8324b96d4292a24f901cb88a79",
-        "head_tree": "83ab131f15b52ab771d713a9445acab29b00861e",
+        "head": "13d864776c9207a4e253d20f33dd8a62c9100948",
+        "head_tree": "f5508ec91efc93c3fac891ca5159c1da274215d6",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -86319,5 +86319,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "e1b33f95bf9e425c86d96a58d32611ec7f2f7eab18d66ea42888b2cbd0d99a8f"
+  "source_fingerprint": "3bcb0b9122e729068a6366c8315372fa6b9061aa83219b678c7c5324e05b488a"
 }

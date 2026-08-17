@@ -2099,7 +2099,11 @@ def recover_lite_identity(payload: LiteIdentityRecoveryRequest, request: Request
     return projection
 
 
-@router.post("/identity/rotate", status_code=410)
+@router.post(
+    "/identity/rotate",
+    status_code=410,
+    response_description="Legacy Identity secret rotation is retired; use the human Identity password flow.",
+)
 def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
     return {
@@ -3124,7 +3128,11 @@ async def get_lite_policy(request: Request, response: Response) -> dict[str, Any
     return await asyncio.to_thread(lite_policy_opa.policy_status)
 
 
-@router.post("/policy/apply", status_code=410)
+@router.post(
+    "/policy/apply",
+    status_code=410,
+    response_description="Legacy policy mutation is retired; Rules policy activation is repository-owned.",
+)
 def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
     return {

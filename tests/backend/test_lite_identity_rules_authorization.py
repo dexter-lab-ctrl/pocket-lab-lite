@@ -639,3 +639,44 @@ def test_device_hard_invariant_blocks_before_opa_and_revoked_human_cannot_mutate
     )
     assert blocked.status_code == 401
     assert _reason_code(blocked) == "authentication_required"
+
+
+def test_legacy_identity_and_policy_mutations_are_explicitly_retired(
+    auth_runtime, monkeypatch
+):
+    ensure_runtime_path()
+    from api_fastapi import deps
+
+    monkeypatch.setenv("POCKETLAB_TEST_AUTH_BYPASS", "1")
+    deps.core.SETTINGS = deps.core.Settings(state_dir=auth_runtime)
+
+    api = TestClient(load_fastapi_app())
+    headers = {"X-Pocket-Lab-Test": "1"}
+
+    identity = api.post(
+        "/api/lite/identity/rotate",
+        headers=headers,
+        json={"target": "default"},
+    )
+    assert identity.status_code == 410
+    identity_payload = identity.json()
+    assert identity_payload["status"] == "retired"
+    assert identity_payload["accepted"] is False
+    assert (
+        identity_payload["reason_code"]
+        == "legacy_secret_rotation_retired"
+    )
+
+    policy = api.post(
+        "/api/lite/policy/apply",
+        headers=headers,
+        json={"protection_enabled": True},
+    )
+    assert policy.status_code == 410
+    policy_payload = policy.json()
+    assert policy_payload["status"] == "retired"
+    assert policy_payload["accepted"] is False
+    assert (
+        policy_payload["reason_code"]
+        == "generic_policy_toggle_retired"
+    )
