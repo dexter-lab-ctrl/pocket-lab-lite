@@ -42,28 +42,7 @@ jobs:
           echo '51122576b9efb7908404d8cacd360b456d295164c66cf65b496db3ece4e1e690  '"$RUNNER_TEMP/identity-rules-source.patch" | sha256sum -c -
           git apply --check --whitespace=error "$RUNNER_TEMP/identity-rules-source.patch"
           git apply "$RUNNER_TEMP/identity-rules-source.patch"
-          .venv_bootstrap_placeholder=true
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('tasks/Taskfile.docs.yml')
-          text = path.read_text()
-          old = '''      - task: lite:docs:health:generate
-      - task: lite:docs:knowledge:generate
-      - task: lite:docs:intelligence:generate
-      - task: lite:docs:enterprise:generate
-      - task: lite:docs:architecture:generate
-'''
-          new = '''      - task: lite:docs:health:generate
-      - task: lite:docs:architecture:generate
-      - task: lite:docs:knowledge:generate
-      - task: lite:docs:intelligence:generate
-      - task: lite:docs:enterprise:generate
-'''
-          if old not in text:
-              raise SystemExit('documentation generation order contract not found')
-          path.write_text(text.replace(old, new, 1))
-          PY
+          python3 -c "from pathlib import Path; p=Path('tasks/Taskfile.docs.yml'); s=p.read_text(); old='      - task: lite:docs:health:generate\n      - task: lite:docs:knowledge:generate\n      - task: lite:docs:intelligence:generate\n      - task: lite:docs:enterprise:generate\n      - task: lite:docs:architecture:generate\n'; new='      - task: lite:docs:health:generate\n      - task: lite:docs:architecture:generate\n      - task: lite:docs:knowledge:generate\n      - task: lite:docs:intelligence:generate\n      - task: lite:docs:enterprise:generate\n'; assert old in s, 'documentation generation order contract not found'; p.write_text(s.replace(old,new,1))"
           git rm -r .github/identity-rules-patch .github/identity-rules-materialize.ready .github/workflows/identity-rules-materialize.yml
           git add -A
           git diff --cached --check
