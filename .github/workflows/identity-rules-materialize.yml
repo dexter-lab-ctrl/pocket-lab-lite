@@ -130,7 +130,7 @@ jobs:
             tests/backend/test_lite_api.py \
             tests/backend/test_vault_operations.py \
             tests/backend/test_nats_required.py
-          task lite:api:check
+          PYTHON=.venv/bin/python task lite:api:check
 
       - name: Frontend production and mocked browser validation
         shell: bash
