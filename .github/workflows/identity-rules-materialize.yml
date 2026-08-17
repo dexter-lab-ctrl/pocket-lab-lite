@@ -34,7 +34,11 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          cat .github/identity-rules-patch/part-* > "$RUNNER_TEMP/identity-rules-source.patch"
+          cat .github/identity-rules-patch/part-* > "$RUNNER_TEMP/identity-rules-source.patch.gz.b64"
+          echo 'b8ab337f63159c47ecd6291efa2b58d1965e49b143bdfdbee2f0a2c038e1010b  '"$RUNNER_TEMP/identity-rules-source.patch.gz.b64" | sha256sum -c -
+          base64 --decode "$RUNNER_TEMP/identity-rules-source.patch.gz.b64" > "$RUNNER_TEMP/identity-rules-source.patch.gz"
+          echo '63b87fe946693f0e23d5c31ee972628fb756fbd297e54b482a0030f46b4846d7  '"$RUNNER_TEMP/identity-rules-source.patch.gz" | sha256sum -c -
+          gzip --decompress --stdout "$RUNNER_TEMP/identity-rules-source.patch.gz" > "$RUNNER_TEMP/identity-rules-source.patch"
           echo '51122576b9efb7908404d8cacd360b456d295164c66cf65b496db3ece4e1e690  '"$RUNNER_TEMP/identity-rules-source.patch" | sha256sum -c -
           git apply --check --whitespace=error "$RUNNER_TEMP/identity-rules-source.patch"
           git apply "$RUNNER_TEMP/identity-rules-source.patch"
