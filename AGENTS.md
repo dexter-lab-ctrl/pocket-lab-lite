@@ -241,12 +241,6 @@ Recovery ownership:
 
 Restart Agent progress must represent real multi-step state and distinguish repairing from undeliverable commands.
 
-## Approval model
-
-Lite Personal Mode is the default. Safe operations may auto-approve when current source explicitly allows it, and every auto-approval produces evidence. Stale/offline removal requires confirmation; do not casually remove healthy online devices.
-
-Enterprise Mode is opt-in only: explicit approvals, role-aware governance and approval/rejection reasons. Never make enterprise governance the default Lite UX.
-
 ## Generated documentation rules
 
 - Do not manually edit `docs/generated/**` or `contracts/generated/**` as the implementation source.
