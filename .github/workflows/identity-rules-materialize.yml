@@ -42,6 +42,28 @@ jobs:
           echo '51122576b9efb7908404d8cacd360b456d295164c66cf65b496db3ece4e1e690  '"$RUNNER_TEMP/identity-rules-source.patch" | sha256sum -c -
           git apply --check --whitespace=error "$RUNNER_TEMP/identity-rules-source.patch"
           git apply "$RUNNER_TEMP/identity-rules-source.patch"
+          .venv_bootstrap_placeholder=true
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('tasks/Taskfile.docs.yml')
+          text = path.read_text()
+          old = '''      - task: lite:docs:health:generate
+      - task: lite:docs:knowledge:generate
+      - task: lite:docs:intelligence:generate
+      - task: lite:docs:enterprise:generate
+      - task: lite:docs:architecture:generate
+'''
+          new = '''      - task: lite:docs:health:generate
+      - task: lite:docs:architecture:generate
+      - task: lite:docs:knowledge:generate
+      - task: lite:docs:intelligence:generate
+      - task: lite:docs:enterprise:generate
+'''
+          if old not in text:
+              raise SystemExit('documentation generation order contract not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
           git rm -r .github/identity-rules-patch .github/identity-rules-materialize.ready .github/workflows/identity-rules-materialize.yml
           git add -A
           git diff --cached --check
@@ -155,6 +177,13 @@ jobs:
           git status --short > "$RUNNER_TEMP/identity-rules-after.txt"
           diff -u "$RUNNER_TEMP/identity-rules-before.txt" "$RUNNER_TEMP/identity-rules-after.txt"
           git add -A
+          git diff --cached --check
+
+      - name: Run full Lite qualification gate
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          task lite:check
           git diff --cached --check
 
       - name: Rewrite staging history to one clean implementation commit
