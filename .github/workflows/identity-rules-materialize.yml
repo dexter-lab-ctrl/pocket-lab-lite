@@ -42,8 +42,10 @@ jobs:
           echo '51122576b9efb7908404d8cacd360b456d295164c66cf65b496db3ece4e1e690  '"$RUNNER_TEMP/identity-rules-source.patch" | sha256sum -c -
           git apply --check --whitespace=error "$RUNNER_TEMP/identity-rules-source.patch"
           git apply "$RUNNER_TEMP/identity-rules-source.patch"
-          python3 -c "from pathlib import Path; p=Path('tasks/Taskfile.docs.yml'); s=p.read_text(); old='      - task: lite:docs:health:generate\n      - task: lite:docs:knowledge:generate\n      - task: lite:docs:intelligence:generate\n      - task: lite:docs:enterprise:generate\n      - task: lite:docs:architecture:generate\n'; new='      - task: lite:docs:health:generate\n      - task: lite:docs:architecture:generate\n      - task: lite:docs:knowledge:generate\n      - task: lite:docs:intelligence:generate\n      - task: lite:docs:enterprise:generate\n'; assert old in s, 'documentation generation order contract not found'; p.write_text(s.replace(old,new,1))"
+          python3 -c "from pathlib import Path; p=Path('tasks/Taskfile.docs.yml'); s=p.read_text(); old='      - task: lite:docs:health:generate\n      - task: lite:docs:knowledge:generate\n      - task: lite:docs:intelligence:generate\n      - task: lite:docs:enterprise:generate\n      - task: lite:docs:architecture:generate\n'; new='      - task: lite:docs:health:generate\n      - task: lite:docs:architecture:generate\n      - task: lite:docs:knowledge:generate\n      - task: lite:docs:codebase-map:generate\n      - task: lite:docs:intelligence:generate\n      - task: lite:docs:enterprise:generate\n'; assert old in s, 'documentation generation order contract not found'; s=s.replace(old,new,1); tail='      - task: lite:docs:diagrams:generate\n      - task: lite:docs:codebase-map:generate\n'; assert tail in s, 'duplicate codebase map tail contract not found'; p.write_text(s.replace(tail,'      - task: lite:docs:diagrams:generate\n',1))"
+          python3 -c "from pathlib import Path; p=Path('scripts/docs/intelligence/generate_documentation_intelligence.py'); s=p.read_text(); old='        \"journeys\": meta.get(\"journeys\", []),\n'; new='        \"journeys\": meta.get(\"journeys\", []),\n        \"codebase_map_fingerprint\": codebase.get(\"source_fingerprint\") or digest(codebase),\n'; assert old in s, 'intelligence fingerprint anchor not found'; p.write_text(s.replace(old,new,1))"
           git rm -r .github/identity-rules-patch .github/identity-rules-materialize.ready .github/workflows/identity-rules-materialize.yml
+          git rm -f .github/identity-rules-docs-debug.ready .github/workflows/identity-rules-docs-debug.yml
           git add -A
           git diff --cached --check
 
@@ -116,6 +118,7 @@ jobs:
             pocket-lab-final-structure/runtime/core/operations/service.py \
             pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py \
             scripts/docs/lite/generate_docs.py \
+            scripts/docs/intelligence/generate_documentation_intelligence.py \
             scripts/docs/enterprise/enterprise_completion.py \
             scripts/docs/enterprise/threat_model_experience.py \
             scripts/docs/enterprise/threat_model_layout.py \
@@ -147,6 +150,8 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
+          task lite:docs:generate
+          git add -A
           task lite:docs:generate
           task lite:docs:check
           git add -A
