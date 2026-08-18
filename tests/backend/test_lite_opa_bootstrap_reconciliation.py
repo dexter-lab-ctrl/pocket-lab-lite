@@ -12,7 +12,7 @@ HEALTH = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scri
 
 def _run_helper(tmp_path: Path, body: str) -> subprocess.CompletedProcess[str]:
     fake_bin = tmp_path / "bin"
-    fake_bin.mkdir()
+    fake_bin.mkdir(parents=True)
 
     opa = fake_bin / "opa"
     opa.write_text("#!/usr/bin/env bash\n[[ ${1:-} == version ]] && { echo 'Version: 1.19.0'; exit 0; }\nexit 0\n")
@@ -102,7 +102,7 @@ printf '%s' "$POCKETLAB_LITE_STAGE_HEALTH_REASON"
 
 def test_start_dashboard_marker_fails_when_opa_capability_marker_is_missing(tmp_path: Path) -> None:
     fake_bin = tmp_path / "bin"
-    fake_bin.mkdir()
+    fake_bin.mkdir(parents=True)
     opa = fake_bin / "opa"
     opa.write_text("#!/usr/bin/env bash\nexit 0\n")
     opa.chmod(0o755)
