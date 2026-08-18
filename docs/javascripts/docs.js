@@ -1,13 +1,13 @@
 (() => {
   const labelProgressBars = (root = document) => {
     const label = (element) => {
-      if (element?.matches?.('.md-progress[role=\"progressbar\"]') && !element.hasAttribute('aria-label')) {
+      if (element?.matches?.('.md-progress[role="progressbar"]') && !element.hasAttribute('aria-label')) {
         element.setAttribute('aria-label', 'Page loading progress');
       }
     };
 
     label(root);
-    root?.querySelectorAll?.('.md-progress[role=\"progressbar\"]').forEach(label);
+    root?.querySelectorAll?.('.md-progress[role="progressbar"]').forEach(label);
   };
 
   const enhanceAccessibility = () => {
@@ -104,42 +104,45 @@ const prefix=location.pathname.includes('/generated/')
 ?location.pathname.split('/generated/')[0]:'';
 fetch(
 `${prefix}/generated/assets/knowledge/knowledge-graph-explorer.json`,
-{credentials:'same-origin'}
+{ credentials: 'same-origin' }
 )
 .then(r=>{
 if(!r.ok)throw new Error(`HTTP ${r.status}`);
 return r.json();
 })
-.then(data=>{
+.then(payload=>{
 if(
-!data||
-!Array.isArray(data.entities)||
-!Array.isArray(data.relations)
+!payload||
+!Array.isArray(payload.entities)||
+!Array.isArray(payload.relations)
 )throw new Error(
 'generated explorer payload has an invalid shape'
 );
 
-if(data.max_hops!==1||data.live_runtime!==false)
-throw new Error(
+if(
+payload.max_hops !== 1||
+payload.live_runtime !== false
+)throw new Error(
 'generated explorer payload violated its one-hop/static boundary'
 );
 
-for(const [label,expected,actual] of [
-['entity',Number(root.dataset.entityCount||0),data.entities.length],
-['relation',Number(root.dataset.relationCount||0),data.relations.length]
-]){
-if(expected&&expected!==actual)
+const expectedEntityCount=Number(root.dataset.entityCount||0);
+const expectedRelationCount=Number(root.dataset.relationCount||0);
+if(expectedEntityCount&&expectedEntityCount!==payload.entities.length)
 throw new Error(
-`${label} count mismatch: page=${expected}, asset=${actual}`
+`entity count mismatch: page=${expectedEntityCount}, asset=${payload.entities.length}`
 );
-}
+if(expectedRelationCount&&expectedRelationCount!==payload.relations.length)
+throw new Error(
+`relation count mismatch: page=${expectedRelationCount}, asset=${payload.relations.length}`
+);
 
 const entities=new Map(
-data.entities.map(entity=>[entity.id,entity])
+payload.entities.map(entity=>[entity.id,entity])
 );
 const edges=new Map();
 
-data.relations.forEach(relation=>{
+payload.relations.forEach(relation=>{
 if(
 !entities.has(relation.source)||
 !entities.has(relation.target)
@@ -330,7 +333,7 @@ domain?.value,
 confidence?.value
 ];
 
-const matches=data.entities.filter(entity=>
+const matches=payload.entities.filter(entity=>
 (
 !term||
 `${entity.name} ${entity.id}`
