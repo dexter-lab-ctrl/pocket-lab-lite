@@ -31,15 +31,15 @@
       },
       "local_staging": {
         "authority": "local-repository",
-        "confidence": "unvalidated",
+        "confidence": "local-observation",
         "freshness": "current",
         "observed_at": "unobserved",
         "sanitized": true,
         "source": "checksums.txt",
-        "status": "unobserved",
+        "status": "observed",
         "value": {
-          "bytes": null,
-          "sha256": null
+          "bytes": 75,
+          "sha256": "50e14ac426e6a219370d0dacaa5cd602bbcfcc2f0c4823bf1b1d265fbf9edab1"
         }
       },
       "release_presence": {
@@ -84,15 +84,15 @@
       },
       "local_staging": {
         "authority": "local-repository",
-        "confidence": "unvalidated",
+        "confidence": "local-observation",
         "freshness": "current",
         "observed_at": "unobserved",
         "sanitized": true,
         "source": "dist.zip",
-        "status": "unobserved",
+        "status": "observed",
         "value": {
-          "bytes": null,
-          "sha256": null
+          "bytes": 478287,
+          "sha256": "c7b9ac8c7d85ccb4345165b0b7409e8051fa7dc445db7f0b5e6616a18bf76f69"
         }
       },
       "release_presence": {
