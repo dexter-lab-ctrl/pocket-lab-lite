@@ -26,7 +26,10 @@ ACTIVE_SCOPE_EXCLUDES=(
 
 version="${1:-dev-$(date '+%Y%m%d-%H%M%S')}"; out=".pocketlab-dev/releases/$version"; mkdir -p "$out"
 bash scripts/dev/check-architecture-contract.sh
-bash scripts/dev/check-backend.sh
+# Release qualification follows the current Lite backend contract rather than
+# the historical blanket backend suite. The canonical task is bounded, timeout-
+# protected, plugin-isolated, and shared with the normal Lite quality gate.
+task lite:test:backend
 bash scripts/dev/check-bootstrap.sh
 bash scripts/dev/check-iac.sh
 bash scripts/dev/check-supply-chain.sh
