@@ -3403,6 +3403,14 @@
             },
             {
               "authority_operator": "exact",
+              "authority_severity": "critical",
+              "extract": "path",
+              "id": "engine_healthy",
+              "path": "engine.healthy",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
               "authority_severity": "high",
               "extract": "path",
               "id": "summary",
@@ -3746,32 +3754,54 @@
       ],
       "semantic_mappings": [
         {
-          "backend_path": "protection_enabled",
-          "boundary": "live-api-live-ui",
-          "frontend_path": "protection_toggle_pressed",
-          "id": "rules-protection-state",
-          "operator": "boolean-equivalence",
-          "severity": "critical"
-        },
-        {
-          "backend_path": "protection_enabled",
+          "backend_path": "status",
           "boundary": "live-api-live-ui",
           "frontend_path": "screen_text",
-          "id": "rules-protection-presentation",
+          "id": "rules-status-presentation",
           "mapping": {
-            "false": [
-              "Protection is off",
-              "Ready to enable",
-              "Not enabled"
+            "degraded": [
+              "Protected changes paused",
+              "Changes blocked"
             ],
-            "true": [
-              "Protection is on",
-              "Protection on",
-              "Enabled"
+            "failed": [
+              "Protected changes paused",
+              "Changes blocked"
+            ],
+            "ready": [
+              "Rules ready",
+              "Safety Rules are active for protected changes",
+              "Fail-closed ready"
+            ],
+            "unavailable": [
+              "Protected changes paused",
+              "Changes blocked"
+            ],
+            "unknown": [
+              "Protected changes paused",
+              "Changes blocked"
             ]
           },
           "operator": "intentional-presentation-map",
-          "severity": "high"
+          "severity": "critical"
+        },
+        {
+          "backend_path": "engine_healthy",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "rules-engine-health-presentation",
+          "mapping": {
+            "false": [
+              "Protected changes paused",
+              "Changes blocked"
+            ],
+            "true": [
+              "Rules ready",
+              "Safety Rules are active for protected changes",
+              "Fail-closed ready"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "critical"
         },
         {
           "backend_path": "summary",
@@ -4336,7 +4366,7 @@
   ],
   "kind": "domain-catalog",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c",
+  "semantic_fingerprint": "0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27",
   "source_revision": "repository-source",
   "status": "generated"
 }

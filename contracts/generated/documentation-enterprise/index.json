@@ -16128,7 +16128,7 @@
           ".storybook/preview.jsx",
           "src/mocks/handlers.js",
           "src/stories/pocketlabTier9MockApi.js",
-          "storybook-static/assets/preview-p1zfxbKm.js",
+          "storybook-static/assets/preview-CJ_E1Lww.js",
           "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -33951,8 +33951,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "731354a6ec141c13acb563c9fb8279c0124dd7e4",
-          "head_tree": "833c55fafb6b7302261b4d1a807ed96f325c9b42",
+          "head": "6bdaf75d009ac755fca40eb33e4b7d5ea9950077",
+          "head_tree": "423f5ad974693ca6c8cd6f4f89e5d1fcfea771e1",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34634,9 +34634,9 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-        "documentation": "aa694bb754d2b83269f50f191b491d31c1d9325cf33a669397ab70b33b3360bb",
+        "documentation": "76db1cbb54f5985fbb4fa3d74634faa8e1a87c3a12c5d85a3ce48f0a6c9b20e9",
         "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
-        "operational_health": "4742fdf2344e8fdcf310ebe61839bcfbbda04bf59e5a41119b3e77697a2989ad"
+        "operational_health": "adc98967c5464fb7df4a05cdeb691c37b09892ea4251536f41876c43f5e252cb"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -36708,8 +36708,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "731354a6ec141c13acb563c9fb8279c0124dd7e4",
-        "head_tree": "833c55fafb6b7302261b4d1a807ed96f325c9b42",
+        "head": "6bdaf75d009ac755fca40eb33e4b7d5ea9950077",
+        "head_tree": "423f5ad974693ca6c8cd6f4f89e5d1fcfea771e1",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -86319,5 +86319,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "186b56102b74f66f3b1169e67c730ec2f799179ad1f99dbe861fbeaeee64d00f"
+  "source_fingerprint": "438b8634f0d3430d6a069b7f256bc3ef9da0ae3759cf13954e489dbdc551122d"
 }
