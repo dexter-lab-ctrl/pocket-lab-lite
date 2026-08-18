@@ -25,7 +25,7 @@ test('Threat Model enterprise labels drill into detail pages and remain mobile-s
   expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelectorAll('image.brand-icon').length)).toBe(19);
   expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelector('g.legend') === null)).toBe(true);
   expect(await object.evaluate((node: HTMLObjectElement) => Boolean(node.contentDocument?.querySelector('metadata[data-threat-legend="svg"]')))).toBe(true);
-  expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelector('.node[data-node="browser"] .cue-link')?.textContent?.trim())).toBe('3 controls · 2 assets');
+  expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelector('.node[data-node="browser"] .cue-link')?.textContent?.trim())).toBe('4 controls · 2 assets');
 
   await object.evaluate((node: HTMLObjectElement) => {
     const target = node.contentDocument?.querySelector<SVGGElement>('.node[data-node="browser"]');
@@ -48,6 +48,7 @@ test('Threat Model enterprise labels drill into detail pages and remain mobile-s
   await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Actors' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Controls' })).toBeVisible();
+  await expect(page.getByText('CTRL-HUMAN-SESSION-CSRF', { exact: true })).toHaveCount(1);
   await expect(page.locator('.pl-threat-section-toggle')).not.toHaveCount(0);
   if (testInfo.project.name === 'docs-mobile') await noHorizontalOverflow(page);
 

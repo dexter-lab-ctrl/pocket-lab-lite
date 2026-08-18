@@ -51,7 +51,6 @@ PROD = ROOT / "docs/generated/production/intelligence"
 EXPERIENCE_DOCS = ROOT / "docs/generated/experience"
 HOME_FRAGMENT = ROOT / "docs/generated/home-dashboard.md"
 INDEX = OUT / "index.json"
-CODEBASE_MAP = ROOT / "contracts/generated/knowledge/repository-codebase-map.json"
 
 SCHEMA_VERSION = "1.0.0"
 HEALTH_PRECEDENCE = {"healthy": 0, "stale": 1, "degraded": 2, "unavailable": 3, "unvalidated": 4}
@@ -994,7 +993,7 @@ def render_hub(kind: str, audience: str = "all") -> str:
     return out
 
 
-def render_home(data: dict[str, Any], op: dict[str, Any], experience: dict[str, Any], codebase: dict[str, Any]) -> str:
+def render_home(data: dict[str, Any], op: dict[str, Any], experience: dict[str, Any]) -> str:
     cards = []
     for domain_id in ("home", "apps", "devices", "security", "recovery"):
         h = op["domains"][domain_id]
@@ -1011,11 +1010,9 @@ def render_home(data: dict[str, Any], op: dict[str, Any], experience: dict[str, 
     out += f'<div class="pl-kpi"><span>Fleet records</span><strong>{data["fleet"].get("known")}</strong><small>{data["fleet"].get("online")} online in promoted observation</small></div>'
     out += f'<div class="pl-kpi"><span>Recovery</span><strong>{data["recovery"].get("overall")}</strong><small>{data["recovery"].get("reason") or data["recovery"].get("readiness")}</small></div>'
     out += '</div>\n<h3>Current operational health</h3><div class="pl-health-grid">' + ''.join(cards) + '</div>\n'
-    cb_stats = codebase.get("statistics", {})
-    cb_health = codebase.get("documentation_health", {})
     cb_href = doc_href("index.md", "generated/development/knowledge/codebase-map.md")
     out += '<h3>Codebase Map</h3><a class="pl-task-card pl-intent-link" href="' + cb_href + '"><strong>Understand the Pocket Lab Lite repository</strong><span>'
-    out += f'{cb_stats.get("tracked_files", "—")} files · {cb_stats.get("directories", "—")} folders · {cb_health.get("explained_percent", "—")}% explained · {cb_health.get("critical_explained_percent", "—")}% critical coverage →'
+    out += 'Explore the deterministic Git-tracked repository map, ownership, relationships, documentation coverage, and architecture links →'
     out += '</span></a>\n'
     out += '<h3>I want to…</h3><div class="pl-task-grid">'
     task_links = [
@@ -1050,7 +1047,6 @@ def build() -> tuple[dict[Path, str], dict[str, Any]]:
     reasons = load(REASONS)
     release_changes = load(RELEASE_CHANGES, {"items": []})
     parity_drift = load(PARITY_DRIFT, {"items": []})
-    codebase = load(CODEBASE_MAP)
 
     for field in ("release_tag", "source_commit", "promoted_at"):
         if op.get(field) != runtime.get(field):
@@ -1151,7 +1147,7 @@ def build() -> tuple[dict[Path, str], dict[str, Any]]:
     outputs[EXPERIENCE_DOCS / "understand.md"] = render_hub("understand")
     outputs[EXPERIENCE_DOCS / "evidence.md"] = render_hub("evidence")
     outputs[EXPERIENCE_DOCS / "release.md"] = render_hub("release")
-    outputs[HOME_FRAGMENT] = render_home(dash, op, experience, codebase)
+    outputs[HOME_FRAGMENT] = render_home(dash, op, experience)
 
     # Canonicalize generated Markdown to exactly one trailing newline. This keeps
     # git diff --check clean and prevents renderer-specific blank EOF drift.

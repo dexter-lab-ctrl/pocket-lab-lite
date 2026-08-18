@@ -334,6 +334,47 @@
     },
     {
       "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Human browser writes require an authenticated local-owner session plus a separate same-site CSRF proof; session credentials remain HttpOnly and hash-only at rest.",
+      "id": "CTRL-HUMAN-SESSION-CSRF",
+      "short_label": "SESSION",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 535,
+      "y": 405
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "messaging-execution"
+      ],
+      "description": "FastAPI preserves hard domain invariants, then requires a valid loopback OPA allow decision for registered protected actions before NATS/worker execution; unavailable, timed-out, malformed, or unregistered decisions fail closed.",
+      "id": "CTRL-OPA-FAIL-CLOSED",
+      "short_label": "OPA DENY",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 625,
+      "y": 405
+    },
+    {
+      "boundaries": [
         "application-container",
         "external-release"
       ],
@@ -676,7 +717,8 @@
       "controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
-        "CTRL-BROWSER-SHELL"
+        "CTRL-BROWSER-SHELL",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "icon": "react.svg",
       "id": "browser",
@@ -733,7 +775,8 @@
       "boundary": "durable-state",
       "controls": [
         "CTRL-EVIDENCE-SANITIZE",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "icon": "docs.svg",
       "id": "documentation",
@@ -789,7 +832,9 @@
       ],
       "boundary": "control-api",
       "controls": [
-        "CTRL-API-CONTROL"
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "icon": "fastapi.svg",
       "id": "lite-api",
@@ -845,7 +890,8 @@
       "controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
-        "CTRL-EXECUTION-OWNERS"
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "icon": "nats.svg",
       "id": "nats-jetstream",
@@ -950,7 +996,8 @@
       "boundary": "durable-state",
       "controls": [
         "CTRL-EVIDENCE-SANITIZE",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "icon": "evidence.svg",
       "id": "promoted-evidence",
@@ -978,7 +1025,8 @@
       "boundary": "durable-state",
       "controls": [
         "CTRL-EVIDENCE-SANITIZE",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "icon": "recovery.svg",
       "id": "recovery-state",
@@ -1095,7 +1143,8 @@
       "boundary": "durable-state",
       "controls": [
         "CTRL-EVIDENCE-SANITIZE",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-HUMAN-SESSION-CSRF"
       ],
       "icon": "sqlite.svg",
       "id": "sqlite",
@@ -1148,7 +1197,8 @@
       "controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
-        "CTRL-EXECUTION-OWNERS"
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-OPA-FAIL-CLOSED"
       ],
       "icon": "python.svg",
       "id": "worker",

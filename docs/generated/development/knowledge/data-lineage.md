@@ -25,7 +25,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/identity` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
 | `GET /api/lite/recovery/database` | ui:literecovery | — | unvalidated |
-| `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_current_state, table:recovery_operations | contract-derived |
+| `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_code_batches, table:recovery_codes, table:recovery_current_state, table:recovery_operations | contract-derived |
 | `GET /api/lite/recovery/summary` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/release` | ui:litereleaseupdatecard | table:lite_installed_release_identity, table:release_runtime_projection | contract-derived |
 | `GET /api/lite/revisions` | ui:literevisionsyncbridge | table:domain_revisions, table:projection_dirty_signals | contract-derived |
@@ -40,8 +40,13 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/fleet/add-device` | ui:litedevices | — | unvalidated |
 | `POST /api/lite/fleet/devices/{node_id}/restart-agent` | ui:litedevices | — | unvalidated |
 | `POST /api/lite/fleet/remove-device` | ui:litedevices | — | unvalidated |
-| `POST /api/lite/identity/rotate` | ui:liteidentity | — | unvalidated |
-| `POST /api/lite/policy/apply` | ui:literules | — | unvalidated |
+| `POST /api/lite/identity/login` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/logout` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/password` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/recover` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/recovery/regenerate` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/sessions/revoke-others` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/setup` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/recovery/backup` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/backups/{backup_id}/verify` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/database/backup` | ui:literecovery | — | unvalidated |

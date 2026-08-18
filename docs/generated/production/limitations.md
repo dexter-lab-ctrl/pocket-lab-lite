@@ -1,13 +1,13 @@
 ---
 title: "Current limitations"
-description: "Only verified deployable behavior is listed."
+description: "Only source-implemented behavior is listed; live server-phone qualification remains separate."
 status: unvalidated
 generated: true
 audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 29e9c74dfdc556deb069f31fdfab7a21589f67ad7d6ceade6a332b18ad1e25c3
+source_fingerprint: 9a3315bec7d9d8bab7eca1653eedcac05ea544ed0bb81a797678b6fd8ee790b8
 schema_revision: 1
 validation_status: generated
 ---
@@ -19,9 +19,10 @@ validation_status: generated
 <span class="pl-status pl-status--patch-provided">Production guidance</span>
 </div>
 
-Only verified deployable behavior is listed.
+Only source-implemented behavior is listed; live server-phone qualification remains separate.
 
-- Identity role-aware governance is not presented as complete.
-- Rules approval/execution workflows are not presented as complete.
-- Android performance claims require server-phone evidence; desktop Lighthouse alone is insufficient.
+- Passkeys/WebAuthn and OIDC federation are not enabled; Pocket Lab Lite remains self-contained with the local owner flow.
+- Rules currently protects the explicitly registered `catalog.install` and `device.remove` actions; broader authorization coverage is not implied.
+- The legacy generic secret store remains separate from the human Identity credential store and must not be treated as the owner password backend.
+- Android performance and live OPA/process claims require server-phone evidence; desktop/source validation alone is insufficient.
 - Live browser and long-duration qualification require a running isolated stack and explicit user action.

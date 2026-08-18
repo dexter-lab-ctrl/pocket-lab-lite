@@ -13,6 +13,18 @@
       "user_message": "No additional tuning was required."
     },
     {
+      "code": "authentication_required",
+      "domain": "identity",
+      "http_status": 401,
+      "meaning": "A protected write requires an authenticated human session or configured service credential.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Sign in before making this change."
+    },
+    {
       "code": "cold_start_validation",
       "domain": "validation",
       "http_status": 200,
@@ -23,6 +35,30 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "Cold-start validation is in progress."
+    },
+    {
+      "code": "command_undeliverable",
+      "domain": "devices",
+      "http_status": 200,
+      "meaning": "The target agent cannot currently receive the command.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The target agent cannot currently receive the command."
+    },
+    {
+      "code": "csrf_required",
+      "domain": "identity",
+      "http_status": 403,
+      "meaning": "A human-session write was rejected because its CSRF proof was missing or invalid.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Refresh the page and try again."
     },
     {
       "code": "diagnostics_not_active",
@@ -49,6 +85,18 @@
       "user_message": "The requested capability is disabled."
     },
     {
+      "code": "duplicate_device",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A matching device or invite already exists.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "A matching device or invite already exists."
+    },
+    {
       "code": "generation_changed",
       "domain": "projections",
       "http_status": 200,
@@ -59,6 +107,42 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "The source generation changed during work."
+    },
+    {
+      "code": "generic_policy_toggle_retired",
+      "domain": "rules",
+      "http_status": 410,
+      "meaning": "The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "info",
+      "terminal": true,
+      "user_message": "This legacy Rules action is no longer available."
+    },
+    {
+      "code": "human_session_required",
+      "domain": "identity",
+      "http_status": 403,
+      "meaning": "The requested credential or session lifecycle action requires the signed-in local owner session.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "A signed-in owner session is required."
+    },
+    {
+      "code": "identity_mismatch",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "The local identity does not match the requested enrollment.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "The local identity does not match the requested enrollment."
     },
     {
       "code": "insufficient_storage",
@@ -97,6 +181,18 @@
       "user_message": "The requested projection domain is invalid."
     },
     {
+      "code": "invite_expired",
+      "domain": "devices",
+      "http_status": 200,
+      "meaning": "The device invite is no longer valid.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "The device invite is no longer valid."
+    },
+    {
       "code": "invite_identity_mismatch",
       "domain": "devices",
       "http_status": 409,
@@ -131,6 +227,18 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "Legacy state contains multiple active runs."
+    },
+    {
+      "code": "legacy_secret_rotation_retired",
+      "domain": "identity",
+      "http_status": 410,
+      "meaning": "The legacy generic secret-rotation endpoint is retired and is not a human password operation.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "info",
+      "terminal": true,
+      "user_message": "Use the Identity password controls instead."
     },
     {
       "code": "metadata_only",
@@ -181,6 +289,32 @@
       "user_message": "The bounded payload limit was exceeded."
     },
     {
+      "code": "policy_unavailable",
+      "domain": "rules",
+      "http_status": 503,
+      "meaning": "The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "Safety Rules are not ready, so this protected action was not started."
+    },
+    {
+      "code": "projection_too_old",
+      "domain": "projections",
+      "http_status": 200,
+      "meaning": "The last committed projection is too old for a safe write.",
+      "next_action": "Capture fresh sanitized runtime evidence and explicitly promote it before claiming current readiness.",
+      "observed_in_current_health": [
+        "recovery"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The last committed projection is too old for a safe write."
+    },
+    {
       "code": "projection_unavailable",
       "domain": "projections",
       "http_status": 503,
@@ -191,6 +325,18 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "The prepared projection is unavailable."
+    },
+    {
+      "code": "protected_server_host",
+      "domain": "devices",
+      "http_status": 200,
+      "meaning": "The protected server host cannot use this destructive action.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The protected server host cannot use this destructive action."
     },
     {
       "code": "queue_full",
@@ -205,6 +351,20 @@
       "user_message": "The bounded queue cannot accept more work."
     },
     {
+      "code": "read_degraded",
+      "domain": "system",
+      "http_status": 200,
+      "meaning": "A safe last-known read is shown while refresh is unavailable.",
+      "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
+      "observed_in_current_health": [
+        "home"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "A safe last-known read is shown while refresh is unavailable."
+    },
+    {
       "code": "release_projection_unavailable",
       "domain": "release",
       "http_status": 503,
@@ -215,6 +375,42 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "The release prepared projection is unavailable."
+    },
+    {
+      "code": "remote_access_not_ready",
+      "domain": "devices",
+      "http_status": 200,
+      "meaning": "Private remote access is not ready.",
+      "next_action": "Verify Tailscale readiness and backend reachability; do not infer remote readiness from UI presentation.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Private remote access is not ready."
+    },
+    {
+      "code": "service_unavailable",
+      "domain": "system",
+      "http_status": 503,
+      "meaning": "A required backend service is unavailable.",
+      "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "A required backend service is unavailable."
+    },
+    {
+      "code": "session_not_found",
+      "domain": "identity",
+      "http_status": 404,
+      "meaning": "The requested human session is absent, expired, revoked, or no longer active.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "That session is no longer active."
     },
     {
       "code": "shutdown",
@@ -265,6 +461,18 @@
       "user_message": "The requested target is outside the approved scope."
     },
     {
+      "code": "test_bypass_explicit",
+      "domain": "rules",
+      "http_status": 200,
+      "meaning": "An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "info",
+      "terminal": true,
+      "user_message": "Test-only policy bypass."
+    },
+    {
       "code": "unregistered_domain",
       "domain": "projections",
       "http_status": 200,
@@ -299,120 +507,8 @@
       "severity": "warning",
       "terminal": true,
       "user_message": "The worker did not start the accepted work within the recovery window."
-    },
-    {
-      "code": "projection_too_old",
-      "domain": "projections",
-      "http_status": 200,
-      "meaning": "The last committed projection is too old for a safe write.",
-      "next_action": "Capture fresh sanitized runtime evidence and explicitly promote it before claiming current readiness.",
-      "observed_in_current_health": [
-        "recovery"
-      ],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "The last committed projection is too old for a safe write."
-    },
-    {
-      "code": "read_degraded",
-      "domain": "system",
-      "http_status": 200,
-      "meaning": "A safe last-known read is shown while refresh is unavailable.",
-      "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
-      "observed_in_current_health": [
-        "home"
-      ],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "A safe last-known read is shown while refresh is unavailable."
-    },
-    {
-      "code": "identity_mismatch",
-      "domain": "devices",
-      "http_status": 409,
-      "meaning": "The local identity does not match the requested enrollment.",
-      "next_action": "Review the owning evidence and operator guidance before another action.",
-      "observed_in_current_health": [],
-      "retryable": false,
-      "severity": "high",
-      "terminal": true,
-      "user_message": "The local identity does not match the requested enrollment."
-    },
-    {
-      "code": "remote_access_not_ready",
-      "domain": "devices",
-      "http_status": 200,
-      "meaning": "Private remote access is not ready.",
-      "next_action": "Verify Tailscale readiness and backend reachability; do not infer remote readiness from UI presentation.",
-      "observed_in_current_health": [],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "Private remote access is not ready."
-    },
-    {
-      "code": "service_unavailable",
-      "domain": "system",
-      "http_status": 503,
-      "meaning": "A required backend service is unavailable.",
-      "next_action": "Inspect the owning dependency/readiness evidence and recover through the backend-owned path.",
-      "observed_in_current_health": [],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "A required backend service is unavailable."
-    },
-    {
-      "code": "command_undeliverable",
-      "domain": "devices",
-      "http_status": 200,
-      "meaning": "The target agent cannot currently receive the command.",
-      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
-      "observed_in_current_health": [],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "The target agent cannot currently receive the command."
-    },
-    {
-      "code": "invite_expired",
-      "domain": "devices",
-      "http_status": 200,
-      "meaning": "The device invite is no longer valid.",
-      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
-      "observed_in_current_health": [],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": true,
-      "user_message": "The device invite is no longer valid."
-    },
-    {
-      "code": "duplicate_device",
-      "domain": "devices",
-      "http_status": 409,
-      "meaning": "A matching device or invite already exists.",
-      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
-      "observed_in_current_health": [],
-      "retryable": true,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "A matching device or invite already exists."
-    },
-    {
-      "code": "protected_server_host",
-      "domain": "devices",
-      "http_status": 200,
-      "meaning": "The protected server host cannot use this destructive action.",
-      "next_action": "Review the owning evidence and operator guidance before another action.",
-      "observed_in_current_health": [],
-      "retryable": false,
-      "severity": "warning",
-      "terminal": false,
-      "user_message": "The protected server host cannot use this destructive action."
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "baa11304848dd6b0a84a6f8e9b286892bb50e3c850f62973f14c6ae8a12eee3c"
+  "source_fingerprint": "efca1256ccce50e90ca8ff9f2287ab619c335794b08261da8175a70aac940214"
 }

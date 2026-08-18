@@ -721,7 +721,19 @@ export const handlers = [
     }, { status: 201 });
   }),
   http.delete('/api/lite/apps/photoprism/storage-mappings/:mappingId', ({ params }) => HttpResponse.json({ status: 'deleted', accepted: true, app_id: 'photoprism', mapping_id: params.mappingId, summary: 'Media folder disconnected.' })),
-  http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
+  http.get('/api/lite/identity', () => HttpResponse.json({
+    status: 'ready', summary: 'Owner access is protected by server-side sessions.', setup_required: false, authenticated: true,
+    owner: { human_id: 'human-mock', username: 'owner', display_name: 'Pocket Lab Owner', status: 'active', password_algorithm: 'scrypt' },
+    session: { session_id: 'sess-mock', authenticated: true, auth_method: 'password' },
+    sessions: [{ session_id: 'sess-mock', auth_method: 'password', created_at: new Date().toISOString(), active: true, current: true }],
+    recovery: { configured: true, remaining: 8, generation: 1 }, recent_activity: [],
+    sign_in_methods: { password: true, passkey: false, oidc: false },
+    identity_classes: {
+      human: { label: 'Owner', managed_by: 'Identity', configured: true },
+      device: { label: 'Device identities', managed_by: 'Devices', summary: 'Device enrollment identity remains protected by the Devices flow.' },
+      service: { label: 'Service identities', managed_by: 'FastAPI runtime', api_token_configured: true, summary: 'Service access is separate from the human owner session.' },
+    },
+  })),
   http.get('/api/lite/security/summary', () => HttpResponse.json(mockLiteSecurityPayload())),
   http.get('/api/lite/security/freshness', () => {
     const payload = mockLiteSecurityPayload();
@@ -756,7 +768,15 @@ export const handlers = [
     },
     updated_at: new Date().toISOString(),
   })),
-  http.get('/api/lite/policy', () => HttpResponse.json({ status: 'healthy', summary: 'Protection rules are available in advisory mode', protection_enabled: false, requires_confirmation: true, allowed_actions: ['install_app', 'add_device', 'run_safety_check', 'backup_now'] })),
+  http.get('/api/lite/policy', () => HttpResponse.json({
+    status: 'ready', summary: 'Safety Rules are active and ready for protected changes.',
+    engine: { name: 'Open Policy Agent', version: '1.19.0', healthy: true, loopback_only: true, endpoint_exposed_to_browser: false, reason_code: '' },
+    active_policy: { revision: 'mock-policy-revision', bundle_ready: true, package_status: 'active', protected_actions: ['catalog.install', 'device.remove'], activation_model: 'atomic_local_copy', last_known_good: true },
+    degraded_reason: '',
+    last_decision_at: null,
+    policy_groups: [{ id: 'apps', label: 'Apps', actions: ['catalog.install'] }, { id: 'devices', label: 'Devices', actions: ['device.remove'] }],
+    recent_decisions: [],
+  })),
   http.get('/api/lite/recovery/database', () => HttpResponse.json({
     status: 'healthy',
     summary: 'Database protection is ready.',
@@ -869,7 +889,15 @@ export const handlers = [
     const body = await request.json().catch(() => ({}));
     return HttpResponse.json({ accepted: true, status: 'queued', operation_id: 'app-photoprism-mock', app_id: body.app_id || 'photoprism', target_node_id: body.target_node_id || 'pocket-lab-lite-server', message: 'PhotoPrism install started.' }, { status: 202 });
   }),
-  http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
+  http.post('/api/lite/identity/setup', () => HttpResponse.json({ status: 'ready', setup_required: false, authenticated: true, csrf_token: 'mock-csrf', summary: 'Owner access is protected by server-side sessions.' }, { status: 201 })),
+  http.post('/api/lite/identity/login', () => HttpResponse.json({ status: 'ready', authenticated: true, csrf_token: 'mock-csrf', summary: 'Owner access is protected by server-side sessions.' })),
+  http.post('/api/lite/identity/logout', () => HttpResponse.json({ status: 'signed_out', summary: 'Signed out of Pocket Lab.' })),
+  http.post('/api/lite/identity/password', () => HttpResponse.json({ status: 'changed', csrf_token: 'mock-csrf-2', summary: 'Password changed. Other owner sessions were signed out.' })),
+  http.post('/api/lite/identity/sessions/revoke-others', () => HttpResponse.json({ status: 'completed', revoked_sessions: 1, summary: 'Other owner sessions were signed out.' })),
+  http.delete('/api/lite/identity/sessions/:sessionId', ({ params }) => HttpResponse.json({ status: 'revoked', session_id: params.sessionId, summary: 'Session signed out.' })),
+  http.post('/api/lite/identity/recovery/regenerate', () => HttpResponse.json({ status: 'generated', generation: 2, codes: ['MOCK-RECOVERY-CODE'], summary: 'New one-time recovery codes were generated.' })),
+  http.post('/api/lite/identity/recover', () => HttpResponse.json({ status: 'ready', authenticated: true, csrf_token: 'mock-csrf-recovery', recovered: true, summary: 'Owner access is protected by server-side sessions.' })),
+  http.post('/api/lite/identity/rotate', () => HttpResponse.json({ status: 'retired', accepted: false, reason_code: 'legacy_secret_rotation_retired' }, { status: 410 })),
   http.get('/api/lite/security/apps', () => HttpResponse.json({ status: 'healthy', apps: mockProtectedApps(), items: mockProtectedApps(), count: mockProtectedApps().length })),
   http.get('/api/lite/security/apps/photoprism', () => HttpResponse.json(mockProtectedApps()[0])),
   http.post('/api/lite/security/apps/photoprism/check', () => HttpResponse.json({
@@ -1007,7 +1035,7 @@ export const handlers = [
       },
     }, { status: 202 });
   }),
-  http.post('/api/lite/policy/apply', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-policy-apply' }, { status: 202 })),
+  http.post('/api/lite/policy/apply', () => HttpResponse.json({ status: 'retired', accepted: false, reason_code: 'generic_policy_toggle_retired' }, { status: 410 })),
   http.get('/api/lite/recovery/backup-targets', () => HttpResponse.json({ status: 'healthy', summary: 'Backup targets are available.', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], items: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 })),
   http.get('/api/lite/recovery/apps/photoprism/backup-targets', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', name: 'PhotoPrism', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 })),
   http.post('/api/lite/recovery/apps/photoprism/backup-to-target', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', action_id: 'backup_to_storage', summary: 'Backup target transfer is prepared, but the storage-device transfer worker is not enabled yet.' }, { status: 501 })),

@@ -12,6 +12,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:delete:/api/lite/identity/sessions/{session_id}",
+      "name": "DELETE /api/lite/identity/sessions/{session_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/apps/lifecycle",
       "name": "GET /api/lite/apps/lifecycle",
       "note": "A test link does not by itself prove runtime verification.",
@@ -1057,8 +1068,85 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/identity/login",
+      "name": "POST /api/lite/identity/login",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/logout",
+      "name": "POST /api/lite/identity/logout",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/password",
+      "name": "POST /api/lite/identity/password",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/recover",
+      "name": "POST /api/lite/identity/recover",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/recovery/regenerate",
+      "name": "POST /api/lite/identity/recovery/regenerate",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/identity/rotate",
       "name": "POST /api/lite/identity/rotate",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/sessions/revoke-others",
+      "name": "POST /api/lite/identity/sessions/revoke-others",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/identity/setup",
+      "name": "POST /api/lite/identity/setup",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -1529,6 +1617,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -1746,6 +1835,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -1762,6 +1852,20 @@
       "tests": [
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_production_readiness.py",
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "component:opa-policy-engine",
+      "name": "OPA Safety Rules policy engine",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -1801,6 +1905,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -1875,6 +1980,7 @@
         "test:tests/backend/test_lite_devices_d2_d3.py",
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
@@ -2314,9 +2420,11 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
@@ -2669,13 +2777,24 @@
     },
     {
       "entity": "journey:change-password",
-      "name": "Change Password / identity rotation",
+      "name": "Local owner password and session lifecycle",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
-        "test:tests/backend/test_lite_development_documentation_platform.py",
-        "test:tests/docs/test_operational_health_bridge.py",
-        "test:tests/parity/test_api_contract_fences.py"
+        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_long_gate_submission_recovery.py",
+        "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+        "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_security_f11_events_contract.py",
+        "test:tests/backend/test_lite_security_f3_summary_contract.py",
+        "test:tests/backend/test_lite_security_f7_split_read_contract.py",
+        "test:tests/backend/test_lite_security_f9_etag_contract.py",
+        "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
+        "test:tests/backend/test_lite_security_s6_retention.py",
+        "test:tests/backend/test_lite_security_s8_recovery.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -2833,6 +2952,17 @@
       "verification_status": "unvalidated"
     },
     {
+      "entity": "journey:rules-authorization",
+      "name": "Safety Rules authorization decision",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py"
+      ],
+      "type": "journey",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "journey:runtime-capture",
       "name": "Sanitized Termux runtime capture",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2900,6 +3030,7 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_device_system_profile.py",
+        "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -3046,6 +3177,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "8dc54449d672330c51f3c79d7a3e8d74e015f10f6a081134350f862d1fced476"
   }
 }

@@ -1854,7 +1854,11 @@ function AppIcon({ app }) {
 
 function CatalogSkeletons() {
   return (
-    <div className="lite-catalog-grid lite-catalog-skeleton-grid" aria-label="Loading App Catalog">
+    <div
+      className="lite-catalog-grid lite-catalog-skeleton-grid"
+      role="status"
+      aria-label="Loading App Catalog"
+    >
       {[0, 1, 2].map((item) => (
         <GlassCard key={item} className="lite-catalog-card lite-catalog-app-card lite-catalog-skeleton-card">
           <div className="lite-catalog-skeleton-icon" />

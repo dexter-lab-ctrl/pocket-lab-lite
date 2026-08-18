@@ -1,0 +1,342 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+import uuid
+from pathlib import Path
+from typing import Any
+
+from ..db.connection import begin_immediate, connection
+from ..db.migrations import apply_migrations
+from .lite_security_policy import redact_value
+
+OPA_BASE_URL = os.environ.get("POCKETLAB_OPA_URL", "http://127.0.0.1:8181").rstrip("/")
+OPA_DECISION_PATH = "/v1/data/pocketlab/authz/decision"
+PROTECTED_ACTIONS = frozenset({"catalog.install", "device.remove"})
+
+
+class PolicyDecisionError(RuntimeError):
+    def __init__(self, reason_code: str, message: str, *, status_code: int = 403, decision: dict[str, Any] | None = None):
+        super().__init__(message)
+        self.reason_code = str(reason_code or "policy_denied")[:80]
+        self.message = str(message or "This action is blocked by Safety Rules.")[:240]
+        self.status_code = int(status_code)
+        self.decision = decision or {}
+
+
+def _now_iso() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _bounded_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(str(os.environ.get(name, default)).strip())
+    except (TypeError, ValueError):
+        value = default
+    return min(max(value, minimum), maximum)
+
+
+def _policy_root() -> Path:
+    configured = os.environ.get("POCKETLAB_OPA_ACTIVE_POLICY_DIR", "").strip()
+    if configured:
+        return Path(configured).expanduser()
+    state_dir = os.environ.get("POCKETLAB_STATE_DIR", "").strip()
+    if state_dir:
+        return Path(state_dir).expanduser() / "opa" / "active"
+    return Path.home() / ".pocket_lab" / "state" / "opa" / "active"
+
+
+def _safe_revision() -> str:
+    root = _policy_root()
+    revision_file = root / "revision.txt"
+    try:
+        value = revision_file.read_text(encoding="utf-8").strip()
+        if value:
+            return value[:80]
+    except OSError:
+        pass
+    policy_file = root / "pocketlab.rego"
+    try:
+        data = policy_file.read_bytes()
+    except OSError:
+        return "unavailable"
+    return hashlib.sha256(data).hexdigest()[:24]
+
+
+def _http_json(method: str, path: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None) -> tuple[int, dict[str, Any]]:
+    bounded = timeout if timeout is not None else float(os.environ.get("POCKETLAB_OPA_TIMEOUT_SECONDS", "0.35"))
+    bounded = max(0.05, min(2.0, float(bounded)))
+    body = None
+    headers = {"Accept": "application/json"}
+    if payload is not None:
+        body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(f"{OPA_BASE_URL}{path}", data=body, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(request, timeout=bounded) as response:  # noqa: S310 - loopback-only configured endpoint
+            raw = response.read(128 * 1024)
+            parsed = json.loads(raw.decode("utf-8")) if raw else {}
+            return int(response.status), parsed if isinstance(parsed, dict) else {}
+    except urllib.error.HTTPError as exc:
+        raw = exc.read(16 * 1024)
+        try:
+            parsed = json.loads(raw.decode("utf-8")) if raw else {}
+        except Exception:
+            parsed = {}
+        return int(exc.code), parsed if isinstance(parsed, dict) else {}
+
+
+def _normalized_actor(auth_context: dict[str, Any] | None) -> dict[str, str]:
+    actor = (auth_context or {}).get("actor") or {}
+    actor_type = str(actor.get("type") or "anonymous").strip().lower()[:32]
+    actor_id = str(actor.get("identity_id") or "anonymous").strip()[:120]
+    display = str(actor.get("display_name") or actor_id).strip()[:120]
+    return {"type": actor_type or "anonymous", "id": actor_id or "anonymous", "display_name": display or "anonymous"}
+
+
+def build_authorization_input(
+    *,
+    auth_context: dict[str, Any] | None,
+    action_id: str,
+    target_type: str,
+    target_id: str,
+    target_revision: str,
+    target: dict[str, Any] | None = None,
+    request_context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    actor = _normalized_actor(auth_context)
+    session = (auth_context or {}).get("session") or {}
+    return {
+        "actor": actor,
+        "session": {
+            "authenticated": bool(session.get("authenticated")),
+            "auth_method": str(session.get("auth_method") or (auth_context or {}).get("auth_method") or "")[:48],
+        },
+        "action": {"id": str(action_id)[:120]},
+        "target": {
+            "type": str(target_type or "unknown")[:80],
+            "id": str(target_id or "unknown")[:160],
+            "revision": str(target_revision or "unknown")[:160],
+            "state": redact_value(target or {}),
+        },
+        "request": redact_value(request_context or {}),
+    }
+
+
+def _test_decision(input_doc: dict[str, Any]) -> dict[str, Any] | None:
+    actor = input_doc.get("actor") or {}
+    if os.environ.get("POCKETLAB_TEST_AUTH_BYPASS") == "1" and actor.get("type") == "test":
+        return {
+            "allow": True,
+            "constraints": [],
+            "reason_code": "test_bypass_explicit",
+            "policy_revision": "test-only",
+        }
+    return None
+
+
+def _validate_result(raw: Any) -> dict[str, Any]:
+    if not isinstance(raw, dict):
+        raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    allow = raw.get("allow")
+    reason = raw.get("reason_code")
+    constraints = raw.get("constraints", [])
+    if not isinstance(allow, bool) or not isinstance(reason, str) or not reason.strip() or not isinstance(constraints, list):
+        raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    return {
+        "allow": allow,
+        "constraints": [str(item)[:120] for item in constraints[:12]],
+        "reason_code": reason.strip()[:80],
+        "policy_revision": str(raw.get("policy_revision") or _safe_revision())[:80],
+    }
+
+
+def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], evaluation_ms: float, correlation_id: str) -> dict[str, Any]:
+    apply_migrations()
+    decision_id = f"decision-{uuid.uuid4().hex}"
+    actor = input_doc["actor"]
+    target = input_doc["target"]
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            tx.execute(
+                """INSERT INTO policy_decisions(
+                       occurred_at,decision_id,correlation_id,actor_type,actor_id,action_id,
+                       target_type,target_id,target_revision,allow,reason_code,policy_revision,evaluation_ms
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    _now_iso(),
+                    decision_id,
+                    correlation_id[:80],
+                    actor["type"],
+                    actor["id"],
+                    input_doc["action"]["id"],
+                    target["type"],
+                    target["id"],
+                    target["revision"],
+                    1 if decision["allow"] else 0,
+                    decision["reason_code"],
+                    decision["policy_revision"],
+                    round(max(0.0, evaluation_ms), 3),
+                ),
+            )
+            retention = _bounded_int("POCKETLAB_POLICY_DECISION_RETENTION", 500, 50, 5000)
+            tx.execute(
+                "DELETE FROM policy_decisions WHERE decision_row_id NOT IN (SELECT decision_row_id FROM policy_decisions ORDER BY decision_row_id DESC LIMIT ?)",
+                (retention,),
+            )
+    return {**decision, "decision_id": decision_id, "correlation_id": correlation_id, "evaluation_ms": round(max(0.0, evaluation_ms), 3)}
+
+
+def evaluate_authorization(
+    *,
+    auth_context: dict[str, Any] | None,
+    action_id: str,
+    target_type: str,
+    target_id: str,
+    target_revision: str,
+    target: dict[str, Any] | None = None,
+    request_context: dict[str, Any] | None = None,
+    correlation_id: str | None = None,
+) -> dict[str, Any]:
+    action = str(action_id or "").strip()
+    if action not in PROTECTED_ACTIONS:
+        raise PolicyDecisionError("policy_action_not_registered", "This action has no registered Safety Rule.", status_code=503)
+    input_doc = build_authorization_input(
+        auth_context=auth_context,
+        action_id=action,
+        target_type=target_type,
+        target_id=target_id,
+        target_revision=target_revision,
+        target=target,
+        request_context=request_context,
+    )
+    started = time.monotonic()
+    test = _test_decision(input_doc)
+    try:
+        if test is not None:
+            normalized = _validate_result(test)
+        else:
+            status_code, payload = _http_json("POST", OPA_DECISION_PATH, {"input": input_doc})
+            if status_code != 200:
+                raise PolicyDecisionError("policy_unavailable", "Safety Rules are not ready, so this protected action was not started.", status_code=503)
+            normalized = _validate_result(payload.get("result"))
+    except PolicyDecisionError as exc:
+        elapsed = (time.monotonic() - started) * 1000.0
+        failed = _record_decision(
+            input_doc=input_doc,
+            decision={
+                "allow": False,
+                "constraints": [],
+                "reason_code": exc.reason_code,
+                "policy_revision": _safe_revision(),
+            },
+            evaluation_ms=elapsed,
+            correlation_id=str(correlation_id or uuid.uuid4().hex),
+        )
+        raise PolicyDecisionError(exc.reason_code, exc.message, status_code=exc.status_code, decision=failed) from exc
+    except (OSError, TimeoutError, urllib.error.URLError, ValueError, json.JSONDecodeError) as exc:
+        elapsed = (time.monotonic() - started) * 1000.0
+        failed = _record_decision(
+            input_doc=input_doc,
+            decision={
+                "allow": False,
+                "constraints": [],
+                "reason_code": "policy_unavailable",
+                "policy_revision": _safe_revision(),
+            },
+            evaluation_ms=elapsed,
+            correlation_id=str(correlation_id or uuid.uuid4().hex),
+        )
+        raise PolicyDecisionError("policy_unavailable", "Safety Rules are not ready, so this protected action was not started.", status_code=503, decision=failed) from exc
+    elapsed = (time.monotonic() - started) * 1000.0
+    recorded = _record_decision(
+        input_doc=input_doc,
+        decision=normalized,
+        evaluation_ms=elapsed,
+        correlation_id=str(correlation_id or uuid.uuid4().hex),
+    )
+    if not recorded["allow"]:
+        raise PolicyDecisionError("policy_denied", "Safety Rules blocked this action.", status_code=403, decision=recorded)
+    return recorded
+
+
+def policy_status() -> dict[str, Any]:
+    revision = _safe_revision()
+    healthy = False
+    engine_version = "unknown"
+    error_code = "policy_engine_unavailable"
+    try:
+        status_code, _ = _http_json("GET", "/health", timeout=0.25)
+        healthy = status_code == 200
+        if healthy:
+            error_code = ""
+            try:
+                version_status, version_payload = _http_json("GET", "/version", timeout=0.25)
+                if version_status == 200:
+                    engine_version = str(version_payload.get("version") or "unknown")[:40]
+            except Exception:
+                engine_version = "unknown"
+    except Exception:
+        healthy = False
+    recent: list[dict[str, Any]] = []
+    try:
+        with connection() as conn:
+            rows = conn.execute(
+                """SELECT occurred_at,decision_id,correlation_id,actor_type,action_id,target_type,target_id,
+                          allow,reason_code,policy_revision,evaluation_ms
+                   FROM policy_decisions ORDER BY decision_row_id DESC LIMIT 20"""
+            ).fetchall()
+            recent = [
+                {
+                    "occurred_at": row["occurred_at"],
+                    "decision_id": row["decision_id"],
+                    "correlation_id": row["correlation_id"],
+                    "actor_type": row["actor_type"],
+                    "action_id": row["action_id"],
+                    "target_type": row["target_type"],
+                    "target_id": row["target_id"],
+                    "allow": bool(row["allow"]),
+                    "reason_code": row["reason_code"],
+                    "policy_revision": row["policy_revision"],
+                    "evaluation_ms": row["evaluation_ms"],
+                }
+                for row in rows
+            ]
+    except Exception:
+        recent = []
+    ready = healthy and revision != "unavailable"
+    last_decision_at = recent[0]["occurred_at"] if recent else None
+    return {
+        "status": "ready" if ready else "degraded",
+        "summary": "Safety Rules are active and ready for protected changes." if ready else "Safety Rules are not ready. Protected changes fail closed until they recover.",
+        "degraded_reason": "" if ready else (error_code or "policy_not_activated"),
+        "engine": {
+            "name": "Open Policy Agent",
+            "version": engine_version,
+            "healthy": healthy,
+            "loopback_only": OPA_BASE_URL.startswith("http://127.0.0.1:") or OPA_BASE_URL.startswith("http://localhost:"),
+            "endpoint_exposed_to_browser": False,
+            "reason_code": error_code,
+        },
+        "active_policy": {
+            "revision": revision,
+            "bundle_ready": revision != "unavailable",
+            "package_status": "active" if revision != "unavailable" else "unavailable",
+            "protected_actions": sorted(PROTECTED_ACTIONS),
+            "activation_model": "atomic_local_copy",
+            "last_known_good": revision != "unavailable",
+        },
+        "last_decision_at": last_decision_at,
+        "policy_groups": [
+            {"id": "apps", "label": "Apps", "actions": ["catalog.install"]},
+            {"id": "devices", "label": "Devices", "actions": ["device.remove"]},
+        ],
+        "recent_decisions": recent,
+        "updated_at": _now_iso(),
+    }

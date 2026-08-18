@@ -13,7 +13,7 @@ confidence: generated
 
 <div class="pl-page-lede pl-threat-boundary-lede"><strong>Saved evidence enters documentation through an explicit projection zone.</strong><p>This lane uses the same review anatomy as canonical boundaries while remaining a presentation/evidence projection. It does not create a tenth canonical threat boundary or imply live monitoring.</p></div>
 
-<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Evidence projection zone</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>2</strong></article><article><span>Review</span><strong>Human review required</strong></article></div>
+<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Evidence projection zone</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>3</strong></article><article><span>Review</span><strong>Human review required</strong></article></div>
 
 ## Boundary
 
@@ -66,6 +66,7 @@ No canonical STRIDE threat is assigned directly to this projection zone because 
 | --- | --- | --- |
 | CTRL-EVIDENCE-SANITIZE | Runtime/scanner evidence is sanitized before canonical documentation ingestion. | control-observed |
 | CTRL-EXPLICIT-PROMOTION | Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote. | control-observed |
+| CTRL-HUMAN-SESSION-CSRF | Human browser writes require an authenticated local-owner session plus a separate same-site CSRF proof; session credentials remain HttpOnly and hash-only at rest. | mitigation-source-derived |
 
 ## Runtime evidence & provenance
 

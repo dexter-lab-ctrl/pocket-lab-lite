@@ -32,4 +32,22 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="security"]')).toBeVisible();
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/Safety|Security/i);
   });
+
+  test('Identity and Rules remain separate truthful security surfaces', async ({ page }) => {
+    await page.goto('/?screen=identity');
+    const identity = page.locator('[data-lite-screen-id="identity"]');
+    await expect(identity).toBeVisible();
+    await expect(identity).toContainText('Identity & Access');
+    await expect(identity).toContainText(/owner|session|recovery/i);
+    await expect(identity).not.toContainText('local-admin');
+
+    await page.goto('/?screen=rules');
+    const rules = page.locator('[data-lite-screen-id="rules"]');
+    await expect(rules).toBeVisible();
+    await expect(rules).toContainText('Safety Rules');
+    await expect(rules).toContainText('Open Policy Agent');
+    await expect(rules).toContainText('mock-policy-revision');
+    await expect(rules).not.toContainText('package pocketlab');
+  });
+
 });

@@ -41,6 +41,7 @@ prepare_lite_state_path(){
   export POCKETLAB_BASE_DIR="${POCKETLAB_BASE_DIR:-$POCKET_LAB_BASE_DIR}"
   export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"
   export POCKETLAB_LITE_DB_PATH="${POCKETLAB_LITE_DB_PATH:-$POCKETLAB_STATE_DIR/pocketlab-lite.sqlite3}"
+  export POCKETLAB_OPA_ACTIVE_POLICY_DIR="${POCKETLAB_OPA_ACTIVE_POLICY_DIR:-$POCKETLAB_STATE_DIR/opa/active}"
   export POCKETLAB_LITE_SECURITY_STORE_MODE="${POCKETLAB_LITE_SECURITY_STORE_MODE:-dual}"
   export POCKETLAB_LITE_SECURITY_SQLITE_COMPACT_READS="${POCKETLAB_LITE_SECURITY_SQLITE_COMPACT_READS:-1}"
   export POCKETLAB_LITE_DB_PROGRESS_READ_TIMEOUT_MS="${POCKETLAB_LITE_DB_PROGRESS_READ_TIMEOUT_MS:-250}"
@@ -64,6 +65,7 @@ FASTAPI_SERVER="$SCRIPT_DIR/../../runtime/api_fastapi/pocket_lab_fastapi_server.
 WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
 CORE_SUPERVISOR_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_core_supervisor.py"
+OPA_POLICY_PREP="$SCRIPT_DIR/lite/prepare-opa-policy.sh"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
 PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; PWA_CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$PWA_DIR/current}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"; OBS_DIR="${OBS_DIR:-$POCKET_LAB_OBSERVABILITY_DIR}"
 DASH_PORT="${DASH_PORT:-8443}"; API_PORT="${API_PORT:-8080}"; GATUS_PORT="${GATUS_PORT:-8081}"
@@ -755,6 +757,19 @@ start_pm2_daemons(){
   write_nats_config
   pm2_start_or_restart pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
   wait_for_nats_ready
+  if is_lite_profile; then
+    require_cmd opa
+    [[ -x "$OPA_POLICY_PREP" ]] || die "OPA policy preparation script is missing: $OPA_POLICY_PREP"
+    POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" "$OPA_POLICY_PREP"
+    pm2_start_or_restart pocket-opa "$(command -v opa)" -- run --server --addr=127.0.0.1:8181 "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+    local opa_ready=0
+    local opa_attempt
+    for opa_attempt in $(seq 1 20); do
+      if curl -fsS http://127.0.0.1:8181/health >/dev/null 2>&1; then opa_ready=1; break; fi
+      sleep 1
+    done
+    [[ "$opa_ready" -eq 1 ]] || { pm2 logs pocket-opa --lines 80 --nostream || true; die "OPA did not become ready on loopback"; }
+  fi
   if [[ "${POCKETLAB_DISABLE_WORKER:-0}" != "1" ]]; then
     POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250
   else

@@ -924,14 +924,21 @@ class OperationService:
         lease_duration = str(
             request.params.get("lease_duration") or request.params.get("ttl") or "1h"
         )
-        artifact = {
+        stored_secret = {
             "secret": secret_name,
             "value": value,
             "rotated_at": rotated_at,
             "version": version,
             "lease_duration": lease_duration,
         }
-        secrets[secret_name] = artifact
+        artifact = {
+            "secret": secret_name,
+            "rotated_at": rotated_at,
+            "version": version,
+            "lease_duration": lease_duration,
+            "secret_material": "hidden",
+        }
+        secrets[secret_name] = stored_secret
         self._write_json(self.state.state_dir / "secrets.json", secrets)
         if secret_name == "tailscale":
             self.state.update_run(
@@ -940,7 +947,7 @@ class OperationService:
                     **run,
                     "artifacts": {
                         **(run.get("artifacts") or {}),
-                        "tailscale_api_key": value,
+                        "secret_material": "hidden",
                         "secret_version": version,
                         "rotated_at": rotated_at,
                         "lease_duration": lease_duration,
@@ -952,16 +959,12 @@ class OperationService:
         return {
             "stdout": json.dumps(
                 {
-                    "identity": {
-                        "username": "admin",
-                        "password": value,
-                        "lastRotated": rotated_at,
-                    },
                     "secret": {
                         "name": secret_name,
                         "version": version,
                         "rotated_at": rotated_at,
                         "lease_duration": lease_duration,
+                        "secret_material": "hidden",
                     },
                 },
                 indent=2,

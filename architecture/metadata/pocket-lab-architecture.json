@@ -427,29 +427,45 @@
     },
     "api-guards": {
       "category": "service",
-      "data_owner": "SQLite identity and invite state",
+      "data_owner": "SQLite human identity/session state plus device identity and invite state",
       "documentation_links": [
-        "docs/generated/production/devices.md"
+        "docs/generated/production/devices.md",
+        "docs/generated/production/identity.md",
+        "docs/generated/production/rules.md"
       ],
       "durable_state_dependencies": [
+        "auth_sessions",
         "device_identity_guards",
-        "device_invite_lifecycle"
+        "device_invite_lifecycle",
+        "human_credentials",
+        "human_identities",
+        "identity_audit_events",
+        "recovery_code_batches",
+        "recovery_codes"
       ],
       "evidence_produced": [
-        "invite lifecycle",
-        "bootstrap blocked"
+        "bootstrap blocked",
+        "identity audit reason codes",
+        "invite lifecycle"
       ],
       "failure_paths": [
+        "CSRF rejected",
+        "authentication required",
+        "duplicate device",
         "identity mismatch",
-        "duplicate device"
+        "session expired"
       ],
       "health_signals": [
-        "invite status"
+        "authenticated session state",
+        "invite status",
+        "owner configured"
       ],
       "icon": "semantic-api-guard",
       "id": "api-guards",
       "inputs": [
+        "CSRF token",
         "Device invite request",
+        "Owner login/session credential",
         "identity claim"
       ],
       "mini_diagram": true,
@@ -457,7 +473,9 @@
       "orphan_exempt": false,
       "outputs": [
         "Accepted bootstrap artifact",
-        "blocked evidence"
+        "Authenticated human context",
+        "blocked evidence",
+        "safe identity projection"
       ],
       "owner": "Lite API",
       "process_owner": "FastAPI",
@@ -469,7 +487,7 @@
         "fail closed",
         "explicit repair/rejoin"
       ],
-      "responsibility": "Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.",
+      "responsibility": "Applies human authentication/session/CSRF guards plus device identity, duplicate, protected-host, and fail-closed invite/bootstrap acceptance guards.",
       "runtime_location": "FastAPI process",
       "runtime_owner": "pocket-api",
       "security_boundary": "control-api",
@@ -485,6 +503,22 @@
         {
           "kind": "sqlite_table",
           "value": "device_identity_guards"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+        },
+        {
+          "kind": "route",
+          "value": "POST /api/lite/identity/login"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "human_identities"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "auth_sessions"
         }
       ],
       "supported_platforms": [
@@ -2158,6 +2192,96 @@
       ],
       "verification_status": "verified"
     },
+    "opa-policy-engine": {
+      "category": "decision",
+      "data_owner": "Repository Rego source and bounded SQLite policy decision metadata",
+      "documentation_links": [
+        "docs/generated/production/rules.md",
+        "docs/generated/production/security-boundaries.md"
+      ],
+      "durable_state_dependencies": [
+        "policy_decisions"
+      ],
+      "evidence_produced": [
+        "bounded authorization decision metadata"
+      ],
+      "failure_paths": [
+        "OPA unavailable",
+        "OPA timeout",
+        "invalid decision",
+        "policy activation validation failure"
+      ],
+      "health_signals": [
+        "loopback /health",
+        "engine version",
+        "active policy revision",
+        "last decision"
+      ],
+      "icon": "semantic-decision",
+      "id": "opa-policy-engine",
+      "inputs": [
+        "bounded FastAPI authorization input"
+      ],
+      "mini_diagram": true,
+      "name": "OPA Safety Rules policy engine",
+      "orphan_exempt": false,
+      "outputs": [
+        "allow/deny/constraints/reason code/policy revision"
+      ],
+      "owner": "Rules authorization",
+      "process_owner": "pocket-opa",
+      "protocols": [
+        "Loopback HTTP JSON",
+        "Rego"
+      ],
+      "recovery_owner": "Startup validation and PM2 core supervisor",
+      "recovery_paths": [
+        "fail closed",
+        "preserve last-known-good policy",
+        "restart only after validated activation"
+      ],
+      "responsibility": "Evaluates only registered protected actions after FastAPI hard invariants and before existing NATS/worker execution; it never owns command execution.",
+      "runtime_location": "Server host loopback",
+      "runtime_owner": "PM2",
+      "security_boundary": "control-api",
+      "source_verification": [
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+        },
+        {
+          "kind": "path",
+          "value": "security/policies/opa/pocketlab/pocketlab.rego"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh"
+        },
+        {
+          "kind": "pm2_process",
+          "value": "pocket-opa"
+        },
+        {
+          "kind": "route",
+          "value": "GET /api/lite/policy"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "policy_decisions"
+        }
+      ],
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "technology_icons": [
+        "brand-python",
+        "semantic-decision"
+      ],
+      "verification_status": "patch-provided"
+    },
     "photoprism": {
       "category": "external-app",
       "data_owner": "PhotoPrism application data",
@@ -3795,73 +3919,33 @@
   "connections": [
     {
       "evidence": false,
-      "id": "user-browser",
+      "id": "agent-command-flow",
       "kind": "control",
-      "label": "uses",
-      "protocol": "HTTPS",
+      "label": "delivers device command",
+      "protocol": "NATS",
       "recovery": false,
-      "source": "user",
-      "target": "browser"
+      "source": "nats-jetstream",
+      "target": "agent-command-executor"
     },
     {
       "evidence": false,
-      "id": "browser-pwa",
-      "kind": "control",
-      "label": "loads and hosts",
-      "protocol": "Browser runtime",
+      "id": "agent-signals-flow",
+      "kind": "health",
+      "label": "publishes",
+      "protocol": "NATS",
       "recovery": false,
-      "source": "browser",
-      "target": "pwa"
+      "source": "node-agent",
+      "target": "agent-signals"
     },
     {
       "evidence": false,
-      "id": "pwa-state",
-      "kind": "data",
-      "label": "selects and renders",
-      "protocol": "React",
+      "id": "agent-watchdog",
+      "kind": "health",
+      "label": "connection state",
+      "protocol": "NATS",
       "recovery": false,
-      "source": "pwa",
-      "target": "frontend-state"
-    },
-    {
-      "evidence": false,
-      "id": "pwa-caddy",
-      "kind": "control",
-      "label": "same-origin request",
-      "protocol": "HTTPS",
-      "recovery": false,
-      "source": "pwa",
-      "target": "caddy"
-    },
-    {
-      "evidence": false,
-      "id": "caddy-api",
-      "kind": "control",
-      "label": "routes /api/lite/*",
-      "protocol": "HTTP",
-      "recovery": false,
-      "source": "caddy",
-      "target": "lite-api"
-    },
-    {
-      "evidence": false,
-      "id": "api-guards-flow",
-      "kind": "control",
-      "label": "validates identity and intent",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "lite-api",
-      "target": "api-guards"
-    },
-    {
-      "evidence": false,
-      "id": "api-reads",
-      "kind": "data",
-      "label": "serves safe reads",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "lite-api",
-      "target": "api-read-surfaces"
+      "source": "node-agent",
+      "target": "agent-recovery"
     },
     {
       "evidence": false,
@@ -3875,6 +3959,16 @@
     },
     {
       "evidence": false,
+      "id": "api-guards-flow",
+      "kind": "control",
+      "label": "validates identity and intent",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "lite-api",
+      "target": "api-guards"
+    },
+    {
+      "evidence": false,
       "id": "api-nats",
       "kind": "control",
       "label": "publishes validated command",
@@ -3884,124 +3978,154 @@
       "target": "nats-jetstream"
     },
     {
-      "evidence": false,
-      "id": "nats-worker",
+      "evidence": true,
+      "id": "api-policy-evaluation",
       "kind": "control",
-      "label": "durable delivery",
-      "protocol": "JetStream",
+      "label": "evaluates registered protected action",
+      "protocol": "Loopback HTTP JSON",
       "recovery": false,
-      "source": "nats-jetstream",
-      "target": "worker"
+      "source": "api-domain-surfaces",
+      "target": "opa-policy-engine"
     },
     {
       "evidence": false,
-      "id": "worker-command",
-      "kind": "control",
-      "label": "claims and updates",
-      "protocol": "SQLite/NATS",
-      "recovery": false,
-      "source": "worker",
-      "target": "command-lifecycle"
-    },
-    {
-      "evidence": false,
-      "id": "worker-workflow",
-      "kind": "control",
-      "label": "executes multi-step work",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "worker",
-      "target": "workflow-execution"
-    },
-    {
-      "evidence": false,
-      "id": "worker-release",
-      "kind": "control",
-      "label": "admits release work",
-      "protocol": "IPC",
-      "recovery": false,
-      "source": "worker",
-      "target": "release-subprocess"
-    },
-    {
-      "evidence": false,
-      "id": "worker-app",
-      "kind": "control",
-      "label": "runs app work",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "worker",
-      "target": "app-lifecycle-worker"
-    },
-    {
-      "evidence": false,
-      "id": "worker-security",
-      "kind": "control",
-      "label": "runs security work",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "worker",
-      "target": "security-coordinator"
-    },
-    {
-      "evidence": false,
-      "id": "worker-backup",
-      "kind": "control",
-      "label": "runs backup work",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "worker",
-      "target": "backup-engine"
-    },
-    {
-      "evidence": false,
-      "id": "workflow-projection",
+      "id": "api-reads",
       "kind": "data",
-      "label": "emits compact projection events",
-      "protocol": "IPC",
+      "label": "serves safe reads",
+      "protocol": "Python",
       "recovery": false,
-      "source": "workflow-execution",
-      "target": "projection-subprocesses"
-    },
-    {
-      "evidence": false,
-      "id": "queues-projections",
-      "kind": "control",
-      "label": "bounds and schedules",
-      "protocol": "IPC",
-      "recovery": false,
-      "source": "bounded-reconciliation",
-      "target": "projection-subprocesses"
-    },
-    {
-      "evidence": false,
-      "id": "projections-state",
-      "kind": "data",
-      "label": "commits generation",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "projection-subprocesses",
-      "target": "prepared-state"
-    },
-    {
-      "evidence": false,
-      "id": "state-reads",
-      "kind": "data",
-      "label": "prepared read",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "prepared-state",
+      "source": "lite-api",
       "target": "api-read-surfaces"
     },
     {
       "evidence": false,
-      "id": "reads-pwa",
+      "id": "api-sqlite",
       "kind": "data",
-      "label": "safe summary",
+      "label": "transactional read/write",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "lite-api",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "app-health-photo",
+      "kind": "health",
+      "label": "base-path probe",
+      "protocol": "HTTP",
+      "recovery": false,
+      "source": "media-app-health",
+      "target": "photoprism"
+    },
+    {
+      "evidence": false,
+      "id": "app-recovery-state",
+      "kind": "data",
+      "label": "stores manifests/operations",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "app-recovery-update",
+      "target": "recovery-state"
+    },
+    {
+      "evidence": false,
+      "id": "app-recovery-worker",
+      "kind": "control",
+      "label": "runs backup/update paths",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "app-lifecycle-worker",
+      "target": "app-recovery-update"
+    },
+    {
+      "evidence": false,
+      "id": "app-worker-health",
+      "kind": "control",
+      "label": "refreshes canonical readiness",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "app-lifecycle-worker",
+      "target": "media-app-health"
+    },
+    {
+      "evidence": false,
+      "id": "assets-staging",
+      "kind": "control",
+      "label": "download and verify",
       "protocol": "HTTPS",
       "recovery": false,
-      "source": "api-read-surfaces",
-      "target": "frontend-state"
+      "source": "release-artifacts",
+      "target": "release-staging"
+    },
+    {
+      "evidence": false,
+      "id": "backup-preview",
+      "kind": "control",
+      "label": "verified backup input",
+      "protocol": "Manifest",
+      "recovery": false,
+      "source": "backup-engine",
+      "target": "restore-preview"
+    },
+    {
+      "evidence": false,
+      "id": "browser-pwa",
+      "kind": "control",
+      "label": "loads and hosts",
+      "protocol": "Browser runtime",
+      "recovery": false,
+      "source": "browser",
+      "target": "pwa"
+    },
+    {
+      "evidence": false,
+      "id": "caddy-api",
+      "kind": "control",
+      "label": "routes /api/lite/*",
+      "protocol": "HTTP",
+      "recovery": false,
+      "source": "caddy",
+      "target": "lite-api"
+    },
+    {
+      "evidence": false,
+      "id": "catalog-photoprism",
+      "kind": "control",
+      "label": "same-origin /apps path",
+      "protocol": "HTTP",
+      "recovery": false,
+      "source": "caddy",
+      "target": "photoprism"
+    },
+    {
+      "evidence": false,
+      "id": "catalog-pwa",
+      "kind": "data",
+      "label": "app cards and actions",
+      "protocol": "HTTPS",
+      "recovery": false,
+      "source": "app-catalog",
+      "target": "pwa"
+    },
+    {
+      "evidence": false,
+      "id": "catalog-state",
+      "kind": "data",
+      "label": "catalog/action projection",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "app-workflow-state",
+      "target": "app-catalog"
+    },
+    {
+      "evidence": false,
+      "id": "db-recovery-sqlite",
+      "kind": "recovery",
+      "label": "verified backup/restore",
+      "protocol": "SQLite/filesystem",
+      "recovery": true,
+      "source": "retirement-database-recovery",
+      "target": "sqlite"
     },
     {
       "evidence": true,
@@ -4095,13 +4219,433 @@
     },
     {
       "evidence": false,
-      "id": "api-sqlite",
+      "id": "executor-agent",
+      "kind": "control",
+      "label": "executes within",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "agent-command-executor",
+      "target": "node-agent"
+    },
+    {
+      "evidence": false,
+      "id": "guards-agent",
+      "kind": "control",
+      "label": "backend-generated bootstrap",
+      "protocol": "Shell artifact",
+      "recovery": false,
+      "source": "api-guards",
+      "target": "node-agent"
+    },
+    {
+      "evidence": false,
+      "id": "health-release-state",
       "kind": "data",
-      "label": "transactional read/write",
+      "label": "mark current/failed",
       "protocol": "SQLite",
       "recovery": false,
-      "source": "lite-api",
+      "source": "post-switch-health",
+      "target": "release-state"
+    },
+    {
+      "evidence": false,
+      "id": "health-rollback",
+      "kind": "recovery",
+      "label": "failure trigger",
+      "protocol": "IPC",
+      "recovery": true,
+      "source": "post-switch-health",
+      "target": "last-known-good"
+    },
+    {
+      "evidence": false,
+      "id": "invite-device",
+      "kind": "data",
+      "label": "accepted enrollment",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "invite-state",
+      "target": "device-state"
+    },
+    {
+      "evidence": false,
+      "id": "lan-caddy",
+      "kind": "control",
+      "label": "local HTTPS",
+      "protocol": "HTTPS",
+      "recovery": false,
+      "source": "lan",
+      "target": "caddy"
+    },
+    {
+      "evidence": false,
+      "id": "nats-device-state",
+      "kind": "data",
+      "label": "fleet events projected",
+      "protocol": "NATS/SQLite",
+      "recovery": false,
+      "source": "nats-jetstream",
+      "target": "device-state"
+    },
+    {
+      "evidence": false,
+      "id": "nats-listeners-service",
+      "kind": "control",
+      "label": "listener endpoints",
+      "protocol": "NATS",
+      "recovery": false,
+      "source": "nats-listeners",
+      "target": "nats-jetstream"
+    },
+    {
+      "evidence": false,
+      "id": "nats-worker",
+      "kind": "control",
+      "label": "durable delivery",
+      "protocol": "JetStream",
+      "recovery": false,
+      "source": "nats-jetstream",
+      "target": "worker"
+    },
+    {
+      "evidence": false,
+      "id": "pm2-agent",
+      "kind": "recovery",
+      "label": "starts/supervises",
+      "protocol": "Local process",
+      "recovery": true,
+      "source": "pm2",
+      "target": "node-agent"
+    },
+    {
+      "evidence": false,
+      "id": "pm2-proot",
+      "kind": "recovery",
+      "label": "starts app process",
+      "protocol": "Local process",
+      "recovery": true,
+      "source": "pm2",
+      "target": "proot-ubuntu"
+    },
+    {
+      "evidence": false,
+      "id": "pm2-supervisor",
+      "kind": "recovery",
+      "label": "starts/supervises",
+      "protocol": "Local process",
+      "recovery": true,
+      "source": "pm2",
+      "target": "agent-supervisor"
+    },
+    {
+      "evidence": true,
+      "id": "policy-api-decision",
+      "kind": "control",
+      "label": "returns allow/deny/constraints/reason code",
+      "protocol": "Loopback HTTP JSON",
+      "recovery": false,
+      "source": "opa-policy-engine",
+      "target": "api-domain-surfaces"
+    },
+    {
+      "evidence": false,
+      "id": "preview-checkpoint",
+      "kind": "recovery",
+      "label": "creates checkpoint before apply",
+      "protocol": "NATS",
+      "recovery": true,
+      "source": "restore-preview",
+      "target": "checkpoints-retention"
+    },
+    {
+      "evidence": false,
+      "id": "profiles-scanner",
+      "kind": "control",
+      "label": "defines targets/exclusions",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "security-profiles",
+      "target": "scanner-adapters"
+    },
+    {
+      "evidence": false,
+      "id": "projections-state",
+      "kind": "data",
+      "label": "commits generation",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "projection-subprocesses",
+      "target": "prepared-state"
+    },
+    {
+      "evidence": false,
+      "id": "promotion-caddy",
+      "kind": "control",
+      "label": "serves active PWA",
+      "protocol": "Filesystem/HTTP",
+      "recovery": false,
+      "source": "atomic-promotion",
+      "target": "caddy"
+    },
+    {
+      "evidence": false,
+      "id": "promotion-health",
+      "kind": "health",
+      "label": "validate switched release",
+      "protocol": "HTTP",
+      "recovery": false,
+      "source": "atomic-promotion",
+      "target": "post-switch-health"
+    },
+    {
+      "evidence": false,
+      "id": "proot-photo",
+      "kind": "control",
+      "label": "hosts process",
+      "protocol": "Local process",
+      "recovery": false,
+      "source": "proot-ubuntu",
+      "target": "photoprism"
+    },
+    {
+      "evidence": false,
+      "id": "pwa-caddy",
+      "kind": "control",
+      "label": "same-origin request",
+      "protocol": "HTTPS",
+      "recovery": false,
+      "source": "pwa",
+      "target": "caddy"
+    },
+    {
+      "evidence": false,
+      "id": "pwa-state",
+      "kind": "data",
+      "label": "selects and renders",
+      "protocol": "React",
+      "recovery": false,
+      "source": "pwa",
+      "target": "frontend-state"
+    },
+    {
+      "evidence": false,
+      "id": "queues-projections",
+      "kind": "control",
+      "label": "bounds and schedules",
+      "protocol": "IPC",
+      "recovery": false,
+      "source": "bounded-reconciliation",
+      "target": "projection-subprocesses"
+    },
+    {
+      "evidence": false,
+      "id": "reads-pwa",
+      "kind": "data",
+      "label": "safe summary",
+      "protocol": "HTTPS",
+      "recovery": false,
+      "source": "api-read-surfaces",
+      "target": "frontend-state"
+    },
+    {
+      "evidence": false,
+      "id": "recovery-agent",
+      "kind": "recovery",
+      "label": "reconnect/restart",
+      "protocol": "NATS/process",
+      "recovery": true,
+      "source": "agent-recovery",
+      "target": "node-agent"
+    },
+    {
+      "evidence": false,
+      "id": "release-assets",
+      "kind": "data",
+      "label": "publishes assets",
+      "protocol": "HTTPS",
+      "recovery": false,
+      "source": "github-release",
+      "target": "release-artifacts"
+    },
+    {
+      "evidence": false,
+      "id": "remote-api",
+      "kind": "data",
+      "label": "readiness summary",
+      "protocol": "HTTP",
+      "recovery": false,
+      "source": "remote-readiness",
+      "target": "api-read-surfaces"
+    },
+    {
+      "evidence": false,
+      "id": "remote-inputs",
+      "kind": "health",
+      "label": "daemon status",
+      "protocol": "Local status",
+      "recovery": false,
+      "source": "tailscaled",
+      "target": "remote-readiness"
+    },
+    {
+      "evidence": false,
+      "id": "remote-nats",
+      "kind": "health",
+      "label": "listener reachability",
+      "protocol": "TCP",
+      "recovery": false,
+      "source": "nats-listeners",
+      "target": "remote-readiness"
+    },
+    {
+      "evidence": false,
+      "id": "repo-release",
+      "kind": "control",
+      "label": "annotated tag workflow",
+      "protocol": "GitHub Actions",
+      "recovery": false,
+      "source": "github-repository",
+      "target": "github-release"
+    },
+    {
+      "evidence": false,
+      "id": "retention-recovery",
+      "kind": "recovery",
+      "label": "provides recovery point",
+      "protocol": "SQLite",
+      "recovery": true,
+      "source": "checkpoints-retention",
+      "target": "retirement-database-recovery"
+    },
+    {
+      "evidence": false,
+      "id": "rollback-promotion",
+      "kind": "recovery",
+      "label": "restore prior PWA",
+      "protocol": "Filesystem",
+      "recovery": true,
+      "source": "last-known-good",
+      "target": "atomic-promotion"
+    },
+    {
+      "evidence": false,
+      "id": "scanner-state",
+      "kind": "data",
+      "label": "writes normalized results",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "scanner-adapters",
+      "target": "security-state"
+    },
+    {
+      "evidence": false,
+      "id": "security-profiles-flow",
+      "kind": "control",
+      "label": "selects Quick/Full/App",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "security-coordinator",
+      "target": "security-profiles"
+    },
+    {
+      "evidence": false,
+      "id": "security-scanner",
+      "kind": "control",
+      "label": "runs bounded plan",
+      "protocol": "Subprocess",
+      "recovery": false,
+      "source": "security-coordinator",
+      "target": "scanner-adapters"
+    },
+    {
+      "evidence": false,
+      "id": "signals-nats",
+      "kind": "health",
+      "label": "heartbeat/telemetry/health",
+      "protocol": "NATS",
+      "recovery": false,
+      "source": "agent-signals",
+      "target": "nats-jetstream"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-0",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "device-state",
       "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-1",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "invite-state",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-2",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "app-workflow-state",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-3",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "security-state",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-4",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "recovery-state",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-5",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "release-state",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "sqlite-family-6",
+      "kind": "data",
+      "label": "stored in",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "prepared-state",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
+      "id": "staging-subprocess",
+      "kind": "data",
+      "label": "verified stage",
+      "protocol": "IPC/filesystem",
+      "recovery": false,
+      "source": "release-staging",
+      "target": "release-subprocess"
     },
     {
       "evidence": false,
@@ -4185,483 +4729,13 @@
     },
     {
       "evidence": false,
-      "id": "sqlite-family-0",
+      "id": "state-reads",
       "kind": "data",
-      "label": "stored in",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "device-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "sqlite-family-1",
-      "kind": "data",
-      "label": "stored in",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "invite-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "sqlite-family-2",
-      "kind": "data",
-      "label": "stored in",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "app-workflow-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "sqlite-family-3",
-      "kind": "data",
-      "label": "stored in",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "security-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "sqlite-family-4",
-      "kind": "data",
-      "label": "stored in",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "recovery-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "sqlite-family-5",
-      "kind": "data",
-      "label": "stored in",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "release-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "sqlite-family-6",
-      "kind": "data",
-      "label": "stored in",
+      "label": "prepared read",
       "protocol": "SQLite",
       "recovery": false,
       "source": "prepared-state",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "pm2-agent",
-      "kind": "recovery",
-      "label": "starts/supervises",
-      "protocol": "Local process",
-      "recovery": true,
-      "source": "pm2",
-      "target": "node-agent"
-    },
-    {
-      "evidence": false,
-      "id": "pm2-supervisor",
-      "kind": "recovery",
-      "label": "starts/supervises",
-      "protocol": "Local process",
-      "recovery": true,
-      "source": "pm2",
-      "target": "agent-supervisor"
-    },
-    {
-      "evidence": false,
-      "id": "agent-signals-flow",
-      "kind": "health",
-      "label": "publishes",
-      "protocol": "NATS",
-      "recovery": false,
-      "source": "node-agent",
-      "target": "agent-signals"
-    },
-    {
-      "evidence": false,
-      "id": "agent-command-flow",
-      "kind": "control",
-      "label": "delivers device command",
-      "protocol": "NATS",
-      "recovery": false,
-      "source": "nats-jetstream",
-      "target": "agent-command-executor"
-    },
-    {
-      "evidence": false,
-      "id": "executor-agent",
-      "kind": "control",
-      "label": "executes within",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "agent-command-executor",
-      "target": "node-agent"
-    },
-    {
-      "evidence": false,
-      "id": "agent-watchdog",
-      "kind": "health",
-      "label": "connection state",
-      "protocol": "NATS",
-      "recovery": false,
-      "source": "node-agent",
-      "target": "agent-recovery"
-    },
-    {
-      "evidence": false,
-      "id": "supervisor-recovery-flow",
-      "kind": "recovery",
-      "label": "stopped-agent recovery",
-      "protocol": "Local process",
-      "recovery": true,
-      "source": "agent-supervisor",
-      "target": "agent-recovery"
-    },
-    {
-      "evidence": false,
-      "id": "recovery-agent",
-      "kind": "recovery",
-      "label": "reconnect/restart",
-      "protocol": "NATS/process",
-      "recovery": true,
-      "source": "agent-recovery",
-      "target": "node-agent"
-    },
-    {
-      "evidence": false,
-      "id": "signals-nats",
-      "kind": "health",
-      "label": "heartbeat/telemetry/health",
-      "protocol": "NATS",
-      "recovery": false,
-      "source": "agent-signals",
-      "target": "nats-jetstream"
-    },
-    {
-      "evidence": false,
-      "id": "nats-device-state",
-      "kind": "data",
-      "label": "fleet events projected",
-      "protocol": "NATS/SQLite",
-      "recovery": false,
-      "source": "nats-jetstream",
-      "target": "device-state"
-    },
-    {
-      "evidence": false,
-      "id": "guards-agent",
-      "kind": "control",
-      "label": "backend-generated bootstrap",
-      "protocol": "Shell artifact",
-      "recovery": false,
-      "source": "api-guards",
-      "target": "node-agent"
-    },
-    {
-      "evidence": false,
-      "id": "invite-device",
-      "kind": "data",
-      "label": "accepted enrollment",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "invite-state",
-      "target": "device-state"
-    },
-    {
-      "evidence": false,
-      "id": "lan-caddy",
-      "kind": "control",
-      "label": "local HTTPS",
-      "protocol": "HTTPS",
-      "recovery": false,
-      "source": "lan",
-      "target": "caddy"
-    },
-    {
-      "evidence": false,
-      "id": "tailscale-caddy",
-      "kind": "control",
-      "label": "Tailnet HTTPS",
-      "protocol": "HTTPS",
-      "recovery": false,
-      "source": "tailscale",
-      "target": "caddy"
-    },
-    {
-      "evidence": false,
-      "id": "tailscaled-tailscale",
-      "kind": "health",
-      "label": "provides interface",
-      "protocol": "Tailscale",
-      "recovery": false,
-      "source": "tailscaled",
-      "target": "tailscale"
-    },
-    {
-      "evidence": false,
-      "id": "tailscale-listeners",
-      "kind": "control",
-      "label": "Tailnet reachability",
-      "protocol": "TCP",
-      "recovery": false,
-      "source": "tailscale",
-      "target": "nats-listeners"
-    },
-    {
-      "evidence": false,
-      "id": "nats-listeners-service",
-      "kind": "control",
-      "label": "listener endpoints",
-      "protocol": "NATS",
-      "recovery": false,
-      "source": "nats-listeners",
-      "target": "nats-jetstream"
-    },
-    {
-      "evidence": false,
-      "id": "remote-inputs",
-      "kind": "health",
-      "label": "daemon status",
-      "protocol": "Local status",
-      "recovery": false,
-      "source": "tailscaled",
-      "target": "remote-readiness"
-    },
-    {
-      "evidence": false,
-      "id": "remote-nats",
-      "kind": "health",
-      "label": "listener reachability",
-      "protocol": "TCP",
-      "recovery": false,
-      "source": "nats-listeners",
-      "target": "remote-readiness"
-    },
-    {
-      "evidence": false,
-      "id": "remote-api",
-      "kind": "data",
-      "label": "readiness summary",
-      "protocol": "HTTP",
-      "recovery": false,
-      "source": "remote-readiness",
       "target": "api-read-surfaces"
-    },
-    {
-      "evidence": false,
-      "id": "catalog-state",
-      "kind": "data",
-      "label": "catalog/action projection",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "app-workflow-state",
-      "target": "app-catalog"
-    },
-    {
-      "evidence": false,
-      "id": "catalog-pwa",
-      "kind": "data",
-      "label": "app cards and actions",
-      "protocol": "HTTPS",
-      "recovery": false,
-      "source": "app-catalog",
-      "target": "pwa"
-    },
-    {
-      "evidence": false,
-      "id": "catalog-photoprism",
-      "kind": "control",
-      "label": "same-origin /apps path",
-      "protocol": "HTTP",
-      "recovery": false,
-      "source": "caddy",
-      "target": "photoprism"
-    },
-    {
-      "evidence": false,
-      "id": "proot-photo",
-      "kind": "control",
-      "label": "hosts process",
-      "protocol": "Local process",
-      "recovery": false,
-      "source": "proot-ubuntu",
-      "target": "photoprism"
-    },
-    {
-      "evidence": false,
-      "id": "pm2-proot",
-      "kind": "recovery",
-      "label": "starts app process",
-      "protocol": "Local process",
-      "recovery": true,
-      "source": "pm2",
-      "target": "proot-ubuntu"
-    },
-    {
-      "evidence": false,
-      "id": "app-health-photo",
-      "kind": "health",
-      "label": "base-path probe",
-      "protocol": "HTTP",
-      "recovery": false,
-      "source": "media-app-health",
-      "target": "photoprism"
-    },
-    {
-      "evidence": false,
-      "id": "app-worker-health",
-      "kind": "control",
-      "label": "refreshes canonical readiness",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "app-lifecycle-worker",
-      "target": "media-app-health"
-    },
-    {
-      "evidence": false,
-      "id": "app-recovery-worker",
-      "kind": "control",
-      "label": "runs backup/update paths",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "app-lifecycle-worker",
-      "target": "app-recovery-update"
-    },
-    {
-      "evidence": false,
-      "id": "app-recovery-state",
-      "kind": "data",
-      "label": "stores manifests/operations",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "app-recovery-update",
-      "target": "recovery-state"
-    },
-    {
-      "evidence": false,
-      "id": "security-scanner",
-      "kind": "control",
-      "label": "runs bounded plan",
-      "protocol": "Subprocess",
-      "recovery": false,
-      "source": "security-coordinator",
-      "target": "scanner-adapters"
-    },
-    {
-      "evidence": false,
-      "id": "profiles-scanner",
-      "kind": "control",
-      "label": "defines targets/exclusions",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "security-profiles",
-      "target": "scanner-adapters"
-    },
-    {
-      "evidence": false,
-      "id": "security-profiles-flow",
-      "kind": "control",
-      "label": "selects Quick/Full/App",
-      "protocol": "Python",
-      "recovery": false,
-      "source": "security-coordinator",
-      "target": "security-profiles"
-    },
-    {
-      "evidence": false,
-      "id": "scanner-state",
-      "kind": "data",
-      "label": "writes normalized results",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "scanner-adapters",
-      "target": "security-state"
-    },
-    {
-      "evidence": false,
-      "id": "backup-preview",
-      "kind": "control",
-      "label": "verified backup input",
-      "protocol": "Manifest",
-      "recovery": false,
-      "source": "backup-engine",
-      "target": "restore-preview"
-    },
-    {
-      "evidence": false,
-      "id": "preview-checkpoint",
-      "kind": "recovery",
-      "label": "creates checkpoint before apply",
-      "protocol": "NATS",
-      "recovery": true,
-      "source": "restore-preview",
-      "target": "checkpoints-retention"
-    },
-    {
-      "evidence": false,
-      "id": "retention-recovery",
-      "kind": "recovery",
-      "label": "provides recovery point",
-      "protocol": "SQLite",
-      "recovery": true,
-      "source": "checkpoints-retention",
-      "target": "retirement-database-recovery"
-    },
-    {
-      "evidence": false,
-      "id": "db-recovery-sqlite",
-      "kind": "recovery",
-      "label": "verified backup/restore",
-      "protocol": "SQLite/filesystem",
-      "recovery": true,
-      "source": "retirement-database-recovery",
-      "target": "sqlite"
-    },
-    {
-      "evidence": false,
-      "id": "repo-release",
-      "kind": "control",
-      "label": "annotated tag workflow",
-      "protocol": "GitHub Actions",
-      "recovery": false,
-      "source": "github-repository",
-      "target": "github-release"
-    },
-    {
-      "evidence": false,
-      "id": "release-assets",
-      "kind": "data",
-      "label": "publishes assets",
-      "protocol": "HTTPS",
-      "recovery": false,
-      "source": "github-release",
-      "target": "release-artifacts"
-    },
-    {
-      "evidence": false,
-      "id": "assets-staging",
-      "kind": "control",
-      "label": "download and verify",
-      "protocol": "HTTPS",
-      "recovery": false,
-      "source": "release-artifacts",
-      "target": "release-staging"
-    },
-    {
-      "evidence": false,
-      "id": "staging-subprocess",
-      "kind": "data",
-      "label": "verified stage",
-      "protocol": "IPC/filesystem",
-      "recovery": false,
-      "source": "release-staging",
-      "target": "release-subprocess"
     },
     {
       "evidence": false,
@@ -4675,53 +4749,123 @@
     },
     {
       "evidence": false,
-      "id": "promotion-health",
-      "kind": "health",
-      "label": "validate switched release",
-      "protocol": "HTTP",
-      "recovery": false,
-      "source": "atomic-promotion",
-      "target": "post-switch-health"
-    },
-    {
-      "evidence": false,
-      "id": "health-release-state",
-      "kind": "data",
-      "label": "mark current/failed",
-      "protocol": "SQLite",
-      "recovery": false,
-      "source": "post-switch-health",
-      "target": "release-state"
-    },
-    {
-      "evidence": false,
-      "id": "health-rollback",
+      "id": "supervisor-recovery-flow",
       "kind": "recovery",
-      "label": "failure trigger",
-      "protocol": "IPC",
+      "label": "stopped-agent recovery",
+      "protocol": "Local process",
       "recovery": true,
-      "source": "post-switch-health",
-      "target": "last-known-good"
+      "source": "agent-supervisor",
+      "target": "agent-recovery"
     },
     {
       "evidence": false,
-      "id": "rollback-promotion",
-      "kind": "recovery",
-      "label": "restore prior PWA",
-      "protocol": "Filesystem",
-      "recovery": true,
-      "source": "last-known-good",
-      "target": "atomic-promotion"
-    },
-    {
-      "evidence": false,
-      "id": "promotion-caddy",
+      "id": "tailscale-caddy",
       "kind": "control",
-      "label": "serves active PWA",
-      "protocol": "Filesystem/HTTP",
+      "label": "Tailnet HTTPS",
+      "protocol": "HTTPS",
       "recovery": false,
-      "source": "atomic-promotion",
+      "source": "tailscale",
       "target": "caddy"
+    },
+    {
+      "evidence": false,
+      "id": "tailscale-listeners",
+      "kind": "control",
+      "label": "Tailnet reachability",
+      "protocol": "TCP",
+      "recovery": false,
+      "source": "tailscale",
+      "target": "nats-listeners"
+    },
+    {
+      "evidence": false,
+      "id": "tailscaled-tailscale",
+      "kind": "health",
+      "label": "provides interface",
+      "protocol": "Tailscale",
+      "recovery": false,
+      "source": "tailscaled",
+      "target": "tailscale"
+    },
+    {
+      "evidence": false,
+      "id": "user-browser",
+      "kind": "control",
+      "label": "uses",
+      "protocol": "HTTPS",
+      "recovery": false,
+      "source": "user",
+      "target": "browser"
+    },
+    {
+      "evidence": false,
+      "id": "worker-app",
+      "kind": "control",
+      "label": "runs app work",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "worker",
+      "target": "app-lifecycle-worker"
+    },
+    {
+      "evidence": false,
+      "id": "worker-backup",
+      "kind": "control",
+      "label": "runs backup work",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "worker",
+      "target": "backup-engine"
+    },
+    {
+      "evidence": false,
+      "id": "worker-command",
+      "kind": "control",
+      "label": "claims and updates",
+      "protocol": "SQLite/NATS",
+      "recovery": false,
+      "source": "worker",
+      "target": "command-lifecycle"
+    },
+    {
+      "evidence": false,
+      "id": "worker-release",
+      "kind": "control",
+      "label": "admits release work",
+      "protocol": "IPC",
+      "recovery": false,
+      "source": "worker",
+      "target": "release-subprocess"
+    },
+    {
+      "evidence": false,
+      "id": "worker-security",
+      "kind": "control",
+      "label": "runs security work",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "worker",
+      "target": "security-coordinator"
+    },
+    {
+      "evidence": false,
+      "id": "worker-workflow",
+      "kind": "control",
+      "label": "executes multi-step work",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "worker",
+      "target": "workflow-execution"
+    },
+    {
+      "evidence": false,
+      "id": "workflow-projection",
+      "kind": "data",
+      "label": "emits compact projection events",
+      "protocol": "IPC",
+      "recovery": false,
+      "source": "workflow-execution",
+      "target": "projection-subprocesses"
     }
   ],
   "description": "Canonical production architecture model generated into diagrams, pages, catalogs, and drift manifests.",

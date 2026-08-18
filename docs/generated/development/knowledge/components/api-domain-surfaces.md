@@ -76,6 +76,7 @@ Exposes domain-specific read and command endpoints while preserving backend-owne
 ## Depends on / uses
 
 - depends_on: `NATS / JetStream`
+- depends_on: `OPA Safety Rules policy engine`
 - protected_by: `Control API boundary`
 - protected_by: `Control API boundary`
 - uses: `GET /api/lite/catalog`
@@ -91,6 +92,8 @@ Exposes domain-specific read and command endpoints while preserving backend-owne
 ## Used by / backlinks
 
 - depends_on: `FastAPI /api/lite/*`
+- depends_on: `OPA Safety Rules policy engine`
+- uses: `Safety Rules authorization decision`
 
 ## Release history
 

@@ -74,6 +74,7 @@
         "App Catalog",
         "FastAPI /api/lite/*",
         "Media readiness and app health probes",
+        "OPA Safety Rules policy engine",
         "Remote-access readiness checks",
         "Security scan coordinator"
       ],
@@ -84,7 +85,9 @@
         "HTTP JSON",
         "HTTP probes",
         "HTTPS JSON",
+        "Loopback HTTP JSON",
         "NATS",
+        "Rego",
         "SQLite"
       ],
       "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
@@ -97,9 +100,11 @@
         "fail closed",
         "fail writes closed",
         "focused invalidation",
+        "preserve last-known-good policy",
         "reconciliation",
         "repair",
         "repair/check",
+        "restart only after validated activation",
         "safe disabled reason",
         "safe startup side effects outside reads",
         "serve last committed generation",
@@ -112,18 +117,25 @@
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "threats_or_failure_modes": [
+        "CSRF rejected",
         "NATS unavailable",
+        "OPA timeout",
+        "OPA unavailable",
         "SQLite unavailable",
         "action blocked",
+        "authentication required",
         "command undeliverable",
         "domain stale",
         "duplicate device",
         "identity mismatch",
+        "invalid decision",
         "media not connected",
+        "policy activation validation failure",
         "remote unavailable",
         "route not ready",
         "route unavailable",
         "scanner timeout",
+        "session expired",
         "stale projection",
         "worker start timeout"
       ],
@@ -468,6 +480,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "8dc54449d672330c51f3c79d7a3e8d74e015f10f6a081134350f862d1fced476"
   }
 }

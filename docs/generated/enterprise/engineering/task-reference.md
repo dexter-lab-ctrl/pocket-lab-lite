@@ -1048,10 +1048,10 @@ Tasks remain source-derived; commands are documented but never executed by this 
 - `task lite:docs:runtime:generate`
 - `task lite:docs:parity:generate`
 - `task lite:docs:health:generate`
+- `task lite:docs:architecture:generate`
 - `task lite:docs:knowledge:generate`
 - `task lite:docs:intelligence:generate`
 - `task lite:docs:enterprise:generate`
-- `task lite:docs:architecture:generate`
 - `task lite:docs:development:generate`
 - `task lite:docs:production:generate`
 - `{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate`

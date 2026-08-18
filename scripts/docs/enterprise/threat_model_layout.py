@@ -55,6 +55,8 @@ CONTROL_OWNERS = {
     "CTRL-BROWSER-NATS": ("browser", "NO NATS", -65, 17),
     "CTRL-BROWSER-SHELL": ("browser", "NO SHELL", 65, 17),
     "CTRL-API-CONTROL": ("lite-api", "API AUTH", 18, 59),
+    "CTRL-HUMAN-SESSION-CSRF": ("lite-api", "SESSION", -120, 83),
+    "CTRL-OPA-FAIL-CLOSED": ("lite-api", "OPA DENY", 140, 83),
     "CTRL-EXECUTION-OWNERS": ("worker", "EXEC OWN", 28, 59),
     "CTRL-EVIDENCE-SANITIZE": ("promoted-evidence", "SANITIZE", -30, 59),
     "CTRL-EXPLICIT-PROMOTION": ("documentation", "PROMOTE", -30, 59),

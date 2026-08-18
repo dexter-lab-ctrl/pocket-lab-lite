@@ -110,17 +110,22 @@
         "FastAPI /api/lite/*",
         "SQLite control-plane store"
       ],
-      "confidence": "partial",
+      "confidence": "source-derived",
       "domain": "identity",
       "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
       "id": "change-password",
       "routes": [
-        "POST /api/lite/identity/rotate"
+        "POST /api/lite/identity/setup",
+        "POST /api/lite/identity/login",
+        "POST /api/lite/identity/password",
+        "POST /api/lite/identity/logout",
+        "POST /api/lite/identity/recovery/regenerate",
+        "POST /api/lite/identity/recover"
       ],
       "source_refs": [
-        "contracts/parity/parity-model.json",
-        "contracts/generated/lite-openapi.json",
-        "src/lite/LiteIdentity.jsx"
+        "src/lite/LiteIdentity.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
       "stages": [
         "User intent",
@@ -132,7 +137,7 @@
         "FastAPI projection",
         "UI result"
       ],
-      "title": "Change Password / identity rotation",
+      "title": "Local owner password and session lifecycle",
       "write_flow": true
     },
     {
@@ -537,6 +542,43 @@
     },
     {
       "components": [
+        "Identity, authentication, and invite guards",
+        "Fleet, Apps, Security, Recovery, and Release APIs",
+        "FastAPI /api/lite/*",
+        "SQLite control-plane store",
+        "OPA Safety Rules policy engine"
+      ],
+      "confidence": "source-derived",
+      "domain": "rules",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "rules-authorization",
+      "routes": [
+        "GET /api/lite/policy",
+        "POST /api/lite/catalog/install",
+        "POST /api/lite/fleet/remove-device"
+      ],
+      "source_refs": [
+        "src/lite/LiteRules.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Identity, authentication, and invite guards",
+        "Fleet, Apps, Security, Recovery, and Release APIs",
+        "SQLite control-plane store",
+        "OPA Safety Rules policy engine",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Safety Rules authorization decision",
+      "write_flow": true
+    },
+    {
+      "components": [
         "Lite node agent",
         "Lite agent supervisor",
         "NATS / JetStream"
@@ -690,5 +732,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "baa11304848dd6b0a84a6f8e9b286892bb50e3c850f62973f14c6ae8a12eee3c"
+  "source_fingerprint": "efca1256ccce50e90ca8ff9f2287ab619c335794b08261da8175a70aac940214"
 }

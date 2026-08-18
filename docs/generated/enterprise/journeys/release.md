@@ -84,6 +84,8 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `CTRL-EVIDENCE-SANITIZE`
 - `CTRL-EXECUTION-OWNERS`
 - `CTRL-EXPLICIT-PROMOTION`
+- `CTRL-HUMAN-SESSION-CSRF`
+- `CTRL-OPA-FAIL-CLOSED`
 - `CTRL-SUPPLY-CHAIN`
 
 ## Tests and validation

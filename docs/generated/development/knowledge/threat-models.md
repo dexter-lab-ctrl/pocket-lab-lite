@@ -42,13 +42,13 @@ User device, browser, PWA, and safe local frontend state.
 
 FastAPI validation, side-effect-free reads, and command admission.
 
-**Assets:** Fleet, Apps, Security, Recovery, and Release APIs, Identity, authentication, and invite guards, Prepared read, health, readiness, diagnostics, and evidence APIs, App Catalog, FastAPI /api/lite/*, Media readiness and app health probes, Remote-access readiness checks, Security scan coordinator
+**Assets:** Fleet, Apps, Security, Recovery, and Release APIs, Identity, authentication, and invite guards, Prepared read, health, readiness, diagnostics, and evidence APIs, App Catalog, FastAPI /api/lite/*, Media readiness and app health probes, OPA Safety Rules policy engine, Remote-access readiness checks, Security scan coordinator
 
-**Entry points:** HTTP JSON, HTTP probes, HTTPS JSON, NATS, SQLite
+**Entry points:** HTTP JSON, HTTP probes, HTTPS JSON, Loopback HTTP JSON, NATS, Rego, SQLite
 
-**Threats/failure modes:** NATS unavailable, SQLite unavailable, action blocked, command undeliverable, domain stale, duplicate device, identity mismatch, media not connected, remote unavailable, route not ready, route unavailable, scanner timeout, stale projection, worker start timeout
+**Threats/failure modes:** CSRF rejected, NATS unavailable, OPA timeout, OPA unavailable, SQLite unavailable, action blocked, authentication required, command undeliverable, domain stale, duplicate device, identity mismatch, invalid decision, media not connected, policy activation validation failure, remote unavailable, route not ready, route unavailable, scanner timeout, session expired, stale projection, worker start timeout
 
-**Mitigations/recovery:** connect media safely, consumer recovery, explicit repair/rejoin, explicit retry, fail closed, fail writes closed, focused invalidation, reconciliation, repair, repair/check, safe disabled reason, safe startup side effects outside reads, serve last committed generation, serve safe last committed reads, terminal recovery, truthful guidance
+**Mitigations/recovery:** connect media safely, consumer recovery, explicit repair/rejoin, explicit retry, fail closed, fail writes closed, focused invalidation, preserve last-known-good policy, reconciliation, repair, repair/check, restart only after validated activation, safe disabled reason, safe startup side effects outside reads, serve last committed generation, serve safe last committed reads, terminal recovery, truthful guidance
 
 ## Durable-state boundary
 

@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 VAULT_VERSION="${VAULT_VERSION:-2.0.0}"; ACT_RUNNER_VERSION="${ACT_RUNNER_VERSION:-0.2.10}"
 PROM_VERSION="${PROM_VERSION:-2.51.0}"; GRAFANA_VERSION="${GRAFANA_VERSION:-13.0.1}"; LOKI_VERSION="${LOKI_VERSION:-3.7.2}"; PROMTAIL_VERSION="${PROMTAIL_VERSION:-3.0.0}"
 TRIVY_VERSION="${TRIVY_VERSION:-0.70.0}"; LYNIS_VERSION="${LYNIS_VERSION:-3.1.6}"; GATUS_VERSION="${GATUS_VERSION:-5.36.0}"
+OPA_VERSION="${OPA_VERSION:-1.19.0}"; OPA_LINUX_ARM64_STATIC_SHA256="${OPA_LINUX_ARM64_STATIC_SHA256:-06680087ed236c8c6aaa021660d83178db829a2ad30bdb3482481fada6791b2a}"
 TASK_VERSION="${TASK_VERSION:-latest}"; GO_GETTER_VERSION="${GO_GETTER_VERSION:-latest}"; ORAS_VERSION="${ORAS_VERSION:-latest}"
 ARCH="${ARCH:-linux_arm64}"; STATE_BIN_DIR="${STATE_BIN_DIR:-$STATE_DIR/bin}"; CHECKSUM_DIR="${CHECKSUM_DIR:-$STATE_DIR/checksums}"
 
@@ -98,12 +99,42 @@ SH
   rm -f "$archive"
 }
 
+install_lite_opa() {
+  ensure_dir_perm "$STATE_BIN_DIR" 755
+  local managed="$STATE_BIN_DIR/opa-v${OPA_VERSION}-linux-arm64-static"
+  local archive="$STATE_DIR/opa-v${OPA_VERSION}-linux-arm64-static"
+  if [[ -x "$managed" ]] && printf '%s  %s\n' "$OPA_LINUX_ARM64_STATIC_SHA256" "$managed" | sha256sum -c - >/dev/null 2>&1; then
+    log INFO "OPA v${OPA_VERSION} already installed and checksum verified"
+  else
+    rm -f "$archive"
+    download_if_missing "https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_arm64_static" "$archive"
+    sha256_verify "$archive" "$OPA_LINUX_ARM64_STATIC_SHA256"
+    local managed_tmp="$STATE_BIN_DIR/.opa-v${OPA_VERSION}-linux-arm64-static.$$.tmp"
+    rm -f "$managed_tmp"
+    install -m 0755 "$archive" "$managed_tmp"
+    sha256_verify "$managed_tmp" "$OPA_LINUX_ARM64_STATIC_SHA256"
+    mv -f "$managed_tmp" "$managed"
+    rm -f "$archive"
+  fi
+  cat > "$PREFIX/bin/opa" <<SH
+#!/usr/bin/env bash
+exec "$managed" "\$@"
+SH
+  chmod 0755 "$PREFIX/bin/opa"
+  local opa_version_output
+  opa_version_output="$(opa version 2>/dev/null)" || die "OPA installed but version check failed"
+  printf '%s\n' "$opa_version_output" | grep -Eq "(^|[[:space:]])Version:[[:space:]]*${OPA_VERSION}([[:space:]]|$)" \
+    || die "OPA version mismatch after install; expected ${OPA_VERSION}"
+}
+
 install_lite_security_tools() {
-  log INFO "Lite profile: installing only Security tools: Lynis and Trivy"
+  log INFO "Lite profile: installing Security tools and the local policy engine"
   install_lite_lynis
   install_lite_trivy
+  install_lite_opa
   lynis show version >/dev/null 2>&1 || die "Lynis installed but version check failed"
   trivy --version >/dev/null 2>&1 || die "Trivy installed but version check failed"
+  opa version >/dev/null 2>&1 || die "OPA installed but version check failed"
 }
 ensure_python_runtime() {
   require_cmd python3
@@ -228,6 +259,7 @@ main() {
   if is_lite_profile; then
     install_lite_security_tools
     mark_done lite_security_tools_ready
+    mark_done lite_opa_ready
     mark_done binaries_ready
     log INFO "Lite Security tools are ready and safe to rerun"
     return 0

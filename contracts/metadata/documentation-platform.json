@@ -795,6 +795,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "authentication_required",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 401,
+      "meaning": "A protected write requires an authenticated human session or configured service credential.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Sign in before making this change."
+    },
+    {
+      "audit_severity": "warning",
       "code": "cold_start_validation",
       "deprecated_aliases": [],
       "domain": "validation",
@@ -807,6 +822,36 @@
       "terminal": false,
       "ui_mapping": [],
       "user_message": "Cold-start validation is in progress."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "command_undeliverable",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The target agent cannot currently receive the command.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The target agent cannot currently receive the command."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "csrf_required",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "meaning": "A human-session write was rejected because its CSRF proof was missing or invalid.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Refresh the page and try again."
     },
     {
       "audit_severity": "warning",
@@ -840,6 +885,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "duplicate_device",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "A matching device or invite already exists.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A matching device or invite already exists."
+    },
+    {
+      "audit_severity": "warning",
       "code": "generation_changed",
       "deprecated_aliases": [],
       "domain": "projections",
@@ -852,6 +912,51 @@
       "terminal": false,
       "ui_mapping": [],
       "user_message": "The source generation changed during work."
+    },
+    {
+      "audit_severity": "info",
+      "code": "generic_policy_toggle_retired",
+      "deprecated_aliases": [],
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 410,
+      "meaning": "The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "This legacy Rules action is no longer available."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "human_session_required",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "meaning": "The requested credential or session lifecycle action requires the signed-in local owner session.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A signed-in owner session is required."
+    },
+    {
+      "audit_severity": "high",
+      "code": "identity_mismatch",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "The local identity does not match the requested enrollment.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The local identity does not match the requested enrollment."
     },
     {
       "audit_severity": "warning",
@@ -899,6 +1004,21 @@
       "user_message": "The requested projection domain is invalid."
     },
     {
+      "audit_severity": "warning",
+      "code": "invite_expired",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The device invite is no longer valid.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The device invite is no longer valid."
+    },
+    {
       "audit_severity": "high",
       "code": "invite_identity_mismatch",
       "deprecated_aliases": [],
@@ -942,6 +1062,21 @@
       "terminal": false,
       "ui_mapping": [],
       "user_message": "Legacy state contains multiple active runs."
+    },
+    {
+      "audit_severity": "info",
+      "code": "legacy_secret_rotation_retired",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 410,
+      "meaning": "The legacy generic secret-rotation endpoint is retired and is not a human password operation.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "Use the Identity password controls instead."
     },
     {
       "audit_severity": "warning",
@@ -1004,6 +1139,36 @@
       "user_message": "The bounded payload limit was exceeded."
     },
     {
+      "audit_severity": "error",
+      "code": "policy_unavailable",
+      "deprecated_aliases": [],
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Safety Rules are not ready, so this protected action was not started."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "projection_too_old",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The last committed projection is too old for a safe write.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The last committed projection is too old for a safe write."
+    },
+    {
       "audit_severity": "warning",
       "code": "projection_unavailable",
       "deprecated_aliases": [],
@@ -1017,6 +1182,21 @@
       "terminal": false,
       "ui_mapping": [],
       "user_message": "The prepared projection is unavailable."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "protected_server_host",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The protected server host cannot use this destructive action.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The protected server host cannot use this destructive action."
     },
     {
       "audit_severity": "warning",
@@ -1035,6 +1215,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "read_degraded",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "A safe last-known read is shown while refresh is unavailable.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A safe last-known read is shown while refresh is unavailable."
+    },
+    {
+      "audit_severity": "warning",
       "code": "release_projection_unavailable",
       "deprecated_aliases": [],
       "domain": "release",
@@ -1047,6 +1242,51 @@
       "terminal": false,
       "ui_mapping": [],
       "user_message": "The release prepared projection is unavailable."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "remote_access_not_ready",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Private remote access is not ready.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Private remote access is not ready."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "service_unavailable",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "A required backend service is unavailable.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A required backend service is unavailable."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "session_not_found",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 404,
+      "meaning": "The requested human session is absent, expired, revoked, or no longer active.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "That session is no longer active."
     },
     {
       "audit_severity": "warning",
@@ -1109,6 +1349,21 @@
       "user_message": "The requested target is outside the approved scope."
     },
     {
+      "audit_severity": "info",
+      "code": "test_bypass_explicit",
+      "deprecated_aliases": [],
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "Test-only policy bypass."
+    },
+    {
       "audit_severity": "warning",
       "code": "unregistered_domain",
       "deprecated_aliases": [],
@@ -1152,141 +1407,6 @@
       "terminal": true,
       "ui_mapping": [],
       "user_message": "The worker did not start the accepted work within the recovery window."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "projection_too_old",
-      "deprecated_aliases": [],
-      "domain": "projections",
-      "event_mapping": [],
-      "http_status": 200,
-      "meaning": "The last committed projection is too old for a safe write.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "The last committed projection is too old for a safe write."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "read_degraded",
-      "deprecated_aliases": [],
-      "domain": "system",
-      "event_mapping": [],
-      "http_status": 200,
-      "meaning": "A safe last-known read is shown while refresh is unavailable.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "A safe last-known read is shown while refresh is unavailable."
-    },
-    {
-      "audit_severity": "high",
-      "code": "identity_mismatch",
-      "deprecated_aliases": [],
-      "domain": "devices",
-      "event_mapping": [],
-      "http_status": 409,
-      "meaning": "The local identity does not match the requested enrollment.",
-      "projection_mapping": [],
-      "retryable": false,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": true,
-      "ui_mapping": [],
-      "user_message": "The local identity does not match the requested enrollment."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "remote_access_not_ready",
-      "deprecated_aliases": [],
-      "domain": "devices",
-      "event_mapping": [],
-      "http_status": 200,
-      "meaning": "Private remote access is not ready.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "Private remote access is not ready."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "service_unavailable",
-      "deprecated_aliases": [],
-      "domain": "system",
-      "event_mapping": [],
-      "http_status": 503,
-      "meaning": "A required backend service is unavailable.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "A required backend service is unavailable."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "command_undeliverable",
-      "deprecated_aliases": [],
-      "domain": "devices",
-      "event_mapping": [],
-      "http_status": 200,
-      "meaning": "The target agent cannot currently receive the command.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "The target agent cannot currently receive the command."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "invite_expired",
-      "deprecated_aliases": [],
-      "domain": "devices",
-      "event_mapping": [],
-      "http_status": 200,
-      "meaning": "The device invite is no longer valid.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": true,
-      "ui_mapping": [],
-      "user_message": "The device invite is no longer valid."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "duplicate_device",
-      "deprecated_aliases": [],
-      "domain": "devices",
-      "event_mapping": [],
-      "http_status": 409,
-      "meaning": "A matching device or invite already exists.",
-      "projection_mapping": [],
-      "retryable": true,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "A matching device or invite already exists."
-    },
-    {
-      "audit_severity": "warning",
-      "code": "protected_server_host",
-      "deprecated_aliases": [],
-      "domain": "devices",
-      "event_mapping": [],
-      "http_status": 200,
-      "meaning": "The protected server host cannot use this destructive action.",
-      "projection_mapping": [],
-      "retryable": false,
-      "source": "structured reason/failure fields in Lite backend or contracts metadata",
-      "terminal": false,
-      "ui_mapping": [],
-      "user_message": "The protected server host cannot use this destructive action."
     }
   ],
   "redaction": {
@@ -1519,33 +1639,6 @@
       "startup": "scripts/start-dashboard.sh"
     },
     {
-      "environment_source": "generated runtime environment",
-      "health_evidence": [
-        "durable consumer health"
-      ],
-      "heartbeat_evidence": [
-        "worker heartbeat"
-      ],
-      "log_policy": "structured sanitized lifecycle only",
-      "memory_limit": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
-      "nats_dependency": "required",
-      "owner": "worker execution plane",
-      "pattern": "pocket-worker",
-      "platform": [
-        "Android/Termux",
-        "Ubuntu/WSL2"
-      ],
-      "purpose": "Consume durable commands and own backend execution",
-      "recovery": "consumer re-enrollment before process restart",
-      "related_api": [],
-      "related_events": [
-        "pocketlab.commands.*",
-        "pocketlab.events.*"
-      ],
-      "restart_policy": "PM2 plus durable-consumer watchdog",
-      "startup": "scripts/start-dashboard.sh"
-    },
-    {
       "environment_source": "generated NATS config",
       "health_evidence": [
         "NATS monitor and JetStream status"
@@ -1595,6 +1688,60 @@
         "device command result"
       ],
       "restart_policy": "PM2 and core supervisor",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "repository policy plus generated runtime environment",
+      "health_evidence": [
+        "loopback OPA /health",
+        "GET /api/lite/policy"
+      ],
+      "heartbeat_evidence": [],
+      "log_policy": "bounded PM2 logs; no policy input, credentials, or secrets",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "none",
+      "owner": "Rules policy service",
+      "pattern": "pocket-opa",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Evaluate registered protected actions on loopback before FastAPI dispatch",
+      "recovery": "fail closed, preserve last-known-good policy, validate before restart",
+      "related_api": [
+        "GET /api/lite/policy",
+        "POST /api/lite/catalog/install",
+        "POST /api/lite/fleet/remove-device"
+      ],
+      "related_events": [],
+      "restart_policy": "PM2 core supervisor after validated policy activation",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "generated runtime environment",
+      "health_evidence": [
+        "durable consumer health"
+      ],
+      "heartbeat_evidence": [
+        "worker heartbeat"
+      ],
+      "log_policy": "structured sanitized lifecycle only",
+      "memory_limit": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
+      "nats_dependency": "required",
+      "owner": "worker execution plane",
+      "pattern": "pocket-worker",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Consume durable commands and own backend execution",
+      "recovery": "consumer re-enrollment before process restart",
+      "related_api": [],
+      "related_events": [
+        "pocketlab.commands.*",
+        "pocketlab.events.*"
+      ],
+      "restart_policy": "PM2 plus durable-consumer watchdog",
       "startup": "scripts/start-dashboard.sh"
     },
     {

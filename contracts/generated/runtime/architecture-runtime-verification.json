@@ -2,7 +2,7 @@
   "architecture_runtime_verification": {
     "baseline": "architecture/runtime-baselines/server-phone.json",
     "baseline_state": "verified",
-    "canonical_component_count": 56,
+    "canonical_component_count": 57,
     "components": [
       {
         "classification": "source-verified",
@@ -220,6 +220,13 @@
         "component_name": "Lite node agent",
         "runtime_evidence_state": "verified",
         "runtime_selector": "services.node-agent"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "opa-policy-engine",
+        "component_name": "OPA Safety Rules policy engine",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
       },
       {
         "classification": "source-and-runtime-verified",

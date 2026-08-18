@@ -19,7 +19,7 @@ generator_version: 3
 | Heartbeat, telemetry, and health publishers | Device runtime | node agent | Server SQLite projections | Reconnect watchdog | node agent |
 | Lite agent supervisor | Device recovery | pocketlab-agent-supervisor-<node_id> | No canonical state | Self / PM2 | PM2 |
 | Fleet, Apps, Security, Recovery, and Release APIs | Lite API domains | FastAPI | Domain SQLite state | Domain worker / supervisor | pocket-api |
-| Identity, authentication, and invite guards | Lite API | FastAPI | SQLite identity and invite state | Explicit repair/rejoin | pocket-api |
+| Identity, authentication, and invite guards | Lite API | FastAPI | SQLite human identity/session state plus device identity and invite state | Explicit repair/rejoin | pocket-api |
 | Prepared read, health, readiness, diagnostics, and evidence APIs | Lite API | FastAPI | Prepared SQLite projections | Projection scheduler and owning workers | pocket-api |
 | App Catalog | Apps domain | React / FastAPI | SQLite app state | App worker | Lite UI / Lite API |
 | App lifecycle worker | Apps execution | pocket-worker | App lifecycle SQLite state | Worker retry / repair | PM2 |
@@ -45,6 +45,7 @@ generator_version: 3
 | NATS / JetStream | Messaging backbone | pocket-nats | JetStream storage | Startup scripts / PM2 | PM2 |
 | Primary and secondary NATS listeners | NATS runtime | NATS server | NATS configuration | startup scripts | pocket-nats |
 | Lite node agent | Device runtime | pocketlab-agent-<node_id> | Local identity environment; server SQLite is canonical | Reconnect watchdog and supervisor | PM2 |
+| OPA Safety Rules policy engine | Rules authorization | pocket-opa | Repository Rego source and bounded SQLite policy decision metadata | Startup validation and PM2 core supervisor | PM2 |
 | PhotoPrism | Managed application | pocketlab-app-photoprism | PhotoPrism application data | App lifecycle worker | PM2 / PROot Ubuntu |
 | PM2 process manager | Runtime process management | PM2 daemon | None | PM2 plus supervisors | PM2 |
 | Post-switch health validation | Release validation | release validation stage | Release runtime state | Rollback | release subprocess |
@@ -100,6 +101,7 @@ generator_version: 3
 | data_owner:Release SQLite state and prior PWA | component:last-known-good |
 | data_owner:Release assets | component:github-release, component:release-artifacts |
 | data_owner:Release runtime state | component:post-switch-health |
+| data_owner:Repository Rego source and bounded SQLite policy decision metadata | component:opa-policy-engine |
 | data_owner:SQLite | component:app-workflow-state, component:device-state, component:invite-state, component:prepared-state, component:release-state, component:retirement-database-recovery, component:security-state |
 | data_owner:SQLite / backup repository | component:recovery-state |
 | data_owner:SQLite Security state | component:security-coordinator |
@@ -107,7 +109,7 @@ generator_version: 3
 | data_owner:SQLite app state | component:app-catalog |
 | data_owner:SQLite command_lifecycle | component:command-lifecycle |
 | data_owner:SQLite evidence index and sanitized files | component:completion-evidence |
-| data_owner:SQLite identity and invite state | component:api-guards |
+| data_owner:SQLite human identity/session state plus device identity and invite state | component:api-guards |
 | data_owner:SQLite lifecycle state | component:bounded-reconciliation |
 | data_owner:SQLite prepared projections | component:projection-subprocesses |
 | data_owner:SQLite prepared reads | component:lite-api |
@@ -144,6 +146,7 @@ generator_version: 3
 | execution_owner:node agent | component:agent-command-executor, component:agent-signals |
 | execution_owner:pocket-api | component:lite-api |
 | execution_owner:pocket-nats | component:nats-jetstream |
+| execution_owner:pocket-opa | component:opa-policy-engine |
 | execution_owner:pocket-worker | component:app-lifecycle-worker, component:worker |
 | execution_owner:pocketlab-agent-<node_id> | component:node-agent |
 | execution_owner:pocketlab-agent-supervisor-<node_id> | component:agent-supervisor |
@@ -201,6 +204,7 @@ generator_version: 3
 | owner:Remote access | component:tailscale |
 | owner:Remote access runtime | component:tailscaled |
 | owner:Repository maintainers | component:github-repository |
+| owner:Rules authorization | component:opa-policy-engine |
 | owner:Runtime process management | component:pm2 |
 | owner:Same-origin access | component:caddy |
 | owner:Schedulers and stores | component:bounded-reconciliation |
@@ -248,6 +252,7 @@ generator_version: 3
 | recovery_owner:Self / PM2 | component:agent-supervisor |
 | recovery_owner:Startup scripts | component:tailscale |
 | recovery_owner:Startup scripts / PM2 | component:caddy, component:nats-jetstream |
+| recovery_owner:Startup validation and PM2 core supervisor | component:opa-policy-engine |
 | recovery_owner:TanStack revalidation and UI workflows | component:frontend-state |
 | recovery_owner:User | component:user |
 | recovery_owner:Worker cleanup / retry | component:scanner-adapters |
@@ -264,7 +269,7 @@ generator_version: 3
 | runtime_owner:Lite API / worker | component:media-app-health |
 | runtime_owner:Lite UI / Lite API | component:app-catalog |
 | runtime_owner:Network | component:lan |
-| runtime_owner:PM2 | component:agent-supervisor, component:app-lifecycle-worker, component:caddy, component:lite-api, component:nats-jetstream, component:node-agent, component:pm2, component:worker |
+| runtime_owner:PM2 | component:agent-supervisor, component:app-lifecycle-worker, component:caddy, component:lite-api, component:nats-jetstream, component:node-agent, component:opa-policy-engine, component:pm2, component:worker |
 | runtime_owner:PM2 / PROot Ubuntu | component:photoprism |
 | runtime_owner:Recovery worker | component:recovery-state |
 | runtime_owner:Release subprocess | component:release-state |

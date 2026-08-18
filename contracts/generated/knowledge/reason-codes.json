@@ -22,6 +22,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A protected write requires an authenticated human session or configured service credential.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 401,
+      "id": "reason:authentication_required",
+      "name": "authentication_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Sign in before making this change."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Cold-start validation is in progress.",
       "domain": "validation",
       "event_mapping": [],
@@ -59,6 +79,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The target agent cannot currently receive the command."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A human-session write was rejected because its CSRF proof was missing or invalid.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:csrf_required",
+      "name": "csrf_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Refresh the page and try again."
     },
     {
       "confidence": "source-derived",
@@ -139,6 +179,46 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The source generation changed during work."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:generic_policy_toggle_retired",
+      "name": "generic_policy_toggle_retired",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "This legacy Rules action is no longer available."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested credential or session lifecycle action requires the signed-in local owner session.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:human_session_required",
+      "name": "human_session_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "A signed-in owner session is required."
     },
     {
       "confidence": "source-derived",
@@ -302,6 +382,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The legacy generic secret-rotation endpoint is retired and is not a human password operation.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:legacy_secret_rotation_retired",
+      "name": "legacy_secret_rotation_retired",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Use the Identity password controls instead."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Only metadata was evaluated.",
       "domain": "validation",
       "event_mapping": [],
@@ -379,6 +479,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The bounded payload limit was exceeded."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:policy_unavailable",
+      "name": "policy_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Safety Rules are not ready, so this protected action was not started."
     },
     {
       "confidence": "source-derived",
@@ -542,6 +662,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested human session is absent, expired, revoked, or no longer active.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:session_not_found",
+      "name": "session_not_found",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "That session is no longer active."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The process is shutting down.",
       "domain": "system",
       "event_mapping": [],
@@ -622,6 +762,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:test_bypass_explicit",
+      "name": "test_bypass_explicit",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Test-only policy bypass."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The requested domain is not registered.",
       "domain": "projections",
       "event_mapping": [],
@@ -687,6 +847,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "8dc54449d672330c51f3c79d7a3e8d74e015f10f6a081134350f862d1fced476"
   }
 }

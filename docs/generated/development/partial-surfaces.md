@@ -1,30 +1,30 @@
 ---
-title: "Identity and Rules partial contracts"
-description: "Identity and Rules are present in the UI but not complete production workflows. Their stories and fixtures document forward-compatible shells only."
-status: unvalidated
+title: "Identity and Rules implementation boundaries"
+description: "Identity now implements one local human owner, hash-only credentials/sessions/recovery records, CSRF-protected browser writes, and explicit session lifecycle. Rules now reports a loopback OPA engine and enforces the first bounded policy set for app install and old-device removal."
+status: verified
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 29e9c74dfdc556deb069f31fdfab7a21589f67ad7d6ceade6a332b18ad1e25c3
+source_fingerprint: 9a3315bec7d9d8bab7eca1653eedcac05ea544ed0bb81a797678b6fd8ee790b8
 schema_revision: 1
 validation_status: generated
 ---
 
-# Identity and Rules partial contracts
+# Identity and Rules implementation boundaries
 
 <div class="pl-page-meta" markdown>
-<span class="pl-status pl-status--unvalidated">Unvalidated</span>
+<span class="pl-status pl-status--verified">Verified</span>
 <span class="pl-status pl-status--patch-provided">Development guidance</span>
 </div>
 
-Identity and Rules are present in the UI but not complete production workflows. Their stories and fixtures document forward-compatible shells only.
+Identity now implements one local human owner, hash-only credentials/sessions/recovery records, CSRF-protected browser writes, and explicit session lifecycle. Rules now reports a loopback OPA engine and enforces the first bounded policy set for app install and old-device removal.
 
 ## Identity
 
-Current summary and password-change surfaces may be documented. Future role-aware behavior is fixture-only.
+The implemented local-owner flow covers setup, sign-in, password change, logout/session revocation, and one-time recovery codes. Passkeys/WebAuthn and OIDC federation remain optional and are not presented as enabled. Device identities remain owned by Devices; API-token service identity remains separate from the human session.
 
 ## Rules
 
-Current advisory/protection summaries may be documented. Rule execution, approval, and advanced validation states are partial unless current FastAPI routes prove otherwise.
+FastAPI builds the authorization input, preserves non-bypassable domain invariants, asks loopback OPA only for registered protected actions, records bounded sanitized decision metadata, and fails closed on unavailable/invalid policy responses. The first registered actions are `catalog.install` and `device.remove`; this is not an Approval Model.

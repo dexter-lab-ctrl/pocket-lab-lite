@@ -345,6 +345,56 @@
       ]
     },
     {
+      "boundary": "browser",
+      "control": "CTRL-HUMAN-SESSION-CSRF",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-HUMAN-SESSION-CSRF",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "durable-state",
+      "control": "CTRL-HUMAN-SESSION-CSRF",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-OPA-FAIL-CLOSED",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "messaging-execution",
+      "control": "CTRL-OPA-FAIL-CLOSED",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
       "boundary": "messaging-execution",
       "control": "CTRL-EXECUTION-OWNERS",
       "status": "control-observed",
@@ -828,9 +878,9 @@
     "attack_paths": 8,
     "control_states": {
       "control-observed": 5,
-      "mitigation-source-derived": 2
+      "mitigation-source-derived": 4
     },
-    "controls": 7,
+    "controls": 9,
     "human_review_required": true,
     "posture_states": {
       "control-observed": 31,

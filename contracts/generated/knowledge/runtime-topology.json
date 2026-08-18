@@ -71,7 +71,7 @@
       "projection": {
         "baseline": "architecture/runtime-baselines/server-phone.json",
         "baseline_state": "verified",
-        "canonical_component_count": 56,
+        "canonical_component_count": 57,
         "components": [
           {
             "classification": "source-verified",
@@ -289,6 +289,13 @@
             "component_name": "Lite node agent",
             "runtime_evidence_state": "verified",
             "runtime_selector": "services.node-agent"
+          },
+          {
+            "classification": "source-verified",
+            "component_id": "opa-policy-engine",
+            "component_name": "OPA Safety Rules policy engine",
+            "runtime_evidence_state": "not-selected",
+            "runtime_selector": null
           },
           {
             "classification": "source-and-runtime-verified",
@@ -845,6 +852,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c2ef76a5fe658923481bef0f9733f73b2ab612cfef410e33c29c9c331918d1c3"
+    "source_fingerprint": "8dc54449d672330c51f3c79d7a3e8d74e015f10f6a081134350f862d1fced476"
   }
 }

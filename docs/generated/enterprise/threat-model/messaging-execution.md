@@ -13,7 +13,7 @@ confidence: generated
 
 <div class="pl-page-lede pl-threat-boundary-lede"><strong>Messaging and execution boundary in the saved security model.</strong><p>This page keeps assets, actors, flows, threats, controls and evidence together so the boundary can be reviewed without leaving the canonical Threat Model context.</p></div>
 
-<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Canonical trust boundary</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>3</strong></article><article><span>Review</span><strong>human-review-required</strong></article></div>
+<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Canonical trust boundary</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>4</strong></article><article><span>Review</span><strong>human-review-required</strong></article></div>
 
 ## Boundary
 
@@ -54,17 +54,18 @@ confidence: generated
 
 | STRIDE | Scenario | OWASP mapping | Controls |
 | --- | --- | --- | --- |
-| Spoofing | Source-derived candidate Spoofing threat affecting the Messaging and execution boundary. | OWASP Top 10 A07 Identification and Authentication Failures | CTRL-BROWSER-NATS, CTRL-API-CONTROL |
-| Tampering | Source-derived candidate Tampering threat affecting the Messaging and execution boundary. | OWASP Top 10 A08 Software and Data Integrity Failures | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Spoofing | Source-derived candidate Spoofing threat affecting the Messaging and execution boundary. | OWASP Top 10 A07 Identification and Authentication Failures | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED |
+| Tampering | Source-derived candidate Tampering threat affecting the Messaging and execution boundary. | OWASP Top 10 A08 Software and Data Integrity Failures | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-EXECUTION-OWNERS |
 | Repudiation | Source-derived candidate Repudiation threat affecting the Messaging and execution boundary. | OWASP Top 10 A09 Security Logging and Monitoring Failures | — |
 | Information Disclosure | Source-derived candidate Information Disclosure threat affecting the Messaging and execution boundary. | OWASP Top 10 A01 Broken Access Control, OWASP Top 10 A02 Cryptographic Failures | — |
 | Denial of Service | Source-derived candidate Denial of Service threat affecting the Messaging and execution boundary. | No direct OWASP Top 10 mapping; availability/resilience control review | CTRL-EXECUTION-OWNERS |
-| Elevation of Privilege | Source-derived candidate Elevation of Privilege threat affecting the Messaging and execution boundary. | OWASP Top 10 A01 Broken Access Control | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Elevation of Privilege | Source-derived candidate Elevation of Privilege threat affecting the Messaging and execution boundary. | OWASP Top 10 A01 Broken Access Control | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-EXECUTION-OWNERS |
 
 ## Controls
 
 - `CTRL-BROWSER-NATS`
 - `CTRL-API-CONTROL`
+- `CTRL-OPA-FAIL-CLOSED`
 - `CTRL-EXECUTION-OWNERS`
 
 ## Runtime evidence & provenance

@@ -114,6 +114,10 @@
                                                 <td><a href='tables/schema_migrations.html'>schema_migrations</a>.[version]</td>
                                             </tr>
                                             <tr>
+                                                <td><a href='tables/auth_sessions.html'>auth_sessions</a>.[auth_version]</td>
+                                                <td><a href='tables/schema_migrations.html'>schema_migrations</a>.[version]</td>
+                                            </tr>
+                                            <tr>
                                                 <td><a href='tables/device_current_state.html'>device_current_state</a>.[latest_invite_id]</td>
                                                 <td><a href='tables/device_invite_lifecycle.html'>device_invite_lifecycle</a>.[invite_id]</td>
                                             </tr>
@@ -136,6 +140,18 @@
                                             <tr>
                                                 <td><a href='tables/device_system_profiles.html'>device_system_profiles</a>.[profile_schema_version]</td>
                                                 <td><a href='tables/schema_migrations.html'>schema_migrations</a>.[version]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><a href='tables/human_identities.html'>human_identities</a>.[auth_version]</td>
+                                                <td><a href='tables/schema_migrations.html'>schema_migrations</a>.[version]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><a href='tables/identity_audit_events.html'>identity_audit_events</a>.[human_id]</td>
+                                                <td><a href='tables/human_identities.html'>human_identities</a>.[human_id]</td>
+                                            </tr>
+                                            <tr>
+                                                <td><a href='tables/identity_audit_events.html'>identity_audit_events</a>.[session_id]</td>
+                                                <td><a href='tables/auth_sessions.html'>auth_sessions</a>.[session_id]</td>
                                             </tr>
                                             <tr>
                                                 <td><a href='tables/lite_installed_release_identity.html'>lite_installed_release_identity</a>.[schema_version]</td>

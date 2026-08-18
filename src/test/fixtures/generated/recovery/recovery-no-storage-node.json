@@ -14,7 +14,7 @@
     "scenario": "recovery-no-storage-node",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "3128be7d1dcc8efa8fa4c8c5fcdbdb197c5bc873812352cf01cc80aaf4347c60",
+    "source_fingerprint": "387e9116e6afaf77384fc274c78e40739a4388aaf24b9381dceb9c3a5012ef75",
     "validation_status": "generated"
   }
 }

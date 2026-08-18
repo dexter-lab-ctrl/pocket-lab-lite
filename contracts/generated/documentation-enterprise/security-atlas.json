@@ -301,6 +301,32 @@
       "view": "controls"
     },
     {
+      "catalog_id": "CTRL-HUMAN-SESSION-CSRF",
+      "kind": "control",
+      "meta": "Coverage: browser, control-api, durable-state. If it fails: ambient browser session authority could be reused without a separate write-intent proof or reusable session material could be exposed",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+      ],
+      "summary": "Human browser writes require an authenticated local-owner session plus a separate same-site CSRF proof; session credentials remain HttpOnly and hash-only at rest.",
+      "target_id": "CTRL-HUMAN-SESSION-CSRF",
+      "title": "Control CTRL-HUMAN-SESSION-CSRF",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-OPA-FAIL-CLOSED",
+      "kind": "control",
+      "meta": "Coverage: control-api, messaging-execution. If it fails: a protected mutation could proceed without a valid authorization decision or while policy state is unavailable or ambiguous",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "FastAPI preserves hard domain invariants, then requires a valid loopback OPA allow decision for registered protected actions before NATS/worker execution; unavailable, timed-out, malformed, or unregistered decisions fail closed.",
+      "target_id": "CTRL-OPA-FAIL-CLOSED",
+      "title": "Control CTRL-OPA-FAIL-CLOSED",
+      "view": "controls"
+    },
+    {
       "catalog_id": "CTRL-SUPPLY-CHAIN",
       "kind": "control",
       "meta": "Coverage: external-release, application-container. If it fails: unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence",
@@ -1170,7 +1196,7 @@
     {
       "catalog_id": "THR-BROWSER-ELEVATIONOFP",
       "kind": "threat",
-      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json"
@@ -1209,7 +1235,7 @@
     {
       "catalog_id": "THR-BROWSER-SPOOFING",
       "kind": "threat",
-      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json"
@@ -1222,7 +1248,7 @@
     {
       "catalog_id": "THR-BROWSER-TAMPERING",
       "kind": "threat",
-      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json"
@@ -1249,7 +1275,7 @@
     {
       "catalog_id": "THR-CONTROL-API-ELEVATIONOFP",
       "kind": "threat",
-      "meta": "Controls: CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF, CTRL-OPA-FAIL-CLOSED",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json",
@@ -1291,7 +1317,7 @@
     {
       "catalog_id": "THR-CONTROL-API-SPOOFING",
       "kind": "threat",
-      "meta": "Controls: CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF, CTRL-OPA-FAIL-CLOSED",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json",
@@ -1305,7 +1331,7 @@
     {
       "catalog_id": "THR-CONTROL-API-TAMPERING",
       "kind": "threat",
-      "meta": "Controls: CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF, CTRL-OPA-FAIL-CLOSED",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json",
@@ -1332,7 +1358,7 @@
     {
       "catalog_id": "THR-DURABLE-STATE-ELEVATIONOFP",
       "kind": "threat",
-      "meta": "Controls: unvalidated",
+      "meta": "Controls: CTRL-HUMAN-SESSION-CSRF",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json"
@@ -1371,7 +1397,7 @@
     {
       "catalog_id": "THR-DURABLE-STATE-SPOOFING",
       "kind": "threat",
-      "meta": "Controls: unvalidated",
+      "meta": "Controls: CTRL-HUMAN-SESSION-CSRF",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json"
@@ -1384,7 +1410,7 @@
     {
       "catalog_id": "THR-DURABLE-STATE-TAMPERING",
       "kind": "threat",
-      "meta": "Controls: CTRL-EXPLICIT-PROMOTION",
+      "meta": "Controls: CTRL-HUMAN-SESSION-CSRF, CTRL-EXPLICIT-PROMOTION",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json"
@@ -1620,7 +1646,7 @@
     {
       "catalog_id": "THR-MESSAGING-EXECUTION-ELEVATIONOFP",
       "kind": "threat",
-      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-EXECUTION-OWNERS",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json",
@@ -1677,7 +1703,7 @@
     {
       "catalog_id": "THR-MESSAGING-EXECUTION-SPOOFING",
       "kind": "threat",
-      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json",
@@ -1696,7 +1722,7 @@
     {
       "catalog_id": "THR-MESSAGING-EXECUTION-TAMPERING",
       "kind": "threat",
-      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS",
+      "meta": "Controls: CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-EXECUTION-OWNERS",
       "source_refs": [
         "contracts/security/threat-model.json",
         "contracts/generated/runtime/domain-operational-health.json",
@@ -1940,7 +1966,7 @@
     },
     {
       "description": "Controls, coverage, threat relationships and consequences if controls fail.",
-      "entry_count": 7,
+      "entry_count": 9,
       "id": "controls",
       "label": "Control Atlas"
     },

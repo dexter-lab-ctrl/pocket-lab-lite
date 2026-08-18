@@ -421,18 +421,23 @@
         "lite-api",
         "sqlite"
       ],
-      "confidence": "partial",
+      "confidence": "source-derived",
       "domain": "identity",
       "id": "change-password",
       "routes": [
-        "POST /api/lite/identity/rotate"
+        "POST /api/lite/identity/setup",
+        "POST /api/lite/identity/login",
+        "POST /api/lite/identity/password",
+        "POST /api/lite/identity/logout",
+        "POST /api/lite/identity/recovery/regenerate",
+        "POST /api/lite/identity/recover"
       ],
       "source_refs": [
-        "contracts/parity/parity-model.json",
-        "contracts/generated/lite-openapi.json",
-        "src/lite/LiteIdentity.jsx"
+        "src/lite/LiteIdentity.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
-      "title": "Change Password / identity rotation"
+      "title": "Local owner password and session lifecycle"
     },
     {
       "components": [
@@ -653,6 +658,29 @@
         "runbooks/release_rollback.yaml"
       ],
       "title": "Rollback"
+    },
+    {
+      "components": [
+        "api-guards",
+        "api-domain-surfaces",
+        "lite-api",
+        "sqlite",
+        "opa-policy-engine"
+      ],
+      "confidence": "source-derived",
+      "domain": "rules",
+      "id": "rules-authorization",
+      "routes": [
+        "GET /api/lite/policy",
+        "POST /api/lite/catalog/install",
+        "POST /api/lite/fleet/remove-device"
+      ],
+      "source_refs": [
+        "src/lite/LiteRules.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego"
+      ],
+      "title": "Safety Rules authorization decision"
     },
     {
       "components": [

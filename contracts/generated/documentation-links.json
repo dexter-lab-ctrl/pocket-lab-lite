@@ -53,6 +53,10 @@
         "title": "DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-apps-photoprism-storage-mappings-mapping-id"
       },
+      "endpoint:DELETE:/api/lite/identity/sessions/{session_id}": {
+        "title": "DELETE /api/lite/identity/sessions/{session_id}",
+        "url": "../../docs/reference/api/lite-api.md#delete-api-lite-identity-sessions-session-id"
+      },
       "endpoint:GET:/api/lite/apps/lifecycle": {
         "title": "GET /api/lite/apps/lifecycle",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-lifecycle"
@@ -433,9 +437,37 @@
         "title": "POST /api/lite/fleet/remove-device",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-remove-device"
       },
+      "endpoint:POST:/api/lite/identity/login": {
+        "title": "POST /api/lite/identity/login",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-login"
+      },
+      "endpoint:POST:/api/lite/identity/logout": {
+        "title": "POST /api/lite/identity/logout",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-logout"
+      },
+      "endpoint:POST:/api/lite/identity/password": {
+        "title": "POST /api/lite/identity/password",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-password"
+      },
+      "endpoint:POST:/api/lite/identity/recover": {
+        "title": "POST /api/lite/identity/recover",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-recover"
+      },
+      "endpoint:POST:/api/lite/identity/recovery/regenerate": {
+        "title": "POST /api/lite/identity/recovery/regenerate",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-recovery-regenerate"
+      },
       "endpoint:POST:/api/lite/identity/rotate": {
         "title": "POST /api/lite/identity/rotate",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-rotate"
+      },
+      "endpoint:POST:/api/lite/identity/sessions/revoke-others": {
+        "title": "POST /api/lite/identity/sessions/revoke-others",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-sessions-revoke-others"
+      },
+      "endpoint:POST:/api/lite/identity/setup": {
+        "title": "POST /api/lite/identity/setup",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-setup"
       },
       "endpoint:POST:/api/lite/policy/apply": {
         "title": "POST /api/lite/policy/apply",
@@ -1357,6 +1389,10 @@
         "title": "already_tuned",
         "url": "../../docs/generated/development/reason-codes.md#already-tuned"
       },
+      "reason:authentication_required": {
+        "title": "authentication_required",
+        "url": "../../docs/generated/development/reason-codes.md#authentication-required"
+      },
       "reason:cold_start_validation": {
         "title": "cold_start_validation",
         "url": "../../docs/generated/development/reason-codes.md#cold-start-validation"
@@ -1364,6 +1400,10 @@
       "reason:command_undeliverable": {
         "title": "command_undeliverable",
         "url": "../../docs/generated/development/reason-codes.md#command-undeliverable"
+      },
+      "reason:csrf_required": {
+        "title": "csrf_required",
+        "url": "../../docs/generated/development/reason-codes.md#csrf-required"
       },
       "reason:diagnostics_not_active": {
         "title": "diagnostics_not_active",
@@ -1380,6 +1420,14 @@
       "reason:generation_changed": {
         "title": "generation_changed",
         "url": "../../docs/generated/development/reason-codes.md#generation-changed"
+      },
+      "reason:generic_policy_toggle_retired": {
+        "title": "generic_policy_toggle_retired",
+        "url": "../../docs/generated/development/reason-codes.md#generic-policy-toggle-retired"
+      },
+      "reason:human_session_required": {
+        "title": "human_session_required",
+        "url": "../../docs/generated/development/reason-codes.md#human-session-required"
       },
       "reason:identity_mismatch": {
         "title": "identity_mismatch",
@@ -1413,6 +1461,10 @@
         "title": "legacy_multiple_active_runs",
         "url": "../../docs/generated/development/reason-codes.md#legacy-multiple-active-runs"
       },
+      "reason:legacy_secret_rotation_retired": {
+        "title": "legacy_secret_rotation_retired",
+        "url": "../../docs/generated/development/reason-codes.md#legacy-secret-rotation-retired"
+      },
       "reason:metadata_only": {
         "title": "metadata_only",
         "url": "../../docs/generated/development/reason-codes.md#metadata-only"
@@ -1428,6 +1480,10 @@
       "reason:payload_too_large": {
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
+      },
+      "reason:policy_unavailable": {
+        "title": "policy_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#policy-unavailable"
       },
       "reason:projection_too_old": {
         "title": "projection_too_old",
@@ -1461,6 +1517,10 @@
         "title": "service_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#service-unavailable"
       },
+      "reason:session_not_found": {
+        "title": "session_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#session-not-found"
+      },
       "reason:shutdown": {
         "title": "shutdown",
         "url": "../../docs/generated/development/reason-codes.md#shutdown"
@@ -1476,6 +1536,10 @@
       "reason:target_not_allowed": {
         "title": "target_not_allowed",
         "url": "../../docs/generated/development/reason-codes.md#target-not-allowed"
+      },
+      "reason:test_bypass_explicit": {
+        "title": "test_bypass_explicit",
+        "url": "../../docs/generated/development/reason-codes.md#test-bypass-explicit"
       },
       "reason:unregistered_domain": {
         "title": "unregistered_domain",
@@ -1500,6 +1564,10 @@
       "service:pocket-node-agent": {
         "title": "pocket-node-agent",
         "url": "../../docs/generated/development/service-catalog.md#pocket-node-agent"
+      },
+      "service:pocket-opa": {
+        "title": "pocket-opa",
+        "url": "../../docs/generated/development/service-catalog.md#pocket-opa"
       },
       "service:pocket-worker": {
         "title": "pocket-worker",
@@ -1527,6 +1595,11 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#audit-evidence-index",
         "schema_url": "../../docs/generated/schemaspy/tables/audit_evidence_index.html",
         "title": "audit_evidence_index"
+      },
+      "table:auth_sessions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#auth-sessions",
+        "schema_url": "../../docs/generated/schemaspy/tables/auth_sessions.html",
+        "title": "auth_sessions"
       },
       "table:backup_manifest_index": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#backup-manifest-index",
@@ -1618,6 +1691,21 @@
         "schema_url": "../../docs/generated/schemaspy/tables/domain_revisions.html",
         "title": "domain_revisions"
       },
+      "table:human_credentials": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#human-credentials",
+        "schema_url": "../../docs/generated/schemaspy/tables/human_credentials.html",
+        "title": "human_credentials"
+      },
+      "table:human_identities": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#human-identities",
+        "schema_url": "../../docs/generated/schemaspy/tables/human_identities.html",
+        "title": "human_identities"
+      },
+      "table:identity_audit_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#identity-audit-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/identity_audit_events.html",
+        "title": "identity_audit_events"
+      },
       "table:lite_installed_release_identity": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-installed-release-identity",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_installed_release_identity.html",
@@ -1638,6 +1726,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/phase3b_revision_events.html",
         "title": "phase3b_revision_events"
       },
+      "table:policy_decisions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-decisions",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_decisions.html",
+        "title": "policy_decisions"
+      },
       "table:projection_dirty_signals": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#projection-dirty-signals",
         "schema_url": "../../docs/generated/schemaspy/tables/projection_dirty_signals.html",
@@ -1647,6 +1740,16 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#projection-refresh-state",
         "schema_url": "../../docs/generated/schemaspy/tables/projection_refresh_state.html",
         "title": "projection_refresh_state"
+      },
+      "table:recovery_code_batches": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-code-batches",
+        "schema_url": "../../docs/generated/schemaspy/tables/recovery_code_batches.html",
+        "title": "recovery_code_batches"
+      },
+      "table:recovery_codes": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-codes",
+        "schema_url": "../../docs/generated/schemaspy/tables/recovery_codes.html",
+        "title": "recovery_codes"
       },
       "table:recovery_current_state": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-current-state",
@@ -1736,7 +1839,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "67f3039131aa2c7e4e46936dd70303d4b739ee29d0635ae016fe68f039e86e22",
+    "aggregate_fingerprint": "3a06fc21522766164bb568da038eee6243719afe4d469e433d0eaba1b14e4ab4",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -1746,8 +1849,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
-      "contracts/metadata/documentation-platform.json": "e3fe370d9b039c813d031300a9f90d5796dc808552a04a57c6d02d7d9e662113",
+      "contracts/generated/lite-openapi.json": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
+      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -1771,6 +1874,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql": "6b7ccaf3fc0a3d4bc38cbbb3ddcde13494b9f77531e4aac2bb3532834982d6f9",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql": "c5c8bdc2f1c3ad764862fd6f034a67287fffdc1dc6ced852f602137a3480165c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "generated"
