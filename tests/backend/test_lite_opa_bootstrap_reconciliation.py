@@ -7,6 +7,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh"
+START_DASHBOARD = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
 HEALTH = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh"
 
 
@@ -71,6 +72,15 @@ def test_bootstrap_invalidates_stale_lite_capability_markers() -> None:
     assert "Ignoring stale Lite bootstrap marker" in source
     assert "completed but its Lite capability contract is not satisfied" in source
     assert "current source/runtime contract" in source
+
+
+def test_start_dashboard_launches_termux_opa_wrapper_with_bash() -> None:
+    source = START_DASHBOARD.read_text(encoding="utf-8")
+    assert (
+        'pm2_start_or_restart pocket-opa "$(command -v opa)" '
+        '--interpreter bash -- run --server --addr=127.0.0.1:8181 '
+        '"$POCKETLAB_OPA_ACTIVE_POLICY_DIR"'
+    ) in source
 
 
 def test_install_binaries_marker_requires_usable_opa(tmp_path: Path) -> None:
