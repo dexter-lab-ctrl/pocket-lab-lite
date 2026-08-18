@@ -4636,6 +4636,30 @@
       },
       {
         "affected_components": [
+          "bootstrap/runtime"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_STAGE_HEALTH",
+        "owner": "bootstrap/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
+          "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "repository tooling"
         ],
         "affects_release": false,
@@ -6232,8 +6256,7 @@
       {
         "affected_components": [
           "FastAPI",
-          "bootstrap/runtime",
-          "repository tooling"
+          "bootstrap/runtime"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -6250,12 +6273,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_generation.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
-          "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -14108,6 +14131,31 @@
       },
       {
         "affected_components": [
+          "bootstrap/runtime"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_LITE_STAGE_HEALTH_REASON",
+        "owner": "bootstrap/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
+          "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI",
           "repository tooling"
         ],
@@ -17189,6 +17237,7 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
           "tests/backend/test_lite_identity_rules_authorization.py"
@@ -21361,11 +21410,11 @@
         "secret": false,
         "source": [
           "Taskfile.yml",
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_gate_faults.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -33951,8 +34000,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "6bdaf75d009ac755fca40eb33e4b7d5ea9950077",
-          "head_tree": "423f5ad974693ca6c8cd6f4f89e5d1fcfea771e1",
+          "head": "45cc53ba331cf6c93a976c53a9e8b124354623a9",
+          "head_tree": "021dc5f9f8659f0c07e68bb27e3044250a7c3a89",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34315,15 +34364,15 @@
           },
           "local_staging": {
             "authority": "local-repository",
-            "confidence": "local-observation",
+            "confidence": "unvalidated",
             "freshness": "current",
             "observed_at": "unobserved",
             "sanitized": true,
             "source": "dist.zip",
-            "status": "observed",
+            "status": "unobserved",
             "value": {
-              "bytes": 1719519,
-              "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
+              "bytes": null,
+              "sha256": null
             }
           },
           "release_presence": {
@@ -34634,7 +34683,7 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-        "documentation": "76db1cbb54f5985fbb4fa3d74634faa8e1a87c3a12c5d85a3ce48f0a6c9b20e9",
+        "documentation": "5c15a6c3ab9b6605bbb80f2d7fa4a55b6308a528d64965fa84ac1238e6eecc6e",
         "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
         "operational_health": "adc98967c5464fb7df4a05cdeb691c37b09892ea4251536f41876c43f5e252cb"
       },
@@ -36708,8 +36757,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "6bdaf75d009ac755fca40eb33e4b7d5ea9950077",
-        "head_tree": "423f5ad974693ca6c8cd6f4f89e5d1fcfea771e1",
+        "head": "45cc53ba331cf6c93a976c53a9e8b124354623a9",
+        "head_tree": "021dc5f9f8659f0c07e68bb27e3044250a7c3a89",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -86319,5 +86368,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "438b8634f0d3430d6a069b7f256bc3ef9da0ae3759cf13954e489dbdc551122d"
+  "source_fingerprint": "584e692d237018ecf2b5366ab7d0c033973b73822b8f0153652a3e3cff349222"
 }

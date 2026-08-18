@@ -444,7 +444,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "c22af765e4beb06fb37753b4aa96f51323290f497e287b285ce271d373862a24",
+    "aggregate_fingerprint": "678d354e1941688d9ca0c43acfa030ef99e452b4ec6ec1e99031930016fcd1bb",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -454,7 +454,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh": "6b3e8daab4aa74b8ba88b6da30d1e2325c9168ed809226352831f2a33a1b76be",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh": "552c8059f3056fd2c4d7ff8e10ae5a56fbcceb782f68fde18cde8f7385d5fb64",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh": "f9ff241fc75b02991c0ed2b2fd6e65fb46dc3e9b0c2b4269b3bc36314c37f225",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh": "8115b6377276346c1263879b9b5e2b96e97f5ab6e8c18329b1af9359e783ca52",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh": "33db6551ca7e37b1f7b8fa76d8ae5b0717ef82f924bde9f96810a21318eb8856",

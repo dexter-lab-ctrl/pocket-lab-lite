@@ -12,8 +12,12 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/common.sh"
+LITE_STAGE_HEALTH="$SCRIPT_DIR/lite/bootstrap-stage-health.sh"
+[[ -r "$LITE_STAGE_HEALTH" ]] || die "Lite bootstrap stage-health helper is missing: $LITE_STAGE_HEALTH"
+# shellcheck disable=SC1090
+source "$LITE_STAGE_HEALTH"
 
-BOOTSTRAP_VERSION="2026-06-02-fastapi-nats-enterprise"
+BOOTSTRAP_VERSION="2026-08-18-lite-capability-reconciliation"
 BOOTSTRAP_DRY_RUN="${POCKETLAB_BOOTSTRAP_DRY_RUN:-0}"
 BOOTSTRAP_PROFILE="$(normalize_profile "${POCKETLAB_PROFILE:-full}")"
 FORCE_STAGE="0"
@@ -106,10 +110,24 @@ stage_should_skip() {
 }
 
 stage_is_done() {
-  local index="$1" id="$2" key legacy_key
+  local index="$1" id="$2" key legacy_key marker_done=0
   key="$(stage_marker_key "$index" "$id")"
   legacy_key="$(legacy_stage_marker_key "$index")"
-  is_done "$key" || is_done "$legacy_key" || stage_should_skip "$index" "$id"
+
+  if stage_should_skip "$index" "$id"; then
+    return 0
+  fi
+
+  if is_done "$key" || is_done "$legacy_key"; then
+    marker_done=1
+  fi
+  [[ "$marker_done" -eq 1 ]] || return 1
+
+  if [[ "$BOOTSTRAP_PROFILE" == "lite" ]] && ! pocketlab_lite_stage_completion_is_valid "$id"; then
+    log WARN "Ignoring stale Lite bootstrap marker for $id: ${POCKETLAB_LITE_STAGE_HEALTH_REASON:-required capability validation failed}"
+    return 1
+  fi
+  return 0
 }
 
 stage_mark_done() {
@@ -205,7 +223,7 @@ require_prior_stages_done() {
     IFS='|' read -r index id script description <<< "$record"
     [[ "$index" -ge "$target_index" ]] && break
     if ! stage_is_done "$index" "$id"; then
-      die "Cannot run stage $target_index directly because dependency stage $index ($id) is not marked complete. Use --from-stage $index or run ./bootstrap.sh."
+      die "Cannot run stage $target_index directly because dependency stage $index ($id) is not complete for the current source/runtime contract. Use --from-stage $index or run ./bootstrap.sh."
     fi
   done
 }
@@ -225,7 +243,7 @@ run_stage_by_index() {
   fi
 
   if stage_is_done "$index" "$id" && [[ "$FORCE_STAGE" != "1" && "$FORCE_ALL" != "1" ]]; then
-    log INFO "Stage $index/$id already completed; skipping. Marker: $marker"
+    log INFO "Stage $index/$id already completed and capability-valid; skipping. Marker: $marker"
     return 0
   fi
 
@@ -244,6 +262,9 @@ run_stage_by_index() {
   start_ts="$(timestamp)"
   prepare_stage_environment "$id"
   bash "$script_path"
+  if [[ "$BOOTSTRAP_PROFILE" == "lite" ]] && ! pocketlab_lite_stage_completion_is_valid "$id"; then
+    die "Stage $index/$id completed but its Lite capability contract is not satisfied: ${POCKETLAB_LITE_STAGE_HEALTH_REASON:-capability validation failed}"
+  fi
   stage_mark_done "$index" "$id"
   log INFO "Completed stage $index/$id. Started: $start_ts Finished: $(timestamp) Marker: $marker"
 }

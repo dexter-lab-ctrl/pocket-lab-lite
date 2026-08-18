@@ -21,7 +21,7 @@ validation_status: generated
 
 Bootstrap scripts remain backend-generated and secret-safe. This inventory lists only detected stage names, never generated commands or invite values.
 
-## Detected stages (21)
+## Detected stages (22)
 
 - `after`
 - `and`
@@ -31,6 +31,7 @@ Bootstrap scripts remain backend-generated and secret-safe. This inventory lists
 - `id`
 - `index`
 - `init_vault`
+- `invocation`
 - `is`
 - `marker`
 - `markers`

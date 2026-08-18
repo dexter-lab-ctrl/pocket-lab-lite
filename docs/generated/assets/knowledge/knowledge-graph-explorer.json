@@ -8081,6 +8081,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "name": "tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_phase2_eliminate_collection.py",
       "name": "tests/backend/test_lite_phase2_eliminate_collection.py",
       "source_refs": [
