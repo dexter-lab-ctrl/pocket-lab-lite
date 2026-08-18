@@ -4,14 +4,14 @@
       "api_routes": [
         "/api/lite/policy"
       ],
-      "fingerprint": "c377622715d19fa0741384eb7d92cac13f862496f4dd6683df13a5b4042d3439",
+      "fingerprint": "2c8fef68bc1071cd9d9724c9cbaed1235269af61515d351d4067bd6049618c1c",
       "id": "rules",
       "selectors": [
         "direct-render"
       ],
       "semantic_mapping_ids": [
-        "rules-protection-state",
-        "rules-protection-presentation",
+        "rules-status-presentation",
+        "rules-engine-health-presentation",
         "rules-summary",
         "rules-sanitized-ui"
       ]
@@ -19,7 +19,7 @@
   ],
   "kind": "domain-fingerprint",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c",
+  "semantic_fingerprint": "0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27",
   "source_revision": "repository-source",
   "status": "generated"
 }

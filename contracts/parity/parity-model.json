@@ -1987,6 +1987,14 @@
             },
             {
               "authority_operator": "exact",
+              "authority_severity": "critical",
+              "extract": "path",
+              "id": "engine_healthy",
+              "path": "engine.healthy",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
               "authority_severity": "high",
               "extract": "path",
               "id": "summary",
@@ -2049,32 +2057,54 @@
       ],
       "semantic_mappings": [
         {
-          "backend_path": "protection_enabled",
-          "boundary": "live-api-live-ui",
-          "frontend_path": "protection_toggle_pressed",
-          "id": "rules-protection-state",
-          "operator": "boolean-equivalence",
-          "severity": "critical"
-        },
-        {
-          "backend_path": "protection_enabled",
+          "backend_path": "status",
           "boundary": "live-api-live-ui",
           "frontend_path": "screen_text",
-          "id": "rules-protection-presentation",
+          "id": "rules-status-presentation",
           "mapping": {
-            "false": [
-              "Protection is off",
-              "Ready to enable",
-              "Not enabled"
+            "degraded": [
+              "Protected changes paused",
+              "Changes blocked"
             ],
-            "true": [
-              "Protection is on",
-              "Protection on",
-              "Enabled"
+            "failed": [
+              "Protected changes paused",
+              "Changes blocked"
+            ],
+            "ready": [
+              "Rules ready",
+              "Safety Rules are active for protected changes",
+              "Fail-closed ready"
+            ],
+            "unavailable": [
+              "Protected changes paused",
+              "Changes blocked"
+            ],
+            "unknown": [
+              "Protected changes paused",
+              "Changes blocked"
             ]
           },
           "operator": "intentional-presentation-map",
-          "severity": "high"
+          "severity": "critical"
+        },
+        {
+          "backend_path": "engine_healthy",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "rules-engine-health-presentation",
+          "mapping": {
+            "false": [
+              "Protected changes paused",
+              "Changes blocked"
+            ],
+            "true": [
+              "Rules ready",
+              "Safety Rules are active for protected changes",
+              "Fail-closed ready"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "critical"
         },
         {
           "backend_path": "summary",
@@ -3206,31 +3236,31 @@
     },
     {
       "backend_observations": {
-        "protection_enabled": true
+        "engine_healthy": true
       },
       "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
       "domain": "rules",
       "expected_runtime_parity": "verified-with-mapped-presentation",
       "frontend_observations": {
-        "screen_text": "Protection is on"
+        "screen_text": "Rules ready. Safety Rules are active for protected changes. Fail-closed ready."
       },
       "id": "rules-mapped-presentation",
       "kind": "canonical",
-      "mapping_id": "rules-protection-presentation"
+      "mapping_id": "rules-engine-health-presentation"
     },
     {
       "backend_observations": {
-        "protection_enabled": true
+        "engine_healthy": true
       },
       "description": "A bounded fixture deliberately contradicts one critical semantic field.",
       "domain": "rules",
       "expected_runtime_parity": "drift-detected",
       "frontend_observations": {
-        "screen_text": "Protection is off"
+        "screen_text": "Protected changes paused. Changes blocked."
       },
       "id": "rules-deliberate-drift",
       "kind": "deliberate-drift",
-      "mapping_id": "rules-protection-presentation"
+      "mapping_id": "rules-engine-health-presentation"
     },
     {
       "backend_observations": {

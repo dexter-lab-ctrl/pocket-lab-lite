@@ -240,6 +240,60 @@ def test_live_browser_capture_redacts_runtime_identities_and_uses_exact_tailscal
     assert "serverIdentityVisible(" not in source
 
 
+def test_rules_live_ui_contract_tracks_current_fail_closed_surface():
+    payload = model()
+    rules = next(
+        item for item in payload["domains"]
+        if item["id"] == "rules"
+    )
+
+    mappings = {
+        item["id"]: item
+        for item in rules["semantic_mappings"]
+    }
+
+    assert "rules-protection-state" not in mappings
+    assert "rules-protection-presentation" not in mappings
+
+    status = mappings["rules-status-presentation"]
+    assert status["backend_path"] == "status"
+    assert status["frontend_path"] == "screen_text"
+    assert status["operator"] == "intentional-presentation-map"
+    assert status["severity"] == "critical"
+    assert "Rules ready" in status["mapping"]["ready"]
+    assert (
+        "Protected changes paused"
+        in status["mapping"]["degraded"]
+    )
+
+    engine = mappings["rules-engine-health-presentation"]
+    assert engine["backend_path"] == "engine_healthy"
+    assert engine["frontend_path"] == "screen_text"
+    assert engine["operator"] == "intentional-presentation-map"
+    assert engine["severity"] == "critical"
+    assert "Rules ready" in engine["mapping"]["true"]
+    assert "Changes blocked" in engine["mapping"]["false"]
+
+    backend_fields = {
+        item["id"]: item
+        for item in rules[
+            "live_observation_contract"
+        ]["backend"]["fields"]
+    }
+
+    # Backend/Termux protection evidence is deliberately retained.
+    assert "protection_enabled" in backend_fields
+
+    # Browser readiness evidence now follows the current OPA health surface.
+    assert backend_fields["engine_healthy"]["path"] == "engine.healthy"
+    assert backend_fields["engine_healthy"].get("required", True) is True
+
+    live_source = (
+        ROOT / "tests" / "e2e" / "lite-live.spec.ts"
+    ).read_text(encoding="utf-8")
+    assert "protection_toggle_pressed" not in live_source
+
+
 def test_stale_observation_is_not_drift(monkeypatch):
     payload = observation("home")
     payload["captured_at"] = (datetime.now(timezone.utc) - timedelta(days=3)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -621,8 +675,22 @@ def test_generated_all_tab_docs_and_contracts_exist():
         if line.startswith("| Backup & Restore |")
     )
     assert "| verified | verified | verified |" in recovery_row
+    promoted = json.loads(
+        (
+            ROOT
+            / "contracts"
+            / "parity"
+            / "runtime-verification-baseline.json"
+        ).read_text(encoding="utf-8")
+    )
+    promoted_recovery = next(
+        item
+        for item in promoted["domains"]
+        if item["id"] == "recovery"
+    )
     assert (
-        "| verified-with-mapped-presentation | verified |"
+        f"| {promoted_recovery['runtime_parity']} | "
+        f"{promoted_recovery['status']} |"
         in recovery_row
     )
     subprocess.run(["python3", str(GENERATOR), "check"], cwd=ROOT, check=True)

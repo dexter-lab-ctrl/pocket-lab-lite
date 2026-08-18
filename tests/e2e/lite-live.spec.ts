@@ -19,7 +19,6 @@ type SafeObservation = {
   screen_text: string;
   server_identity_visible: boolean;
   tailscale_ip_visible: boolean;
-  protection_toggle_pressed: boolean | null;
   home_cpu_note: string;
   recovery_status: string;
   recovery_summary: string;
@@ -210,7 +209,6 @@ async function collectSafeObservation(page: Page, screenId: string): Promise<Saf
     const lastRestoreStatus = element.querySelector('[data-testid="parity-last-restore-status"]');
     const restoreHistory = element.querySelector('[data-testid="parity-restore-history"]');
     const historicalPreview = element.querySelector('[data-testid="parity-historical-preview"]');
-    const toggle = element.querySelector('[aria-pressed]');
     const backupAction = [...element.querySelectorAll('button')].find((button) => /Back Up Now|Refresh to continue/i.test(text(button)));
     return {
       headings: unique([...element.querySelectorAll('h1, h2, h3')].map(text)),
@@ -220,7 +218,6 @@ async function collectSafeObservation(page: Page, screenId: string): Promise<Saf
       screen_text: screenText,
       server_identity_visible: false,
       tailscale_ip_visible: ipVisible,
-      protection_toggle_pressed: toggle ? toggle.getAttribute('aria-pressed') === 'true' : null,
       home_cpu_note: text(resource?.querySelector('em')).slice(0, 240),
       recovery_status: text(recoveryStatus).slice(0, 120),
       recovery_summary: text(recoverySummary).slice(0, 240),

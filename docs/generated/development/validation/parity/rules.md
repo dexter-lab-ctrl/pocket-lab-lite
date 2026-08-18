@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c
+semantic_fingerprint: 0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -74,6 +74,7 @@ Status: **observed**
 | Observation | Route adapter | Extractor | Path | API ↔ Termux comparator | Severity |
 | --- | --- | --- | --- | --- | --- |
 | status | primary | path | status | exact | high |
+| engine_healthy | primary | path | engine.healthy | exact | critical |
 | summary | primary | path | summary | exact | high |
 | protection_enabled | primary | path | protection_enabled | exact | high |
 | requires_confirmation | primary | path | requires_confirmation | exact | high |
@@ -93,8 +94,8 @@ Status: **observed**. The Termux lane uses the same allowlisted GET adapters thr
 
 | Mapping | Boundary | Backend observation | Frontend observation | Comparator | Severity |
 | --- | --- | --- | --- | --- | --- |
-| rules-protection-state | live-api-live-ui | protection_enabled | protection_toggle_pressed | boolean-equivalence | critical |
-| rules-protection-presentation | live-api-live-ui | protection_enabled | screen_text | intentional-presentation-map | high |
+| rules-status-presentation | live-api-live-ui | status | screen_text | intentional-presentation-map | critical |
+| rules-engine-health-presentation | live-api-live-ui | engine_healthy | screen_text | intentional-presentation-map | critical |
 | rules-summary | live-api-live-ui | summary | screen_text | text-contains | medium |
 | rules-sanitized-ui | live-api-live-ui | $ | screen_text | safe-redaction | critical |
 
@@ -102,7 +103,8 @@ Status: **observed**. The Termux lane uses the same allowlisted GET adapters thr
 
 | Mapping | Comparator | Allowlisted presentation |
 | --- | --- | --- |
-| rules-protection-presentation | intentional-presentation-map | {"false": ["Protection is off", "Ready to enable", "Not enabled"], "true": ["Protection is on", "Protection on", "Enabled"]} |
+| rules-status-presentation | intentional-presentation-map | {"degraded": ["Protected changes paused", "Changes blocked"], "failed": ["Protected changes paused", "Changes blocked"], "ready": ["Rules ready", "Safety Rules are active for protected changes", "Fail-closed ready"], "unavailable": ["Protected changes paused", "Changes blocked"], "unknown": ["Protected changes paused", "Changes blocked"]} |
+| rules-engine-health-presentation | intentional-presentation-map | {"false": ["Protected changes paused", "Changes blocked"], "true": ["Rules ready", "Safety Rules are active for protected changes", "Fail-closed ready"]} |
 
 Different user-facing wording or formatting is not drift when an allowlisted deterministic mapping proves equivalent meaning.
 
