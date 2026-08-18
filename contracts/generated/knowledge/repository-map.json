@@ -2292,6 +2292,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "source": "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_phase2_eliminate_collection.py"
       ],
       "source": "tests/backend/test_lite_phase2_eliminate_collection.py"
@@ -3035,6 +3041,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a529673f01d39d519413ee0cf2dcfa10219e8eeea3a9e6837eb6d5ea8d1eecdc"
+    "source_fingerprint": "822a1cde7f0deb5f1f65a3aca00bb3cba8d6c447454c74a0931d15067f9cad58"
   }
 }
