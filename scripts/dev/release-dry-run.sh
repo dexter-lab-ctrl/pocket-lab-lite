@@ -25,20 +25,31 @@ ACTIVE_SCOPE_EXCLUDES=(
 )
 
 version="${1:-dev-$(date '+%Y%m%d-%H%M%S')}"; out=".pocketlab-dev/releases/$version"; mkdir -p "$out"
+iac_dir="pocket-lab-final-structure/pocket-lab-iac-api-compatible"
+
 bash scripts/dev/check-architecture-contract.sh
 # Release qualification follows the current Lite backend contract rather than
 # the historical blanket backend suite. The canonical task is bounded, timeout-
 # protected, plugin-isolated, and shared with the normal Lite quality gate.
 task lite:test:backend
 bash scripts/dev/check-bootstrap.sh
-bash scripts/dev/check-iac.sh
+# The current Lite repository no longer requires the historical full-profile IaC
+# tree. If a checkout intentionally carries it, keep validating and packaging it;
+# otherwise record the absence explicitly instead of failing a Lite release.
+if [[ -d "$iac_dir" ]]; then
+  bash scripts/dev/check-iac.sh
+else
+  echo "INFO Lite release: optional legacy/full-profile IaC tree is not present; skipping IaC validation/package."
+fi
 bash scripts/dev/check-supply-chain.sh
 [[ -f package.json ]] && npm run build
 tar --exclude=".git" --exclude="node_modules" --exclude=".venv" --exclude=".pocketlab-dev/releases" -czf "$out/pocketlab-source-$version.tar.gz" .
 [[ -d dist ]] && tar -czf "$out/pocketlab-pwa-$version.tar.gz" dist
 [[ -d dist ]] && tar -czf "$out/pocketlab-pwa-dist-$version.tar.gz" dist
 tar -czf "$out/pocketlab-runtime-$version.tar.gz" pocket-lab-final-structure/runtime
-tar -czf "$out/pocketlab-iac-$version.tar.gz" pocket-lab-final-structure/pocket-lab-iac-api-compatible
+if [[ -d "$iac_dir" ]]; then
+  tar -czf "$out/pocketlab-iac-$version.tar.gz" "$iac_dir"
+fi
 tar -czf "$out/pocketlab-bootstrap-$version.tar.gz" pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched
 if command -v syft >/dev/null 2>&1; then syft dir:. -o spdx-json > "$out/sbom.spdx.json" || true; fi
 (cd "$out" && sha256sum * > checksums.txt)
