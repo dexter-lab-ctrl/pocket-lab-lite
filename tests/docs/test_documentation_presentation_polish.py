@@ -161,12 +161,15 @@ def test_enterprise_reference_pages_use_scan_first_cards_and_contained_diagrams(
 def test_events_aliases_page_types_and_repository_pages_have_purpose_built_presentations():
     enterprise_source = (ROOT / "scripts/docs/enterprise/generate_enterprise_documentation.py").read_text(encoding="utf-8")
     completion_source = (ROOT / "scripts/docs/enterprise/enterprise_completion.py").read_text(encoding="utf-8")
+    documentation_ia_source = (ROOT / "scripts/docs/enterprise/documentation_ia.py").read_text(encoding="utf-8")
     knowledge_source = (ROOT / "scripts/docs/knowledge/generate_knowledge.py").read_text(encoding="utf-8")
 
     assert "pl-event-card" in completion_source
     assert "## Event flow model" in completion_source
     assert "pl-alias-grid" in enterprise_source
-    assert "pl-page-type-grid" in enterprise_source
+    assert 'outputs[DOC / "documentation-platform/page-types.md"]' in documentation_ia_source
+    assert "Documentation page types" in documentation_ia_source
+    assert "PAGE_TYPES" in documentation_ia_source
     assert "pl-anatomy-flow" in enterprise_source
     assert "pl-journey-grid" in knowledge_source
     assert "pl-journey-flow" in knowledge_source
