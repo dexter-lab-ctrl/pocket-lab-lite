@@ -624,7 +624,7 @@ auth_enabled: false
 server:
   http_listen_port: 3100
   http_listen_address: 127.0.0.1
-  grpc_listen_address: 9096
+  grpc_listen_address: 127.0.0.1
 common:
   instance_addr: 127.0.0.1
   path_prefix: $OBS_DIR/loki_data
