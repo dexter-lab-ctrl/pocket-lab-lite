@@ -48,8 +48,8 @@ Release, runtime, supply-chain and local generation state are independent author
 
 | Artifact | Release presence | Integrity | Verification detail | Binding | Local staging |
 | --- | --- | --- | --- | --- | --- |
-| dist.zip | verified | verified | SHA-256 verified against checksums.txt and GitHub asset digest where provided | verified | unobserved |
-| checksums.txt | verified | verified | parsed and used to verify dist.zip; GitHub asset digest verified where provided | verified | unobserved |
+| dist.zip | verified | verified | SHA-256 verified against checksums.txt and GitHub asset digest where provided | verified | observed |
+| checksums.txt | verified | verified | parsed and used to verify dist.zip; GitHub asset digest verified where provided | verified | observed |
 | pocketlab-lite-release.json | verified | verified | JSON parsed and tag + source commit bound; GitHub asset digest verified where provided | verified | unobserved |
 
 ## Release delta
