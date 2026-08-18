@@ -33951,8 +33951,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "13d864776c9207a4e253d20f33dd8a62c9100948",
-          "head_tree": "f5508ec91efc93c3fac891ca5159c1da274215d6",
+          "head": "b91125230502f02968b780fd12feedc38a17f4f2",
+          "head_tree": "29b22fae21b31f56efcbcc9c5f4ebe931f03bdab",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -36708,8 +36708,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "13d864776c9207a4e253d20f33dd8a62c9100948",
-        "head_tree": "f5508ec91efc93c3fac891ca5159c1da274215d6",
+        "head": "b91125230502f02968b780fd12feedc38a17f4f2",
+        "head_tree": "29b22fae21b31f56efcbcc9c5f4ebe931f03bdab",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"

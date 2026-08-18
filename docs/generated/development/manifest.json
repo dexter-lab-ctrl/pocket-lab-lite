@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "65a74e4abf0c0da3178307346cab000076511caf826cf3cad30fa9634abf0faa",
+  "source_fingerprint": "9a3315bec7d9d8bab7eca1653eedcac05ea544ed0bb81a797678b6fd8ee790b8",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "47fe82dbfe9c84df2118beb09d7956ddc9863432120a6bb9e19da5f4770bc38f",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -110,7 +110,7 @@
     "src/lite/catalog/AppActionDetailsLazy.jsx": "63950cb884dabe21eba431f90e5a830f83315587a72abedcf981f0ea17b160f4",
     "src/lite/catalog/AppActionProgressSlot.jsx": "f15e11a12fefbf1aa5b0b4d8c7e44ad8b378179e9fcbe44ab5b06e1d8d75aac9",
     "src/lite/catalog/AppActionRow.jsx": "cf9dd0533d53b5aa0532f6e196bab4feff696f311a19f036234d59e5afa3ad0c",
-    "src/lite/catalog/AppCatalogScreen.jsx": "9b5740f27fcc26666b3d3fdf1f268a5cbaf468c5fa5c0399c932124791077de0",
+    "src/lite/catalog/AppCatalogScreen.jsx": "f812e46da77a23712b95b74370c6f8029f8a677330b171e75ec5fb345826b4e5",
     "src/lite/catalog/AppManagePortal.jsx": "b2dd242bdc20b39d58410e8719bba199d5cf3b5fe08ce43bb76865aee4345586",
     "src/lite/catalog/AppManageSections.jsx": "5139eb46536590aa9c2ad09ca999f3fb246801293ce0fa3cf9997fe9881fa69a",
     "src/lite/catalog/AppManageSheet.jsx": "4eb75fb23f5cb5b59b7c07bbba23f9c69e172b0111d96f01aa4b7dcf8f6a30b8",
