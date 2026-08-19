@@ -4,7 +4,7 @@
       "api_routes": [
         "/api/lite/identity"
       ],
-      "fingerprint": "683ad844e9b488ebec6c7d491f411bf94fbbc1c4ab702fdaeadeebac8170423f",
+      "fingerprint": "10e9945876b0683a3b0661186d2f19176be3fdde91c213c2a8f6064d139f9541",
       "id": "identity",
       "selectors": [
         "direct-render"
@@ -18,7 +18,7 @@
   ],
   "kind": "domain-fingerprint",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27",
+  "semantic_fingerprint": "8a90a66c46a250cebfd7e62993f9c541fa1c293fd7e4dd880cc399353b42bff4",
   "source_revision": "repository-source",
   "status": "generated"
 }

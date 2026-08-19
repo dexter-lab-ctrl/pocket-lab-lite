@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27
+semantic_fingerprint: 8a90a66c46a250cebfd7e62993f9c541fa1c293fd7e4dd880cc399353b42bff4
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -102,7 +102,7 @@ Status: **observed**. The Termux lane uses the same allowlisted GET adapters thr
 
 | Mapping | Comparator | Allowlisted presentation |
 | --- | --- | --- |
-| identity-status-presentation | intentional-presentation-map | {"degraded": ["Review"], "failed": ["Attention"], "healthy": ["Access readiness", "Ready"], "mismatch": ["mismatch", "repair", "rejoin"], "ready": ["Access readiness", "Ready"], "unknown": ["Checking access", "Checking access protection", "Access readiness"]} |
+| identity-status-presentation | intentional-presentation-map | {"degraded": ["Review"], "failed": ["Attention"], "healthy": ["Access readiness", "Ready"], "mismatch": ["mismatch", "repair", "rejoin"], "ready": ["Access readiness", "Ready"], "setup_required": ["Owner setup needed", "Create the local Pocket Lab owner"], "unknown": ["Checking access", "Checking access protection", "Access readiness"]} |
 
 Different user-facing wording or formatting is not drift when an allowlisted deterministic mapping proves equivalent meaning.
 

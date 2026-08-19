@@ -12021,7 +12021,7 @@
             "expected_source_match": "matched",
             "id": "lite-api",
             "logical_role": "FastAPI control API",
-            "memory_bucket": "64-191-mib",
+            "memory_bucket": "under-64-mib",
             "presence": "present",
             "restart_bucket": "none",
             "runtime_type": "python",
@@ -12186,7 +12186,7 @@
             "journal_mode": "wal",
             "presence": "present",
             "role": "control-plane-state",
-            "schema_revision": 23,
+            "schema_revision": 24,
             "service_id": "sqlite"
           }
         ],
@@ -64342,7 +64342,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "2f740fbb3be6a98267eb62d1edfd5757010d75330feaab84c84d5eb4289540d7",
+  "source_fingerprint": "e94a5edb22fcafa1e06bbfa67593dfa292d77172e7a206158e8568e24db902e2",
   "statistics": {
     "entity_count": 882,
     "entity_type_counts": {

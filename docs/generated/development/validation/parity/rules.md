@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27
+semantic_fingerprint: 8a90a66c46a250cebfd7e62993f9c541fa1c293fd7e4dd880cc399353b42bff4
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -76,8 +76,6 @@ Status: **observed**
 | status | primary | path | status | exact | high |
 | engine_healthy | primary | path | engine.healthy | exact | critical |
 | summary | primary | path | summary | exact | high |
-| protection_enabled | primary | path | protection_enabled | exact | high |
-| requires_confirmation | primary | path | requires_confirmation | exact | high |
 | allowed_action_count | primary | count | allowed_actions | exact | high |
 
 ## 10. Live UI observation
