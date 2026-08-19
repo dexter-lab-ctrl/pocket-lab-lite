@@ -50,7 +50,7 @@ The canonical architecture remains authoritative for what Pocket Lab Lite is des
 
 | Role | Presence | Integrity | Journal | Expected tables | Schema revision |
 | --- | --- | --- | --- | --- | --- |
-| control-plane-state | present | ok | wal | yes | 23 |
+| control-plane-state | present | ok | wal | yes | 24 |
 
 ## Agent and supervisor relationship
 

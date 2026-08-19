@@ -147,7 +147,7 @@
   ],
   "kind": "evidence-manifest",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "0b555a4643cccbb5d48b5dd4e1492fc4487803cb12ab52681cdbd77e6e2bac27",
+  "semantic_fingerprint": "8a90a66c46a250cebfd7e62993f9c541fa1c293fd7e4dd880cc399353b42bff4",
   "source_revision": "repository-source",
   "status": "generated"
 }

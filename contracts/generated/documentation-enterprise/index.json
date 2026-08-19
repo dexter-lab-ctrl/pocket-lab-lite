@@ -34001,8 +34001,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "f409a895dca44dfc29e1a813d0c5a78bffc3cf7b",
-          "head_tree": "2376fd359ed60fdd42db32715d146286fc490f4c",
+          "head": "0bff375c025dcaf491db3f46a01bb339b0ee3fbf",
+          "head_tree": "8d2a95611fb40495462b1665b0eb1bebc4b3435c",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34684,9 +34684,9 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-        "documentation": "97201943c0ca83f4393cf6beedd48bf7be22cd1051564b652b99dd803d3cf83b",
+        "documentation": "552e87a950c13ef40842c02c1cf4b36507b444152581fbc50dd040da0110f23b",
         "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
-        "operational_health": "adc98967c5464fb7df4a05cdeb691c37b09892ea4251536f41876c43f5e252cb"
+        "operational_health": "cb8b15444f009d4dc4e362ef8c123577eeedbff6c368d97387ca71c2deb7ffdf"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -36758,8 +36758,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "f409a895dca44dfc29e1a813d0c5a78bffc3cf7b",
-        "head_tree": "2376fd359ed60fdd42db32715d146286fc490f4c",
+        "head": "0bff375c025dcaf491db3f46a01bb339b0ee3fbf",
+        "head_tree": "8d2a95611fb40495462b1665b0eb1bebc4b3435c",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -86369,5 +86369,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "50fd402116f006e3026a093e16250e10a498a387d051bcecab5935dc6ca58f4f"
+  "source_fingerprint": "08515e263ce7c649055b4a8b6fb7a17dae087399729a8eae04222a4ab58927e5"
 }

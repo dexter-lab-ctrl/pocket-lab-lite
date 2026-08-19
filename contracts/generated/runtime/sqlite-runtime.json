@@ -5,8 +5,8 @@
     "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
     "generator_version": 1,
     "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
-    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
-    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "promoted_baseline_sha256": "acb918012e38e0925c35b371b6e97deef48391b3f8dad7f07dedaeec47871591",
+    "promoted_semantic_fingerprint": "2e1089d2ec0df443c9136302833cbcb4ff2e691dafb13e00a9b444a118e06d57",
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "validation_state": "generated"
@@ -21,7 +21,7 @@
         "journal_mode": "wal",
         "presence": "present",
         "role": "control-plane-state",
-        "schema_revision": 23,
+        "schema_revision": 24,
         "service_id": "sqlite"
       }
     ],
