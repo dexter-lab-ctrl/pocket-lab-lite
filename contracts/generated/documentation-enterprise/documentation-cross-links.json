@@ -6363,6 +6363,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:remote-access:2749354507468f63",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:remote-access:29d27053c6eb3f88",
       "relation_type": "depends_on",
       "source": "page:generated/enterprise/journeys/remote-access",

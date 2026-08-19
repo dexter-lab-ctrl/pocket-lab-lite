@@ -761,7 +761,7 @@ start_pm2_daemons(){
     require_cmd opa
     [[ -x "$OPA_POLICY_PREP" ]] || die "OPA policy preparation script is missing: $OPA_POLICY_PREP"
     POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" "$OPA_POLICY_PREP"
-    pm2_start_or_restart pocket-opa "$(command -v opa)" -- run --server --addr=127.0.0.1:8181 "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+    pm2_start_or_restart pocket-opa "$(command -v opa)" --interpreter bash -- run --server --addr=127.0.0.1:8181 "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
     local opa_ready=0
     local opa_attempt
     for opa_attempt in $(seq 1 20); do

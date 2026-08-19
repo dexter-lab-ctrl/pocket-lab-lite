@@ -30325,6 +30325,24 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py": [
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py": [
         {
           "source": "component:photoprism",
@@ -36651,6 +36669,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -37459,6 +37481,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -37728,6 +37754,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
           "type": "verified_by"
         },
         {
@@ -42422,6 +42452,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
           "type": "verified_by"
         },
         {
@@ -53621,6 +53655,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:7c99f39863abcfee",
+      "source": "journey:startup",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_s7_saved_state_history.py"
       ],
       "id": "rel:7cdb8dea3e91a53f",
@@ -56571,6 +56614,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:a0500f273c6d5144",
+      "source": "component:caddy",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:a0b6372b38fc7a18",
@@ -59480,6 +59532,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:c591fc2e7bfdc257",
+      "source": "component:pm2",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:c5fe5a5e829b3a6c",
@@ -61891,6 +61952,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:e3a81dabf876ab9d",
+      "source": "component:nats-listeners",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:e3e042085b814f9a",
@@ -64272,7 +64342,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "822a1cde7f0deb5f1f65a3aca00bb3cba8d6c447454c74a0931d15067f9cad58",
+  "source_fingerprint": "47f256a870efc629539652d1a9a71559ccc2db983fc09d9b3fb3da9f2c3bde61",
   "statistics": {
     "entity_count": 882,
     "entity_type_counts": {
@@ -64298,7 +64368,7 @@
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2277,
+    "relation_count": 2281,
     "source_count": 219
   }
 }

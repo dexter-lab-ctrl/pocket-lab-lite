@@ -31,15 +31,15 @@
       },
       "local_staging": {
         "authority": "local-repository",
-        "confidence": "local-observation",
+        "confidence": "unvalidated",
         "freshness": "current",
         "observed_at": "unobserved",
         "sanitized": true,
         "source": "checksums.txt",
-        "status": "observed",
+        "status": "unobserved",
         "value": {
-          "bytes": 75,
-          "sha256": "50e14ac426e6a219370d0dacaa5cd602bbcfcc2f0c4823bf1b1d265fbf9edab1"
+          "bytes": null,
+          "sha256": null
         }
       },
       "release_presence": {
@@ -91,8 +91,8 @@
         "source": "dist.zip",
         "status": "observed",
         "value": {
-          "bytes": 478287,
-          "sha256": "c7b9ac8c7d85ccb4345165b0b7409e8051fa7dc445db7f0b5e6616a18bf76f69"
+          "bytes": 1719519,
+          "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
         }
       },
       "release_presence": {
@@ -403,7 +403,7 @@
   "fingerprints": {
     "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
     "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-    "documentation": "5c15a6c3ab9b6605bbb80f2d7fa4a55b6308a528d64965fa84ac1238e6eecc6e",
+    "documentation": "dfe29304838eeb976f281c7f4eb5338272391494830b876eff32f3ece4787d2d",
     "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
     "operational_health": "adc98967c5464fb7df4a05cdeb691c37b09892ea4251536f41876c43f5e252cb"
   },

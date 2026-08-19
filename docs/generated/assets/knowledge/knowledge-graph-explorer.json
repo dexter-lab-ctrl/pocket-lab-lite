@@ -25801,6 +25801,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:7c99f39863abcfee",
+      "source": "journey:startup",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_s7_saved_state_history.py"
       ],
       "id": "rel:7cdb8dea3e91a53f",
@@ -30381,6 +30395,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:a0500f273c6d5144",
+      "source": "component:caddy",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:a0b6372b38fc7a18",
@@ -34895,6 +34923,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:c591fc2e7bfdc257",
+      "source": "component:pm2",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:c5fe5a5e829b3a6c",
@@ -38627,6 +38669,20 @@
       "id": "rel:e39e3a3386eb8b21",
       "source": "reason:policy_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:e3a81dabf876ab9d",
+      "source": "component:nats-listeners",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
       "type": "verified_by"
     },
     {

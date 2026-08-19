@@ -6825,6 +6825,24 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py": [
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py": [
         {
           "source": "component:photoprism",
@@ -13151,6 +13169,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -13959,6 +13981,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -14228,6 +14254,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
           "type": "verified_by"
         },
         {
@@ -18925,6 +18955,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -20165,6 +20199,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "822a1cde7f0deb5f1f65a3aca00bb3cba8d6c447454c74a0931d15067f9cad58"
+    "source_fingerprint": "47f256a870efc629539652d1a9a71559ccc2db983fc09d9b3fb3da9f2c3bde61"
   }
 }

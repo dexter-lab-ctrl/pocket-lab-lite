@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 754,
+  "cross_link_count": 755,
   "feature_journeys": [
     {
       "api_entities": [
@@ -3138,6 +3138,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:nats-listeners",
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:nats-listeners",
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py"
         },
         {
@@ -3391,6 +3397,7 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
@@ -15166,7 +15173,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "d2b6dcbe73d4c68526d9386d97f30c56ab4d9e8cfe147fdf643cff0f67428927",
+  "source_fingerprint": "06a203fae90021dd4393bbba1b779b406f64951011c5fbb99a0147a5490143b4",
   "top_level": [
     "start-here",
     "use",

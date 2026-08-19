@@ -17240,7 +17240,8 @@
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
-          "tests/backend/test_lite_identity_rules_authorization.py"
+          "tests/backend/test_lite_identity_rules_authorization.py",
+          "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -33301,7 +33302,7 @@
     ],
     "information_architecture": {
       "contract": "contracts/generated/documentation-enterprise/information-architecture.json",
-      "cross_link_count": 754,
+      "cross_link_count": 755,
       "feature_journey_count": 7,
       "implementation_status": "implemented",
       "live_runtime": false,
@@ -34000,8 +34001,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 1,
-          "head": "9a5105cdf4581f3d9b3418c1fb192d811f8153c8",
-          "head_tree": "948f662688519929dfc2b9a22e614e81cd66aa28",
+          "head": "3a49c0b13069150ce1faf52b4976e03d11b6a7be",
+          "head_tree": "f70098aa6585e7d42783891c045f5ceb0832e0a0",
           "reason": "no second verified canonical release is available for release-to-release comparison",
           "selected_baseline": null,
           "status": "not-ready"
@@ -34311,15 +34312,15 @@
           },
           "local_staging": {
             "authority": "local-repository",
-            "confidence": "local-observation",
+            "confidence": "unvalidated",
             "freshness": "current",
             "observed_at": "unobserved",
             "sanitized": true,
             "source": "checksums.txt",
-            "status": "observed",
+            "status": "unobserved",
             "value": {
-              "bytes": 75,
-              "sha256": "50e14ac426e6a219370d0dacaa5cd602bbcfcc2f0c4823bf1b1d265fbf9edab1"
+              "bytes": null,
+              "sha256": null
             }
           },
           "release_presence": {
@@ -34371,8 +34372,8 @@
             "source": "dist.zip",
             "status": "observed",
             "value": {
-              "bytes": 478287,
-              "sha256": "c7b9ac8c7d85ccb4345165b0b7409e8051fa7dc445db7f0b5e6616a18bf76f69"
+              "bytes": 1719519,
+              "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
             }
           },
           "release_presence": {
@@ -34683,7 +34684,7 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-        "documentation": "5c15a6c3ab9b6605bbb80f2d7fa4a55b6308a528d64965fa84ac1238e6eecc6e",
+        "documentation": "dfe29304838eeb976f281c7f4eb5338272391494830b876eff32f3ece4787d2d",
         "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
         "operational_health": "adc98967c5464fb7df4a05cdeb691c37b09892ea4251536f41876c43f5e252cb"
       },
@@ -36757,8 +36758,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 1,
-        "head": "9a5105cdf4581f3d9b3418c1fb192d811f8153c8",
-        "head_tree": "948f662688519929dfc2b9a22e614e81cd66aa28",
+        "head": "3a49c0b13069150ce1faf52b4976e03d11b6a7be",
+        "head_tree": "f70098aa6585e7d42783891c045f5ceb0832e0a0",
         "reason": "no second verified canonical release is available for release-to-release comparison",
         "selected_baseline": null,
         "status": "not-ready"
@@ -86368,5 +86369,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "584e692d237018ecf2b5366ab7d0c033973b73822b8f0153652a3e3cff349222"
+  "source_fingerprint": "227cf493d4946022e59085d81d54186a884cfc6f5f068a03ef3979ffdbe3e2a6"
 }
