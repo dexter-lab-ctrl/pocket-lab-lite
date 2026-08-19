@@ -11,7 +11,12 @@ START_DASHBOARD = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-produc
 HEALTH = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh"
 
 
-def _run_helper(tmp_path: Path, body: str) -> subprocess.CompletedProcess[str]:
+def _run_helper(
+    tmp_path: Path,
+    body: str,
+    *,
+    use_canonical_lite_base: bool = False,
+) -> subprocess.CompletedProcess[str]:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir(parents=True)
 
@@ -41,18 +46,27 @@ def _run_helper(tmp_path: Path, body: str) -> subprocess.CompletedProcess[str]:
     )
     curl.chmod(0o755)
 
-    state = tmp_path / "state"
+    lite_base = tmp_path / "pocket-lab-lite" if use_canonical_lite_base else tmp_path
+    state = lite_base / "state"
     active = state / "opa" / "active"
     active.mkdir(parents=True)
     (active / "pocketlab.rego").write_text("package pocketlab\n")
     (active / "revision.txt").write_text("test-revision\n")
+
+    if use_canonical_lite_base:
+        state_exports = f"""
+unset POCKETLAB_BASE_DIR POCKETLAB_STATE_DIR POCKETLAB_OPA_ACTIVE_POLICY_DIR
+export POCKET_LAB_BASE_DIR={lite_base!s}
+"""
+    else:
+        state_exports = f"export POCKETLAB_STATE_DIR={state!s}"
 
     script = f"""
 set -Eeuo pipefail
 is_done() {{ [[ \"${{1:-}}\" == lite_opa_ready ]]; }}
 source {HEALTH!s}
 export PATH={fake_bin!s}:$PATH
-export POCKETLAB_STATE_DIR={state!s}
+{state_exports}
 {body}
 """
     return subprocess.run(
@@ -114,6 +128,19 @@ printf '%s' "$POCKETLAB_LITE_STAGE_HEALTH_REASON"
     )
     assert legacy.returncode == 0, legacy.stderr
     assert legacy.stdout == "FastAPI Rules projection is not bound to the ready OPA runtime"
+
+
+def test_start_dashboard_marker_uses_canonical_lite_state_root(tmp_path: Path) -> None:
+    result = _run_helper(
+        tmp_path,
+        """
+export FAKE_POLICY_JSON='{"status":"ready","engine":{"healthy":true,"endpoint_exposed_to_browser":false},"active_policy":{"bundle_ready":true}}'
+pocketlab_lite_stage_completion_is_valid start_dashboard
+""",
+        use_canonical_lite_base=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == ""
 
 
 def test_start_dashboard_marker_fails_when_opa_capability_marker_is_missing(tmp_path: Path) -> None:
