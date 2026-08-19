@@ -119,7 +119,7 @@ def test_promotion_rejects_required_unobserved_field() -> None:
         "accepted_limitation": False,
     }
     with pytest.raises(SystemExit, match="required unobserved fields"):
-        promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="implemented")])
+        promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="implemented")]})
 
 
 def test_declared_partial_domain_is_promotable_without_becoming_verified() -> None:
@@ -130,7 +130,7 @@ def test_declared_partial_domain_is_promotable_without_becoming_verified() -> No
         "implementation_status": "implemented",
         "accepted_limitation": False,
     }
-    promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="partial")])
+    promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="partial")]})
 
 
 def test_identity_and_rules_runtime_contracts_match_current_api_and_ui() -> None:
