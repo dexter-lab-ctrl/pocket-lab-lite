@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -118,7 +119,7 @@ def test_promotion_rejects_required_unobserved_field() -> None:
         "accepted_limitation": False,
     }
     with pytest.raises(SystemExit, match="required unobserved fields"):
-        promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="implemented")]})
+        promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="implemented")])
 
 
 def test_declared_partial_domain_is_promotable_without_becoming_verified() -> None:
@@ -129,4 +130,23 @@ def test_declared_partial_domain_is_promotable_without_becoming_verified() -> No
         "implementation_status": "implemented",
         "accepted_limitation": False,
     }
-    promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="partial")]})
+    promotion.validate_promotable_comparison({"domains": [_domain(item, implementation_status="partial")])
+
+
+def test_identity_and_rules_runtime_contracts_match_current_api_and_ui() -> None:
+    model = json.loads((ROOT / "contracts" / "parity" / "parity-model.json").read_text(encoding="utf-8"))
+    domains = {domain["id"]: domain for domain in model["domains"]}
+
+    identity_mapping = next(
+        item for item in domains["identity"]["semantic_mappings"]
+        if item["id"] == "identity-status-presentation"
+    )
+    assert "Owner setup needed" in identity_mapping["mapping"]["setup_required"]
+
+    rules_fields = {
+        field["id"]: field
+        for field in domains["rules"]["live_observation_contract"]["backend"]["fields"]
+    }
+    assert rules_fields["engine_healthy"]["path"] == "engine.healthy"
+    assert "protection_enabled" not in rules_fields
+    assert "requires_confirmation" not in rules_fields
