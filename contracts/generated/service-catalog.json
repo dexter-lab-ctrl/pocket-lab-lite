@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "47eb4ad96c226844eb5d3e27ac6be7384772c847e16b079c58dccbd1fcec1c89",
+    "aggregate_fingerprint": "f1de1ab2affe0a0f2a13ca58982f5c7b99da781925cea9faea4d79b6100c3480",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -12,7 +12,7 @@
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "bbaf13b2ddc1fc624e27b8bd36e1bced0bb6f04fa92ada489407cbc54a60b3ef",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "e07fddd46fe27a7e5a978d9ef992b0ffad38ef9a9d6d69bd6d94f13afb4a1706",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "6f1525e70626e6ccd01240c54767925fced934937ee203bd0384e4ddf528b316",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "generated"
