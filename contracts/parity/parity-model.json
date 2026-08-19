@@ -1913,6 +1913,10 @@
               "Access readiness",
               "Ready"
             ],
+            "setup_required": [
+              "Owner setup needed",
+              "Create the local Pocket Lab owner"
+            ],
             "unknown": [
               "Checking access",
               "Checking access protection",
@@ -1999,22 +2003,6 @@
               "extract": "path",
               "id": "summary",
               "path": "summary",
-              "route": "primary"
-            },
-            {
-              "authority_operator": "exact",
-              "authority_severity": "high",
-              "extract": "path",
-              "id": "protection_enabled",
-              "path": "protection_enabled",
-              "route": "primary"
-            },
-            {
-              "authority_operator": "exact",
-              "authority_severity": "high",
-              "extract": "path",
-              "id": "requires_confirmation",
-              "path": "requires_confirmation",
               "route": "primary"
             },
             {
