@@ -42,7 +42,10 @@ pocketlab_lite_stage_completion_is_valid() {
         return 1
       fi
 
-      local policy_dir="${POCKETLAB_OPA_ACTIVE_POLICY_DIR:-${POCKETLAB_STATE_DIR:-${POCKETLAB_BASE_DIR:-$HOME/.pocket_lab}/state}/opa/active}"
+      local lite_base_dir state_dir policy_dir
+      lite_base_dir="${POCKETLAB_BASE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}}"
+      state_dir="${POCKETLAB_STATE_DIR:-$lite_base_dir/state}"
+      policy_dir="${POCKETLAB_OPA_ACTIVE_POLICY_DIR:-$state_dir/opa/active}"
       if [[ ! -f "$policy_dir/pocketlab.rego" || ! -s "$policy_dir/revision.txt" ]]; then
         POCKETLAB_LITE_STAGE_HEALTH_REASON="active OPA policy revision is missing"
         return 1
