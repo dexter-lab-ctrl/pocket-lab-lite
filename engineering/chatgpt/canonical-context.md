@@ -122,13 +122,15 @@ When evidence conflicts, prefer:
 4. repo-owned `engineering/chatgpt/` guidance;
 5. handovers/conversation history.
 
-## Chat + Work contract
+## Chat + Work + Codex contract
 
-**Work:** parallel read-only investigation, independent review, test design, CI/maintenance/release analysis.
+**Work:** read-only investigation, independent review, test design, CI/maintenance/release analysis.
 
-**Chat:** coordinator, evidence reconciliation, exact targeted patches/commands, rapid debug loops, validation interpretation, explicit Git/GitHub integration when requested.
+**Chat:** coordination, evidence reconciliation, architecture/design decisions, debugging reasoning and explicit GitHub integration when requested.
 
-**Human:** executes local commands, controls WSL2/Termux/runtime mutation and explicitly authorizes commits/pushes/merges/tags/releases/live actions.
+**Codex:** local source implementation and validation when available. Use `engineering/codex/README.md` for detailed local execution guidance.
+
+**Human:** explicitly authorizes remote, destructive, live-runtime, credential and release actions.
 
 ## Validation baseline
 
