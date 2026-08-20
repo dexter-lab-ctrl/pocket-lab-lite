@@ -1,21 +1,45 @@
 {
   "items": [
     {
-      "artifact": null,
-      "artifact_checksum": null,
+      "artifact": "dist.zip",
+      "artifact_checksum": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
       "confidence": "release-promoted",
       "domain": "release",
       "id": "release:lite-2026.08.12.2",
       "name": "lite-2026.08.12.2",
-      "promoted_at": "2026-08-12T16:00:40Z",
-      "release_manifest_status": "unvalidated",
+      "promoted_at": "2026-08-12T15:12:08Z",
+      "published_at": "2026-08-12T15:12:08Z",
+      "release_manifest_status": "verified",
       "runtime_parity_status": "needs-review",
       "sanitized": true,
       "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
       "source_refs": [
+        "contracts/generated/releases/promoted-release-evidence.json",
         "contracts/parity/runtime-verification-baseline.json"
       ],
-      "type": "release"
+      "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+      "type": "release",
+      "verification_status": "promoted"
+    },
+    {
+      "artifact": "dist.zip",
+      "artifact_checksum": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+      "confidence": "release-promoted",
+      "domain": "release",
+      "id": "release:lite-2026.08.19.2",
+      "name": "lite-2026.08.19.2",
+      "promoted_at": "2026-08-19T20:57:40Z",
+      "published_at": "2026-08-19T20:57:40Z",
+      "release_manifest_status": "verified",
+      "runtime_parity_status": null,
+      "sanitized": true,
+      "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+      "source_refs": [
+        "contracts/generated/releases/promoted-release-evidence.json"
+      ],
+      "tree_hash": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+      "type": "release",
+      "verification_status": "promoted"
     }
   ],
   "metadata": {
@@ -24,6 +48,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e94a5edb22fcafa1e06bbfa67593dfa292d77172e7a206158e8568e24db902e2"
+    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
   }
 }

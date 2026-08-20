@@ -8,6 +8,22 @@ ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts/docs/enterprise/documentation_ia.py"
 
 
+def test_promoted_release_detail_pages_follow_audience_navigation_ownership():
+    from scripts.docs.enterprise.documentation_ia import _owner
+
+    for tag in (
+        "lite-2026-08-12-2",
+        "lite-2099-12-31-999",
+    ):
+        assert _owner(
+            f"generated/development/knowledge/releases/{tag}.md"
+        ) == "build-test"
+
+        assert _owner(
+            f"generated/production/knowledge/releases/{tag}.md"
+        ) == "release-change"
+
+
 def load_module():
     spec = importlib.util.spec_from_file_location("documentation_ia", MODULE_PATH)
     assert spec and spec.loader

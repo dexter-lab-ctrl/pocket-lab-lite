@@ -51,7 +51,7 @@
       "value": "normalized canonical evidence present"
     }
   },
-  "comparison_state": "baseline-only",
+  "comparison_state": "comparable",
   "dimensions": [
     {
       "evidence": "release tag ↔ commit ↔ tree",
@@ -112,9 +112,9 @@
       "status": "unobserved"
     },
     {
-      "evidence": "baseline-only",
+      "evidence": "comparable",
       "id": "historical-delta",
-      "status": "observed"
+      "status": "verified"
     }
   ],
   "evidence_gaps": [

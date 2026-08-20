@@ -1,12 +1,70 @@
 {
   "baseline_readiness": {
     "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
-    "candidate_count": 1,
-    "head": "0bff375c025dcaf491db3f46a01bb339b0ee3fbf",
-    "head_tree": "8d2a95611fb40495462b1665b0eb1bebc4b3435c",
-    "reason": "no second verified canonical release is available for release-to-release comparison",
-    "selected_baseline": null,
-    "status": "not-ready"
+    "candidate_count": 2,
+    "head": "401e25f1fbed642f0d9970bc00e8b64523f486d0",
+    "head_tree": "b3e064acac17866b3984579ab31d5c4487286153",
+    "reason": "comparable verified prior release selected",
+    "selected_baseline": {
+      "artifacts": [
+        {
+          "bytes": 474904,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "dist.zip",
+          "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+          "status": "verified",
+          "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+        },
+        {
+          "bytes": 75,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "checksums.txt",
+          "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+          "status": "verified",
+          "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+        },
+        {
+          "bytes": 362,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "pocketlab-lite-release.json",
+          "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+          "status": "verified",
+          "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+        }
+      ],
+      "canonical_source": "contracts/generated/releases/promoted-release-evidence.json",
+      "canonical_sources": [
+        "contracts/generated/releases/promoted-release-evidence.json"
+      ],
+      "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+      "local_tag_available": true,
+      "local_tag_matches": true,
+      "manifest_binding": {
+        "dist_zip_sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+        "release_tag": "lite-2026.08.12.2",
+        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "status": "verified"
+      },
+      "observed_at": "2026-08-12T15:12:08Z",
+      "promotion_rule": "explicit-only; immutable per release tag",
+      "published_at": "2026-08-12T15:12:08Z",
+      "raw_urls_included": false,
+      "release_tag": "lite-2026.08.12.2",
+      "repository": "dexter-lab-ctrl/pocket-lab-lite",
+      "sanitized": true,
+      "schema_version": "1.0.0",
+      "source": "explicit-gh-release-capture",
+      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+      "tag": "lite-2026.08.12.2",
+      "tagged_at": "2026-08-12T16:12:12+02:00",
+      "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+      "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+      "verification_status": "promoted"
+    },
+    "status": "ready"
   },
   "current_snapshot": {
     "capture_complete": true,
@@ -199,12 +257,20 @@
     }
   },
   "dependencies_added": [],
-  "dependencies_removed": [],
-  "evidence_status": "not-comparable",
+  "dependencies_removed": [
+    {
+      "classification": "dependency-removed",
+      "ecosystem": "PyPI",
+      "name": "-r",
+      "version": "requirements-docs.txt"
+    }
+  ],
+  "evidence_status": "source-comparable; normalized scanner/license/upstream deltas only when historical canonical artifacts exist",
+  "from": "lite-2026.08.12.2",
   "historical_comparison": {
-    "from": null,
-    "reason": "no second verified canonical release is available for release-to-release comparison",
-    "status": "not-comparable",
+    "from": "lite-2026.08.12.2",
+    "reason": "verified canonical prior-release baseline selected",
+    "status": "comparable",
     "to": "current-source"
   },
   "implementation_status": "implemented",
@@ -213,10 +279,1111 @@
   "new_vulnerabilities": [],
   "removed_licenses": [],
   "resolved_vulnerabilities": [],
-  "rule": "scanner disagreement is represented, never converted automatically into a release failure; no historical delta is fabricated without a verified prior release",
-  "scanner_history_comparable": false,
+  "rule": "scanner disagreement is represented, never converted automatically into a release failure; historical deltas require verified canonical evidence",
+  "scanner_history_comparable": true,
   "schema_version": "1.1.0",
-  "status": "no-comparable-verified-prior-release",
+  "status": "comparable",
+  "to": "current-source",
   "upstream_posture_changes": [],
-  "versions_changed": []
+  "versions_changed": [
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "PyPI",
+      "from": "6.0.1",
+      "name": "PyYAML",
+      "to": "6.0.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "5.1.0",
+      "name": "@asyncapi/specs",
+      "to": "6.11.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/aix-ppc64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/android-arm",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/android-arm64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/android-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/darwin-arm64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/darwin-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/freebsd-arm64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/freebsd-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-arm",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-arm64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-ia32",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-loong64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-mips64el",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-ppc64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-riscv64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-s390x",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/linux-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/netbsd-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/openbsd-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/sunos-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/win32-arm64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/win32-ia32",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "@esbuild/win32-x64",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "8.57.1",
+      "name": "@eslint/js",
+      "to": "9.39.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.2",
+      "name": "@inquirer/ansi",
+      "to": "2.0.7"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.2.0",
+      "name": "@inquirer/confirm",
+      "to": "6.1.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.15",
+      "name": "@inquirer/figures",
+      "to": "2.0.7"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.3.0",
+      "name": "@inquirer/input",
+      "to": "4.3.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.5.0",
+      "name": "@inquirer/select",
+      "to": "4.4.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.5.5",
+      "name": "@inquirer/type",
+      "to": "4.0.7"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.3.31",
+      "name": "@jridgewell/trace-mapping",
+      "to": "0.3.9"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.1.1",
+      "name": "@mermaid-js/parser",
+      "to": "1.2.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "10.10.0",
+      "name": "@npmcli/config",
+      "to": "8.3.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "10.0.4",
+      "name": "@npmcli/run-script",
+      "to": "4.2.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.214.0",
+      "name": "@opentelemetry/api-logs",
+      "to": "0.57.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.40.0",
+      "name": "@opentelemetry/semantic-conventions",
+      "to": "1.41.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.13.2",
+      "name": "@puppeteer/browsers",
+      "to": "2.3.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "8.11.2",
+      "name": "@redocly/ajv",
+      "to": "8.18.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.22.0",
+      "name": "@redocly/config",
+      "to": "0.49.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.34.15",
+      "name": "@redocly/openapi-core",
+      "to": "2.31.6"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.1.0",
+      "name": "@rollup/pluginutils",
+      "to": "5.4.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "8.6.14",
+      "name": "@storybook/csf-plugin",
+      "to": "8.6.18"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "16.18.126",
+      "name": "@types/node",
+      "to": "25.9.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.3.8",
+      "name": "accepts",
+      "to": "2.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "6.5.2",
+      "name": "ajv",
+      "to": "8.20.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.1.1",
+      "name": "ajv-formats",
+      "to": "3.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.1.3",
+      "name": "arg",
+      "to": "5.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.20.5",
+      "name": "body-parser",
+      "to": "2.2.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.2.13",
+      "name": "buffer-crc32",
+      "to": "1.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.7.0",
+      "name": "chardet",
+      "to": "2.1.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.6.0",
+      "name": "chokidar",
+      "to": "4.0.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.9.3",
+      "name": "color-convert",
+      "to": "3.1.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.1.3",
+      "name": "color-name",
+      "to": "2.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.4.0",
+      "name": "colorette",
+      "to": "2.0.20"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.20.3",
+      "name": "commander",
+      "to": "8.3.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.5.4",
+      "name": "content-disposition",
+      "to": "1.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.5",
+      "name": "content-type",
+      "to": "2.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.7",
+      "name": "cookie-signature",
+      "to": "1.2.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.12.1",
+      "name": "d3-array",
+      "to": "3.2.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.9",
+      "name": "d3-path",
+      "to": "3.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.2",
+      "name": "data-uri-to-buffer",
+      "to": "6.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.6.9",
+      "name": "debug",
+      "to": "4.4.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.1.0",
+      "name": "doctrine",
+      "to": "3.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.5.16",
+      "name": "dom-accessibility-api",
+      "to": "0.6.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.21.5",
+      "name": "esbuild",
+      "to": "0.25.12"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.22.2",
+      "name": "express",
+      "to": "5.2.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.1",
+      "name": "fast-deep-equal",
+      "to": "3.1.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.6",
+      "name": "fast-levenshtein",
+      "to": "3.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.0",
+      "name": "figures",
+      "to": "3.2.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.3.2",
+      "name": "finalhandler",
+      "to": "2.1.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.1.0",
+      "name": "find-up",
+      "to": "5.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.1.8",
+      "name": "for-in",
+      "to": "1.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.5.2",
+      "name": "fresh",
+      "to": "2.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "11.3.5",
+      "name": "fs-extra",
+      "to": "9.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "11.1.0",
+      "name": "glob",
+      "to": "8.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.0.0",
+      "name": "has-flag",
+      "to": "4.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "5.2.1",
+      "name": "hosted-git-info",
+      "to": "9.0.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.6.3",
+      "name": "iconv-lite",
+      "to": "0.7.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.3",
+      "name": "inherits",
+      "to": "2.0.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.3.8",
+      "name": "ini",
+      "to": "6.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "6.5.2",
+      "name": "inquirer",
+      "to": "8.2.7"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.1",
+      "name": "is-obj",
+      "to": "2.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.0",
+      "name": "isarray",
+      "to": "2.0.5"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.1.1",
+      "name": "js-yaml",
+      "to": "4.2.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "24.1.3",
+      "name": "jsdom",
+      "to": "28.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.3.1",
+      "name": "json-parse-even-better-errors",
+      "to": "5.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.4.1",
+      "name": "json-schema-traverse",
+      "to": "1.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.0",
+      "name": "jsonfile",
+      "to": "6.2.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.1",
+      "name": "kind-of",
+      "to": "3.2.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.2",
+      "name": "layout-base",
+      "to": "2.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.2.7",
+      "name": "lazy-cache",
+      "to": "1.0.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "5.0.0",
+      "name": "locate-path",
+      "to": "6.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "11.5.1",
+      "name": "lru-cache",
+      "to": "7.18.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "16.4.2",
+      "name": "marked",
+      "to": "4.3.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.3.0",
+      "name": "media-typer",
+      "to": "1.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.3",
+      "name": "merge-descriptors",
+      "to": "2.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "11.15.0",
+      "name": "mermaid",
+      "to": "11.16.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.52.0",
+      "name": "mime-db",
+      "to": "1.54.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.1.35",
+      "name": "mime-types",
+      "to": "3.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "10.2.5",
+      "name": "minimatch",
+      "to": "9.0.9"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.3.6",
+      "name": "minipass",
+      "to": "7.1.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.6",
+      "name": "minipass-flush",
+      "to": "1.0.7"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.0",
+      "name": "ms",
+      "to": "2.1.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.0",
+      "name": "mute-stream",
+      "to": "3.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.6.7",
+      "name": "node-fetch",
+      "to": "2.7.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "12.3.0",
+      "name": "node-gyp",
+      "to": "9.4.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.1",
+      "name": "normalize-package-data",
+      "to": "6.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.0",
+      "name": "npm-normalize-package-bin",
+      "to": "5.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "13.0.2",
+      "name": "npm-package-arg",
+      "to": "9.1.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "10.0.4",
+      "name": "npm-packlist",
+      "to": "5.1.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "11.0.3",
+      "name": "npm-pick-manifest",
+      "to": "9.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.1",
+      "name": "npm-run-path",
+      "to": "5.3.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "7.4.2",
+      "name": "open",
+      "to": "8.4.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.3.0",
+      "name": "p-limit",
+      "to": "3.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.1.0",
+      "name": "p-locate",
+      "to": "5.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.0",
+      "name": "parse-json",
+      "to": "5.2.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "7.3.0",
+      "name": "parse5",
+      "to": "8.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.1.1",
+      "name": "path-key",
+      "to": "4.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.3.2",
+      "name": "picomatch",
+      "to": "4.0.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "6.1.2",
+      "name": "postcss-selector-parser",
+      "to": "7.1.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "5.6.0",
+      "name": "pretty-bytes",
+      "to": "6.1.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.1.0",
+      "name": "proxy-from-env",
+      "to": "2.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.5.3",
+      "name": "raw-body",
+      "to": "3.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.6.0",
+      "name": "readdirp",
+      "to": "4.1.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.22.12",
+      "name": "resolve",
+      "to": "2.0.0-next.7"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.0",
+      "name": "restore-cursor",
+      "to": "3.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.7.1",
+      "name": "rimraf",
+      "to": "3.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.7.1",
+      "name": "rrweb-cssom",
+      "to": "0.8.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "6.3.1",
+      "name": "semver",
+      "to": "7.8.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.19.2",
+      "name": "send",
+      "to": "1.2.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.16.3",
+      "name": "serve-static",
+      "to": "2.2.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.0.7",
+      "name": "signal-exit",
+      "to": "4.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.0.1",
+      "name": "spdx-expression-parse",
+      "to": "4.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "13.0.1",
+      "name": "ssri",
+      "to": "9.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.2.3",
+      "name": "string-width",
+      "to": "5.1.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "7.2.0",
+      "name": "supports-color",
+      "to": "8.1.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.3.2",
+      "name": "tinyexec",
+      "to": "1.2.4"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.1.4",
+      "name": "tough-cookie",
+      "to": "6.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.0.1",
+      "name": "tr46",
+      "to": "6.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "0.20.2",
+      "name": "type-fest",
+      "to": "5.7.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "1.6.18",
+      "name": "type-is",
+      "to": "2.1.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.9.5",
+      "name": "typescript",
+      "to": "5.9.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "6.24.0",
+      "name": "undici",
+      "to": "7.27.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "10.0.0",
+      "name": "urlpattern-polyfill",
+      "to": "8.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "8.3.2",
+      "name": "uuid",
+      "to": "9.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "5.0.1",
+      "name": "validate-npm-package-name",
+      "to": "7.0.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "5.4.21",
+      "name": "vite",
+      "to": "6.4.3"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.2",
+      "name": "webidl-conversions",
+      "to": "8.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.0",
+      "name": "whatwg-mimetype",
+      "to": "5.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "2.0.2",
+      "name": "which",
+      "to": "6.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.0.3",
+      "name": "write-file-atomic",
+      "to": "7.0.1"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "4.0.3",
+      "name": "y18n",
+      "to": "5.0.8"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "3.1.1",
+      "name": "yallist",
+      "to": "5.0.0"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "15.4.1",
+      "name": "yargs",
+      "to": "17.7.2"
+    },
+    {
+      "classification": "dependency-updated",
+      "ecosystem": "npm",
+      "from": "18.1.3",
+      "name": "yargs-parser",
+      "to": "21.1.1"
+    }
+  ]
 }

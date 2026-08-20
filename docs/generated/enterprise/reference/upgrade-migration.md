@@ -11,9 +11,9 @@ confidence: generated
 
 | Field | Value |
 | --- | --- |
-| From | not-comparable |
-| To | lite-2026.08.12.2 |
-| Database migrations | {'dimension': 'sqlite-schema-migrations', 'status': 'not-comparable', 'classification': 'not-comparable', 'source_paths': ['pocket-lab-final-structure/runtime/api_fastapi/migrations', 'pocket-lab-final-structure/runtime/migrations'], 'details': {'reason': 'a second verified canonical release is required'}} |
+| From | lite-2026.08.12.2 |
+| To | lite-2026.08.19.2 |
+| Database migrations | {'dimension': 'sqlite-schema-migrations', 'status': 'not-comparable', 'classification': 'not-comparable', 'from_digest': None, 'to_digest': None, 'from_objects': 0, 'to_objects': 0, 'source_paths': ['pocket-lab-final-structure/runtime/api_fastapi/migrations', 'pocket-lab-final-structure/runtime/migrations'], 'details': {}} |
 | Agent compatibility | review agent/supervisor and bootstrap source changes in release delta |
 | Runtime changes | compare only promoted runtime evidence; repository HEAD is never treated as a release baseline |
 | Backup requirement | run/verify recovery backup according to release policy before destructive migration/update |

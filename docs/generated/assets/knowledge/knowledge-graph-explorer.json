@@ -4002,7 +4002,19 @@
       "id": "release:lite-2026.08.12.2",
       "name": "lite-2026.08.12.2",
       "source_refs": [
+        "contracts/generated/releases/promoted-release-evidence.json",
         "contracts/parity/runtime-verification-baseline.json"
+      ],
+      "type": "release"
+    },
+    {
+      "confidence": "release-promoted",
+      "description": "",
+      "domain": "release",
+      "id": "release:lite-2026.08.19.2",
+      "name": "lite-2026.08.19.2",
+      "source_refs": [
+        "contracts/generated/releases/promoted-release-evidence.json"
       ],
       "type": "release"
     },

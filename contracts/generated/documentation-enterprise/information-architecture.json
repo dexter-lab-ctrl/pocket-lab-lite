@@ -4006,7 +4006,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 417,
+  "page_count": 419,
   "page_types": [
     "overview",
     "guide",
@@ -6790,6 +6790,30 @@
       "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
       "title": "lite-2026.08.12.2",
       "url": "/generated/development/knowledge/releases/lite-2026-08-12-2/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
+      "confidence": "release-promoted",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:generated/development/knowledge/releases/lite-2026-08-19-2",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "generated/development/knowledge/releases/lite-2026-08-19-2.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
+      "title": "lite-2026.08.19.2",
+      "url": "/generated/development/knowledge/releases/lite-2026-08-19-2/"
     },
     {
       "additional_audiences": [],
@@ -14400,6 +14424,34 @@
       "url": "/generated/production/knowledge/releases/lite-2026-08-12-2/"
     },
     {
+      "additional_audiences": [
+        "user",
+        "operator"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
+      "confidence": "release-promoted",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:generated/production/knowledge/releases/lite-2026-08-19-2",
+      "intents": [
+        "operate",
+        "audit",
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "generated/production/knowledge/releases/lite-2026-08-19-2.md",
+      "primary_audience": "release-reviewer",
+      "primary_navigation_owner": "release-change",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
+      "title": "lite-2026.08.19.2",
+      "url": "/generated/production/knowledge/releases/lite-2026-08-19-2/"
+    },
+    {
       "additional_audiences": [],
       "authority": "derived",
       "canonical_source_references": [
@@ -15173,7 +15225,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "06a203fae90021dd4393bbba1b779b406f64951011c5fbb99a0147a5490143b4",
+  "source_fingerprint": "9032d64ad5130a47468bca7a885de97a97e52876e8e9aca14b3e99f2cab8134a",
   "top_level": [
     "start-here",
     "use",

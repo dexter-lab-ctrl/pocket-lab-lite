@@ -3,11 +3,11 @@
     {
       "added": [],
       "changed": [],
-      "from": null,
-      "note": "No second verified canonical release record exists in the repository; no historical diff is fabricated.",
+      "from": "release:lite-2026.08.12.2",
+      "note": "Canonical release manifests should supply future semantic change classes.",
       "removed": [],
-      "status": "no-comparable-verified-prior-release",
-      "to": "release:lite-2026.08.12.2"
+      "status": "semantic-comparison-available",
+      "to": "release:lite-2026.08.19.2"
     }
   ],
   "metadata": {
@@ -16,6 +16,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e94a5edb22fcafa1e06bbfa67593dfa292d77172e7a206158e8568e24db902e2"
+    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
   }
 }

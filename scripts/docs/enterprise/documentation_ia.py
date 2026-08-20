@@ -770,7 +770,6 @@ def _owner(path: str) -> str:
         "generated/development/release-inventory.md": "release-change",
         "generated/production/rollback.md": "release-change",
         "generated/production/knowledge/releases.md": "release-change",
-        "generated/production/knowledge/releases/lite-2026-08-12-2.md": "release-change",
         "architecture/lite-architecture.md": "reference",
         "architecture/lite-security-sqlite-design-lock.md": "reference",
         "operations/bootstrap-lite.md": "reference",
@@ -795,6 +794,8 @@ def _owner(path: str) -> str:
     if path.startswith("generated/enterprise/knowledgebase/") or path.startswith("generated/enterprise/architecture/"):
         return "understand"
     if path.startswith("generated/enterprise/release/"):
+        return "release-change"
+    if path.startswith("generated/production/knowledge/releases/"):
         return "release-change"
     if path.startswith("generated/enterprise/reference/"):
         return "reference"

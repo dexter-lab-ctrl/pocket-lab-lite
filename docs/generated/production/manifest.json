@@ -31,7 +31,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "9a3315bec7d9d8bab7eca1653eedcac05ea544ed0bb81a797678b6fd8ee790b8",
+  "source_fingerprint": "4c506f3c2d7eb0f19e0dc657293a3905cafc1cf98b6dc043ee40e1e881280a7a",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "47fe82dbfe9c84df2118beb09d7956ddc9863432120a6bb9e19da5f4770bc38f",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -40,7 +40,7 @@
     ".storybook/preview.jsx": "3b978c26ff6f84126392cdb310301dde696e4d9a8e2426d944d8ffad8203b67f",
     "Taskfile.yml": "06a83a2f6039a645e6592bb77f81c8c0375bac541c3d6299f368f9cc8d4e8ecd",
     "contracts/metadata/documentation-experience.json": "3bde76fc29dd720582368052493ce2b131be17fcd7dea0dbc1ff5f6d1f6dd6d0",
-    "mkdocs.yml": "7d844d8e91810f608f65c654b34023f1376b80d47b99d82fd411c85550b2f557",
+    "mkdocs.yml": "b40bfcc6faddb6f6a41092b95e34b9cba660fd61a415ff2c795c646169b88810",
     "package-lock.json": "e4d0c83b421c709c1d61ed740a7cf5f723c37d1d8cafaf5367629330a72f4bb6",
     "package.json": "77cc632463f99a13efd6e168202fcaa9ae9acca824b15b9a3e9c244485823589",
     "playwright.config.ts": "c7e3490a52715f6671da008ea557c48fbbac80224bac166d5c0182ad92c748bd",

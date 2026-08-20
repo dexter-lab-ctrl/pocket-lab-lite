@@ -470,20 +470,69 @@ def platform_matrix(op: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(op.get("platform_capabilities", []), key=lambda x: (x.get("capability_name", ""), x.get("platform", "")))
 
 
-def dashboard(op: dict[str, Any], runtime: dict[str, Any], coverage: dict[str, Any], fleet: dict[str, Any], recovery: dict[str, Any], impact: dict[str, Any]) -> dict[str, Any]:
-    health_counts = Counter(x.get("operational_health", "unvalidated") for x in op["domains"].values())
-    implemented = sum(1 for x in op["domains"].values() if x.get("implementation_status") == "implemented")
-    partial = sum(1 for x in op["domains"].values() if x.get("implementation_status") == "partial")
+def dashboard(
+    op: dict[str, Any],
+    runtime: dict[str, Any],
+    coverage: dict[str, Any],
+    fleet: dict[str, Any],
+    recovery: dict[str, Any],
+    impact: dict[str, Any],
+) -> dict[str, Any]:
+    health_counts = Counter(
+        x.get("operational_health", "unvalidated")
+        for x in op["domains"].values()
+    )
+    implemented = sum(
+        1
+        for x in op["domains"].values()
+        if x.get("implementation_status") == "implemented"
+    )
+    partial = sum(
+        1
+        for x in op["domains"].values()
+        if x.get("implementation_status") == "partial"
+    )
+
+    current_release = (
+        impact.get("current_release")
+        if isinstance(impact.get("current_release"), dict)
+        else {}
+    )
+
+    release_tag = (
+        current_release.get("tag")
+        or impact.get("to_release")
+        or runtime.get("release_tag")
+    )
+    source_commit = (
+        current_release.get("commit")
+        or impact.get("source_commit")
+        or runtime.get("source_commit")
+    )
+    promoted_at = (
+        current_release.get("observed_at")
+        or current_release.get("published_at")
+        or runtime.get("promoted_at")
+    )
+
     return {
-        "release_tag": runtime.get("release_tag"),
-        "source_commit": runtime.get("source_commit"),
-        "promoted_at": runtime.get("promoted_at"),
+        "release_tag": release_tag,
+        "source_commit": source_commit,
+        "promoted_at": promoted_at,
         "runtime_baseline_status": runtime.get("status"),
         "domain_health_counts": dict(sorted(health_counts.items())),
         "implemented_domains": implemented,
         "partial_domains": partial,
-        "fleet": {"known": fleet.get("known_device_records"), "online": fleet.get("online_device_records"), "overall": fleet.get("overall")},
-        "recovery": {"overall": recovery.get("overall"), "reason": recovery.get("reason"), "readiness": recovery.get("readiness")},
+        "fleet": {
+            "known": fleet.get("known_device_records"),
+            "online": fleet.get("online_device_records"),
+            "overall": fleet.get("overall"),
+        },
+        "recovery": {
+            "overall": recovery.get("overall"),
+            "reason": recovery.get("reason"),
+            "readiness": recovery.get("readiness"),
+        },
         "release_impact_status": impact.get("status"),
         "coverage": coverage.get("by_domain", {}),
     }

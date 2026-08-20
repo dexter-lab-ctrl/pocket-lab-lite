@@ -1,13 +1,11 @@
 {
   "items": {
     "baseline_establishment": {
-      "active": true,
-      "message": "This release establishes the first verified multidimensional release baseline. Historical deltas are intentionally unavailable until another qualified release is promoted."
+      "active": false,
+      "message": null
     },
-    "comparison_label": "Initial canonical comparison baseline",
-    "comparison_release": null,
-    "comparison_state": "baseline-only",
-    "current_release": {
+    "comparison_label": "Verified release-to-release comparison",
+    "comparison_release": {
       "artifacts": [
         {
           "bytes": 474904,
@@ -66,6 +64,66 @@
       "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
       "verification_status": "promoted"
     },
+    "comparison_state": "comparable",
+    "current_release": {
+      "artifacts": [
+        {
+          "bytes": 478705,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "dist.zip",
+          "sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+          "status": "verified",
+          "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+        },
+        {
+          "bytes": 75,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "checksums.txt",
+          "sha256": "ddb185e3d79e4bdb4e13f57f8f5c64b7972a1f7b60fef5693fc827db57f05fa5",
+          "status": "verified",
+          "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+        },
+        {
+          "bytes": 362,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "pocketlab-lite-release.json",
+          "sha256": "9e83c4dfbc845995f4bceef8e2ac1349ee972b3e8017add464f81eabf93fc6b8",
+          "status": "verified",
+          "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+        }
+      ],
+      "canonical_source": "contracts/generated/releases/promoted-release-evidence.json",
+      "canonical_sources": [
+        "contracts/generated/releases/promoted-release-evidence.json"
+      ],
+      "commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+      "local_tag_available": true,
+      "local_tag_matches": true,
+      "manifest_binding": {
+        "dist_zip_sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+        "release_tag": "lite-2026.08.19.2",
+        "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+        "status": "verified"
+      },
+      "observed_at": "2026-08-19T20:57:40Z",
+      "promotion_rule": "explicit-only; immutable per release tag",
+      "published_at": "2026-08-19T20:57:40Z",
+      "raw_urls_included": false,
+      "release_tag": "lite-2026.08.19.2",
+      "repository": "dexter-lab-ctrl/pocket-lab-lite",
+      "sanitized": true,
+      "schema_version": "1.0.0",
+      "source": "explicit-gh-release-capture",
+      "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+      "tag": "lite-2026.08.19.2",
+      "tagged_at": "2026-08-19T22:40:16+02:00",
+      "tree": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+      "tree_hash": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+      "verification_status": "promoted"
+    },
     "current_snapshot": {
       "operational_health": {
         "degraded": 2,
@@ -86,14 +144,14 @@
     },
     "dimensions": [
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "git-source",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "9eb5181b543cd86feef2045749141e6f56a4228fb78ba32b2b1583943fd7deb1",
+        "from_objects": 582,
+        "historical_comparison": "Available",
         "source_paths": [
           "src",
           "scripts",
@@ -112,345 +170,416 @@
           "requirements-docs.txt",
           "pocket-lab-final-structure/runtime/requirements.txt"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "e443d1cb54228f77f0b509318613ce5e04a5f68b1fbf3748e033ba099f54419e",
+        "to_objects": 593
       },
       {
-        "classification": "not-comparable",
+        "classification": "non-breaking",
         "confidence": "High",
-        "current_status": "Baseline established",
+        "current_status": "Non-breaking change",
         "details": {
-          "reason": "a second verified canonical release is required"
+          "operations_added": [
+            "DELETE /api/lite/identity/sessions/{session_id}",
+            "POST /api/lite/identity/login",
+            "POST /api/lite/identity/logout",
+            "POST /api/lite/identity/password",
+            "POST /api/lite/identity/recover",
+            "POST /api/lite/identity/recovery/regenerate",
+            "POST /api/lite/identity/sessions/revoke-others",
+            "POST /api/lite/identity/setup"
+          ],
+          "operations_removed": []
         },
         "dimension": "openapi",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "ca46065e6f046019e9141b5134306525d375b6f9d675a678e21b3c8697714c8a",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/lite-openapi.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "2a227b325ebecd2c420e49b26d0951a09ca3a4105b114661be0340f5e8f6cbd2",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
+        "current_status": "Changed",
         "details": {
-          "reason": "a second verified canonical release is required"
+          "channels_added": [],
+          "channels_removed": []
         },
         "dimension": "asyncapi-events",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "8a51bc94d741a923406fede9abef161821c06d4094ebf0c4de6bc8b8db157020",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/lite-asyncapi.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "0be55ad04175cd1c464f9a0807cda20a754bbd00b2f71ef08a2adab29c5bda0b",
+        "to_objects": 1
       },
       {
         "classification": "not-comparable",
-        "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "confidence": "Medium",
+        "current_status": "Prior snapshot unavailable",
+        "details": {},
         "dimension": "sqlite-schema-migrations",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": null,
+        "from_objects": 0,
+        "historical_comparison": "Unavailable",
         "source_paths": [
           "pocket-lab-final-structure/runtime/api_fastapi/migrations",
           "pocket-lab-final-structure/runtime/migrations"
         ],
         "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "technical_status": "not-comparable",
+        "to_digest": null,
+        "to_objects": 0
       },
       {
-        "classification": "not-comparable",
+        "classification": "architecture-drift",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Architecture changed",
+        "details": {},
         "dimension": "architecture",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "4ab392c6d2b5e56adfce730a97bdceed8a1b882b9800aceb0f1415a929c8e0cc",
+        "from_objects": 12,
+        "historical_comparison": "Available",
         "source_paths": [
           "architecture/metadata",
           "scripts/docs/graphviz"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "d98afd995a4cc5f0c1537cc43261cf454fc76fa1919d8cd1520ca37e597703ce",
+        "to_objects": 12
       },
       {
-        "classification": "not-comparable",
+        "classification": "architecture-drift",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Architecture changed",
+        "details": {},
         "dimension": "trust-boundaries",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "3fa8d34f8ac8a8cf7881ed8b57ca19dc697c0c26fc6af0dde1de779e7fb83562",
+        "from_objects": 2,
+        "historical_comparison": "Available",
         "source_paths": [
           "architecture/metadata/pocket-lab-architecture.json",
           "scripts/docs/enterprise/enterprise_completion.py"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "26562b8a411e389ef004af273f095839fe91069dcdbe482f8424bc247bad7fbd",
+        "to_objects": 2
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "capabilities",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "a8402a2158e5933f0500bc6dde5b94fd6465de37265afb03668cd84005e55f6e",
+        "from_objects": 2,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/knowledge/capabilities.json",
           "contracts/generated/device-capabilities.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "e9ffb05ac6f4e2ed99ffa2e79744732afe87eafaea353e9669acfeb70c2a66d7",
+        "to_objects": 2
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
+        "current_status": "Changed",
         "details": {
-          "reason": "a second verified canonical release is required"
+          "from_health_score": 3.0,
+          "to_health_score": 3.0
         },
         "dimension": "operational-health",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "4d1dbd6e336307cd772390e57ff72fea503f0330e2c7af7967b9831c7fe58f70",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/runtime/domain-operational-health.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "5432235467fc118fab21a5a02aaa902ba28b32a4176d1fb8df82ece791cecfd0",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
+        "current_status": "Changed",
         "details": {
-          "reason": "a second verified canonical release is required"
+          "from_health_score": 4.667,
+          "to_health_score": 4.667
         },
         "dimension": "runtime-topology",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "886ac403a924c53922beb6d4d4f138b3713f1bc6d8420762d568171ac36e9401",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/knowledge/runtime-topology.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "6326d529ba0afaa830b353fd42597d7a3fd107c23e18e74f29a847d4f14c1c0e",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
+        "current_status": "Changed",
         "details": {
-          "reason": "a second verified canonical release is required"
+          "from_health_score": 4.316,
+          "to_health_score": 4.316
         },
         "dimension": "semantic-parity",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "d0f15a8863af1c95e1fc011e8cf6d829d5f2aa5d3b416a38a750f6eadebeec8f",
+        "from_objects": 2,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/parity/parity-model.json",
           "contracts/parity/runtime-verification-baseline.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "3388e580dd9216d8ba60f23caf7560567cfc1f8335cbd740de3b04ead12ca477",
+        "to_objects": 2
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
+        "current_status": "Changed",
         "details": {
-          "reason": "a second verified canonical release is required"
+          "from_health_score": 3.0,
+          "to_health_score": 3.0
         },
         "dimension": "platform-capability-evidence",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "bccb11f395cba51d248eea1852527ff04cd55b6290e9c93c0bd6dcc125c3ecf8",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/documentation-intelligence/platform-matrix.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "33b8a8565525949e576151eb733c402f9ce825b21bbbb35d5015608e16da6542",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "reason-codes",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "252758a61fe828243776b889665cbbdacbe8314b84ab1b7f6c498a4cbe882ae4",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/reason-codes.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "8902ad00e878b270a0428a800de82579468ba3e8ff15db384977f4cc6a3f985c",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "task-inventory",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "7d228a36df349d8e7af2ff828af0f479bf868ee3c4c0ed36cc4498666a7cfcd7",
+        "from_objects": 7,
+        "historical_comparison": "Available",
         "source_paths": [
           "Taskfile.yml",
           "tasks"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "221d112d95c8a938edd3ec233bd5555e244723733769dd5d32d189752ae74620",
+        "to_objects": 7
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "security-controls",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "e7b549c4d13ce2e11b2c43b08a7fc740d92240183d82082b6edb541532125f4f",
+        "from_objects": 3,
+        "historical_comparison": "Available",
         "source_paths": [
           "security",
           "scripts/docs/enterprise/enterprise_completion.py"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "b7c3648058436ba82bac5b08fa672bb212c86c5219d349d71ed089bb33181929",
+        "to_objects": 6
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "threat-model",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "c94973c98de476ea5296efc458be2db24f85cf6d361d4859a53f024a107381c4",
+        "from_objects": 6,
+        "historical_comparison": "Available",
         "source_paths": [
           "scripts/docs/enterprise/enterprise_completion.py",
           "scripts/docs/check_threat_model.py",
           "architecture/metadata"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "d82a41f26174ff07ac07fd713148bb42dbf01d81ca9e521d9c50ba1ae85f6093",
+        "to_objects": 6
       },
       {
-        "classification": "not-comparable",
+        "classification": "unchanged",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Unchanged",
+        "details": {},
         "dimension": "sbom",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "914cce33367e0d6811bd84bdde3a784d729ee452d97c2d21cf5355f15b97a65b",
+        "from_objects": 3,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/supply-chain/sbom-dev.cdx.json",
           "contracts/generated/supply-chain/sbom-release.cdx.json",
           "contracts/generated/supply-chain/sbom-runtime.cdx.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "914cce33367e0d6811bd84bdde3a784d729ee452d97c2d21cf5355f15b97a65b",
+        "to_objects": 3
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "dependency-versions",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "85f1690746e36929098cd5a5a8a9e43eab670d52ab9188fce8b4cca26361db0c",
+        "from_objects": 4,
+        "historical_comparison": "Available",
         "source_paths": [
           "package-lock.json",
           "requirements-dev.txt",
           "requirements-docs.txt",
           "pocket-lab-final-structure/runtime/requirements.txt"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "846fb5ec48aae6845ae59498a6e8b2ac94e6ed2d84503f261abcf0ff1737092e",
+        "to_objects": 4
       },
       {
-        "classification": "not-comparable",
+        "classification": "unchanged",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Unchanged",
+        "details": {},
         "dimension": "vulnerabilities",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "828704f68e7a2522ffd4cc9e979bb1a5c910d8c679c64069aee087b3cc733355",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/supply-chain/vulnerability-correlation.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "828704f68e7a2522ffd4cc9e979bb1a5c910d8c679c64069aee087b3cc733355",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "unchanged",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Unchanged",
+        "details": {},
         "dimension": "licenses",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "3420cefa32d0a8c0591e1f776c319570db2588d92c81f829618df4a22e014a7a",
+        "from_objects": 1,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/supply-chain/license-inventory.json"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "3420cefa32d0a8c0591e1f776c319570db2588d92c81f829618df4a22e014a7a",
+        "to_objects": 1
       },
       {
-        "classification": "not-comparable",
+        "classification": "unchanged",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Unchanged",
+        "details": {},
         "dimension": "release-artifacts",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "29d63d2302114690d98d76776e0012ee51ed3fe7cdfaba1d5bbf4fe89baf8384",
+        "from_objects": 3,
+        "historical_comparison": "Available",
         "source_paths": [
           ".github/workflows/release-dist.yml",
           "tasks/Taskfile.release.yml",
           "scripts/dev/lite/release_artifact_check.py"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "29d63d2302114690d98d76776e0012ee51ed3fe7cdfaba1d5bbf4fe89baf8384",
+        "to_objects": 3
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "documentation-coverage",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "036be93d188847b32d3056f550b49c969d5342d170635674b7ed7980d6e102a5",
+        "from_objects": 2,
+        "historical_comparison": "Available",
         "source_paths": [
           "contracts/generated/knowledge/index.json",
           "mkdocs.yml"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "8a3776528d59dd5a261833860e93003f5c6429622c9e5c81eb41bb863d93e615",
+        "to_objects": 2
       },
       {
-        "classification": "not-comparable",
+        "classification": "changed",
         "confidence": "High",
-        "current_status": "Baseline established",
-        "details": {
-          "reason": "a second verified canonical release is required"
-        },
+        "current_status": "Changed",
+        "details": {},
         "dimension": "validation-coverage",
-        "historical_comparison": "Awaiting prior baseline",
+        "from_digest": "428bc1d6bc4425adf0fa9b87592ebea9547681c5bae3bfdefc70fdd9ceef9732",
+        "from_objects": 197,
+        "historical_comparison": "Available",
         "source_paths": [
           "tests",
           "tasks",
           "Taskfile.yml"
         ],
-        "status": "not-comparable",
-        "technical_status": "not-comparable"
+        "status": "comparable",
+        "technical_status": "comparable",
+        "to_digest": "f17b6a8201fb6171190ec0bd0ef6a0bdc510cda3b7967665f6c45f69e0fa1600",
+        "to_objects": 215
       }
     ],
-    "from_release": null,
+    "from_release": "lite-2026.08.12.2",
     "material_findings": [
       {
         "category": "semantic-parity",
@@ -648,20 +777,6 @@
         "summary": "Identity implementation remains partial."
       },
       {
-        "category": "historical-comparison",
-        "confidence": "release-promoted",
-        "detail": "Historical release-to-release deltas remain unavailable until a second qualified release is promoted.",
-        "domain": "release",
-        "evidence": [
-          "contracts/generated/releases/promoted-release-evidence.json",
-          "contracts/generated/releases/index.json"
-        ],
-        "id": "release:baseline-only",
-        "label": "Release",
-        "severity": "informational",
-        "summary": "Initial canonical comparison baseline established."
-      },
-      {
         "category": "implementation",
         "confidence": "canonical-source",
         "detail": "Canonical implementation status is partial; no stronger claim is made.",
@@ -675,7 +790,7 @@
         "summary": "Rules implementation remains partial."
       }
     ],
-    "release": "lite-2026.08.12.2",
+    "release": "lite-2026.08.19.2",
     "requires_attention": [
       {
         "category": "semantic-parity",
@@ -860,7 +975,7 @@
         "summary": "Recovery operational health is degraded."
       }
     ],
-    "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+    "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
     "status": "release-impact-ready",
     "technical_delta": {
       "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
@@ -886,14 +1001,14 @@
         "unknown",
         "unchanged"
       ],
-      "comparison_state": "baseline-only",
+      "comparison_state": "comparable",
       "dimensions": [
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "git-source",
+          "from_digest": "9eb5181b543cd86feef2045749141e6f56a4228fb78ba32b2b1583943fd7deb1",
+          "from_objects": 582,
           "source_paths": [
             "src",
             "scripts",
@@ -912,264 +1027,332 @@
             "requirements-docs.txt",
             "pocket-lab-final-structure/runtime/requirements.txt"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "e443d1cb54228f77f0b509318613ce5e04a5f68b1fbf3748e033ba099f54419e",
+          "to_objects": 593
         },
         {
-          "classification": "not-comparable",
+          "classification": "non-breaking",
           "details": {
-            "reason": "a second verified canonical release is required"
+            "operations_added": [
+              "DELETE /api/lite/identity/sessions/{session_id}",
+              "POST /api/lite/identity/login",
+              "POST /api/lite/identity/logout",
+              "POST /api/lite/identity/password",
+              "POST /api/lite/identity/recover",
+              "POST /api/lite/identity/recovery/regenerate",
+              "POST /api/lite/identity/sessions/revoke-others",
+              "POST /api/lite/identity/setup"
+            ],
+            "operations_removed": []
           },
           "dimension": "openapi",
+          "from_digest": "ca46065e6f046019e9141b5134306525d375b6f9d675a678e21b3c8697714c8a",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/lite-openapi.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "2a227b325ebecd2c420e49b26d0951a09ca3a4105b114661be0340f5e8f6cbd2",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
+          "classification": "changed",
           "details": {
-            "reason": "a second verified canonical release is required"
+            "channels_added": [],
+            "channels_removed": []
           },
           "dimension": "asyncapi-events",
+          "from_digest": "8a51bc94d741a923406fede9abef161821c06d4094ebf0c4de6bc8b8db157020",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/lite-asyncapi.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "0be55ad04175cd1c464f9a0807cda20a754bbd00b2f71ef08a2adab29c5bda0b",
+          "to_objects": 1
         },
         {
           "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "details": {},
           "dimension": "sqlite-schema-migrations",
+          "from_digest": null,
+          "from_objects": 0,
           "source_paths": [
             "pocket-lab-final-structure/runtime/api_fastapi/migrations",
             "pocket-lab-final-structure/runtime/migrations"
           ],
-          "status": "not-comparable"
+          "status": "not-comparable",
+          "to_digest": null,
+          "to_objects": 0
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "architecture-drift",
+          "details": {},
           "dimension": "architecture",
+          "from_digest": "4ab392c6d2b5e56adfce730a97bdceed8a1b882b9800aceb0f1415a929c8e0cc",
+          "from_objects": 12,
           "source_paths": [
             "architecture/metadata",
             "scripts/docs/graphviz"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "d98afd995a4cc5f0c1537cc43261cf454fc76fa1919d8cd1520ca37e597703ce",
+          "to_objects": 12
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "architecture-drift",
+          "details": {},
           "dimension": "trust-boundaries",
+          "from_digest": "3fa8d34f8ac8a8cf7881ed8b57ca19dc697c0c26fc6af0dde1de779e7fb83562",
+          "from_objects": 2,
           "source_paths": [
             "architecture/metadata/pocket-lab-architecture.json",
             "scripts/docs/enterprise/enterprise_completion.py"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "26562b8a411e389ef004af273f095839fe91069dcdbe482f8424bc247bad7fbd",
+          "to_objects": 2
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "capabilities",
+          "from_digest": "a8402a2158e5933f0500bc6dde5b94fd6465de37265afb03668cd84005e55f6e",
+          "from_objects": 2,
           "source_paths": [
             "contracts/generated/knowledge/capabilities.json",
             "contracts/generated/device-capabilities.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "e9ffb05ac6f4e2ed99ffa2e79744732afe87eafaea353e9669acfeb70c2a66d7",
+          "to_objects": 2
         },
         {
-          "classification": "not-comparable",
+          "classification": "changed",
           "details": {
-            "reason": "a second verified canonical release is required"
+            "from_health_score": 3.0,
+            "to_health_score": 3.0
           },
           "dimension": "operational-health",
+          "from_digest": "4d1dbd6e336307cd772390e57ff72fea503f0330e2c7af7967b9831c7fe58f70",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/runtime/domain-operational-health.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "5432235467fc118fab21a5a02aaa902ba28b32a4176d1fb8df82ece791cecfd0",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
+          "classification": "changed",
           "details": {
-            "reason": "a second verified canonical release is required"
+            "from_health_score": 4.667,
+            "to_health_score": 4.667
           },
           "dimension": "runtime-topology",
+          "from_digest": "886ac403a924c53922beb6d4d4f138b3713f1bc6d8420762d568171ac36e9401",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/knowledge/runtime-topology.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "6326d529ba0afaa830b353fd42597d7a3fd107c23e18e74f29a847d4f14c1c0e",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
+          "classification": "changed",
           "details": {
-            "reason": "a second verified canonical release is required"
+            "from_health_score": 4.316,
+            "to_health_score": 4.316
           },
           "dimension": "semantic-parity",
+          "from_digest": "d0f15a8863af1c95e1fc011e8cf6d829d5f2aa5d3b416a38a750f6eadebeec8f",
+          "from_objects": 2,
           "source_paths": [
             "contracts/parity/parity-model.json",
             "contracts/parity/runtime-verification-baseline.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "3388e580dd9216d8ba60f23caf7560567cfc1f8335cbd740de3b04ead12ca477",
+          "to_objects": 2
         },
         {
-          "classification": "not-comparable",
+          "classification": "changed",
           "details": {
-            "reason": "a second verified canonical release is required"
+            "from_health_score": 3.0,
+            "to_health_score": 3.0
           },
           "dimension": "platform-capability-evidence",
+          "from_digest": "bccb11f395cba51d248eea1852527ff04cd55b6290e9c93c0bd6dcc125c3ecf8",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/documentation-intelligence/platform-matrix.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "33b8a8565525949e576151eb733c402f9ce825b21bbbb35d5015608e16da6542",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "reason-codes",
+          "from_digest": "252758a61fe828243776b889665cbbdacbe8314b84ab1b7f6c498a4cbe882ae4",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/reason-codes.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "8902ad00e878b270a0428a800de82579468ba3e8ff15db384977f4cc6a3f985c",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "task-inventory",
+          "from_digest": "7d228a36df349d8e7af2ff828af0f479bf868ee3c4c0ed36cc4498666a7cfcd7",
+          "from_objects": 7,
           "source_paths": [
             "Taskfile.yml",
             "tasks"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "221d112d95c8a938edd3ec233bd5555e244723733769dd5d32d189752ae74620",
+          "to_objects": 7
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "security-controls",
+          "from_digest": "e7b549c4d13ce2e11b2c43b08a7fc740d92240183d82082b6edb541532125f4f",
+          "from_objects": 3,
           "source_paths": [
             "security",
             "scripts/docs/enterprise/enterprise_completion.py"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "b7c3648058436ba82bac5b08fa672bb212c86c5219d349d71ed089bb33181929",
+          "to_objects": 6
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "threat-model",
+          "from_digest": "c94973c98de476ea5296efc458be2db24f85cf6d361d4859a53f024a107381c4",
+          "from_objects": 6,
           "source_paths": [
             "scripts/docs/enterprise/enterprise_completion.py",
             "scripts/docs/check_threat_model.py",
             "architecture/metadata"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "d82a41f26174ff07ac07fd713148bb42dbf01d81ca9e521d9c50ba1ae85f6093",
+          "to_objects": 6
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "unchanged",
+          "details": {},
           "dimension": "sbom",
+          "from_digest": "914cce33367e0d6811bd84bdde3a784d729ee452d97c2d21cf5355f15b97a65b",
+          "from_objects": 3,
           "source_paths": [
             "contracts/generated/supply-chain/sbom-dev.cdx.json",
             "contracts/generated/supply-chain/sbom-release.cdx.json",
             "contracts/generated/supply-chain/sbom-runtime.cdx.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "914cce33367e0d6811bd84bdde3a784d729ee452d97c2d21cf5355f15b97a65b",
+          "to_objects": 3
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "dependency-versions",
+          "from_digest": "85f1690746e36929098cd5a5a8a9e43eab670d52ab9188fce8b4cca26361db0c",
+          "from_objects": 4,
           "source_paths": [
             "package-lock.json",
             "requirements-dev.txt",
             "requirements-docs.txt",
             "pocket-lab-final-structure/runtime/requirements.txt"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "846fb5ec48aae6845ae59498a6e8b2ac94e6ed2d84503f261abcf0ff1737092e",
+          "to_objects": 4
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "unchanged",
+          "details": {},
           "dimension": "vulnerabilities",
+          "from_digest": "828704f68e7a2522ffd4cc9e979bb1a5c910d8c679c64069aee087b3cc733355",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/supply-chain/vulnerability-correlation.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "828704f68e7a2522ffd4cc9e979bb1a5c910d8c679c64069aee087b3cc733355",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "unchanged",
+          "details": {},
           "dimension": "licenses",
+          "from_digest": "3420cefa32d0a8c0591e1f776c319570db2588d92c81f829618df4a22e014a7a",
+          "from_objects": 1,
           "source_paths": [
             "contracts/generated/supply-chain/license-inventory.json"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "3420cefa32d0a8c0591e1f776c319570db2588d92c81f829618df4a22e014a7a",
+          "to_objects": 1
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "unchanged",
+          "details": {},
           "dimension": "release-artifacts",
+          "from_digest": "29d63d2302114690d98d76776e0012ee51ed3fe7cdfaba1d5bbf4fe89baf8384",
+          "from_objects": 3,
           "source_paths": [
             ".github/workflows/release-dist.yml",
             "tasks/Taskfile.release.yml",
             "scripts/dev/lite/release_artifact_check.py"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "29d63d2302114690d98d76776e0012ee51ed3fe7cdfaba1d5bbf4fe89baf8384",
+          "to_objects": 3
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "documentation-coverage",
+          "from_digest": "036be93d188847b32d3056f550b49c969d5342d170635674b7ed7980d6e102a5",
+          "from_objects": 2,
           "source_paths": [
             "contracts/generated/knowledge/index.json",
             "mkdocs.yml"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "8a3776528d59dd5a261833860e93003f5c6429622c9e5c81eb41bb863d93e615",
+          "to_objects": 2
         },
         {
-          "classification": "not-comparable",
-          "details": {
-            "reason": "a second verified canonical release is required"
-          },
+          "classification": "changed",
+          "details": {},
           "dimension": "validation-coverage",
+          "from_digest": "428bc1d6bc4425adf0fa9b87592ebea9547681c5bae3bfdefc70fdd9ceef9732",
+          "from_objects": 197,
           "source_paths": [
             "tests",
             "tasks",
             "Taskfile.yml"
           ],
-          "status": "not-comparable"
+          "status": "comparable",
+          "to_digest": "f17b6a8201fb6171190ec0bd0ef6a0bdc510cda3b7967665f6c45f69e0fa1600",
+          "to_objects": 215
         }
       ],
-      "evidence_status": "baseline-only",
-      "from": null,
-      "implementation_status": "implemented",
-      "status": "initial-canonical-comparison-baseline",
-      "to": {
+      "evidence_status": "release-promoted",
+      "from": {
         "artifacts": [
           {
             "bytes": 474904,
@@ -1227,11 +1410,85 @@
         "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
         "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
         "verification_status": "promoted"
+      },
+      "implementation_status": "implemented",
+      "status": "comparable",
+      "summary": {
+        "dimensions_changed": 17,
+        "dimensions_total": 22,
+        "files_added": 168,
+        "files_deleted": 1,
+        "files_modified": 687,
+        "files_renamed": 2
+      },
+      "to": {
+        "artifacts": [
+          {
+            "bytes": 478705,
+            "github_asset_presence": "verified",
+            "github_digest_status": "verified",
+            "name": "dist.zip",
+            "sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+            "status": "verified",
+            "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+          },
+          {
+            "bytes": 75,
+            "github_asset_presence": "verified",
+            "github_digest_status": "verified",
+            "name": "checksums.txt",
+            "sha256": "ddb185e3d79e4bdb4e13f57f8f5c64b7972a1f7b60fef5693fc827db57f05fa5",
+            "status": "verified",
+            "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+          },
+          {
+            "bytes": 362,
+            "github_asset_presence": "verified",
+            "github_digest_status": "verified",
+            "name": "pocketlab-lite-release.json",
+            "sha256": "9e83c4dfbc845995f4bceef8e2ac1349ee972b3e8017add464f81eabf93fc6b8",
+            "status": "verified",
+            "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+          }
+        ],
+        "canonical_source": "contracts/generated/releases/promoted-release-evidence.json",
+        "canonical_sources": [
+          "contracts/generated/releases/promoted-release-evidence.json"
+        ],
+        "commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+        "local_tag_available": true,
+        "local_tag_matches": true,
+        "manifest_binding": {
+          "dist_zip_sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+          "release_tag": "lite-2026.08.19.2",
+          "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+          "status": "verified"
+        },
+        "observed_at": "2026-08-19T20:57:40Z",
+        "promotion_rule": "explicit-only; immutable per release tag",
+        "published_at": "2026-08-19T20:57:40Z",
+        "raw_urls_included": false,
+        "release_tag": "lite-2026.08.19.2",
+        "repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "sanitized": true,
+        "schema_version": "1.0.0",
+        "source": "explicit-gh-release-capture",
+        "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+        "tag": "lite-2026.08.19.2",
+        "tagged_at": "2026-08-19T22:40:16+02:00",
+        "tree": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+        "tree_hash": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+        "verification_status": "promoted"
       }
     },
-    "to_release": "lite-2026.08.12.2",
-    "unchanged": []
+    "to_release": "lite-2026.08.19.2",
+    "unchanged": [
+      "sbom",
+      "vulnerabilities",
+      "licenses",
+      "release-artifacts"
+    ]
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "a5599cf02b55568eec2998822e87cda7d23e05df48ab23f5289e54b305714c12"
+  "source_fingerprint": "e0f0e34d63f3e396e9ac00c61caabdd9fc895cb97628c609e2e00ab496ba01b7"
 }
