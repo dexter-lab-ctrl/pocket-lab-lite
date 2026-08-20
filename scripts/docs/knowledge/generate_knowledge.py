@@ -18,6 +18,13 @@ import jsonschema
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
+
+DOCS_SCRIPT_ROOT = Path(__file__).resolve().parents[1]
+if str(DOCS_SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(DOCS_SCRIPT_ROOT))
+
+from release_model import canonical_release_records
+
 GENERATOR = "scripts/docs/knowledge/generate_knowledge.py"
 GENERATOR_VERSION = 3
 SCHEMA_VERSION = "1.0.0"
@@ -521,27 +528,142 @@ def build_graph() -> tuple[Graph, dict[str, Any]]:
 
     # No historical incidents are fabricated. The incident entity type remains intentionally empty until a structured record exists.
 
-    # Release knowledge from verified promoted runtime evidence and verified release inventory when present.
+    # Release knowledge keeps runtime binding and canonical promoted release
+    # identity separate. A runtime baseline may legitimately lag the newest
+    # explicitly promoted GitHub release. Canonical release history therefore
+    # comes from the shared release-model authority rather than runtime identity.
     if runtime.get("release_tag") and runtime.get("source_commit"):
         rid = f"release:{runtime['release_tag']}"
         graph.add_entity({
-            "id": rid, "type": "release", "name": runtime["release_tag"], "domain": "release", "confidence": "release-promoted",
-            "source_refs": ["contracts/parity/runtime-verification-baseline.json"], "source_commit": runtime["source_commit"],
-            "promoted_at": runtime.get("promoted_at"), "runtime_parity_status": runtime.get("status"), "sanitized": runtime.get("sanitized"),
-            "artifact": None, "artifact_checksum": None, "release_manifest_status": "unvalidated",
+            "id": rid,
+            "type": "release",
+            "name": runtime["release_tag"],
+            "domain": "release",
+            "confidence": "release-promoted",
+            "source_refs": [
+                "contracts/parity/runtime-verification-baseline.json"
+            ],
+            "source_commit": runtime["source_commit"],
+            "promoted_at": runtime.get("promoted_at"),
+            "runtime_parity_status": runtime.get("status"),
+            "sanitized": runtime.get("sanitized"),
+            "artifact": None,
+            "artifact_checksum": None,
+            "release_manifest_status": "unvalidated",
         })
-        for did in baseline_domains:
-            graph.add_relation("observed_by", f"domain:{did}", rid, ["contracts/parity/runtime-verification-baseline.json"])
 
-    release_inventory = read_json(RELEASES, {}).get("release_inventory", {})
-    for rel in release_inventory.get("releases", []) if isinstance(release_inventory, dict) else []:
-        tag = rel.get("tag") or rel.get("release_tag")
+        for did in baseline_domains:
+            graph.add_relation(
+                "observed_by",
+                f"domain:{did}",
+                rid,
+                ["contracts/parity/runtime-verification-baseline.json"],
+            )
+
+    # Project every canonical promoted/verified release record. The shared
+    # release authority consumes both the release inventory and explicitly
+    # promoted GitHub-release evidence while rejecting conflicting identities.
+    for release in canonical_release_records(ROOT):
+        tag = str(release.get("tag") or "").strip()
         if not tag:
             continue
+
         rid = f"release:{tag}"
-        entity = graph.entities.get(rid, {"id": rid, "type": "release", "name": tag, "domain": "release", "confidence": "verified", "source_refs": ["contracts/generated/releases/index.json"]})
-        entity.update({k: v for k, v in rel.items() if k not in {"id", "type"}})
-        entity["source_refs"] = sorted(set(entity.get("source_refs", []) + ["contracts/generated/releases/index.json"]))
+        existing = graph.entities.get(rid, {})
+
+        canonical_sources = list(
+            release.get("canonical_sources") or []
+        )
+        if release.get("canonical_source"):
+            canonical_sources.append(
+                str(release["canonical_source"])
+            )
+
+        explicitly_promoted = (
+            release.get("verification_status") == "promoted"
+            or any(
+                source.endswith(
+                    "contracts/generated/releases/"
+                    "promoted-release-evidence.json"
+                )
+                for source in canonical_sources
+            )
+        )
+
+        artifacts = {
+            str(item.get("name")): item
+            for item in release.get("artifacts", [])
+            if isinstance(item, dict) and item.get("name")
+        }
+        dist = artifacts.get("dist.zip", {})
+        manifest = (
+            release.get("manifest_binding")
+            if isinstance(release.get("manifest_binding"), dict)
+            else {}
+        )
+
+        entity = {
+            **existing,
+            "id": rid,
+            "type": "release",
+            "name": tag,
+            "domain": "release",
+            "confidence": (
+                "release-promoted"
+                if explicitly_promoted
+                else existing.get("confidence", "verified")
+            ),
+            "source_refs": sorted(
+                set(
+                    existing.get("source_refs", [])
+                    + canonical_sources
+                )
+            ),
+            "source_commit": (
+                release.get("commit")
+                or release.get("source_commit")
+                or existing.get("source_commit")
+            ),
+            "tree_hash": (
+                release.get("tree")
+                or release.get("tree_hash")
+                or existing.get("tree_hash")
+            ),
+            "promoted_at": (
+                release.get("observed_at")
+                or release.get("published_at")
+                or existing.get("promoted_at")
+            ),
+            "published_at": release.get("published_at"),
+            "verification_status": release.get(
+                "verification_status"
+            ),
+            "sanitized": (
+                release.get("sanitized")
+                if release.get("sanitized") is not None
+                else existing.get("sanitized")
+            ),
+            "artifact": (
+                "dist.zip"
+                if dist
+                else existing.get("artifact")
+            ),
+            "artifact_checksum": (
+                dist.get("sha256")
+                or existing.get("artifact_checksum")
+            ),
+            "release_manifest_status": (
+                manifest.get("status")
+                or existing.get(
+                    "release_manifest_status",
+                    "unvalidated",
+                )
+            ),
+            "runtime_parity_status": existing.get(
+                "runtime_parity_status"
+            ),
+        }
+
         graph.entities[rid] = entity
 
     # Glossary and vocabulary.

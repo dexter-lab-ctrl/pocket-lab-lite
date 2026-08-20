@@ -19,6 +19,12 @@ ENTERPRISE_KB = ROOT / "docs/generated/enterprise/knowledgebase"
 KNOWLEDGE_ASSETS = ROOT / "docs/generated/assets/knowledge"
 GENERATOR = ROOT / "scripts/docs/knowledge/generate_knowledge.py"
 RUNTIME_BASELINE = ROOT / "contracts/parity/runtime-verification-baseline.json"
+PROMOTED_RELEASE_EVIDENCE = (
+    ROOT / "contracts/generated/releases/promoted-release-evidence.json"
+)
+SOURCE_RELEASE_BADGE = (
+    ROOT / "docs/overrides/partials/release-badge.html"
+)
 MKDOCS = ROOT / "mkdocs.yml"
 
 
@@ -130,6 +136,78 @@ def test_release_knowledge_is_truthful_without_fabricated_history():
         "no-comparable-verified-prior-release",
         "semantic-comparison-available",
     }
+
+
+def test_all_explicitly_promoted_releases_are_projected_into_knowledge():
+    promoted_payload = json.loads(
+        PROMOTED_RELEASE_EVIDENCE.read_text(encoding="utf-8")
+    )
+    promoted = [
+        item
+        for item in promoted_payload.get("releases", [])
+        if item.get("verification_status") == "promoted"
+    ]
+
+    assert promoted
+
+    releases = {
+        item["name"]: item
+        for item in load("releases.json")
+    }
+
+    production_overview = (
+        PROD / "releases.md"
+    ).read_text(encoding="utf-8")
+
+    for record in promoted:
+        tag = record["release_tag"]
+
+        assert tag in releases
+        assert releases[tag]["source_commit"] == record["source_commit"]
+        assert releases[tag]["confidence"] == "release-promoted"
+        assert releases[tag]["sanitized"] is True
+
+        release_slug = re.sub(
+            r"[^a-z0-9]+",
+            "-",
+            tag.lower(),
+        ).strip("-")
+
+        assert (
+            DEV / "releases" / f"{release_slug}.md"
+        ).exists()
+        assert (
+            PROD / "releases" / f"{release_slug}.md"
+        ).exists()
+        assert tag in production_overview
+
+
+def test_source_release_badge_uses_latest_explicitly_promoted_release():
+    promoted_payload = json.loads(
+        PROMOTED_RELEASE_EVIDENCE.read_text(encoding="utf-8")
+    )
+    promoted = [
+        item
+        for item in promoted_payload.get("releases", [])
+        if item.get("verification_status") == "promoted"
+    ]
+
+    assert promoted
+
+    latest = max(
+        promoted,
+        key=lambda item: (
+            str(
+                item.get("observed_at")
+                or item.get("published_at")
+                or ""
+            ),
+            str(item.get("release_tag") or ""),
+        ),
+    )
+
+    badge = SOURCE_RELEASE_BADGE.read_text(encoding="utf-8")
+    assert latest["release_tag"] in badge
 
 
 def test_limitations_lifecycle_and_partial_domains_remain_truthful():

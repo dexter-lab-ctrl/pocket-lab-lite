@@ -54,9 +54,22 @@ def test_dependency_health_never_inherits_domain_health_without_dependency_evide
 
 def test_release_impact_is_future_ready_but_does_not_fabricate_history():
     impact = intelligence()["release_impact"]
-    assert impact["to_release"] == load(RUNTIME)["release_tag"]
+    runtime = load(RUNTIME)
+
+    if impact["current_release"]:
+        assert impact["to_release"] == impact["current_release"]["tag"]
+        assert impact["source_commit"] == impact["current_release"]["commit"]
+    else:
+        assert impact["to_release"] == runtime["release_tag"]
+        assert impact["source_commit"] == runtime["source_commit"]
+
     assert impact["status"] == "release-impact-ready"
-    assert impact["comparison_state"] in {"no-canonical-release", "baseline-only", "comparable"}
+    assert impact["comparison_state"] in {
+        "no-canonical-release",
+        "baseline-only",
+        "comparable",
+        "comparison-evidence-unavailable",
+    }
     assert len(impact["dimensions"]) == 22
     assert impact["material_findings"]
     assert {"operational_health", "semantic_parity", "platform_capabilities"} <= set(impact["current_snapshot"])
@@ -65,6 +78,34 @@ def test_release_impact_is_future_ready_but_does_not_fabricate_history():
         assert impact["unchanged"] == []
         assert all(row["classification"] == "not-comparable" for row in impact["technical_delta"]["dimensions"])
         assert "HEAD" not in impact["comparison_label"]
+
+
+def test_home_dashboard_prefers_current_canonical_promoted_release():
+    data = intelligence()
+    dashboard = data["dashboard"]
+    impact = data["release_impact"]
+    runtime = load(RUNTIME)
+
+    current = impact.get("current_release") or {}
+
+    if current:
+        assert dashboard["release_tag"] == current["tag"]
+        assert dashboard["source_commit"] == current["commit"]
+
+        expected_promoted_at = (
+            current.get("observed_at")
+            or current.get("published_at")
+            or runtime["promoted_at"]
+        )
+        assert dashboard["promoted_at"] == expected_promoted_at
+    else:
+        assert dashboard["release_tag"] == runtime["release_tag"]
+        assert dashboard["source_commit"] == runtime["source_commit"]
+        assert dashboard["promoted_at"] == runtime["promoted_at"]
+
+    # Runtime/operational-health identity remains independently runtime-bound.
+    assert data["release"]["release_tag"] == runtime["release_tag"]
+    assert data["release"]["source_commit"] == runtime["source_commit"]
 
 
 def test_runtime_drift_keeps_configuration_and_semantic_drift_independent():

@@ -13,7 +13,7 @@ confidence: generated
 
 <div class="pl-page-lede"><strong>Release identity, runtime binding, artifact integrity and evidence gaps—kept as independent authorities.</strong><p>Local working-tree state is informational and cannot erase a verified release identity. MkDocs never polls GitHub or runtime.</p></div>
 
-<div class="pl-kpi-grid pl-release-kpis"><div class="pl-fact"><span>Assurance status</span><strong>verified-with-evidence-gaps</strong></div><div class="pl-fact"><span>Release identity</span><strong>lite-2026.08.12.2</strong></div><div class="pl-fact"><span>Runtime binding</span><strong>lite-2026.08.12.2</strong></div><div class="pl-fact"><span>Historical comparison</span><strong>baseline-only</strong></div></div>
+<div class="pl-kpi-grid pl-release-kpis"><div class="pl-fact"><span>Assurance status</span><strong>verified-with-evidence-gaps</strong></div><div class="pl-fact"><span>Release identity</span><strong>lite-2026.08.12.2</strong></div><div class="pl-fact"><span>Runtime binding</span><strong>lite-2026.08.12.2</strong></div><div class="pl-fact"><span>Historical comparison</span><strong>comparable</strong></div></div>
 
 ## Release evidence
 
@@ -42,19 +42,19 @@ Release, runtime, supply-chain and local generation state are independent author
 | provenance | unobserved | unobserved |
 | signatures | unobserved | unobserved-until-explicit-sign-command |
 | migration-evidence | unobserved | repository migration inventory |
-| historical-delta | observed | baseline-only |
+| historical-delta | verified | comparable |
 
 ## Artifact evidence
 
 | Artifact | Release presence | Integrity | Verification detail | Binding | Local staging |
 | --- | --- | --- | --- | --- | --- |
 | dist.zip | verified | verified | SHA-256 verified against checksums.txt and GitHub asset digest where provided | verified | observed |
-| checksums.txt | verified | verified | parsed and used to verify dist.zip; GitHub asset digest verified where provided | verified | unobserved |
+| checksums.txt | verified | verified | parsed and used to verify dist.zip; GitHub asset digest verified where provided | verified | observed |
 | pocketlab-lite-release.json | verified | verified | JSON parsed and tag + source commit bound; GitHub asset digest verified where provided | verified | unobserved |
 
 ## Release delta
 
-**Initial canonical comparison baseline.** Historical release-to-release comparison is intentionally unavailable until a second qualified release is promoted.
+**comparable**. Release-to-release comparison requires two verified canonical release records and never falls back to release-to-HEAD.
 
 ## Evidence gaps
 
