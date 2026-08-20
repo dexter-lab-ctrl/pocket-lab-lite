@@ -35248,8 +35248,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
-          "head_tree": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+          "head": "401e25f1fbed642f0d9970bc00e8b64523f486d0",
+          "head_tree": "b3e064acac17866b3984579ab31d5c4487286153",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -36726,15 +36726,15 @@
           },
           "local_staging": {
             "authority": "local-repository",
-            "confidence": "local-observation",
+            "confidence": "unvalidated",
             "freshness": "current",
             "observed_at": "unobserved",
             "sanitized": true,
             "source": "checksums.txt",
-            "status": "observed",
+            "status": "unobserved",
             "value": {
-              "bytes": 75,
-              "sha256": "f5c047e7b8112988096cf6c954f5be1f78ea3eef9bfbec90747096fb59a95f58"
+              "bytes": null,
+              "sha256": null
             }
           },
           "release_presence": {
@@ -37098,7 +37098,7 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-        "documentation": "c803bc6857f2c1d04492c2a7f01d6117cf3b6b8814ec4ff67142bd5c04f953f2",
+        "documentation": "51dda1fbc9c0ef19a455ad94bec27a23ff6fd500832af7c478e8b6a5182b94d4",
         "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
         "operational_health": "cb8b15444f009d4dc4e362ef8c123577eeedbff6c368d97387ca71c2deb7ffdf"
       },
@@ -39172,8 +39172,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
-        "head_tree": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+        "head": "401e25f1fbed642f0d9970bc00e8b64523f486d0",
+        "head_tree": "b3e064acac17866b3984579ab31d5c4487286153",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -91062,5 +91062,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "7eaa755d77e1b5261703310c28b58c93dc90ce74da1486fed8e9da8013408d8d"
+  "source_fingerprint": "2db49a41c69b3b94ce690b58fc622833039cb507aecb174dc9134331d5f42940"
 }

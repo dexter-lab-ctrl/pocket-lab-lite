@@ -31,15 +31,15 @@
       },
       "local_staging": {
         "authority": "local-repository",
-        "confidence": "local-observation",
+        "confidence": "unvalidated",
         "freshness": "current",
         "observed_at": "unobserved",
         "sanitized": true,
         "source": "checksums.txt",
-        "status": "observed",
+        "status": "unobserved",
         "value": {
-          "bytes": 75,
-          "sha256": "f5c047e7b8112988096cf6c954f5be1f78ea3eef9bfbec90747096fb59a95f58"
+          "bytes": null,
+          "sha256": null
         }
       },
       "release_presence": {
@@ -403,7 +403,7 @@
   "fingerprints": {
     "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
     "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-    "documentation": "c803bc6857f2c1d04492c2a7f01d6117cf3b6b8814ec4ff67142bd5c04f953f2",
+    "documentation": "51dda1fbc9c0ef19a455ad94bec27a23ff6fd500832af7c478e8b6a5182b94d4",
     "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
     "operational_health": "cb8b15444f009d4dc4e362ef8c123577eeedbff6c368d97387ca71c2deb7ffdf"
   },

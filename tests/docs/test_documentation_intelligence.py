@@ -73,10 +73,27 @@ def test_release_impact_is_future_ready_but_does_not_fabricate_history():
     assert len(impact["dimensions"]) == 22
     assert impact["material_findings"]
     assert {"operational_health", "semantic_parity", "platform_capabilities"} <= set(impact["current_snapshot"])
-    if impact["comparison_state"] != "comparable":
+    if impact["comparison_state"] in {
+        "no-canonical-release",
+        "baseline-only",
+    }:
         assert impact["from_release"] is None
         assert impact["unchanged"] == []
-        assert all(row["classification"] == "not-comparable" for row in impact["technical_delta"]["dimensions"])
+        assert all(
+            row["classification"] == "not-comparable"
+            for row in impact["technical_delta"]["dimensions"]
+        )
+
+    elif impact["comparison_state"] == "comparison-evidence-unavailable":
+        assert impact["comparison_release"]
+        assert impact["from_release"] == impact["comparison_release"]["tag"]
+        assert impact["unchanged"] == []
+        assert all(
+            row["classification"] == "not-comparable"
+            for row in impact["technical_delta"]["dimensions"]
+        )
+
+    if impact["comparison_state"] != "comparable":
         assert "HEAD" not in impact["comparison_label"]
 
 
