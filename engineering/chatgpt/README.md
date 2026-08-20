@@ -1,6 +1,6 @@
 # ChatGPT Engineering Operating Model
 
-This directory defines how Pocket Lab Lite uses ChatGPT **Chat** and **Work** inside the existing Pocket-Lab-App Project without requiring a local coding agent.
+This directory defines how Pocket Lab Lite uses ChatGPT **Chat** and **Work** inside the existing Pocket-Lab-App Project. When available, Codex provides the local repository implementation and validation surface described in `engineering/codex/`.
 
 The model deliberately separates **parallel reasoning** from **repository/runtime mutation**:
 
@@ -11,10 +11,9 @@ read-only parallel specialists
 verified findings + test design
         ↓
 Chat mode
-coordinator + patch author + debugger
+coordinator + synthesis + design reasoning
         ↓
-human-controlled local execution
-WSL2 / Termux / Git
+Codex local implementation/validation
         ↓
 validation evidence
         ↓
@@ -51,11 +50,35 @@ Use **Chat** when a single controlled integration thread is better:
 - perform explicit GitHub actions when requested;
 - synthesize final PR/release evidence.
 
-Use **both** for substantial changes.
+Use **Chat + Work** for substantial changes. Add Codex when local repository execution is available.
+
+## Two supported workflows
+
+Without Codex:
+
+~~~text
+Work investigation/review
+→ Chat synthesis and implementation guidance
+→ human-controlled local execution
+→ validation
+~~~
+
+With Codex:
+
+~~~text
+Work investigation/review
+→ Chat synthesis and design decisions
+→ Codex local implementation/validation
+→ Work independent review
+→ Chat/GitHub integration
+→ explicit user merge/release decision
+~~~
+
+Work remains primarily read-only investigation and review. Chat remains the coordinator and synthesizer. Codex is the preferred local repository execution surface when available. Humans retain control of sensitive, remote, live and destructive actions. Chat + Work remain fully supported without Codex.
 
 ## Session startup
 
-For a new Chat or Work session inside the Pocket-Lab-App Project:
+For a new Chat, Work or Codex session inside the Pocket-Lab-App Project:
 
 1. Read root `AGENTS.md`.
 2. Read `canonical-context.md`.
@@ -94,14 +117,14 @@ Provide the Work report to a Chat session and ask it to:
 
 ### 3. Controlled local implementation
 
-Chat supplies targeted edits, preferably:
+When Codex is available, it performs targeted local edits and validation. Otherwise Chat supplies targeted edits for human-controlled execution. Prefer:
 
 - Python one-shots;
 - small patch hunks;
 - exact commands;
 - focused new tests.
 
-The human applies and executes them locally. Do not replace this with unrestricted background mutation.
+Codex performs local implementation and validation when available; otherwise the human applies and executes the guidance locally. Do not replace this with unrestricted background mutation. The human remains the authority for remote, destructive, live-runtime and release actions.
 
 ### 4. Focused validation
 

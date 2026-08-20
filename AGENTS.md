@@ -1,6 +1,6 @@
 # Pocket Lab Lite Agent Engineering Contract
 
-`AGENTS.md` is the repository-level operating contract for AI-assisted engineering in Pocket Lab Lite. It applies to ChatGPT Chat sessions, ChatGPT Work sessions and any human using their output.
+`AGENTS.md` is the repository-level operating contract for AI-assisted engineering in Pocket Lab Lite. It applies to ChatGPT Chat, ChatGPT Work, Codex, and humans using AI-assisted engineering output.
 
 ## Source-of-truth order
 
@@ -67,11 +67,11 @@ Do not reintroduce frontend shell execution, direct browser NATS access, browser
 
 See `engineering/chatgpt/architecture-contract.md` for the expanded contract.
 
-## ChatGPT operating model
+## ChatGPT + Work + Codex operating model
 
-Pocket Lab Lite intentionally uses ChatGPT **Chat** and **Work** as complementary modes.
+Pocket Lab Lite uses ChatGPT **Chat**, ChatGPT **Work**, and **Codex** as complementary engineering surfaces. The repository remains the ultimate source of truth, and this root contract wins when guidance conflicts.
 
-### Work mode — breadth, parallelism and independent review
+### ChatGPT Work — breadth, parallelism and independent review
 
 Use Work for read-only repository investigation and parallel specialist analysis. Work agents may inspect GitHub/repository sources and produce findings, plans, test designs and reviews. They do not own repository mutation in this workflow.
 
@@ -88,19 +88,25 @@ Typical Work tasks:
 
 Work agents must report evidence, not merely conclusions.
 
-### Chat mode — synthesis, integration and controlled mutation guidance
+### ChatGPT Chat — synthesis, design and coordination
 
 Use Chat for:
 
 - reconciling Work-agent findings;
 - selecting the smallest architecture-safe implementation;
-- exact targeted patches and Python/shell one-shots;
+- implementation planning and exact targeted patches and Python/shell one-shots;
 - rapid test-failure/debugging loops;
 - validation interpretation;
-- explicit Git/GitHub operations when the user requests them;
+- GitHub action coordination when the user explicitly requests it;
 - final PR/release synthesis.
 
-Actual local commands run under human control in WSL2/Termux. Repository writes, commits, pushes, merges, tags, releases and live-runtime actions require explicit user intent.
+### Codex — local repository implementation and validation
+
+Use Codex for local repository inspection, targeted source/test edits, generators, builds, focused and broad validation, diff inspection and local Git inspection. Codex is the preferred local repository execution surface when available; it is not a competing architecture authority or a replacement for Chat/Work reasoning and independent review. Codex may perform ordinary local non-destructive implementation and validation operations inside the explicitly opened repository.
+
+### Human — explicit authority for sensitive actions
+
+Human explicit intent is required before Codex performs commits, pushes, merges, tags, release publication, live Server Phone mutation, Termux production mutation, destructive cleanup/reset, or secret/credential changes. Chat and Work do not grant that authority implicitly.
 
 Detailed usage is in `engineering/chatgpt/operating-workflow.md`.
 
@@ -111,7 +117,7 @@ For medium or large work, use these phases:
 1. **Read-only investigation** — Work agents inspect Codebase Map and relevant source.
 2. **Coordinator synthesis** — Chat reconciles verified findings and rejects unsupported assumptions.
 3. **Test contract** — define success, negative cases and regression coverage before implementation.
-4. **Targeted implementation** — Chat supplies minimal edits/commands; user applies locally.
+4. **Targeted implementation** — Codex applies the smallest architecture-safe local edits when available; Chat supplies synthesis and coordination.
 5. **Independent review** — Work reviewer tries to disprove correctness and find architectural/security/test gaps.
 6. **Validation** — run focused checks, then the appropriate broader gates.
 7. **PR/CI** — inspect GitHub checks; fix root cause rather than generated symptoms.
@@ -268,6 +274,8 @@ Read these as needed:
 
 - `engineering/chatgpt/README.md` — entrypoint and mode-selection guide.
 - `engineering/chatgpt/canonical-context.md` — compact persistent engineering context and source hierarchy.
+- `engineering/codex/README.md` — Codex-specific local execution and validation guide.
+- `engineering/codex/canonical-context.md` — compact Codex startup context.
 - `engineering/chatgpt/architecture-contract.md` — architecture/trust/recovery invariants.
 - `engineering/chatgpt/agent-roles.md` — specialist scopes and output contracts.
 - `engineering/chatgpt/operating-workflow.md` — Chat + Work end-to-end workflows.
