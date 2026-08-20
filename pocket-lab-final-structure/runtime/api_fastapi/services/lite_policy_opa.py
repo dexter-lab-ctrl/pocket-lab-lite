@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
 import os
 import time
 import urllib.error
 import urllib.request
 import uuid
+from urllib.parse import urlsplit
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +18,7 @@ from .lite_security_policy import redact_value
 
 OPA_BASE_URL = os.environ.get("POCKETLAB_OPA_URL", "http://127.0.0.1:8181").rstrip("/")
 OPA_DECISION_PATH = "/v1/data/pocketlab/authz/decision"
-PROTECTED_ACTIONS = frozenset({"catalog.install", "device.remove"})
+PROTECTED_ACTIONS = frozenset({"catalog.install", "device.remove", "identity.passkey.revoke"})
 
 
 class PolicyDecisionError(RuntimeError):
@@ -69,6 +71,32 @@ def _safe_revision() -> str:
     return hashlib.sha256(data).hexdigest()[:24]
 
 
+
+
+def _opa_endpoint_is_loopback() -> bool:
+    try:
+        parsed = urlsplit(OPA_BASE_URL)
+        host = (parsed.hostname or "").strip().casefold()
+        if parsed.scheme != "http" or not host or parsed.username or parsed.password or parsed.query or parsed.fragment:
+            return False
+        if host == "localhost":
+            return True
+        try:
+            return ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            return False
+    except ValueError:
+        return False
+
+
+def _require_loopback_opa() -> None:
+    if not _opa_endpoint_is_loopback():
+        raise PolicyDecisionError(
+            "policy_endpoint_not_loopback",
+            "Safety Rules are configured with a non-local policy endpoint, so protected actions are blocked.",
+            status_code=503,
+        )
+
 def _http_json(method: str, path: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None) -> tuple[int, dict[str, Any]]:
     bounded = timeout if timeout is not None else float(os.environ.get("POCKETLAB_OPA_TIMEOUT_SECONDS", "0.35"))
     bounded = max(0.05, min(2.0, float(bounded)))
@@ -112,11 +140,22 @@ def build_authorization_input(
 ) -> dict[str, Any]:
     actor = _normalized_actor(auth_context)
     session = (auth_context or {}).get("session") or {}
+    assurance = []
+    for item in session.get("assurance") or []:
+        if not isinstance(item, dict):
+            continue
+        assurance.append({
+            "purpose": str(item.get("purpose") or "")[:80],
+            "credential_id": str(item.get("credential_id") or "")[:256],
+            "satisfied_at": str(item.get("satisfied_at") or "")[:40],
+            "expires_at": str(item.get("expires_at") or "")[:40],
+        })
     return {
         "actor": actor,
         "session": {
             "authenticated": bool(session.get("authenticated")),
             "auth_method": str(session.get("auth_method") or (auth_context or {}).get("auth_method") or "")[:48],
+            "assurance": assurance[:8],
         },
         "action": {"id": str(action_id)[:120]},
         "target": {
@@ -190,6 +229,15 @@ def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], eva
                 "DELETE FROM policy_decisions WHERE decision_row_id NOT IN (SELECT decision_row_id FROM policy_decisions ORDER BY decision_row_id DESC LIMIT ?)",
                 (retention,),
             )
+            try:
+                tx.execute(
+                    "INSERT OR REPLACE INTO policy_decision_details(decision_id,constraints_json,evidence_ref) VALUES (?,?,?)",
+                    (decision_id, json.dumps(decision.get("constraints") or [], separators=(",", ":")), f"policy:{decision_id}"),
+                )
+            except Exception:
+                # Migration may not be present during a rolling upgrade; the core
+                # deny/allow decision must remain authoritative and fail-closed.
+                pass
     return {**decision, "decision_id": decision_id, "correlation_id": correlation_id, "evaluation_ms": round(max(0.0, evaluation_ms), 3)}
 
 
@@ -219,6 +267,7 @@ def evaluate_authorization(
     started = time.monotonic()
     test = _test_decision(input_doc)
     try:
+        _require_loopback_opa()
         if test is not None:
             normalized = _validate_result(test)
         else:
@@ -262,8 +311,87 @@ def evaluate_authorization(
         correlation_id=str(correlation_id or uuid.uuid4().hex),
     )
     if not recorded["allow"]:
+        if recorded.get("reason_code") == "passkey_step_up_required":
+            raise PolicyDecisionError(
+                "passkey_step_up_required",
+                "Confirm this sensitive change with your passkey, then try it again.",
+                status_code=428,
+                decision=recorded,
+            )
         raise PolicyDecisionError("policy_denied", "Safety Rules blocked this action.", status_code=403, decision=recorded)
     return recorded
+
+
+def decision_detail(decision_id: str) -> dict[str, Any] | None:
+    apply_migrations()
+    with connection() as conn:
+        row = conn.execute(
+            """SELECT occurred_at,decision_id,correlation_id,actor_type,action_id,target_type,target_id,
+                      target_revision,allow,reason_code,policy_revision,evaluation_ms
+               FROM policy_decisions WHERE decision_id=? LIMIT 1""",
+            (str(decision_id)[:120],),
+        ).fetchone()
+        if not row:
+            return None
+        item = dict(row)
+        detail = conn.execute(
+            "SELECT constraints_json,evidence_ref FROM policy_decision_details WHERE decision_id=? LIMIT 1",
+            (item["decision_id"],),
+        ).fetchone()
+    constraints = []
+    evidence_ref = None
+    if detail:
+        try:
+            constraints = json.loads(detail["constraints_json"] or "[]")
+        except Exception:
+            constraints = []
+        evidence_ref = detail["evidence_ref"]
+    return {
+        "occurred_at": item["occurred_at"],
+        "decision_id": item["decision_id"],
+        "correlation_id": item["correlation_id"],
+        "actor_type": item["actor_type"],
+        "action_id": item["action_id"],
+        "target_type": item["target_type"],
+        "target_id": item["target_id"],
+        "target_revision": item["target_revision"],
+        "allow": bool(item["allow"]),
+        "reason_code": item["reason_code"],
+        "policy_revision": item["policy_revision"],
+        "evaluation_ms": item["evaluation_ms"],
+        "constraints": [str(value)[:120] for value in constraints[:12]],
+        "evidence_ref": str(evidence_ref or "")[:160] or None,
+        "raw_input_exposed": False,
+    }
+
+
+def policy_templates() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": "destructive_confirmation",
+            "label": "Confirm destructive changes",
+            "summary": "Requires an explicit confirmation before destructive device cleanup.",
+            "status": "active",
+            "enforcement": "FastAPI hard guard + Safety Rules context",
+            "actions": ["device.remove"],
+        },
+        {
+            "id": "healthy_device_removal_protection",
+            "label": "Protect healthy devices",
+            "summary": "Keeps device-removal safety assessment and protected-server-host checks outside editable policy.",
+            "status": "active",
+            "enforcement": "FastAPI hard guard",
+            "actions": ["device.remove"],
+        },
+        {
+            "id": "passkey_step_up",
+            "label": "Passkey confirmation for sensitive Identity changes",
+            "summary": "Requires a recent server-verified passkey step-up before removing a passkey.",
+            "status": "active",
+            "enforcement": "OPA with server-derived assurance",
+            "actions": ["identity.passkey.revoke"],
+        },
+    ]
 
 
 def policy_status() -> dict[str, Any]:
@@ -272,6 +400,7 @@ def policy_status() -> dict[str, Any]:
     engine_version = "unknown"
     error_code = "policy_engine_unavailable"
     try:
+        _require_loopback_opa()
         status_code, _ = _http_json("GET", "/health", timeout=0.25)
         healthy = status_code == 200
         if healthy:
@@ -282,6 +411,9 @@ def policy_status() -> dict[str, Any]:
                     engine_version = str(version_payload.get("version") or "unknown")[:40]
             except Exception:
                 engine_version = "unknown"
+    except PolicyDecisionError as exc:
+        healthy = False
+        error_code = exc.reason_code
     except Exception:
         healthy = False
     recent: list[dict[str, Any]] = []
@@ -320,7 +452,7 @@ def policy_status() -> dict[str, Any]:
             "name": "Open Policy Agent",
             "version": engine_version,
             "healthy": healthy,
-            "loopback_only": OPA_BASE_URL.startswith("http://127.0.0.1:") or OPA_BASE_URL.startswith("http://localhost:"),
+            "loopback_only": _opa_endpoint_is_loopback(),
             "endpoint_exposed_to_browser": False,
             "reason_code": error_code,
         },
@@ -336,7 +468,9 @@ def policy_status() -> dict[str, Any]:
         "policy_groups": [
             {"id": "apps", "label": "Apps", "actions": ["catalog.install"]},
             {"id": "devices", "label": "Devices", "actions": ["device.remove"]},
+            {"id": "identity", "label": "Identity", "actions": ["identity.passkey.revoke"]},
         ],
+        "templates": policy_templates(),
         "recent_decisions": recent,
         "updated_at": _now_iso(),
     }

@@ -56,3 +56,31 @@ test_anonymous_actor_denied if {
 	}
 	not result.allow
 }
+
+test_passkey_revoke_requires_step_up if {
+	result := decision with input as {
+		"actor": {"type": "human", "id": "human-test"},
+		"session": {"authenticated": true, "auth_method": "password", "assurance": []},
+		"action": {"id": "identity.passkey.revoke"},
+		"target": {"type": "passkey", "id": "cred-test", "revision": "test", "state": {}},
+		"request": {},
+	}
+	not result.allow
+	result.reason_code == "passkey_step_up_required"
+}
+
+test_passkey_revoke_allows_recent_step_up if {
+	result := decision with input as {
+		"actor": {"type": "human", "id": "human-test"},
+		"session": {
+			"authenticated": true,
+			"auth_method": "password",
+			"assurance": [{"purpose": "identity.passkey.revoke", "credential_id": "cred-step-up"}],
+		},
+		"action": {"id": "identity.passkey.revoke"},
+		"target": {"type": "passkey", "id": "cred-test", "revision": "test", "state": {}},
+		"request": {},
+	}
+	result.allow
+	result.reason_code == "passkey_step_up_satisfied"
+}
