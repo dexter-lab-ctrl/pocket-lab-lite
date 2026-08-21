@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -214,6 +214,7 @@ async def _enforce_lite_policy(
                 "message": exc.message,
                 "decision_id": decision.get("decision_id"),
                 "policy_revision": decision.get("policy_revision"),
+                "approval": decision.get("approval"),
             },
         ) from exc
 
@@ -3034,6 +3035,24 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         },
         correlation_id=removal_generation,
     )
+    continuation_id = str(policy_decision.get("continuation_approval_id") or "")
+    if continuation_id:
+        try:
+            await asyncio.to_thread(
+                lite_policy_approvals.consume_matching,
+                auth_context=auth_context,
+                approval_id=continuation_id,
+                action_id="device.remove",
+                target_type="device",
+                target_id=device_id,
+                policy_revision=str(policy_decision.get("policy_revision") or ""),
+            )
+        except lite_policy_approvals.ApprovalError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"status": "blocked", "accepted": False, "reason_code": exc.reason_code, "message": exc.message},
+            ) from exc
     try:
         prepared_details = CONTROL_PLANE.device_details(device_id)
         removal_state = (
@@ -3932,4 +3951,3 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
     submitted["preview_id"] = payload.preview_id
     submitted["summary"] = "Restore queued. Pocket Lab will create a pre-restore checkpoint before changing Lite state."
     return submitted
-

@@ -10,6 +10,9 @@ never logs or persists secrets.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import fcntl
+import hashlib
 import json
 import os
 import re
@@ -87,8 +90,8 @@ def sanitize(value: Any) -> Any:
     return value
 
 
-def run_command(args: List[str], timeout: float = 15.0) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(args, check=False, capture_output=True, text=True, timeout=timeout)
+def run_command(args: List[str], timeout: float = 15.0, env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, check=False, capture_output=True, text=True, timeout=timeout, env=env)
 
 
 def pm2_available() -> bool:
@@ -208,6 +211,8 @@ class LiteCoreSupervisor:
         )))
         self.restart_history, self.restart_generations = self._load_restart_state()
         self.server_node_id = self._canonical_server_node_id()
+        self.policy_lock_file = self.state_root / "opa" / "activation.lock"
+        self.policy_prepare_script = Path(__file__).resolve().parents[2] / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "lite" / "prepare-opa-policy.sh"
 
     def _state_root(self) -> Path:
         configured = os.environ.get("POCKETLAB_STATE_DIR") or os.environ.get("STATE_DIR")
@@ -490,6 +495,141 @@ class LiteCoreSupervisor:
             pass
         return self._restore_guard_state()
 
+    def _policy_runtime_modules(self) -> tuple[Any, Any, Any]:
+        runtime_root = str(Path(__file__).resolve().parents[1])
+        if runtime_root not in sys.path:
+            sys.path.insert(0, runtime_root)
+        from api_fastapi.db.connection import begin_immediate, connection
+        from api_fastapi.services import lite_policy_lifecycle
+        return begin_immediate, connection, lite_policy_lifecycle
+
+    @contextlib.contextmanager
+    def _activation_lock(self) -> Iterable[bool]:
+        self.policy_lock_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.policy_lock_file.open("a+") as handle:
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                yield False
+                return
+            try:
+                yield True
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+    def _set_policy_operation(self, operation_id: str, state: str, *, reason: str = "", filesystem: str | None = None, opa: str | None = None, evidence: str | None = None) -> None:
+        begin_immediate, connection, _ = self._policy_runtime_modules()
+        with connection() as conn:
+            with begin_immediate(conn) as tx:
+                tx.execute(
+                    """UPDATE policy_activation_operations SET state=?,updated_at=?,reason_code=?,observed_filesystem_revision=COALESCE(?,observed_filesystem_revision),observed_opa_revision=COALESCE(?,observed_opa_revision),evidence_ref=COALESCE(?,evidence_ref) WHERE operation_id=?""",
+                    (state, now_iso(), reason[:80], filesystem, opa, evidence, operation_id),
+                )
+
+    def _stage_is_valid(self, revision: str) -> bool:
+        stage = self.state_root / "opa" / "stage" / revision
+        try:
+            manifest = json.loads((stage / "manifest.json").read_text(encoding="utf-8"))
+            if manifest.get("revision") != revision or not isinstance(manifest.get("files"), list):
+                return False
+            for item in manifest["files"]:
+                path = stage / str(item.get("path") or "")
+                if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != item.get("sha256"):
+                    return False
+            digest = hashlib.sha256(json.dumps(manifest["files"], sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+            return digest == manifest.get("candidate_hash") and (stage / "revision.txt").read_text(encoding="utf-8").strip() == revision
+        except Exception:
+            return False
+
+    def _stage_matches_revision(self, revision: str, database_manifest: str, content_hash: str) -> bool:
+        try:
+            stage = json.loads((self.state_root / "opa" / "stage" / revision / "manifest.json").read_text(encoding="utf-8"))
+            stored = json.loads(database_manifest)
+            return stage.get("candidate_hash") == content_hash and stage.get("files") == stored.get("files") and stored.get("candidate_hash") == content_hash
+        except Exception:
+            return False
+
+    @staticmethod
+    def _opa_metadata_revision(payload: Optional[Dict[str, Any]]) -> str | None:
+        # Proven against OPA 1.19.0: GET /v1/data/pocketlab/meta/revision -> {"result":"<revision>"}.
+        result = (payload or {}).get("result")
+        return result if isinstance(result, str) and 8 <= len(result) <= 80 else None
+
+    def _prepare_policy(self, action: str, revision: str, template_json: str = "") -> bool:
+        env = os.environ.copy()
+        env["POCKETLAB_STATE_DIR"] = str(self.state_root)
+        if template_json:
+            env["POCKETLAB_POLICY_TEMPLATE_JSON"] = template_json
+            env["POCKETLAB_POLICY_REVISION"] = revision
+        try:
+            return run_command(["bash", str(self.policy_prepare_script), action, revision] if action != "stage" else ["bash", str(self.policy_prepare_script), "stage"], timeout=45, env=env).returncode == 0
+        except Exception:
+            return False
+
+    def reconcile_policy_activation(self) -> Dict[str, Any] | None:
+        """Advance exactly one durable operation; all failures restore known-good."""
+        try:
+            begin_immediate, connection, _ = self._policy_runtime_modules()
+        except Exception as exc:
+            return {"event": "policy_reconciliation_unavailable", "error_type": type(exc).__name__, "acted": False}
+        with self._activation_lock() as locked:
+            if not locked:
+                return {"event": "policy_activation_lock_busy", "acted": False}
+            with connection() as conn:
+                operation = conn.execute("SELECT * FROM policy_activation_operations WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back','uncertain') ORDER BY created_at LIMIT 1").fetchone()
+                if not operation:
+                    return None
+                op = dict(operation)
+                revision = conn.execute("SELECT * FROM policy_revisions WHERE revision_id=?", (op["candidate_revision_id"],)).fetchone()
+            if not revision:
+                self._set_policy_operation(op["operation_id"], "failed", reason="policy_revision_unknown")
+                return {"event": "policy_activation_failed", "reason": "policy_revision_unknown", "acted": False}
+            revision_data = dict(revision)
+            template_json = json.dumps({"template_id": revision_data["template_id"], "template_version": revision_data["template_version"], "parameters": json.loads(revision_data["canonical_parameters_json"])}, sort_keys=True, separators=(",", ":"))
+            self._set_policy_operation(op["operation_id"], "validating")
+            if not self._prepare_policy("stage", op["candidate_revision_id"], template_json) or not self._stage_is_valid(op["candidate_revision_id"]):
+                return self._rollback_policy(op, "candidate_invalid")
+            if not self._stage_matches_revision(op["candidate_revision_id"], revision_data["manifest_json"], revision_data["content_hash"]):
+                return self._rollback_policy(op, "candidate_hash_mismatch")
+            self._set_policy_operation(op["operation_id"], "switching", filesystem=op["candidate_revision_id"])
+            if not self._prepare_policy("activate", op["candidate_revision_id"]):
+                return self._rollback_policy(op, "pointer_switch_failed")
+            self._set_policy_operation(op["operation_id"], "restarting")
+            restart = self.restart_pm2("pocket-opa", "policy_activation")
+            if not restart.get("acted"):
+                return self._rollback_policy(op, "opa_restart_failed")
+            self._set_policy_operation(op["operation_id"], "verifying")
+            health = fetch_json("http://127.0.0.1:8181/health")
+            observed = self._opa_metadata_revision(fetch_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision"))
+            if health is None or observed != op["candidate_revision_id"]:
+                return self._rollback_policy(op, "opa_revision_mismatch", observed=observed)
+            with connection() as conn:
+                with begin_immediate(conn) as tx:
+                    now = now_iso()
+                    tx.execute("INSERT INTO policy_runtime_state(state_id,active_revision_id,known_good_revision_id,updated_at,updated_by_operation_id) VALUES (1,?,?,?,?) ON CONFLICT(state_id) DO UPDATE SET active_revision_id=excluded.active_revision_id,known_good_revision_id=excluded.known_good_revision_id,updated_at=excluded.updated_at,updated_by_operation_id=excluded.updated_by_operation_id", (op["candidate_revision_id"], op["candidate_revision_id"], now, op["operation_id"]))
+                    tx.execute("UPDATE policy_revisions SET validation_status='valid',validated_at=?,lifecycle_status='active',activated_at=? WHERE revision_id=?", (now, now, op["candidate_revision_id"]))
+            # known-good advances only after the metadata proof and durable state.
+            if not self._prepare_policy("known-good", op["candidate_revision_id"]):
+                return self._rollback_policy(op, "known_good_pointer_failed", observed=observed)
+            self._set_policy_operation(op["operation_id"], "active", opa=observed, evidence="policy:metadata-proved")
+            self._append_event({"event": "policy_activation_active", "operation_id": op["operation_id"], "revision": op["candidate_revision_id"], "acted": True})
+            return {"event": "policy_activation_active", "operation_id": op["operation_id"], "revision": op["candidate_revision_id"], "acted": True}
+
+    def _rollback_policy(self, op: Dict[str, Any], reason: str, *, observed: str | None = None) -> Dict[str, Any]:
+        self._set_policy_operation(op["operation_id"], "rolling_back", reason=reason, opa=observed)
+        known_good = str(op.get("prior_known_good_revision_id") or "")
+        if not known_good or not self._stage_is_valid(known_good) or not self._prepare_policy("activate", known_good):
+            self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_pointer_failed", opa=observed)
+            return {"event": "policy_activation_uncertain", "reason": "rollback_pointer_failed", "acted": False}
+        restart = self.restart_pm2("pocket-opa", "policy_activation_rollback")
+        restored = self._opa_metadata_revision(fetch_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision"))
+        if not restart.get("acted") or fetch_json("http://127.0.0.1:8181/health") is None or restored != known_good:
+            self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_unproved", opa=restored)
+            return {"event": "policy_activation_uncertain", "reason": "rollback_unproved", "acted": False}
+        self._set_policy_operation(op["operation_id"], "rolled_back", reason=reason, filesystem=known_good, opa=restored, evidence="policy:rollback-proved")
+        self._append_event({"event": "policy_activation_rolled_back", "operation_id": op["operation_id"], "reason": reason, "acted": True})
+        return {"event": "policy_activation_rolled_back", "operation_id": op["operation_id"], "reason": reason, "acted": True}
+
     def tick(self) -> Dict[str, Any]:
         maintenance = self._maintenance_state()
         if maintenance.get("active"):
@@ -541,6 +681,9 @@ class LiteCoreSupervisor:
         observed = self.collect()
         statuses: Dict[str, str] = observed["services"]
         actions: List[Dict[str, Any]] = []
+        policy_action = self.reconcile_policy_activation()
+        if policy_action is not None:
+            actions.append(policy_action)
 
         nats_unhealthy = not is_online(statuses.get("pocket-nats", "missing")) or not bool(observed["checks"]["nats_tcp_reachable"])
         if nats_unhealthy:
@@ -645,7 +788,7 @@ class LiteCoreSupervisor:
                 "tcp_reachable": bool(post["checks"].get("caddy_tcp_reachable")),
                 "upstream_http_reachable": bool(post["checks"].get("caddy_upstream_http_reachable")),
             },
-            "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "anti-flap-proxy-health", "restart-budgets", "restart-generation-evidence"],
+            "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "policy-activation-reconciliation", "policy-rollback", "activation-lock", "anti-flap-proxy-health", "restart-budgets", "restart-generation-evidence"],
         }
         self._finalize_payload(payload)
         if actions:

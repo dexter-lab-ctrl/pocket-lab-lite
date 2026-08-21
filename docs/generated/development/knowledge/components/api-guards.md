@@ -112,9 +112,10 @@ Applies human authentication/session/CSRF guards plus device identity, duplicate
 
 - depends_on: `FastAPI /api/lite/*`
 - uses: `Add Device`
-- uses: `Local owner password and session lifecycle`
+- uses: `Local owner, passkey, recovery, and session lifecycle`
 - uses: `Device bootstrap and enrollment`
-- uses: `Safety Rules authorization decision`
+- uses: `Opt-in Enterprise membership and authoritative roles`
+- uses: `Typed Safety Rules authorization, lifecycle, simulation, and continuations`
 
 ## Release history
 

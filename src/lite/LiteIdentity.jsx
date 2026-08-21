@@ -49,6 +49,7 @@ export default function IdentityScreen() {
   const [showRecovery, setShowRecovery] = useState(false);
   const [advancedSetup, setAdvancedSetup] = useState(false);
   const [advancedSignIn, setAdvancedSignIn] = useState(false);
+  const [showEnterpriseOptIn, setShowEnterpriseOptIn] = useState(false);
   const [claimState, setClaimState] = useState({ checked: false, active: false, status: '' });
   const [passkeyProfile, setPasskeyProfile] = useState({ username: 'owner', display_name: 'Pocket Lab Owner', friendly_name: 'Primary passkey' });
   const [setup, setSetup] = useState({ username: 'owner', display_name: 'Pocket Lab Owner', password: '', setup_token: '' });
@@ -194,6 +195,11 @@ export default function IdentityScreen() {
   async function signOut() {
     await run('logout', () => liteApi.logoutIdentity(), 'Signed out.');
     setRecoveryCodes([]);
+  }
+
+  async function enableEnterpriseMode() {
+    if (!window.confirm('Enable Enterprise Mode? This signs out active sessions so server-side roles can take effect.')) return;
+    await run('enterprise-enable', () => liteApi.setEnterpriseMode(true), 'Enterprise Mode enabled. Sign in again to continue.');
   }
 
   const status = data?.setup_required ? 'review' : data?.authenticated ? 'healthy' : 'degraded';
@@ -367,6 +373,22 @@ export default function IdentityScreen() {
               </form>
             </GlassCard>
           ) : null}
+
+          {!data?.enterprise?.enabled ? (
+            <GlassCard className="lite-identity-card mt-5">
+              <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><ShieldCheck className="h-5 w-5" /></div><span className="lite-identity-soft-badge">Optional</span></div>
+              <h2>Additional access options</h2>
+              <p>Personal Mode stays simple by default. Enable Enterprise Mode only when you need server-managed roles and governance.</p>
+              <LiteButton variant="secondary" onClick={() => setShowEnterpriseOptIn((value) => !value)} disabled={Boolean(busy)}>{showEnterpriseOptIn ? 'Hide Option' : 'Review Option'}</LiteButton>
+              {showEnterpriseOptIn ? <div className="lite-identity-advanced mt-4"><p>Enabling this mode keeps the local Owner, but signs out current sessions before Enterprise authorization takes effect.</p><LiteButton onClick={enableEnterpriseMode} disabled={Boolean(busy)}>{busy === 'enterprise-enable' ? 'Enabling...' : 'Enable Enterprise Mode'}</LiteButton></div> : null}
+            </GlassCard>
+          ) : (
+            <GlassCard className="lite-identity-card mt-5">
+              <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status="healthy">Enterprise Mode</StatusBadge></div>
+              <h2>Server-managed access is active</h2>
+              <p>Your current server-resolved role is {data?.enterprise?.current_membership?.role || 'not assigned'}. Browser state cannot change this authority.</p>
+            </GlassCard>
+          )}
 
           <GlassCard className="lite-identity-card mt-5">
             <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><ShieldCheck className="h-5 w-5" /></div><span className="lite-identity-soft-badge">Activity</span></div>

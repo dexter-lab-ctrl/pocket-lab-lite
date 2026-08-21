@@ -153,6 +153,58 @@
         "title": "GET /api/lite/diagnostics/runtime/full",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-diagnostics-runtime-full"
       },
+      "endpoint:GET:/api/lite/enterprise/identity": {
+        "title": "GET /api/lite/enterprise/identity",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity"
+      },
+      "endpoint:GET:/api/lite/enterprise/identity/members": {
+        "title": "GET /api/lite/enterprise/identity/members",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-members"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/activations/{operation_id}": {
+        "title": "GET /api/lite/enterprise/rules/activations/{operation_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-activations-operation-id"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/analysis": {
+        "title": "GET /api/lite/enterprise/rules/analysis",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-analysis"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/approvals": {
+        "title": "GET /api/lite/enterprise/rules/approvals",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-approvals"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/approvals/{approval_id}": {
+        "title": "GET /api/lite/enterprise/rules/approvals/{approval_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-approvals-approval-id"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/decisions": {
+        "title": "GET /api/lite/enterprise/rules/decisions",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-decisions"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/decisions/{decision_id}": {
+        "title": "GET /api/lite/enterprise/rules/decisions/{decision_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-decisions-decision-id"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/exceptions": {
+        "title": "GET /api/lite/enterprise/rules/exceptions",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-exceptions"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/health": {
+        "title": "GET /api/lite/enterprise/rules/health",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-health"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/revisions": {
+        "title": "GET /api/lite/enterprise/rules/revisions",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-revisions"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}": {
+        "title": "GET /api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-revisions-left-revision-id-compare-right-revision-id"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/revisions/{revision_id}": {
+        "title": "GET /api/lite/enterprise/rules/revisions/{revision_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-revisions-revision-id"
+      },
       "endpoint:GET:/api/lite/events": {
         "title": "GET /api/lite/events",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-events"
@@ -429,6 +481,34 @@
         "title": "POST /api/lite/diagnostics/frontend-lifecycle",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-diagnostics-frontend-lifecycle"
       },
+      "endpoint:POST:/api/lite/enterprise/rules/activations": {
+        "title": "POST /api/lite/enterprise/rules/activations",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-activations"
+      },
+      "endpoint:POST:/api/lite/enterprise/rules/approvals/{approval_id}": {
+        "title": "POST /api/lite/enterprise/rules/approvals/{approval_id}",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-approvals-approval-id"
+      },
+      "endpoint:POST:/api/lite/enterprise/rules/exceptions": {
+        "title": "POST /api/lite/enterprise/rules/exceptions",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-exceptions"
+      },
+      "endpoint:POST:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": {
+        "title": "POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-exceptions-exception-id-revoke"
+      },
+      "endpoint:POST:/api/lite/enterprise/rules/revisions": {
+        "title": "POST /api/lite/enterprise/rules/revisions",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-revisions"
+      },
+      "endpoint:POST:/api/lite/enterprise/rules/rollbacks": {
+        "title": "POST /api/lite/enterprise/rules/rollbacks",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-rollbacks"
+      },
+      "endpoint:POST:/api/lite/enterprise/rules/simulations": {
+        "title": "POST /api/lite/enterprise/rules/simulations",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-simulations"
+      },
       "endpoint:POST:/api/lite/fleet/add-device": {
         "title": "POST /api/lite/fleet/add-device",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-add-device"
@@ -604,6 +684,14 @@
       "endpoint:POST:/api/lite/security/scan": {
         "title": "POST /api/lite/security/scan",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-security-scan"
+      },
+      "endpoint:PUT:/api/lite/enterprise/identity/members/{human_id}": {
+        "title": "PUT /api/lite/enterprise/identity/members/{human_id}",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-enterprise-identity-members-human-id"
+      },
+      "endpoint:PUT:/api/lite/enterprise/identity/mode": {
+        "title": "PUT /api/lite/enterprise/identity/mode",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-enterprise-identity-mode"
       },
       "endpoint:PUT:/api/lite/fleet/devices/{device_id}/display-model": {
         "title": "PUT /api/lite/fleet/devices/{device_id}/display-model",
@@ -1445,13 +1533,85 @@
         "title": "security",
         "url": "../../docs/generated/development/projection-catalog.md#security"
       },
+      "reason:actor_not_authenticated": {
+        "title": "actor_not_authenticated",
+        "url": "../../docs/generated/development/reason-codes.md#actor-not-authenticated"
+      },
       "reason:already_tuned": {
         "title": "already_tuned",
         "url": "../../docs/generated/development/reason-codes.md#already-tuned"
       },
+      "reason:approval_approver_role_required": {
+        "title": "approval_approver_role_required",
+        "url": "../../docs/generated/development/reason-codes.md#approval-approver-role-required"
+      },
+      "reason:approval_cancel_forbidden": {
+        "title": "approval_cancel_forbidden",
+        "url": "../../docs/generated/development/reason-codes.md#approval-cancel-forbidden"
+      },
+      "reason:approval_continuation_unavailable": {
+        "title": "approval_continuation_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#approval-continuation-unavailable"
+      },
+      "reason:approval_not_found": {
+        "title": "approval_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#approval-not-found"
+      },
+      "reason:approval_provenance_invalid": {
+        "title": "approval_provenance_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#approval-provenance-invalid"
+      },
+      "reason:approval_read_forbidden": {
+        "title": "approval_read_forbidden",
+        "url": "../../docs/generated/development/reason-codes.md#approval-read-forbidden"
+      },
+      "reason:approval_record_unavailable": {
+        "title": "approval_record_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#approval-record-unavailable"
+      },
+      "reason:approval_requester_role_invalid": {
+        "title": "approval_requester_role_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#approval-requester-role-invalid"
+      },
+      "reason:approval_required": {
+        "title": "approval_required",
+        "url": "../../docs/generated/development/reason-codes.md#approval-required"
+      },
+      "reason:approval_self_forbidden": {
+        "title": "approval_self_forbidden",
+        "url": "../../docs/generated/development/reason-codes.md#approval-self-forbidden"
+      },
+      "reason:approval_step_up_required": {
+        "title": "approval_step_up_required",
+        "url": "../../docs/generated/development/reason-codes.md#approval-step-up-required"
+      },
+      "reason:approval_transition_invalid": {
+        "title": "approval_transition_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#approval-transition-invalid"
+      },
+      "reason:approval_unusable": {
+        "title": "approval_unusable",
+        "url": "../../docs/generated/development/reason-codes.md#approval-unusable"
+      },
+      "reason:authenticated_app_install": {
+        "title": "authenticated_app_install",
+        "url": "../../docs/generated/development/reason-codes.md#authenticated-app-install"
+      },
+      "reason:authenticated_app_install_exception_scoped": {
+        "title": "authenticated_app_install_exception_scoped",
+        "url": "../../docs/generated/development/reason-codes.md#authenticated-app-install-exception-scoped"
+      },
+      "reason:authenticated_confirmed_device_removal": {
+        "title": "authenticated_confirmed_device_removal",
+        "url": "../../docs/generated/development/reason-codes.md#authenticated-confirmed-device-removal"
+      },
       "reason:authentication_required": {
         "title": "authentication_required",
         "url": "../../docs/generated/development/reason-codes.md#authentication-required"
+      },
+      "reason:claim_verified": {
+        "title": "claim_verified",
+        "url": "../../docs/generated/development/reason-codes.md#claim-verified"
       },
       "reason:cold_start_validation": {
         "title": "cold_start_validation",
@@ -1477,6 +1637,70 @@
         "title": "duplicate_device",
         "url": "../../docs/generated/development/reason-codes.md#duplicate-device"
       },
+      "reason:enterprise_final_owner_protected": {
+        "title": "enterprise_final_owner_protected",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-final-owner-protected"
+      },
+      "reason:enterprise_member_invalid": {
+        "title": "enterprise_member_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-member-invalid"
+      },
+      "reason:enterprise_member_unknown": {
+        "title": "enterprise_member_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-member-unknown"
+      },
+      "reason:enterprise_membership_required": {
+        "title": "enterprise_membership_required",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-membership-required"
+      },
+      "reason:enterprise_membership_status_invalid": {
+        "title": "enterprise_membership_status_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-membership-status-invalid"
+      },
+      "reason:enterprise_mode_disabled": {
+        "title": "enterprise_mode_disabled",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-mode-disabled"
+      },
+      "reason:enterprise_mode_required": {
+        "title": "enterprise_mode_required",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-mode-required"
+      },
+      "reason:enterprise_owner_required": {
+        "title": "enterprise_owner_required",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-owner-required"
+      },
+      "reason:enterprise_role_forbidden": {
+        "title": "enterprise_role_forbidden",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-role-forbidden"
+      },
+      "reason:enterprise_role_invalid": {
+        "title": "enterprise_role_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-role-invalid"
+      },
+      "reason:enterprise_rules_role_required": {
+        "title": "enterprise_rules_role_required",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-rules-role-required"
+      },
+      "reason:exception_expiry_invalid": {
+        "title": "exception_expiry_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#exception-expiry-invalid"
+      },
+      "reason:exception_identity_unknown": {
+        "title": "exception_identity_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#exception-identity-unknown"
+      },
+      "reason:exception_not_found": {
+        "title": "exception_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#exception-not-found"
+      },
+      "reason:exception_scope_invalid": {
+        "title": "exception_scope_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#exception-scope-invalid"
+      },
+      "reason:exception_unusable": {
+        "title": "exception_unusable",
+        "url": "../../docs/generated/development/reason-codes.md#exception-unusable"
+      },
       "reason:generation_changed": {
         "title": "generation_changed",
         "url": "../../docs/generated/development/reason-codes.md#generation-changed"
@@ -1489,17 +1713,57 @@
         "title": "human_session_required",
         "url": "../../docs/generated/development/reason-codes.md#human-session-required"
       },
+      "reason:identity_current_password_invalid": {
+        "title": "identity_current_password_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#identity-current-password-invalid"
+      },
+      "reason:identity_login_failed": {
+        "title": "identity_login_failed",
+        "url": "../../docs/generated/development/reason-codes.md#identity-login-failed"
+      },
+      "reason:identity_login_throttled": {
+        "title": "identity_login_throttled",
+        "url": "../../docs/generated/development/reason-codes.md#identity-login-throttled"
+      },
       "reason:identity_mismatch": {
         "title": "identity_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#identity-mismatch"
+      },
+      "reason:identity_owner_exists": {
+        "title": "identity_owner_exists",
+        "url": "../../docs/generated/development/reason-codes.md#identity-owner-exists"
+      },
+      "reason:identity_password_invalid": {
+        "title": "identity_password_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#identity-password-invalid"
+      },
+      "reason:identity_recovery_failed": {
+        "title": "identity_recovery_failed",
+        "url": "../../docs/generated/development/reason-codes.md#identity-recovery-failed"
+      },
+      "reason:identity_session_invalid": {
+        "title": "identity_session_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#identity-session-invalid"
       },
       "reason:identity_setup_rejected": {
         "title": "identity_setup_rejected",
         "url": "../../docs/generated/development/reason-codes.md#identity-setup-rejected"
       },
+      "reason:identity_setup_required": {
+        "title": "identity_setup_required",
+        "url": "../../docs/generated/development/reason-codes.md#identity-setup-required"
+      },
       "reason:identity_setup_unavailable": {
         "title": "identity_setup_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#identity-setup-unavailable"
+      },
+      "reason:identity_username_invalid": {
+        "title": "identity_username_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#identity-username-invalid"
+      },
+      "reason:independent_approval_satisfied": {
+        "title": "independent_approval_satisfied",
+        "url": "../../docs/generated/development/reason-codes.md#independent-approval-satisfied"
       },
       "reason:insufficient_storage": {
         "title": "insufficient_storage",
@@ -1533,6 +1797,10 @@
         "title": "legacy_secret_rotation_retired",
         "url": "../../docs/generated/development/reason-codes.md#legacy-secret-rotation-retired"
       },
+      "reason:local_owner_required": {
+        "title": "local_owner_required",
+        "url": "../../docs/generated/development/reason-codes.md#local-owner-required"
+      },
       "reason:metadata_only": {
         "title": "metadata_only",
         "url": "../../docs/generated/development/reason-codes.md#metadata-only"
@@ -1545,13 +1813,173 @@
         "title": "not_found_in_restored_snapshot",
         "url": "../../docs/generated/development/reason-codes.md#not-found-in-restored-snapshot"
       },
+      "reason:owner_claim_authority_expired": {
+        "title": "owner_claim_authority_expired",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-authority-expired"
+      },
+      "reason:owner_claim_authority_invalid": {
+        "title": "owner_claim_authority_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-authority-invalid"
+      },
+      "reason:owner_claim_expired": {
+        "title": "owner_claim_expired",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-expired"
+      },
+      "reason:owner_claim_installation_mismatch": {
+        "title": "owner_claim_installation_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-installation-mismatch"
+      },
+      "reason:owner_claim_invalid": {
+        "title": "owner_claim_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-invalid"
+      },
+      "reason:owner_claim_origin_mismatch": {
+        "title": "owner_claim_origin_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-origin-mismatch"
+      },
+      "reason:owner_claim_passkey": {
+        "title": "owner_claim_passkey",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-passkey"
+      },
+      "reason:owner_claim_reused": {
+        "title": "owner_claim_reused",
+        "url": "../../docs/generated/development/reason-codes.md#owner-claim-reused"
+      },
+      "reason:owner_request": {
+        "title": "owner_request",
+        "url": "../../docs/generated/development/reason-codes.md#owner-request"
+      },
+      "reason:passkey_already_registered": {
+        "title": "passkey_already_registered",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-already-registered"
+      },
+      "reason:passkey_last_sign_in_method": {
+        "title": "passkey_last_sign_in_method",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-last-sign-in-method"
+      },
+      "reason:passkey_name_invalid": {
+        "title": "passkey_name_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-name-invalid"
+      },
+      "reason:passkey_registration": {
+        "title": "passkey_registration",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-registration"
+      },
+      "reason:passkey_step_up": {
+        "title": "passkey_step_up",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-step-up"
+      },
+      "reason:passkey_step_up_required": {
+        "title": "passkey_step_up_required",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-step-up-required"
+      },
+      "reason:passkey_step_up_satisfied": {
+        "title": "passkey_step_up_satisfied",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-step-up-satisfied"
+      },
+      "reason:passkey_unavailable": {
+        "title": "passkey_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-unavailable"
+      },
+      "reason:passkey_unknown": {
+        "title": "passkey_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-unknown"
+      },
+      "reason:passkey_verified": {
+        "title": "passkey_verified",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-verified"
+      },
+      "reason:passkey_wrong_owner": {
+        "title": "passkey_wrong_owner",
+        "url": "../../docs/generated/development/reason-codes.md#passkey-wrong-owner"
+      },
       "reason:payload_too_large": {
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
       },
+      "reason:policy_action_not_registered": {
+        "title": "policy_action_not_registered",
+        "url": "../../docs/generated/development/reason-codes.md#policy-action-not-registered"
+      },
+      "reason:policy_activation_in_progress": {
+        "title": "policy_activation_in_progress",
+        "url": "../../docs/generated/development/reason-codes.md#policy-activation-in-progress"
+      },
+      "reason:policy_activation_pending": {
+        "title": "policy_activation_pending",
+        "url": "../../docs/generated/development/reason-codes.md#policy-activation-pending"
+      },
+      "reason:policy_activation_unknown": {
+        "title": "policy_activation_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#policy-activation-unknown"
+      },
+      "reason:policy_change_summary_invalid": {
+        "title": "policy_change_summary_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#policy-change-summary-invalid"
+      },
       "reason:policy_decision_not_found": {
         "title": "policy_decision_not_found",
         "url": "../../docs/generated/development/reason-codes.md#policy-decision-not-found"
+      },
+      "reason:policy_denied": {
+        "title": "policy_denied",
+        "url": "../../docs/generated/development/reason-codes.md#policy-denied"
+      },
+      "reason:policy_endpoint_not_loopback": {
+        "title": "policy_endpoint_not_loopback",
+        "url": "../../docs/generated/development/reason-codes.md#policy-endpoint-not-loopback"
+      },
+      "reason:policy_invalid_response": {
+        "title": "policy_invalid_response",
+        "url": "../../docs/generated/development/reason-codes.md#policy-invalid-response"
+      },
+      "reason:policy_known_good_unavailable": {
+        "title": "policy_known_good_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#policy-known-good-unavailable"
+      },
+      "reason:policy_parameter_invalid": {
+        "title": "policy_parameter_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#policy-parameter-invalid"
+      },
+      "reason:policy_parameter_unknown": {
+        "title": "policy_parameter_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#policy-parameter-unknown"
+      },
+      "reason:policy_parameters_invalid": {
+        "title": "policy_parameters_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#policy-parameters-invalid"
+      },
+      "reason:policy_revision_mismatch": {
+        "title": "policy_revision_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#policy-revision-mismatch"
+      },
+      "reason:policy_revision_unavailable": {
+        "title": "policy_revision_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#policy-revision-unavailable"
+      },
+      "reason:policy_revision_uncertain": {
+        "title": "policy_revision_uncertain",
+        "url": "../../docs/generated/development/reason-codes.md#policy-revision-uncertain"
+      },
+      "reason:policy_revision_unknown": {
+        "title": "policy_revision_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#policy-revision-unknown"
+      },
+      "reason:policy_simulation_invalid": {
+        "title": "policy_simulation_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#policy-simulation-invalid"
+      },
+      "reason:policy_simulation_revision_unavailable": {
+        "title": "policy_simulation_revision_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#policy-simulation-revision-unavailable"
+      },
+      "reason:policy_source_unavailable": {
+        "title": "policy_source_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-unavailable"
+      },
+      "reason:policy_template_unknown": {
+        "title": "policy_template_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#policy-template-unknown"
       },
       "reason:policy_unavailable": {
         "title": "policy_unavailable",
@@ -1585,6 +2013,14 @@
         "title": "remote_access_not_ready",
         "url": "../../docs/generated/development/reason-codes.md#remote-access-not-ready"
       },
+      "reason:rollback_pointer_failed": {
+        "title": "rollback_pointer_failed",
+        "url": "../../docs/generated/development/reason-codes.md#rollback-pointer-failed"
+      },
+      "reason:rollback_unproved": {
+        "title": "rollback_unproved",
+        "url": "../../docs/generated/development/reason-codes.md#rollback-unproved"
+      },
       "reason:service_unavailable": {
         "title": "service_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#service-unavailable"
@@ -1613,9 +2049,113 @@
         "title": "test_bypass_explicit",
         "url": "../../docs/generated/development/reason-codes.md#test-bypass-explicit"
       },
+      "reason:trusted_local_admin": {
+        "title": "trusted_local_admin",
+        "url": "../../docs/generated/development/reason-codes.md#trusted-local-admin"
+      },
       "reason:unregistered_domain": {
         "title": "unregistered_domain",
         "url": "../../docs/generated/development/reason-codes.md#unregistered-domain"
+      },
+      "reason:webauthn_algorithm_unsupported": {
+        "title": "webauthn_algorithm_unsupported",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-algorithm-unsupported"
+      },
+      "reason:webauthn_assertion_invalid": {
+        "title": "webauthn_assertion_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-assertion-invalid"
+      },
+      "reason:webauthn_attestation_unsupported": {
+        "title": "webauthn_attestation_unsupported",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-attestation-unsupported"
+      },
+      "reason:webauthn_attested_data_missing": {
+        "title": "webauthn_attested_data_missing",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-attested-data-missing"
+      },
+      "reason:webauthn_authenticator_data_invalid": {
+        "title": "webauthn_authenticator_data_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-authenticator-data-invalid"
+      },
+      "reason:webauthn_cbor_invalid": {
+        "title": "webauthn_cbor_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-cbor-invalid"
+      },
+      "reason:webauthn_challenge_expired": {
+        "title": "webauthn_challenge_expired",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-challenge-expired"
+      },
+      "reason:webauthn_challenge_invalid": {
+        "title": "webauthn_challenge_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-challenge-invalid"
+      },
+      "reason:webauthn_challenge_mismatch": {
+        "title": "webauthn_challenge_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-challenge-mismatch"
+      },
+      "reason:webauthn_challenge_replayed": {
+        "title": "webauthn_challenge_replayed",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-challenge-replayed"
+      },
+      "reason:webauthn_challenge_scope_mismatch": {
+        "title": "webauthn_challenge_scope_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-challenge-scope-mismatch"
+      },
+      "reason:webauthn_client_data_invalid": {
+        "title": "webauthn_client_data_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-client-data-invalid"
+      },
+      "reason:webauthn_counter_replay": {
+        "title": "webauthn_counter_replay",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-counter-replay"
+      },
+      "reason:webauthn_credential_mismatch": {
+        "title": "webauthn_credential_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-credential-mismatch"
+      },
+      "reason:webauthn_encoding_invalid": {
+        "title": "webauthn_encoding_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-encoding-invalid"
+      },
+      "reason:webauthn_hostname_required": {
+        "title": "webauthn_hostname_required",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-hostname-required"
+      },
+      "reason:webauthn_origin_invalid": {
+        "title": "webauthn_origin_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-origin-invalid"
+      },
+      "reason:webauthn_origin_mismatch": {
+        "title": "webauthn_origin_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-origin-mismatch"
+      },
+      "reason:webauthn_public_key_invalid": {
+        "title": "webauthn_public_key_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-public-key-invalid"
+      },
+      "reason:webauthn_rp_id_invalid": {
+        "title": "webauthn_rp_id_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-rp-id-invalid"
+      },
+      "reason:webauthn_rp_id_mismatch": {
+        "title": "webauthn_rp_id_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-rp-id-mismatch"
+      },
+      "reason:webauthn_secure_origin_required": {
+        "title": "webauthn_secure_origin_required",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-secure-origin-required"
+      },
+      "reason:webauthn_signature_invalid": {
+        "title": "webauthn_signature_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-signature-invalid"
+      },
+      "reason:webauthn_type_mismatch": {
+        "title": "webauthn_type_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-type-mismatch"
+      },
+      "reason:webauthn_user_verification_required": {
+        "title": "webauthn_user_verification_required",
+        "url": "../../docs/generated/development/reason-codes.md#webauthn-user-verification-required"
       },
       "reason:worker_failed": {
         "title": "worker_failed",
@@ -1768,6 +2308,16 @@
         "schema_url": "../../docs/generated/schemaspy/tables/domain_revisions.html",
         "title": "domain_revisions"
       },
+      "table:enterprise_configuration": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#enterprise-configuration",
+        "schema_url": "../../docs/generated/schemaspy/tables/enterprise_configuration.html",
+        "title": "enterprise_configuration"
+      },
+      "table:enterprise_memberships": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#enterprise-memberships",
+        "schema_url": "../../docs/generated/schemaspy/tables/enterprise_memberships.html",
+        "title": "enterprise_memberships"
+      },
       "table:human_credentials": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#human-credentials",
         "schema_url": "../../docs/generated/schemaspy/tables/human_credentials.html",
@@ -1808,6 +2358,21 @@
         "schema_url": "../../docs/generated/schemaspy/tables/phase3b_revision_events.html",
         "title": "phase3b_revision_events"
       },
+      "table:policy_activation_operations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-activation-operations",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_activation_operations.html",
+        "title": "policy_activation_operations"
+      },
+      "table:policy_approvals": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-approvals",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_approvals.html",
+        "title": "policy_approvals"
+      },
+      "table:policy_continuation_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-continuation-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_continuation_events.html",
+        "title": "policy_continuation_events"
+      },
       "table:policy_decision_details": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-decision-details",
         "schema_url": "../../docs/generated/schemaspy/tables/policy_decision_details.html",
@@ -1817,6 +2382,21 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-decisions",
         "schema_url": "../../docs/generated/schemaspy/tables/policy_decisions.html",
         "title": "policy_decisions"
+      },
+      "table:policy_revisions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-revisions",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_revisions.html",
+        "title": "policy_revisions"
+      },
+      "table:policy_runtime_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-runtime-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_runtime_state.html",
+        "title": "policy_runtime_state"
+      },
+      "table:policy_temporary_exceptions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-temporary-exceptions",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_temporary_exceptions.html",
+        "title": "policy_temporary_exceptions"
       },
       "table:projection_dirty_signals": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#projection-dirty-signals",
@@ -1941,7 +2521,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "00942c1aad4f74efdd81ad519001cf33a58f9fd9dccc907e01d1fc6b65041663",
+    "aggregate_fingerprint": "5c3aaa5cbe451daef006e01dc4037eafbd720df8da877d3c59a1ef132cb2cb71",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -1951,8 +2531,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "05207a418ba2d44e02aeb9e3ec8f2246a1c7934f8aa68f6ee5e84438f0b94f55",
-      "contracts/metadata/documentation-platform.json": "9f154d902dce85deaf4b3d9baf121a16bcf75d8d785a42a9e46c309c21e56aa3",
+      "contracts/generated/lite-openapi.json": "8f222db8c0cc83414c5fd5bbc989180e99956369410a914594e648d5ed35208a",
+      "contracts/metadata/documentation-platform.json": "154c717868a1e467cc6ca9f7e1ae18d458319c4dfbd0f270cffe50fca8cf03ed",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -1978,7 +2558,10 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql": "34e9e8fea33001d342bf9263e960a45098cb85a60d841d1fc8c726585088f499",
-      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql": "4bd3777a3ddc9a6e5097d3e63ea393edd17e84f276f0007997ae0a4d9d75801d",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
+      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
     },
     "validation_state": "generated"
   }

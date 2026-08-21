@@ -353,6 +353,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_enterprise_identity_p2.py",
+      "name": "tests/backend/test_lite_enterprise_identity_p2.py",
+      "source_refs": [
+        "tests/backend/test_lite_enterprise_identity_p2.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
       "name": "tests/backend/test_lite_fastapi_runtime_diagnostics.py",
       "source_refs": [
@@ -647,6 +657,36 @@
       "name": "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
       "source_refs": [
         "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_policy_analysis_p2_3.py",
+      "name": "tests/backend/test_lite_policy_analysis_p2_3.py",
+      "source_refs": [
+        "tests/backend/test_lite_policy_analysis_p2_3.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_policy_approvals_p3_1.py",
+      "name": "tests/backend/test_lite_policy_approvals_p3_1.py",
+      "source_refs": [
+        "tests/backend/test_lite_policy_approvals_p3_1.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
+      "name": "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+      "source_refs": [
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
       ],
       "type": "test"
     },
@@ -1837,6 +1877,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
+    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
   }
 }

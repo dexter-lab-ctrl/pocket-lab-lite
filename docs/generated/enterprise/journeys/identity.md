@@ -17,7 +17,7 @@ Canonical user guide: [Identity guide](../../production/identity.md).
 
 ## What the user sees
 
-Source-derived journeys in the canonical Knowledge Graph: Local owner password and session lifecycle.
+Source-derived journeys in the canonical Knowledge Graph: Local owner, passkey, recovery, and session lifecycle.
 
 ## Typical user journey
 

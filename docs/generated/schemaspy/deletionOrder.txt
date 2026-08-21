@@ -3,6 +3,7 @@ security_maintenance_runs
 recovery_operations
 projection_refresh_state
 projection_dirty_signals
+policy_continuation_events
 phase3b_revision_events
 phase3b_current_state
 domain_revisions
@@ -11,7 +12,13 @@ device_heartbeats
 command_lifecycle
 backup_manifest_index
 audit_evidence_index
+enterprise_memberships
 webauthn_challenges
+policy_temporary_exceptions
+policy_approvals
+policy_activation_operations
+policy_runtime_state
+enterprise_configuration
 device_system_profiles
 device_lifecycle_transactions
 device_health_transitions
@@ -26,7 +33,6 @@ security_profile_snapshots
 release_runtime_projection
 recovery_current_state
 recovery_codes
-policy_decision_details
 lite_revision_events
 lite_installed_release_identity
 identity_audit_events
@@ -41,13 +47,15 @@ device_lifecycle_events
 webauthn_credentials
 security_database_restores
 recovery_code_batches
+policy_decision_details
 auth_sessions
 security_scan_runs
+policy_revisions
 security_database_backups
 workflow_event_index
 app_current_state
-human_identities
 device_current_state
+human_identities
 policy_decisions
 owner_claims
 device_recovery_history

@@ -17,10 +17,11 @@ generator_version: 3
 | Add Device | devices | source-derived |
 | App installation | apps | source-derived |
 | Backup creation and verification | recovery | source-derived |
-| Local owner password and session lifecycle | identity | source-derived |
+| Local owner, passkey, recovery, and session lifecycle | identity | source-derived |
 | Device bootstrap and enrollment | devices | source-derived |
 | Device offline and reconnect recovery | devices | source-derived |
 | Documentation generation | documentation | source-derived |
+| Opt-in Enterprise membership and authoritative roles | identity | source-derived |
 | Backend-to-Frontend parity capture and verification | validation | source-derived |
 | PhotoPrism operation | apps | source-derived |
 | Recovery reconciliation | recovery | source-derived |
@@ -31,7 +32,7 @@ generator_version: 3
 | Confirmed restore | recovery | source-derived |
 | Restore preview | recovery | source-derived |
 | Rollback | release | source-derived |
-| Safety Rules authorization decision | rules | source-derived |
+| Typed Safety Rules authorization, lifecycle, simulation, and continuations | rules | source-derived |
 | Sanitized Termux runtime capture | validation | source-derived |
 | Runtime evidence promotion | validation | source-derived |
 | Security finding review | security | source-derived |

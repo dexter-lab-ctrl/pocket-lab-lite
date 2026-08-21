@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "6a2798e4df202c6d3c884208ea6d4a0e5c59216c6ffed3a86a48dcd8431eebb8",
+    "aggregate_fingerprint": "200ec818261cf5cbca041384235f2a575e9609219e182a78606a5411d8a54b9f",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,8 +10,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "9f154d902dce85deaf4b3d9baf121a16bcf75d8d785a42a9e46c309c21e56aa3",
-      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
+      "contracts/metadata/documentation-platform.json": "154c717868a1e467cc6ca9f7e1ae18d458319c4dfbd0f270cffe50fca8cf03ed",
+      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
     },
     "validation_state": "unvalidated"
   },

@@ -16,6 +16,21 @@
     },
     {
       "aliases": [
+        "personal mode",
+        "enterprise roles"
+      ],
+      "confidence": "source-derived",
+      "description": "Personal Mode is the default local-owner experience. Enterprise Mode is an explicit opt-in that resolves authoritative server-owned Owner, Admin, Operator, Viewer, and Auditor memberships; it is not an external identity-provider integration.",
+      "domain": "identity",
+      "id": "glossary:enterprise-mode",
+      "name": "Enterprise Mode",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
         "runtime lane"
       ],
       "confidence": "source-derived",
@@ -49,6 +64,21 @@
       "domain": "parity",
       "id": "glossary:mapped-presentation",
       "name": "mapped presentation",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
+        "OpenID Connect",
+        "single sign-on"
+      ],
+      "confidence": "source-derived",
+      "description": "Optional OIDC is not implemented. A separately approved protected secret-storage capability is required before an OIDC integration can be added safely.",
+      "domain": "identity",
+      "id": "glossary:oidc",
+      "name": "OIDC",
       "source_refs": [
         "contracts/metadata/knowledge-base.json"
       ],
@@ -134,6 +164,21 @@
     },
     {
       "aliases": [
+        "independent approval",
+        "temporary exception"
+      ],
+      "confidence": "source-derived",
+      "description": "An Enterprise device removal may require a passkey-stepped-up independent Owner or Admin approval. Approval never executes the action: the initiator must explicitly retry and the one-use continuation is consumed atomically. Temporary catalog-install exceptions are exact app, device, identity, and revision scoped, expire within 60 minutes, and can be revoked.",
+      "domain": "rules",
+      "id": "glossary:rules-continuation",
+      "name": "Rules continuation",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
+    },
+    {
+      "aliases": [
         "runtime parity"
       ],
       "confidence": "source-derived",
@@ -157,6 +202,21 @@
         "contracts/metadata/knowledge-base.json"
       ],
       "type": "glossary"
+    },
+    {
+      "aliases": [
+        "policy revision",
+        "OPA candidate"
+      ],
+      "confidence": "source-derived",
+      "description": "Safety Rules accept only approved typed templates and bounded parameters. Each immutable candidate has a complete manifest, is activated by the supervisor with active and known-good pointers, and fails closed when the proved OPA-loaded revision is uncertain or mismatched.",
+      "domain": "rules",
+      "id": "glossary:typed-safety-rules-revision",
+      "name": "typed Safety Rules revision",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "glossary"
     }
   ],
   "metadata": {
@@ -165,6 +225,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
+    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
   }
 }

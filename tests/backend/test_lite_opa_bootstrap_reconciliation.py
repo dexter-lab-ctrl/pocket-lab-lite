@@ -34,6 +34,7 @@ def _run_helper(
         "url=${@: -1}\n"
         "case $url in\n"
         "  http://127.0.0.1:8181/health) printf '{}';;\n"
+        "  http://127.0.0.1:8181/v1/data/pocketlab/meta/revision) printf '{\"result\":\"test-revision\"}';;\n"
         "  http://127.0.0.1:8080/api/lite/policy)\n"
         "    if [[ -n ${FAKE_POLICY_JSON:-} ]]; then\n"
         "      printf '%s' \"$FAKE_POLICY_JSON\"\n"

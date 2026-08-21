@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">23 Foreign Key Constraints</h3>
+                            <h3 class="box-title">30 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -150,6 +150,36 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
+                                                    <td><a href='tables/enterprise_memberships.html'>enterprise_memberships</a><span>.updated_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/enterprise_memberships.html'>enterprise_memberships</a><span>.created_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/enterprise_memberships.html'>enterprise_memberships</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
                                                     <td><a href='tables/device_removal_receipts.html'>device_removal_receipts</a><span>.device_id</span></td>
                                                 </tr>
                                             </table>
@@ -158,6 +188,30 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/device_enrollment_registry.html'>device_enrollment_registry</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_temporary_exceptions.html'>policy_temporary_exceptions</a><span>.created_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_temporary_exceptions.html'>policy_temporary_exceptions</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -312,6 +366,30 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
+                                                    <td><a href='tables/policy_approvals.html'>policy_approvals</a><span>.approved_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_approvals.html'>policy_approvals</a><span>.initiating_human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
                                                     <td><a href='tables/device_system_profiles.html'>device_system_profiles</a><span>.node_id</span></td>
                                                 </tr>
                                             </table>
@@ -402,6 +480,60 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
+                                                    <td><a href='tables/policy_runtime_state.html'>policy_runtime_state</a><span>.known_good_revision_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_runtime_state.html'>policy_runtime_state</a><span>.active_revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_activation_operations.html'>policy_activation_operations</a><span>.requested_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_activation_operations.html'>policy_activation_operations</a><span>.prior_known_good_revision_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_activation_operations.html'>policy_activation_operations</a><span>.candidate_revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
                                                     <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.human_id</span></td>
                                                 </tr>
                                             </table>
@@ -414,6 +546,24 @@
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/enterprise_configuration.html'>enterprise_configuration</a><span>.updated_by_human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
                                         <td></td>
@@ -450,6 +600,30 @@
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.created_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.parent_revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
                                         <td></td>

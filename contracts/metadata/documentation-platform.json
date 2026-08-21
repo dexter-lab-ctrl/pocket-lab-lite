@@ -900,6 +900,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "enterprise_mode_disabled",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 404,
+      "meaning": "An Enterprise-only Identity or Rules capability was requested while Pocket Lab remains in Personal Mode.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py and Enterprise Rules services",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Enable Enterprise Mode before using this Enterprise capability."
+    },
+    {
+      "audit_severity": "warning",
       "code": "generation_changed",
       "deprecated_aliases": [],
       "domain": "projections",
@@ -1907,5 +1922,22 @@
       ],
       "writer": "Security API/worker store"
     }
+  },
+  "identity_rules_reason_codes": {
+    "identity": [
+      "enterprise_final_owner_protected", "enterprise_member_invalid", "enterprise_member_unknown", "enterprise_membership_status_invalid", "enterprise_mode_disabled", "enterprise_owner_required", "enterprise_role_invalid", "local_owner_required",
+      "identity_current_password_invalid", "identity_login_failed", "identity_login_throttled", "identity_owner_exists", "identity_password_invalid", "identity_recovery_failed", "identity_session_invalid", "identity_username_invalid",
+      "claim_verified", "identity_setup_required", "owner_claim_authority_expired", "owner_claim_authority_invalid", "owner_claim_expired", "owner_claim_installation_mismatch", "owner_claim_invalid", "owner_claim_origin_mismatch", "owner_claim_passkey", "owner_claim_reused", "owner_request",
+      "passkey_already_registered", "passkey_last_sign_in_method", "passkey_name_invalid", "passkey_registration", "passkey_step_up", "passkey_unavailable", "passkey_unknown", "passkey_verified", "passkey_wrong_owner", "trusted_local_admin",
+      "webauthn_algorithm_unsupported", "webauthn_assertion_invalid", "webauthn_attestation_unsupported", "webauthn_attested_data_missing", "webauthn_authenticator_data_invalid", "webauthn_cbor_invalid", "webauthn_challenge_expired", "webauthn_challenge_invalid", "webauthn_challenge_mismatch", "webauthn_challenge_replayed", "webauthn_challenge_scope_mismatch", "webauthn_client_data_invalid", "webauthn_counter_replay", "webauthn_credential_mismatch", "webauthn_encoding_invalid", "webauthn_hostname_required", "webauthn_origin_invalid", "webauthn_origin_mismatch", "webauthn_public_key_invalid", "webauthn_rp_id_invalid", "webauthn_rp_id_mismatch", "webauthn_secure_origin_required", "webauthn_signature_invalid", "webauthn_type_mismatch", "webauthn_user_verification_required"
+    ],
+    "rules": [
+      "actor_not_authenticated", "authenticated_app_install", "authenticated_app_install_exception_scoped", "authenticated_confirmed_device_removal", "enterprise_role_forbidden", "independent_approval_satisfied", "passkey_step_up_required", "passkey_step_up_satisfied",
+      "enterprise_membership_required", "enterprise_mode_required", "enterprise_rules_role_required", "policy_action_not_registered", "policy_activation_in_progress", "policy_activation_pending", "policy_activation_unknown", "policy_change_summary_invalid", "policy_denied", "policy_endpoint_not_loopback", "policy_invalid_response", "policy_known_good_unavailable", "policy_parameter_invalid", "policy_parameter_unknown", "policy_parameters_invalid", "policy_revision_mismatch", "policy_revision_uncertain", "policy_revision_unknown", "policy_revision_unavailable", "policy_simulation_invalid", "policy_simulation_revision_unavailable", "policy_source_unavailable", "policy_template_unknown", "rollback_pointer_failed", "rollback_unproved",
+      "approval_approver_role_required", "approval_cancel_forbidden", "approval_continuation_unavailable", "approval_not_found", "approval_provenance_invalid", "approval_read_forbidden", "approval_record_unavailable", "approval_requester_role_invalid", "approval_required", "approval_self_forbidden", "approval_step_up_required", "approval_transition_invalid", "approval_unusable", "exception_expiry_invalid", "exception_identity_unknown", "exception_not_found", "exception_scope_invalid", "exception_unusable"
+    ],
+    "internal_noncontractual": [
+      "approval_approved", "approval_cancelled", "approval_consumed", "approval_rejected", "enterprise_disabled", "enterprise_enabled", "enterprise_membership_changed", "owner_confirmed", "owner_revoke_others", "password_verified", "recovery_code_consumed", "temporary_exception_created", "temporary_exception_revoked"
+    ]
   }
 }

@@ -71,7 +71,7 @@
       "confidence": "source-derived",
       "domain": "identity",
       "id": "journey:change-password",
-      "name": "Local owner password and session lifecycle",
+      "name": "Local owner, passkey, recovery, and session lifecycle",
       "routes": [
         "POST /api/lite/identity/setup",
         "POST /api/lite/identity/login",
@@ -140,6 +140,30 @@
         "scripts/docs/lite/generate_docs.py",
         "scripts/docs/lite/generate_platform_catalogs.py",
         "tasks/Taskfile.docs.yml"
+      ],
+      "type": "journey"
+    },
+    {
+      "components": [
+        "api-guards",
+        "lite-api",
+        "sqlite",
+        "opa-policy-engine"
+      ],
+      "confidence": "source-derived",
+      "domain": "identity",
+      "id": "journey:enterprise-identity",
+      "name": "Opt-in Enterprise membership and authoritative roles",
+      "routes": [
+        "GET /api/lite/enterprise/identity",
+        "PUT /api/lite/enterprise/identity/mode",
+        "GET /api/lite/enterprise/identity/members",
+        "PUT /api/lite/enterprise/identity/members/{human_id}"
+      ],
+      "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "src/lite/LiteIdentity.jsx"
       ],
       "type": "journey"
     },
@@ -344,13 +368,22 @@
       "confidence": "source-derived",
       "domain": "rules",
       "id": "journey:rules-authorization",
-      "name": "Safety Rules authorization decision",
+      "name": "Typed Safety Rules authorization, lifecycle, simulation, and continuations",
       "routes": [
         "GET /api/lite/policy",
         "POST /api/lite/catalog/install",
-        "POST /api/lite/fleet/remove-device"
+        "POST /api/lite/fleet/remove-device",
+        "GET /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/revisions",
+        "GET /api/lite/enterprise/rules/health",
+        "POST /api/lite/enterprise/rules/simulations",
+        "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
         "security/policies/opa/pocketlab/pocketlab.rego",
         "src/lite/LiteRules.jsx"
@@ -459,6 +492,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
+    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
   }
 }

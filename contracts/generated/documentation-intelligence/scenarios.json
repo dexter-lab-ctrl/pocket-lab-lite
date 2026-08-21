@@ -137,7 +137,43 @@
         "FastAPI projection",
         "UI result"
       ],
-      "title": "Local owner password and session lifecycle",
+      "title": "Local owner, passkey, recovery, and session lifecycle",
+      "write_flow": true
+    },
+    {
+      "components": [
+        "Identity, authentication, and invite guards",
+        "FastAPI /api/lite/*",
+        "SQLite control-plane store",
+        "OPA Safety Rules policy engine"
+      ],
+      "confidence": "source-derived",
+      "domain": "identity",
+      "guardrail": "The browser remains presentation/control only; execution and recovery stay with FastAPI and backend runtime owners.",
+      "id": "enterprise-identity",
+      "routes": [
+        "GET /api/lite/enterprise/identity",
+        "PUT /api/lite/enterprise/identity/mode",
+        "GET /api/lite/enterprise/identity/members",
+        "PUT /api/lite/enterprise/identity/members/{human_id}"
+      ],
+      "source_refs": [
+        "src/lite/LiteIdentity.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py"
+      ],
+      "stages": [
+        "User intent",
+        "Pocket Lab Lite UI",
+        "FastAPI /api/lite/*",
+        "Identity, authentication, and invite guards",
+        "SQLite control-plane store",
+        "OPA Safety Rules policy engine",
+        "Sanitized evidence/state",
+        "FastAPI projection",
+        "UI result"
+      ],
+      "title": "Opt-in Enterprise membership and authoritative roles",
       "write_flow": true
     },
     {
@@ -555,11 +591,20 @@
       "routes": [
         "GET /api/lite/policy",
         "POST /api/lite/catalog/install",
-        "POST /api/lite/fleet/remove-device"
+        "POST /api/lite/fleet/remove-device",
+        "GET /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/revisions",
+        "GET /api/lite/enterprise/rules/health",
+        "POST /api/lite/enterprise/rules/simulations",
+        "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
         "src/lite/LiteRules.jsx",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
         "security/policies/opa/pocketlab/pocketlab.rego"
       ],
       "stages": [
@@ -574,7 +619,7 @@
         "FastAPI projection",
         "UI result"
       ],
-      "title": "Safety Rules authorization decision",
+      "title": "Typed Safety Rules authorization, lifecycle, simulation, and continuations",
       "write_flow": true
     },
     {
@@ -732,5 +777,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "52077f337dd5b1f4b5e8f2c7a83e807f0cb0f45a662d52db9335418b81635d8d"
+  "source_fingerprint": "8db668355ed9722b6fd50476b966306601b3c5bde782545e18ea75138f19e413"
 }

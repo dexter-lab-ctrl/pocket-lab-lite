@@ -4,6 +4,7 @@ import hashlib
 import ipaddress
 import json
 import os
+import sqlite3
 import time
 import urllib.error
 import urllib.request
@@ -18,6 +19,7 @@ from .lite_security_policy import redact_value
 
 OPA_BASE_URL = os.environ.get("POCKETLAB_OPA_URL", "http://127.0.0.1:8181").rstrip("/")
 OPA_DECISION_PATH = "/v1/data/pocketlab/authz/decision"
+OPA_REVISION_PATH = "/v1/data/pocketlab/meta/revision"
 PROTECTED_ACTIONS = frozenset({"catalog.install", "device.remove", "identity.passkey.revoke"})
 
 
@@ -71,6 +73,43 @@ def _safe_revision() -> str:
     return hashlib.sha256(data).hexdigest()[:24]
 
 
+def _observed_opa_revision() -> str | None:
+    """Parse only the OPA 1.x data API shape: {"result": "revision"}."""
+    try:
+        status, payload = _http_json("GET", OPA_REVISION_PATH, timeout=0.25)
+    except Exception:
+        return None
+    result = payload.get("result") if status == 200 else None
+    if not isinstance(result, str) or not 8 <= len(result) <= 80:
+        return None
+    return result
+
+
+def _policy_consistency() -> tuple[bool, str, str | None]:
+    """Require durable, filesystem and OPA-loaded revision agreement in Enterprise Mode.
+
+    Absence of P2.2 state is deliberately compatible with Personal Mode and the
+    existing P1 rules runtime.  A present state is strict/fail-closed.
+    """
+    try:
+        with connection() as conn:
+            state = conn.execute("SELECT active_revision_id,known_good_revision_id FROM policy_runtime_state WHERE state_id=1").fetchone()
+            operation = conn.execute("SELECT state FROM policy_activation_operations WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back','uncertain') LIMIT 1").fetchone()
+    except sqlite3.OperationalError:
+        return True, "", None
+    if operation:
+        return False, "policy_revision_uncertain" if operation["state"] == "uncertain" else "policy_activation_pending", None
+    if not state or not state["active_revision_id"]:
+        return True, "", None
+    expected = str(state["active_revision_id"])
+    if str(state["known_good_revision_id"] or "") != expected or _safe_revision() != expected:
+        return False, "policy_revision_mismatch", None
+    observed = _observed_opa_revision()
+    if observed != expected:
+        return False, "policy_revision_mismatch" if observed else "policy_revision_uncertain", observed
+    return True, "", observed
+
+
 
 
 def _opa_endpoint_is_loopback() -> bool:
@@ -120,12 +159,28 @@ def _http_json(method: str, path: str, payload: dict[str, Any] | None = None, *,
         return int(exc.code), parsed if isinstance(parsed, dict) else {}
 
 
-def _normalized_actor(auth_context: dict[str, Any] | None) -> dict[str, str]:
+def _normalized_actor(auth_context: dict[str, Any] | None) -> dict[str, str | int | None]:
     actor = (auth_context or {}).get("actor") or {}
     actor_type = str(actor.get("type") or "anonymous").strip().lower()[:32]
     actor_id = str(actor.get("identity_id") or "anonymous").strip()[:120]
     display = str(actor.get("display_name") or actor_id).strip()[:120]
-    return {"type": actor_type or "anonymous", "id": actor_id or "anonymous", "display_name": display or "anonymous"}
+    authorization = (auth_context or {}).get("authorization") or {}
+    role = authorization.get("role")
+    safe_role = str(role)[:16] if role in {"Owner", "Admin", "Operator", "Viewer", "Auditor"} else None
+    try:
+        authorization_version = max(1, min(2_147_483_647, int(authorization.get("authorization_version") or 1)))
+    except (TypeError, ValueError):
+        authorization_version = 1
+    identity_class = str(authorization.get("identity_class") or actor_type or "anonymous")[:40]
+    return {
+        "type": actor_type or "anonymous",
+        "id": actor_id or "anonymous",
+        "display_name": display or "anonymous",
+        "role": safe_role,
+        "authorization_version": authorization_version,
+        "identity_class": identity_class,
+        "enterprise_enabled": bool(authorization.get("enterprise_enabled")),
+    }
 
 
 def build_authorization_input(
@@ -188,12 +243,62 @@ def _validate_result(raw: Any) -> dict[str, Any]:
     constraints = raw.get("constraints", [])
     if not isinstance(allow, bool) or not isinstance(reason, str) or not reason.strip() or not isinstance(constraints, list):
         raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    requirements = raw.get("requirements", {})
+    if not isinstance(requirements, dict):
+        raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    allowed_requirement_keys = {"required_approver_roles", "required_assurance", "approval_lifetime_seconds"}
+    if set(requirements) - allowed_requirement_keys:
+        raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    roles = requirements.get("required_approver_roles", [])
+    assurance = requirements.get("required_assurance", "")
+    lifetime = requirements.get("approval_lifetime_seconds")
+    if not isinstance(roles, list) or any(item not in {"Owner", "Admin"} for item in roles) or not isinstance(assurance, str):
+        raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    if lifetime is not None and (not isinstance(lifetime, int) or not 1 <= lifetime <= 900):
+        raise PolicyDecisionError("policy_invalid_response", "Safety Rules returned an invalid decision.", status_code=503)
+    normalized_requirements: dict[str, Any] = {}
+    if roles:
+        normalized_requirements["required_approver_roles"] = roles[:2]
+    if assurance:
+        normalized_requirements["required_assurance"] = assurance[:80]
+    if lifetime is not None:
+        normalized_requirements["approval_lifetime_seconds"] = lifetime
     return {
         "allow": allow,
         "constraints": [str(item)[:120] for item in constraints[:12]],
         "reason_code": reason.strip()[:80],
         "policy_revision": str(raw.get("policy_revision") or _safe_revision())[:80],
+        "requirements": normalized_requirements,
     }
+
+
+def _server_continuation_facts(input_doc: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Resolve continuation state exclusively from durable server records.
+
+    The browser never supplies an approval or exception claim.  An approval is
+    scoped to the active candidate revision before OPA evaluates the retry.
+    """
+    actor = input_doc["actor"]
+    try:
+        from . import lite_policy_approvals
+
+        revision = _safe_revision()
+        if input_doc["action"]["id"] == "device.remove" and input_doc["target"]["type"] == "device" and actor.get("role") in {"Owner", "Admin", "Operator"}:
+            return lite_policy_approvals.matching_approved(
+                initiating_human_id=str(actor["id"]), action_id="device.remove", target_type="device",
+                target_id=str(input_doc["target"]["id"]), policy_revision=revision,
+            ), None
+        if input_doc["action"]["id"] == "catalog.install" and input_doc["target"]["type"] == "app":
+            device_id = str((input_doc["target"].get("state") or {}).get("target_node_id") or "").strip()
+            if device_id:
+                return None, lite_policy_approvals.matching_exception(
+                    human_id=str(actor["id"]), app_id=str(input_doc["target"]["id"]), device_id=device_id, policy_revision=revision,
+                )
+    except Exception:
+        # An unavailable continuation store must not become a grant.  OPA will
+        # return approval_required and the original action remains blocked.
+        pass
+    return None, None
 
 
 def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], evaluation_ms: float, correlation_id: str) -> dict[str, Any]:
@@ -264,10 +369,18 @@ def evaluate_authorization(
         target=target,
         request_context=request_context,
     )
+    continuation_id, exception_id = _server_continuation_facts(input_doc)
+    input_doc["continuation"] = {
+        "matching_independent_approval": bool(continuation_id),
+        "matching_temporary_exception": bool(exception_id),
+    }
     started = time.monotonic()
     test = _test_decision(input_doc)
     try:
         _require_loopback_opa()
+        consistent, consistency_reason, observed_revision = _policy_consistency()
+        if not consistent:
+            raise PolicyDecisionError(consistency_reason, "Safety Rules revision consistency is not proved, so this protected action was not started.", status_code=503)
         if test is not None:
             normalized = _validate_result(test)
         else:
@@ -275,6 +388,8 @@ def evaluate_authorization(
             if status_code != 200:
                 raise PolicyDecisionError("policy_unavailable", "Safety Rules are not ready, so this protected action was not started.", status_code=503)
             normalized = _validate_result(payload.get("result"))
+            if observed_revision:
+                normalized["policy_revision"] = observed_revision
     except PolicyDecisionError as exc:
         elapsed = (time.monotonic() - started) * 1000.0
         failed = _record_decision(
@@ -310,7 +425,33 @@ def evaluate_authorization(
         evaluation_ms=elapsed,
         correlation_id=str(correlation_id or uuid.uuid4().hex),
     )
+    if continuation_id and recorded["allow"]:
+        recorded["continuation_approval_id"] = continuation_id
+    if exception_id and recorded["allow"]:
+        recorded["continuation_exception_id"] = exception_id
     if not recorded["allow"]:
+        if recorded.get("reason_code") == "approval_required":
+            try:
+                from . import lite_policy_approvals
+
+                approval = lite_policy_approvals.create_from_decision(
+                    decision_id=recorded["decision_id"],
+                    initiating_role=str(input_doc["actor"].get("role") or ""),
+                )["approval"]
+            except Exception as exc:
+                raise PolicyDecisionError(
+                    "approval_record_unavailable",
+                    "Independent approval could not be recorded, so the device removal remains blocked.",
+                    status_code=503,
+                    decision=recorded,
+                ) from exc
+            recorded["approval"] = approval
+            raise PolicyDecisionError(
+                "approval_required",
+                "An independent active Enterprise Owner or Admin must approve this device removal. No removal has started.",
+                status_code=409,
+                decision=recorded,
+            )
         if recorded.get("reason_code") == "passkey_step_up_required":
             raise PolicyDecisionError(
                 "passkey_step_up_required",
@@ -363,6 +504,27 @@ def decision_detail(decision_id: str) -> dict[str, Any] | None:
         "evidence_ref": str(evidence_ref or "")[:160] or None,
         "raw_input_exposed": False,
     }
+
+
+def list_decisions(*, action_id: str = "", allowed: bool | None = None, reason_code: str = "", policy_revision: str = "", target_type: str = "", limit: int = 50, cursor: int | None = None) -> dict[str, Any]:
+    """Bounded, deterministic explorer over existing sanitized decision evidence."""
+    safe_limit = max(1, min(int(limit), 100))
+    clauses: list[str] = []; values: list[Any] = []
+    for column, value in (("action_id", action_id), ("reason_code", reason_code), ("policy_revision", policy_revision), ("target_type", target_type)):
+        if value:
+            clauses.append(f"{column}=?"); values.append(str(value)[:160])
+    if allowed is not None:
+        clauses.append("allow=?"); values.append(1 if allowed else 0)
+    if cursor is not None:
+        clauses.append("decision_row_id<?"); values.append(max(0, int(cursor)))
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    with connection() as conn:
+        rows = conn.execute(f"SELECT decision_row_id,occurred_at,decision_id,correlation_id,actor_type,actor_id,action_id,target_type,target_id,allow,reason_code,policy_revision,evaluation_ms FROM policy_decisions{where} ORDER BY decision_row_id DESC LIMIT ?", (*values, safe_limit + 1)).fetchall()
+    items = [dict(row) for row in rows[:safe_limit]]
+    for item in items:
+        item["allow"] = bool(item["allow"]); item.pop("decision_row_id", None); item["raw_input_exposed"] = False
+    next_cursor = rows[safe_limit - 1]["decision_row_id"] if len(rows) > safe_limit else None
+    return {"decisions": items, "next_cursor": next_cursor, "limit": safe_limit, "raw_input_exposed": False}
 
 
 def policy_templates() -> list[dict[str, Any]]:

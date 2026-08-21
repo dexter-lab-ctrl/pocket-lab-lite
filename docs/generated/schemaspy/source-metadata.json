@@ -2,7 +2,7 @@
   "database": "temporary data-free SQLite generated from repository migrations",
   "generated_at": "uncommitted",
   "generator": "scripts/docs/sqlite/generate_schemaspy.py",
-  "migration_count": 25,
+  "migration_count": 28,
   "migration_fingerprints": {
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -28,7 +28,10 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql": "c5c8bdc2f1c3ad764862fd6f034a67287fffdc1dc6ced852f602137a3480165c",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql": "34e9e8fea33001d342bf9263e960a45098cb85a60d841d1fc8c726585088f499"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql": "34e9e8fea33001d342bf9263e960a45098cb85a60d841d1fc8c726585088f499",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql": "4bd3777a3ddc9a6e5097d3e63ea393edd17e84f276f0007997ae0a4d9d75801d",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7"
   },
   "migrations": [
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
@@ -55,7 +58,10 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
   ],
   "row_count_enforced": 0,
   "schema_revision": 1,

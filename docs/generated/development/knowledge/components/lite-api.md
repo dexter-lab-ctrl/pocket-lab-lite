@@ -118,9 +118,10 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 ## Used by / backlinks
 
 - depends_on: `Caddy same-origin proxy`
-- uses: `Local owner password and session lifecycle`
+- uses: `Local owner, passkey, recovery, and session lifecycle`
+- uses: `Opt-in Enterprise membership and authoritative roles`
 - uses: `Backend-to-Frontend parity capture and verification`
-- uses: `Safety Rules authorization decision`
+- uses: `Typed Safety Rules authorization, lifecycle, simulation, and continuations`
 - uses: `Pocket Lab Lite startup`
 
 ## Release history

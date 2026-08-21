@@ -233,6 +233,10 @@ def line_number(text: str, offset: int) -> int:
 def normalize_frontend_route(raw: str) -> str:
     """Normalize a frontend route expression without inventing backend paths."""
     route = raw.strip()
+    # Optional query expressions may themselves contain nested template
+    # strings.  They are not path parameters, so remove the suffix before
+    # normalizing normal `/.../${param}` path segments.
+    route = re.sub(r"(?<!/)\$\{.*$", "", route, flags=re.S)
     route = re.sub(r"\$\{(?:query|query\.toString\(\))\}", "", route)
     route = re.sub(r"\$\{[^}]+\}", "{param}", route)
     route = route.split("?", 1)[0]
@@ -869,6 +873,40 @@ def projection_outputs() -> dict[Path, str]:
     return {GENERATED_CONTRACTS / "projection-catalog.json": stable_json(envelope), DEV / "projection-catalog.md": md}
 
 
+def canonical_reason_codes() -> list[dict[str, Any]]:
+    """Merge the legacy detailed registry with the P0--P3 code catalog.
+
+    Identity/Rules has many intentionally small, typed failure outcomes.  The
+    compact canonical catalog keeps each one documented without pretending
+    audit-only event reasons are public HTTP contracts.
+    """
+    registry = [dict(item) for item in metadata()["reason_codes"]]
+    known = {str(item["code"]) for item in registry}
+    groups = metadata().get("identity_rules_reason_codes") or {}
+    for domain in ("identity", "rules"):
+        for code in groups.get(domain) or []:
+            code = str(code)
+            if not code or code in known:
+                continue
+            registry.append({
+                "audit_severity": "warning",
+                "code": code,
+                "deprecated_aliases": [],
+                "domain": domain,
+                "event_mapping": [],
+                "http_status": 403,
+                "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+                "projection_mapping": [],
+                "retryable": True,
+                "source": "contracts/metadata/documentation-platform.json identity_rules_reason_codes",
+                "terminal": False,
+                "ui_mapping": [],
+                "user_message": "The requested Identity or Rules action could not continue."
+            })
+            known.add(code)
+    return sorted(registry, key=lambda item: str(item["code"]))
+
+
 def discovered_reason_codes() -> set[str]:
     values: set[str] = set()
     for path in (ROOT / "pocket-lab-final-structure/runtime/api_fastapi").rglob("*.py"):
@@ -885,11 +923,22 @@ def discovered_reason_codes() -> set[str]:
                         for item in value.elts:
                             if isinstance(item, ast.Constant) and isinstance(item.value, str):
                                 values.add(item.value)
+            if path.name in {"lite_identity_auth.py", "lite_webauthn.py", "lite_enterprise_identity.py", "lite_policy_opa.py", "lite_policy_lifecycle.py", "lite_policy_analysis.py", "lite_policy_approvals.py"} and isinstance(node, ast.Call):
+                name = node.func.id if isinstance(node.func, ast.Name) else node.func.attr if isinstance(node.func, ast.Attribute) else ""
+                if name.endswith("Error") and node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+                    values.add(node.args[0].value)
+    # OPA decisions and supervisor operation reasons are structured API
+    # evidence too, even though they do not originate in a Python dict.
+    for path in [ROOT / "security/policies/opa/pocketlab/pocketlab.rego", ROOT / "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"]:
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        values.update(re.findall(r'(?:reason_code"\s*:\s*|reason=\")([a-z][a-z0-9_.-]+)', text))
     return values
 
 
 def reason_outputs() -> dict[Path, str]:
-    registry = metadata()["reason_codes"]
+    registry = canonical_reason_codes()
     sources = [META_PATH, *list((ROOT / "pocket-lab-final-structure/runtime/api_fastapi").rglob("*.py"))]
     codes = {item["code"] for item in registry}
     discovered = discovered_reason_codes()
@@ -1265,7 +1314,7 @@ def link_registry_outputs(current_outputs: dict[Path, str] | None = None) -> dic
         entities[f"table:{item['name']}"] = {"title":item["name"],"schema_url":f"../../docs/generated/schemaspy/tables/{item['name']}.html","catalog_url":f"../../docs/generated/development/lite-sqlite-schema.md#{slug(item['name'])}"}
     for projection in metadata()["projections"]:
         entities[f"projection:{projection['domain']}"] = {"title":projection["domain"],"url":f"../../docs/generated/development/projection-catalog.md#{slug(projection['domain'])}"}
-    for code in metadata()["reason_codes"]:
+    for code in canonical_reason_codes():
         entities[f"reason:{code['code']}"] = {"title":code["code"],"url":f"../../docs/generated/development/reason-codes.md#{slug(code['code'])}"}
     for service in metadata()["services"]:
         entities[f"service:{service['pattern']}"] = {"title":service["pattern"],"url":f"../../docs/generated/development/service-catalog.md#{slug(service['pattern'])}"}

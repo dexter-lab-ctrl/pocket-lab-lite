@@ -99,10 +99,11 @@ Stores canonical Lite lifecycle state and prepared projections; the frontend nev
 - depends_on: `Installed release and runtime state`
 - depends_on: `Explicit retirement and database recovery`
 - depends_on: `Security findings and run state`
-- uses: `Local owner password and session lifecycle`
+- uses: `Local owner, passkey, recovery, and session lifecycle`
+- uses: `Opt-in Enterprise membership and authoritative roles`
 - uses: `Backend-to-Frontend parity capture and verification`
 - uses: `Recovery reconciliation`
-- uses: `Safety Rules authorization decision`
+- uses: `Typed Safety Rules authorization, lifecycle, simulation, and continuations`
 
 ## Release history
 

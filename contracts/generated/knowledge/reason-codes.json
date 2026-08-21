@@ -2,6 +2,26 @@
   "items": [
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:actor_not_authenticated",
+      "name": "actor_not_authenticated",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "No additional tuning was required.",
       "domain": "validation",
       "event_mapping": [],
@@ -22,6 +42,326 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_approver_role_required",
+      "name": "approval_approver_role_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_cancel_forbidden",
+      "name": "approval_cancel_forbidden",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_continuation_unavailable",
+      "name": "approval_continuation_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_not_found",
+      "name": "approval_not_found",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_provenance_invalid",
+      "name": "approval_provenance_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_read_forbidden",
+      "name": "approval_read_forbidden",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_record_unavailable",
+      "name": "approval_record_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_requester_role_invalid",
+      "name": "approval_requester_role_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_required",
+      "name": "approval_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_self_forbidden",
+      "name": "approval_self_forbidden",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_step_up_required",
+      "name": "approval_step_up_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_transition_invalid",
+      "name": "approval_transition_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:approval_unusable",
+      "name": "approval_unusable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:authenticated_app_install",
+      "name": "authenticated_app_install",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:authenticated_app_install_exception_scoped",
+      "name": "authenticated_app_install_exception_scoped",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:authenticated_confirmed_device_removal",
+      "name": "authenticated_confirmed_device_removal",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A protected write requires an authenticated human session or configured service credential.",
       "domain": "identity",
       "event_mapping": [],
@@ -39,6 +379,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Sign in before making this change."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:claim_verified",
+      "name": "claim_verified",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
     },
     {
       "confidence": "source-derived",
@@ -162,6 +522,326 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_final_owner_protected",
+      "name": "enterprise_final_owner_protected",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_member_invalid",
+      "name": "enterprise_member_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_member_unknown",
+      "name": "enterprise_member_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_membership_required",
+      "name": "enterprise_membership_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_membership_status_invalid",
+      "name": "enterprise_membership_status_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "An Enterprise-only Identity or Rules capability was requested while Pocket Lab remains in Personal Mode.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:enterprise_mode_disabled",
+      "name": "enterprise_mode_disabled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Enable Enterprise Mode before using this Enterprise capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_mode_required",
+      "name": "enterprise_mode_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_owner_required",
+      "name": "enterprise_owner_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_role_forbidden",
+      "name": "enterprise_role_forbidden",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_role_invalid",
+      "name": "enterprise_role_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_rules_role_required",
+      "name": "enterprise_rules_role_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:exception_expiry_invalid",
+      "name": "exception_expiry_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:exception_identity_unknown",
+      "name": "exception_identity_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:exception_not_found",
+      "name": "exception_not_found",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:exception_scope_invalid",
+      "name": "exception_scope_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:exception_unusable",
+      "name": "exception_unusable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The source generation changed during work.",
       "domain": "projections",
       "event_mapping": [],
@@ -222,6 +902,66 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_current_password_invalid",
+      "name": "identity_current_password_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_login_failed",
+      "name": "identity_login_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_login_throttled",
+      "name": "identity_login_throttled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The local identity does not match the requested enrollment.",
       "domain": "devices",
       "event_mapping": [],
@@ -239,6 +979,86 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The local identity does not match the requested enrollment."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_owner_exists",
+      "name": "identity_owner_exists",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_password_invalid",
+      "name": "identity_password_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_recovery_failed",
+      "name": "identity_recovery_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_session_invalid",
+      "name": "identity_session_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
     },
     {
       "confidence": "source-derived",
@@ -262,6 +1082,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_setup_required",
+      "name": "identity_setup_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled.",
       "domain": "identity",
       "event_mapping": [],
@@ -279,6 +1119,46 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Owner claim creation is not enabled on this server."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:identity_username_invalid",
+      "name": "identity_username_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:independent_approval_satisfied",
+      "name": "independent_approval_satisfied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
     },
     {
       "confidence": "source-derived",
@@ -442,6 +1322,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:local_owner_required",
+      "name": "local_owner_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Only metadata was evaluated.",
       "domain": "validation",
       "event_mapping": [],
@@ -502,6 +1402,406 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_authority_expired",
+      "name": "owner_claim_authority_expired",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_authority_invalid",
+      "name": "owner_claim_authority_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_expired",
+      "name": "owner_claim_expired",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_installation_mismatch",
+      "name": "owner_claim_installation_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_invalid",
+      "name": "owner_claim_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_origin_mismatch",
+      "name": "owner_claim_origin_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_passkey",
+      "name": "owner_claim_passkey",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_claim_reused",
+      "name": "owner_claim_reused",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_request",
+      "name": "owner_request",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_already_registered",
+      "name": "passkey_already_registered",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_last_sign_in_method",
+      "name": "passkey_last_sign_in_method",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_name_invalid",
+      "name": "passkey_name_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_registration",
+      "name": "passkey_registration",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_step_up",
+      "name": "passkey_step_up",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_step_up_required",
+      "name": "passkey_step_up_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_step_up_satisfied",
+      "name": "passkey_step_up_satisfied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_unavailable",
+      "name": "passkey_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_unknown",
+      "name": "passkey_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_verified",
+      "name": "passkey_verified",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:passkey_wrong_owner",
+      "name": "passkey_wrong_owner",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The bounded payload limit was exceeded.",
       "domain": "validation",
       "event_mapping": [],
@@ -522,6 +1822,106 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_action_not_registered",
+      "name": "policy_action_not_registered",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_activation_in_progress",
+      "name": "policy_activation_in_progress",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_activation_pending",
+      "name": "policy_activation_pending",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_activation_unknown",
+      "name": "policy_activation_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_change_summary_invalid",
+      "name": "policy_change_summary_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The requested bounded Safety Rules decision record is no longer available.",
       "domain": "rules",
       "event_mapping": [],
@@ -539,6 +1939,306 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "That Safety Rules decision is no longer available."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_denied",
+      "name": "policy_denied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_endpoint_not_loopback",
+      "name": "policy_endpoint_not_loopback",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_invalid_response",
+      "name": "policy_invalid_response",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_known_good_unavailable",
+      "name": "policy_known_good_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_parameter_invalid",
+      "name": "policy_parameter_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_parameter_unknown",
+      "name": "policy_parameter_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_parameters_invalid",
+      "name": "policy_parameters_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_revision_mismatch",
+      "name": "policy_revision_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_revision_unavailable",
+      "name": "policy_revision_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_revision_uncertain",
+      "name": "policy_revision_uncertain",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_revision_unknown",
+      "name": "policy_revision_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_simulation_invalid",
+      "name": "policy_simulation_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_simulation_revision_unavailable",
+      "name": "policy_simulation_revision_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_source_unavailable",
+      "name": "policy_source_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:policy_template_unknown",
+      "name": "policy_template_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
     },
     {
       "confidence": "source-derived",
@@ -702,6 +2402,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:rollback_pointer_failed",
+      "name": "rollback_pointer_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:rollback_unproved",
+      "name": "rollback_unproved",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A required backend service is unavailable.",
       "domain": "system",
       "event_mapping": [],
@@ -842,6 +2582,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:trusted_local_admin",
+      "name": "trusted_local_admin",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The requested domain is not registered.",
       "domain": "projections",
       "event_mapping": [],
@@ -859,6 +2619,506 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested domain is not registered."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_algorithm_unsupported",
+      "name": "webauthn_algorithm_unsupported",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_assertion_invalid",
+      "name": "webauthn_assertion_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_attestation_unsupported",
+      "name": "webauthn_attestation_unsupported",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_attested_data_missing",
+      "name": "webauthn_attested_data_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_authenticator_data_invalid",
+      "name": "webauthn_authenticator_data_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_cbor_invalid",
+      "name": "webauthn_cbor_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_challenge_expired",
+      "name": "webauthn_challenge_expired",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_challenge_invalid",
+      "name": "webauthn_challenge_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_challenge_mismatch",
+      "name": "webauthn_challenge_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_challenge_replayed",
+      "name": "webauthn_challenge_replayed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_challenge_scope_mismatch",
+      "name": "webauthn_challenge_scope_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_client_data_invalid",
+      "name": "webauthn_client_data_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_counter_replay",
+      "name": "webauthn_counter_replay",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_credential_mismatch",
+      "name": "webauthn_credential_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_encoding_invalid",
+      "name": "webauthn_encoding_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_hostname_required",
+      "name": "webauthn_hostname_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_origin_invalid",
+      "name": "webauthn_origin_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_origin_mismatch",
+      "name": "webauthn_origin_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_public_key_invalid",
+      "name": "webauthn_public_key_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_rp_id_invalid",
+      "name": "webauthn_rp_id_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_rp_id_mismatch",
+      "name": "webauthn_rp_id_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_secure_origin_required",
+      "name": "webauthn_secure_origin_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_signature_invalid",
+      "name": "webauthn_signature_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_type_mismatch",
+      "name": "webauthn_type_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:webauthn_user_verification_required",
+      "name": "webauthn_user_verification_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
     },
     {
       "confidence": "source-derived",
@@ -907,6 +3167,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
+    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
   }
 }

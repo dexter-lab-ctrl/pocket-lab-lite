@@ -85,6 +85,7 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 - uses: `GET /api/lite/policy`
 - verified_by: `tests/backend/test_lite_identity_passkeys_rules_p1.py`
 - verified_by: `tests/backend/test_lite_identity_rules_authorization.py`
+- verified_by: `tests/backend/test_lite_policy_lifecycle_p2_2.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_enterprise_completion.py`
@@ -93,7 +94,8 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 ## Used by / backlinks
 
 - depends_on: `Fleet, Apps, Security, Recovery, and Release APIs`
-- uses: `Safety Rules authorization decision`
+- uses: `Opt-in Enterprise membership and authoritative roles`
+- uses: `Typed Safety Rules authorization, lifecycle, simulation, and continuations`
 
 ## Release history
 

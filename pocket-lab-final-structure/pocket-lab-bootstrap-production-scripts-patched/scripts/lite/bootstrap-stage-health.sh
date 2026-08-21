@@ -50,6 +50,13 @@ pocketlab_lite_stage_completion_is_valid() {
         POCKETLAB_LITE_STAGE_HEALTH_REASON="active OPA policy revision is missing"
         return 1
       fi
+      local expected_revision observed_revision
+      expected_revision="$(tr -d '\r\n' < "$policy_dir/revision.txt")"
+      observed_revision="$(curl -fsS --max-time 2 http://127.0.0.1:8181/v1/data/pocketlab/meta/revision 2>/dev/null | python3 -c 'import json,sys; value=json.load(sys.stdin).get("result"); print(value if isinstance(value,str) else "")' 2>/dev/null || true)"
+      if [[ -z "$expected_revision" || "$observed_revision" != "$expected_revision" ]]; then
+        POCKETLAB_LITE_STAGE_HEALTH_REASON="OPA metadata revision does not match the active policy"
+        return 1
+      fi
 
       local api_port="${API_PORT:-8080}"
       if ! curl -fsS --max-time 3 "http://127.0.0.1:${api_port}/api/lite/policy" \

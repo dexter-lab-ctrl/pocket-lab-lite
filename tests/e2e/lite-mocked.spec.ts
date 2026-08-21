@@ -54,4 +54,30 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rules).not.toContainText('package pocketlab');
   });
 
+  test('Enterprise Rules simulation and bounded evidence remain read-only', async ({ page }) => {
+    await page.goto('/?screen=rules');
+    const rules = page.locator('[data-lite-screen-id="rules"]');
+    await expect(rules.getByRole('heading', { name: 'Policy health', exact: true })).toBeVisible();
+    await expect(rules.getByText('Simulation only — no changes will be made.', { exact: true })).toBeVisible();
+    await expect(rules.getByText(/Not deterministically provable/i)).toBeVisible();
+    await rules.getByLabel('Target reference').fill('mock-app');
+    await rules.getByRole('button', { name: 'Run simulation' }).click();
+    await expect(rules.getByText('allow', { exact: true })).toBeVisible();
+    await rules.getByLabel('Input mode').selectOption('synthetic');
+    await expect(rules.locator('span').filter({ hasText: 'Synthetic scenario' })).toBeVisible();
+    await rules.getByRole('button', { name: 'Run simulation' }).click();
+    await expect(rules.getByText('block', { exact: true })).toBeVisible();
+    await rules.getByRole('button', { name: 'Detail' }).last().click();
+    await expect(rules.getByText('Decision explanation')).toBeVisible();
+    await expect(rules.getByRole('heading', { name: 'Independent approvals', exact: true })).toBeVisible();
+    await expect(rules.getByText(/never execute from an approval click/i)).toBeVisible();
+    await rules.getByRole('button', { name: 'History' }).click();
+    await expect(rules.getByText('Approval history')).toBeVisible();
+    await expect(rules.getByRole('button', { name: 'Approve after passkey step-up' })).toBeVisible();
+    await expect(rules.getByRole('heading', { name: 'Temporary exceptions', exact: true })).toBeVisible();
+    await expect(rules.getByRole('button', { name: 'Create exact exception' })).toBeVisible();
+    await expect(rules.getByRole('button', { name: 'Revoke' })).toBeVisible();
+    await expect(rules).not.toContainText('package pocketlab');
+  });
+
 });
