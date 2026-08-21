@@ -791,6 +791,422 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Enterprise Identity",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseIdentity",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity",
+      "operation_id": "enterprise_identity_api_lite_enterprise_identity_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Members",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/identity/members",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/members",
+      "operation_id": "enterprise_members_api_lite_enterprise_identity_members_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/members",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Operation",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/rules/activations/{operation_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/activations/{operation_id}",
+      "operation_id": "operation_api_lite_enterprise_rules_activations__operation_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/activations/{operation_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Analysis",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRulesAnalysis",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/analysis",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/analysis",
+      "operation_id": "analysis_api_lite_enterprise_rules_analysis_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/analysis",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Approvals",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRuleApprovals",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/approvals",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/approvals",
+      "operation_id": "approvals_api_lite_enterprise_rules_approvals_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/approvals",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Approval",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRuleApproval",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/approvals/{approval_id}",
+      "operation_id": "approval_api_lite_enterprise_rules_approvals__approval_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/approvals/{approval_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Decisions",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRuleDecisions",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/decisions",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/decisions",
+      "operation_id": "decisions_api_lite_enterprise_rules_decisions_get",
+      "response_statuses": [
+        "200",
+        "400",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/decisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Decision",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/decisions/{decision_id}",
+      "operation_id": "decision_api_lite_enterprise_rules_decisions__decision_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/decisions/{decision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Exceptions",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRuleExceptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/exceptions",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/exceptions",
+      "operation_id": "exceptions_api_lite_enterprise_rules_exceptions_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/exceptions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Health",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRulesHealth",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/health",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/health",
+      "operation_id": "health_api_lite_enterprise_rules_health_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/health",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revisions",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRuleRevisions",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/revisions",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/revisions",
+      "operation_id": "revisions_api_lite_enterprise_rules_revisions_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/revisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Compare",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
+      "operation_id": "compare_api_lite_enterprise_rules_revisions__left_revision_id__compare__right_revision_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revision",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/revisions/{revision_id}",
+      "operation_id": "revision_api_lite_enterprise_rules_revisions__revision_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/revisions/{revision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Revision Events",
       "domain": "events",
       "frontend_clients": [
@@ -2774,6 +3190,230 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Activate",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/rules/activations",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/activations",
+      "operation_id": "activate_api_lite_enterprise_rules_activations_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/activations",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Transition Approval",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.transitionEnterpriseRuleApproval",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/approvals/{approval_id}",
+      "operation_id": "transition_approval_api_lite_enterprise_rules_approvals__approval_id__post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/approvals/{approval_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Create Exception",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.createEnterpriseRuleException",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/rules/exceptions",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/exceptions",
+      "operation_id": "create_exception_api_lite_enterprise_rules_exceptions_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/exceptions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Exception",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.revokeEnterpriseRuleException",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
+      "operation_id": "revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Create Revision",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/rules/revisions",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/revisions",
+      "operation_id": "create_revision_api_lite_enterprise_rules_revisions_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/revisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Rollback",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/rules/rollbacks",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/rollbacks",
+      "operation_id": "rollback_api_lite_enterprise_rules_rollbacks_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/rollbacks",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Simulate",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.simulateEnterpriseRule",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/rules/simulations",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/rules/simulations",
+      "operation_id": "simulate_api_lite_enterprise_rules_simulations_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/simulations",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Add Lite Device",
       "domain": "devices",
       "frontend_clients": [
@@ -3553,6 +4193,13 @@
           "usage": "mutation"
         },
         {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -3589,6 +4236,13 @@
           "owner": "liteApi.verifyPasskeyStepUp",
           "resolved": true,
           "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
           "usage": "mutation"
         },
         {
@@ -4257,6 +4911,61 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Update Enterprise Member",
+      "domain": "enterprise",
+      "id": "api:put:/api/lite/enterprise/identity/members/{human_id}",
+      "method": "PUT",
+      "name": "PUT /api/lite/enterprise/identity/members/{human_id}",
+      "operation_id": "update_enterprise_member_api_lite_enterprise_identity_members__human_id__put",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/members/{human_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Update Enterprise Mode",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.setEnterpriseMode",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:put:/api/lite/enterprise/identity/mode",
+      "method": "PUT",
+      "name": "PUT /api/lite/enterprise/identity/mode",
+      "operation_id": "update_enterprise_mode_api_lite_enterprise_identity_mode_put",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/mode",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Update Lite Device Display Model",
       "domain": "devices",
       "frontend_clients": [
@@ -4333,6 +5042,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
+    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
   }
 }

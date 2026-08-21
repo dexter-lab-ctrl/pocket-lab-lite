@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 61357b63a113765f1f3739b2f1fd7eef9b137dd4de54cd4362e8a7508b7b8e0d
+source_fingerprint: 2aa9571e469ccba32bfc01649349ebfd34fe21ad610472bfade7f2d75e9892a4
 schema_revision: 1
 validation_status: generated
 ---
@@ -573,7 +573,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_OBSERVABILITY_PROBE_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py |
 | `POCKETLAB_OBSERVABILITY_STATUS_CACHE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py |
 | `POCKETLAB_OPA_ACTIVE_POLICY_DIR` | configuration | $POCKETLAB_STATE_DIR/opa/active | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
-| `POCKETLAB_OPA_BIN` | configuration | $(command -v opa \|\| true) | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh |
+| `POCKETLAB_OPA_BIN` | configuration | $(command -v opa \|\| true) | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py |
 | `POCKETLAB_OPA_POLICY_SOURCE_DIR` | configuration | $REPO_ROOT/security/policies/opa/pocketlab | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh |
 | `POCKETLAB_OPA_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
 | `POCKETLAB_OPA_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
@@ -607,6 +607,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PLAYWRIGHT_VIDEO` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts |
 | `POCKETLAB_PM2_BIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_runtime.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py |
 | `POCKETLAB_POLICY_DECISION_RETENTION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
+| `POCKETLAB_POLICY_REVISION` | configuration | plr-${source_digest:0:32 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh, pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
+| `POCKETLAB_POLICY_TEMPLATE_JSON` | configuration | $default_template_json | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh, pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
 | `POCKETLAB_PROCESS_ACQUIRE_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py |
 | `POCKETLAB_PROCESS_OUTPUT_LIMIT_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py |
 | `POCKETLAB_PROCESS_ROLE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/main.py, pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py, pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |

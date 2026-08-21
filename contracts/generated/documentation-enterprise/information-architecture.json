@@ -1759,7 +1759,7 @@
         "troubleshooting:caddy-unavailable"
       ],
       "user_journeys": [
-        "Local owner password and session lifecycle"
+        "Local owner, passkey, recovery, and session lifecycle"
       ]
     },
     {
@@ -15226,7 +15226,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "026602a891a88ca2fc66819873d8265ba3bc44df067ba9384b4e8f44c63e2de7",
+  "source_fingerprint": "0b3e7d1725c94b15929a38cb9c3916a9633d575262d8aad269be6065d0690688",
   "top_level": [
     "start-here",
     "use",

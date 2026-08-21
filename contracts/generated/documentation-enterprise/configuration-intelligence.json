@@ -8799,8 +8799,11 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "tests/backend/test_lite_enterprise_identity_p2.py",
         "tests/backend/test_lite_identity_passkeys_rules_p1.py",
-        "tests/backend/test_lite_identity_rules_authorization.py"
+        "tests/backend/test_lite_identity_rules_authorization.py",
+        "tests/backend/test_lite_policy_approvals_p3_1.py",
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9219,8 +9222,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "tests/backend/test_lite_enterprise_identity_p2.py",
         "tests/backend/test_lite_identity_passkeys_rules_p1.py",
-        "tests/backend/test_lite_identity_rules_authorization.py"
+        "tests/backend/test_lite_identity_rules_authorization.py",
+        "tests/backend/test_lite_policy_analysis_p2_3.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -14885,7 +14890,7 @@
         ".storybook/preview.jsx",
         "src/mocks/handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-H4M95QXE.js",
+        "storybook-static/assets/preview-BjM4_2Sh.js",
         "tests/e2e/lite-test-helpers.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -15956,7 +15961,9 @@
     },
     {
       "affected_components": [
-        "bootstrap/runtime"
+        "FastAPI",
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -15973,7 +15980,9 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -16767,6 +16776,57 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_POLICY_REVISION",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_POLICY_TEMPLATE_JSON",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

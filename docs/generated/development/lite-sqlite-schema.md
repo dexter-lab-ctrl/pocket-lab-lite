@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0a289dff5453f0951a010c7a694b6d139f589936bdceeb9102573916aa5e9281
+source_fingerprint: 0a81260fd6c82e7bb3f50ac71f957b968d192d415ac714497df4e47bcdc6d3f6
 schema_revision: 1
 validation_status: generated
 ---
@@ -51,16 +51,24 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `device_supervisor_state` | table | 15 | 0 | 2 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql |
 | `device_system_profiles` | table | 36 | 1 | 2 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql |
 | `domain_revisions` | table | 3 | 0 | 1 | projections | prepared projection scheduler | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
+| `enterprise_configuration` | table | 8 | 1 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql |
+| `enterprise_memberships` | table | 8 | 3 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql |
 | `human_credentials` | table | 10 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
-| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
+| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `identity_audit_events` | table | 8 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
 | `owner_claims` | table | 12 | 0 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `phase3b_current_state` | table | 12 | 0 | 3 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `phase3b_revision_events` | table | 16 | 0 | 4 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
+| `policy_activation_operations` | table | 12 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql |
+| `policy_approvals` | table | 23 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
+| `policy_continuation_events` | table | 9 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `policy_decision_details` | table | 3 | 1 | 1 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `policy_decisions` | table | 14 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
+| `policy_revisions` | table | 15 | 2 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql |
+| `policy_runtime_state` | table | 5 | 2 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql |
+| `policy_temporary_exceptions` | table | 13 | 2 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `projection_dirty_signals` | table | 7 | 0 | 2 | projections | prepared projection scheduler | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `projection_refresh_state` | table | 30 | 0 | 2 | projections | projection scheduler | internal metadata | verified | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `recovery_code_batches` | table | 5 | 1 | 2 | recovery | Recovery services and worker completion handlers | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
@@ -625,6 +633,38 @@ Source-derived projections persistence object; detailed ownership is conservativ
 | `revision` | INTEGER | no | — | 0 |
 | `updated_at` | TEXT | no | — | 0 |
 
+<a id="enterprise-configuration"></a>
+## `enterprise_configuration`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `configuration_id` | INTEGER | yes | — | 1 |
+| `enabled` | INTEGER | no | 0 | 0 |
+| `authorization_version` | INTEGER | no | 1 | 0 |
+| `enabled_at` | TEXT | yes | — | 0 |
+| `disabled_at` | TEXT | yes | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+| `updated_by_human_id` | TEXT | yes | — | 0 |
+
+<a id="enterprise-memberships"></a>
+## `enterprise_memberships`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `human_id` | TEXT | yes | — | 1 |
+| `role` | TEXT | no | — | 0 |
+| `status` | TEXT | no | 'active' | 0 |
+| `authorization_version` | INTEGER | no | 1 | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+| `created_by_human_id` | TEXT | yes | — | 0 |
+| `updated_by_human_id` | TEXT | yes | — | 0 |
+
 <a id="human-credentials"></a>
 ## `human_credentials`
 
@@ -783,6 +823,74 @@ Source-derived prepared state persistence object; detailed ownership is conserva
 | `scheduler_generation` | INTEGER | no | 0 | 0 |
 | `execution_owner` | TEXT | no | 'unknown' | 0 |
 
+<a id="policy-activation-operations"></a>
+## `policy_activation_operations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `operation_id` | TEXT | yes | — | 1 |
+| `requested_by_human_id` | TEXT | no | — | 0 |
+| `correlation_id` | TEXT | no | — | 0 |
+| `candidate_revision_id` | TEXT | no | — | 0 |
+| `prior_known_good_revision_id` | TEXT | yes | — | 0 |
+| `state` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | '' | 0 |
+| `observed_filesystem_revision` | TEXT | yes | — | 0 |
+| `observed_opa_revision` | TEXT | yes | — | 0 |
+| `evidence_ref` | TEXT | yes | — | 0 |
+
+<a id="policy-approvals"></a>
+## `policy_approvals`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `approval_id` | TEXT | yes | — | 1 |
+| `originating_decision_id` | TEXT | no | — | 0 |
+| `correlation_id` | TEXT | no | — | 0 |
+| `action_id` | TEXT | no | — | 0 |
+| `target_type` | TEXT | no | — | 0 |
+| `target_id` | TEXT | no | — | 0 |
+| `initiating_human_id` | TEXT | no | — | 0 |
+| `initiating_role` | TEXT | no | — | 0 |
+| `required_approver_roles_json` | TEXT | no | — | 0 |
+| `required_assurance` | TEXT | no | — | 0 |
+| `policy_revision` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `expires_at` | TEXT | no | — | 0 |
+| `approved_at` | TEXT | yes | — | 0 |
+| `approved_by_human_id` | TEXT | yes | — | 0 |
+| `rejected_at` | TEXT | yes | — | 0 |
+| `rejected_by_human_id` | TEXT | yes | — | 0 |
+| `cancelled_at` | TEXT | yes | — | 0 |
+| `cancelled_by_human_id` | TEXT | yes | — | 0 |
+| `consumed_at` | TEXT | yes | — | 0 |
+| `reason_code` | TEXT | no | '' | 0 |
+| `evidence_ref` | TEXT | no | '' | 0 |
+
+<a id="policy-continuation-events"></a>
+## `policy_continuation_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `event_id` | INTEGER | yes | — | 1 |
+| `occurred_at` | TEXT | no | — | 0 |
+| `kind` | TEXT | no | — | 0 |
+| `subject_id` | TEXT | no | — | 0 |
+| `actor_human_id` | TEXT | yes | — | 0 |
+| `event_type` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | — | 0 |
+| `summary` | TEXT | no | — | 0 |
+| `correlation_id` | TEXT | no | — | 0 |
+
 <a id="policy-decision-details"></a>
 ## `policy_decision_details`
 
@@ -815,6 +923,63 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `reason_code` | TEXT | no | — | 0 |
 | `policy_revision` | TEXT | no | — | 0 |
 | `evaluation_ms` | REAL | no | 0 | 0 |
+
+<a id="policy-revisions"></a>
+## `policy_revisions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `revision_id` | TEXT | yes | — | 1 |
+| `parent_revision_id` | TEXT | yes | — | 0 |
+| `template_id` | TEXT | no | — | 0 |
+| `template_version` | TEXT | no | — | 0 |
+| `canonical_parameters_json` | TEXT | no | — | 0 |
+| `manifest_json` | TEXT | no | — | 0 |
+| `content_hash` | TEXT | no | — | 0 |
+| `created_by_human_id` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `validation_status` | TEXT | no | — | 0 |
+| `validated_at` | TEXT | yes | — | 0 |
+| `validation_reason_code` | TEXT | no | '' | 0 |
+| `lifecycle_status` | TEXT | no | — | 0 |
+| `activated_at` | TEXT | yes | — | 0 |
+| `change_summary` | TEXT | no | — | 0 |
+
+<a id="policy-runtime-state"></a>
+## `policy_runtime_state`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `state_id` | INTEGER | yes | — | 1 |
+| `active_revision_id` | TEXT | yes | — | 0 |
+| `known_good_revision_id` | TEXT | yes | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+| `updated_by_operation_id` | TEXT | yes | — | 0 |
+
+<a id="policy-temporary-exceptions"></a>
+## `policy_temporary_exceptions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `exception_id` | TEXT | yes | — | 1 |
+| `action_id` | TEXT | no | — | 0 |
+| `app_id` | TEXT | no | — | 0 |
+| `device_id` | TEXT | no | — | 0 |
+| `human_id` | TEXT | no | — | 0 |
+| `policy_revision` | TEXT | no | — | 0 |
+| `reason` | TEXT | no | — | 0 |
+| `created_by_human_id` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `expires_at` | TEXT | no | — | 0 |
+| `revoked_at` | TEXT | yes | — | 0 |
+| `revoked_by_human_id` | TEXT | yes | — | 0 |
 
 <a id="projection-dirty-signals"></a>
 ## `projection_dirty_signals`

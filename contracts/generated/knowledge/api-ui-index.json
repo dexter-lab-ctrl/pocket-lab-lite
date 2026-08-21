@@ -7,6 +7,30 @@
       "api:get:/api/lite/devices/{device_id}/removal-assessment": [
         "ui:litedevices"
       ],
+      "api:get:/api/lite/enterprise/identity": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/analysis": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/approvals": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/approvals/{approval_id}": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/decisions": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/exceptions": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/health": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/enterprise/rules/revisions": [
+        "ui:literules"
+      ],
       "api:get:/api/lite/fleet": [
         "ui:litedevices"
       ],
@@ -64,6 +88,18 @@
       "api:post:/api/lite/apps/{app_id}/restore/preview": [
         "ui:literecovery"
       ],
+      "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
+        "ui:literules"
+      ],
+      "api:post:/api/lite/enterprise/rules/exceptions": [
+        "ui:literules"
+      ],
+      "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": [
+        "ui:literules"
+      ],
+      "api:post:/api/lite/enterprise/rules/simulations": [
+        "ui:literules"
+      ],
       "api:post:/api/lite/fleet/add-device": [
         "ui:litedevices"
       ],
@@ -116,10 +152,12 @@
         "ui:liteidentity"
       ],
       "api:post:/api/lite/identity/step-up/options": [
-        "ui:liteidentity"
+        "ui:liteidentity",
+        "ui:literules"
       ],
       "api:post:/api/lite/identity/step-up/verify": [
-        "ui:liteidentity"
+        "ui:liteidentity",
+        "ui:literules"
       ],
       "api:post:/api/lite/recovery/backup": [
         "ui:literecovery"
@@ -157,6 +195,9 @@
       "api:post:/api/lite/security/check": [
         "ui:litesecurity"
       ],
+      "api:put:/api/lite/enterprise/identity/mode": [
+        "ui:liteidentity"
+      ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         "ui:liteidentity"
       ]
@@ -192,6 +233,7 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
+        "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/identity/passkeys/{credential_id}"
       ],
       "ui:literecovery": [
@@ -218,8 +260,22 @@
         "api:get:/api/lite/revisions"
       ],
       "ui:literules": [
+        "api:get:/api/lite/enterprise/identity",
+        "api:get:/api/lite/enterprise/rules/analysis",
+        "api:get:/api/lite/enterprise/rules/approvals",
+        "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
+        "api:get:/api/lite/enterprise/rules/decisions",
+        "api:get:/api/lite/enterprise/rules/exceptions",
+        "api:get:/api/lite/enterprise/rules/health",
+        "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/policy",
-        "api:get:/api/lite/policy/decisions/{decision_id}"
+        "api:get:/api/lite/policy/decisions/{decision_id}",
+        "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+        "api:post:/api/lite/enterprise/rules/exceptions",
+        "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
+        "api:post:/api/lite/enterprise/rules/simulations",
+        "api:post:/api/lite/identity/step-up/options",
+        "api:post:/api/lite/identity/step-up/verify"
       ],
       "ui:litesecurity": [
         "api:get:/api/lite/security/evidence/{run_id}/summary",
@@ -239,6 +295,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
+    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
   }
 }

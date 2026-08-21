@@ -760,7 +760,10 @@ start_pm2_daemons(){
   if is_lite_profile; then
     require_cmd opa
     [[ -x "$OPA_POLICY_PREP" ]] || die "OPA policy preparation script is missing: $OPA_POLICY_PREP"
-    POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" "$OPA_POLICY_PREP"
+    staged_output="$(POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" "$OPA_POLICY_PREP" stage)"
+    staged_revision="${staged_output##*revision=}"
+    [[ "$staged_revision" =~ ^[A-Za-z0-9._-]{8,80}$ ]] || die "OPA policy staging did not return a bounded revision"
+    POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" "$OPA_POLICY_PREP" activate "$staged_revision"
     pm2_start_or_restart pocket-opa "$(command -v opa)" --interpreter bash -- run --server --addr=127.0.0.1:8181 "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
     local opa_ready=0
     local opa_attempt
@@ -769,6 +772,9 @@ start_pm2_daemons(){
       sleep 1
     done
     [[ "$opa_ready" -eq 1 ]] || { pm2 logs pocket-opa --lines 80 --nostream || true; die "OPA did not become ready on loopback"; }
+    observed_revision="$(curl -fsS --max-time 3 http://127.0.0.1:8181/v1/data/pocketlab/meta/revision | python3 -c 'import json,sys; value=json.load(sys.stdin).get("result"); print(value if isinstance(value,str) else ""); raise SystemExit(0 if isinstance(value,str) else 1)' 2>/dev/null || true)"
+    [[ "$observed_revision" == "$staged_revision" ]] || die "OPA metadata revision did not match the active candidate"
+    POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" "$OPA_POLICY_PREP" known-good "$staged_revision"
   fi
   if [[ "${POCKETLAB_DISABLE_WORKER:-0}" != "1" ]]; then
     POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250

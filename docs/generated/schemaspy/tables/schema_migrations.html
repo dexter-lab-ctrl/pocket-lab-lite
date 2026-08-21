@@ -138,6 +138,16 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="enterprise_configuration.authorization_version&#39;s name implies that it&#39;s a child of schema_migrations.version, but it doesn&#39;t reference that column."><a href='enterprise_configuration.html'>enterprise_configuration</a><span class='relatedKey'>.authorization_version</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="enterprise_memberships.authorization_version&#39;s name implies that it&#39;s a child of schema_migrations.version, but it doesn&#39;t reference that column."><a href='enterprise_memberships.html'>enterprise_memberships</a><span class='relatedKey'>.authorization_version</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="human_identities.auth_version&#39;s name implies that it&#39;s a child of schema_migrations.version, but it doesn&#39;t reference that column."><a href='human_identities.html'>human_identities</a><span class='relatedKey'>.auth_version</span></td>
                                                 <td class="constraint detail">Implied Constraint</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -288,41 +298,49 @@
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
 <area shape="rect" id="node1" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="503,5,749,246">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,725,406,916">
-<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="846,269,1074,539">
-<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="503,264,749,446">
-<area shape="rect" id="node5" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="476,499,776,681">
-<area shape="rect" id="node6" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="466,699,786,881">
-<area shape="rect" id="node7" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="450,899,802,1139">
-<area shape="rect" id="node8" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="496,1157,756,1427">
-<area shape="rect" id="node9" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="462,1445,790,1715">
-<area shape="rect" id="node10" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="461,1733,791,1915">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,790,406,981">
+<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="885,196,1113,466">
+<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="503,735,749,917">
+<area shape="rect" id="node5" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="476,335,776,517">
+<area shape="rect" id="node6" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="466,535,786,717">
+<area shape="rect" id="node7" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="846,869,1152,1051">
+<area shape="rect" id="node8" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="846,552,1152,851">
+<area shape="rect" id="node9" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="450,969,802,1210">
+<area shape="rect" id="node10" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="496,1228,756,1498">
+<area shape="rect" id="node11" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="462,1516,790,1786">
+<area shape="rect" id="node12" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="461,1804,791,1986">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/schema_migrations.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="app_action_lifecycle.html" target="_top" title="app_action_lifecycle" alt="" coords="879,684,1143,778">
-<area shape="rect" id="node2" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="503,781,749,1022">
-<area shape="rect" id="node3" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,994,406,1185">
-<area shape="rect" id="node4" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="1220,1252,1520,1346">
-<area shape="rect" id="node5" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="870,1279,1152,1373">
-<area shape="rect" id="node6" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="906,908,1116,1002">
-<area shape="rect" id="node7" href="human_identities.html" target="_top" title="human_identities" alt="" coords="507,1075,745,1169">
-<area shape="rect" id="node8" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="476,1187,776,1369">
-<area shape="rect" id="node9" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="466,1645,786,1827">
-<area shape="rect" id="node10" href="device_current_state.html" target="_top" title="device_current_state" alt="" coords="71,1648,341,1742">
-<area shape="rect" id="node11" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="884,1391,1138,1485">
-<area shape="rect" id="node12" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1232,952,1508,1046">
-<area shape="rect" id="node13" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="450,1387,802,1627">
-<area shape="rect" id="node14" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="496,5,756,275">
-<area shape="rect" id="node15" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="865,1020,1157,1114">
-<area shape="rect" id="node16" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="462,293,790,563">
-<area shape="rect" id="node17" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="461,581,791,763">
-<area shape="rect" id="node18" href="security_database_restores.html" target="_top" title="security_database_restores" alt="" coords="846,572,1176,666">
-<area shape="rect" id="node19" href="security_scan_runs.html" target="_top" title="security_scan_runs" alt="" coords="884,796,1138,890">
-<area shape="rect" id="node20" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1232,1089,1508,1183">
-<area shape="rect" id="node21" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="896,1132,1126,1226">
+<area shape="rect" id="node1" href="app_action_lifecycle.html" target="_top" title="app_action_lifecycle" alt="" coords="886,644,1150,738">
+<area shape="rect" id="node2" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="503,981,749,1222">
+<area shape="rect" id="node3" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,1194,406,1385">
+<area shape="rect" id="node4" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="1255,1297,1554,1391">
+<area shape="rect" id="node5" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="878,1351,1159,1445">
+<area shape="rect" id="node6" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="914,868,1123,962">
+<area shape="rect" id="node7" href="human_identities.html" target="_top" title="human_identities" alt="" coords="507,1277,745,1371">
+<area shape="rect" id="node8" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="476,1389,776,1571">
+<area shape="rect" id="node9" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="466,5,786,187">
+<area shape="rect" id="node10" href="device_current_state.html" target="_top" title="device_current_state" alt="" coords="71,8,341,102">
+<area shape="rect" id="node11" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="865,1945,1172,2039">
+<area shape="rect" id="node12" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="865,1833,1172,1927">
+<area shape="rect" id="node13" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="892,1721,1145,1815">
+<area shape="rect" id="node14" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1266,912,1543,1006">
+<area shape="rect" id="node15" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="450,1660,802,1901">
+<area shape="rect" id="node16" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="496,205,756,475">
+<area shape="rect" id="node17" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1235,1609,1574,1703">
+<area shape="rect" id="node18" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="905,1609,1132,1703">
+<area shape="rect" id="node19" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="902,1092,1135,1186">
+<area shape="rect" id="node20" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="846,980,1191,1074">
+<area shape="rect" id="node21" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="872,1204,1164,1298">
+<area shape="rect" id="node22" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="462,493,790,763">
+<area shape="rect" id="node23" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="461,781,791,963">
+<area shape="rect" id="node24" href="security_database_restores.html" target="_top" title="security_database_restores" alt="" coords="853,532,1184,626">
+<area shape="rect" id="node25" href="security_scan_runs.html" target="_top" title="security_scan_runs" alt="" coords="892,756,1145,850">
+<area shape="rect" id="node26" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1266,1131,1543,1225">
+<area shape="rect" id="node27" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="903,1463,1134,1557">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/schema_migrations.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

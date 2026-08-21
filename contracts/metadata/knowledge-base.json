@@ -232,7 +232,8 @@
     ],
     "identity": [
       "src/lite/LiteIdentity.jsx",
-      "GET /api/lite/identity"
+      "GET /api/lite/identity",
+      "GET /api/lite/enterprise/identity"
     ],
     "recovery": [
       "src/lite/LiteRecovery.jsx",
@@ -240,7 +241,8 @@
     ],
     "rules": [
       "src/lite/LiteRules.jsx",
-      "GET /api/lite/policy"
+      "GET /api/lite/policy",
+      "GET /api/lite/enterprise/rules/health"
     ],
     "security": [
       "src/lite/LiteSecurity.jsx",
@@ -249,6 +251,42 @@
   },
   "generator_version": 1,
   "glossary": [
+    {
+      "aliases": [
+        "personal mode",
+        "enterprise roles"
+      ],
+      "definition": "Personal Mode is the default local-owner experience. Enterprise Mode is an explicit opt-in that resolves authoritative server-owned Owner, Admin, Operator, Viewer, and Auditor memberships; it is not an external identity-provider integration.",
+      "domain": "identity",
+      "term": "Enterprise Mode"
+    },
+    {
+      "aliases": [
+        "policy revision",
+        "OPA candidate"
+      ],
+      "definition": "Safety Rules accept only approved typed templates and bounded parameters. Each immutable candidate has a complete manifest, is activated by the supervisor with active and known-good pointers, and fails closed when the proved OPA-loaded revision is uncertain or mismatched.",
+      "domain": "rules",
+      "term": "typed Safety Rules revision"
+    },
+    {
+      "aliases": [
+        "independent approval",
+        "temporary exception"
+      ],
+      "definition": "An Enterprise device removal may require a passkey-stepped-up independent Owner or Admin approval. Approval never executes the action: the initiator must explicitly retry and the one-use continuation is consumed atomically. Temporary catalog-install exceptions are exact app, device, identity, and revision scoped, expire within 60 minutes, and can be revoked.",
+      "domain": "rules",
+      "term": "Rules continuation"
+    },
+    {
+      "aliases": [
+        "OpenID Connect",
+        "single sign-on"
+      ],
+      "definition": "Optional OIDC is not implemented. A separately approved protected secret-storage capability is required before an OIDC integration can be added safely.",
+      "domain": "identity",
+      "term": "OIDC"
+    },
     {
       "aliases": [
         "durable source of truth"
@@ -437,7 +475,30 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
-      "title": "Local owner password and session lifecycle"
+      "title": "Local owner, passkey, recovery, and session lifecycle"
+    },
+    {
+      "components": [
+        "api-guards",
+        "lite-api",
+        "sqlite",
+        "opa-policy-engine"
+      ],
+      "confidence": "source-derived",
+      "domain": "identity",
+      "id": "enterprise-identity",
+      "routes": [
+        "GET /api/lite/enterprise/identity",
+        "PUT /api/lite/enterprise/identity/mode",
+        "GET /api/lite/enterprise/identity/members",
+        "PUT /api/lite/enterprise/identity/members/{human_id}"
+      ],
+      "source_refs": [
+        "src/lite/LiteIdentity.jsx",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py"
+      ],
+      "title": "Opt-in Enterprise membership and authoritative roles"
     },
     {
       "components": [
@@ -673,14 +734,23 @@
       "routes": [
         "GET /api/lite/policy",
         "POST /api/lite/catalog/install",
-        "POST /api/lite/fleet/remove-device"
+        "POST /api/lite/fleet/remove-device",
+        "GET /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/revisions",
+        "GET /api/lite/enterprise/rules/health",
+        "POST /api/lite/enterprise/rules/simulations",
+        "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
         "src/lite/LiteRules.jsx",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
         "security/policies/opa/pocketlab/pocketlab.rego"
       ],
-      "title": "Safety Rules authorization decision"
+      "title": "Typed Safety Rules authorization, lifecycle, simulation, and continuations"
     },
     {
       "components": [

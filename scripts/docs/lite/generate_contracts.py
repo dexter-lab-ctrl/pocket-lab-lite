@@ -147,6 +147,11 @@ def stable_json(value: Any) -> str:
 
 
 def normalize_path(path: str) -> str:
+    # A liteApi template can append an optional query expression such as
+    # `/analysis${revisionId ? `?revision_id=${...}` : ''}`.  It is not a
+    # path parameter and nested template syntax cannot be safely parsed by
+    # the generic interpolation matcher below, so discard that suffix first.
+    path = re.sub(r"(?<!/)\$\{.*$", "", path, flags=re.S)
     path = path.split("?", 1)[0]
     path = JS_TEMPLATE.sub("{param}", path)
     return re.sub(r"//+", "/", path)

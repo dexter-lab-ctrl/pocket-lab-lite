@@ -40,6 +40,7 @@
       <table name="app_current_state" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_action_lifecycle"/>
+            <child column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_temporary_exceptions"/>
             <child column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="security_scan_runs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="app_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -879,6 +880,54 @@
             <column ascending="true" name="domain"/>
          </index>
       </table>
+      <table name="enterprise_configuration" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="configuration_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="1" name="enabled" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="2" name="authorization_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="enabled_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="disabled_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <primaryKey column="configuration_id" sequenceNumberInPK="1"/>
+         <index name="enterprise_configuration_s_pk" unique="true">
+            <column ascending="true" name="configuration_id"/>
+         </index>
+      </table>
+      <table name="enterprise_memberships" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'active'" digits="0" id="2" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="3" name="authorization_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <primaryKey column="human_id" sequenceNumberInPK="1"/>
+         <index name="enterprise_memberships_s_pk" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+         <index name="idx_enterprise_memberships_active_role" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="role"/>
+            <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="sqlite_autoindex_enterprise_memberships_1" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+      </table>
       <table name="human_credentials" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="credential_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
@@ -907,7 +956,17 @@
       <table name="human_identities" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_sessions"/>
+            <child column="updated_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="enterprise_configuration"/>
+            <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="enterprise_memberships"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="enterprise_memberships"/>
+            <child column="updated_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="enterprise_memberships"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_credentials"/>
+            <child column="requested_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
+            <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
+            <child column="initiating_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
+            <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+            <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_temporary_exceptions"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_temporary_exceptions"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="recovery_code_batches"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_challenges"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_credentials"/>
@@ -1119,8 +1178,114 @@
             <column ascending="true" name="projection_revision"/>
          </index>
       </table>
+      <table name="policy_activation_operations" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="requested_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="candidate_revision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="prior_known_good_revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="observed_filesystem_revision" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="observed_opa_revision" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="evidence_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="operation_id" sequenceNumberInPK="1"/>
+         <index name="policy_activation_operations_s_pk" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_policy_activation_operations_state" unique="false">
+            <column ascending="true" name="state"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="idx_policy_activation_single_nonterminal" unique="true"/>
+         <index name="sqlite_autoindex_policy_activation_operations_1" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+      </table>
+      <table name="policy_approvals" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="approval_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="originating_decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="action_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="target_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="target_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="initiating_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="initiating_role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="required_approver_roles_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="required_assurance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="approved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="approved_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="rejected_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="rejected_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="cancelled_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="cancelled_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="21" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="22" name="evidence_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="approval_id" sequenceNumberInPK="1"/>
+         <index name="policy_approvals_s_pk" unique="true">
+            <column ascending="true" name="approval_id"/>
+         </index>
+         <index name="idx_policy_approvals_pending" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="idx_policy_approvals_scope" unique="false">
+            <column ascending="true" name="initiating_human_id"/>
+            <column ascending="true" name="action_id"/>
+            <column ascending="true" name="target_id"/>
+            <column ascending="true" name="policy_revision"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="sqlite_autoindex_policy_approvals_1" unique="true">
+            <column ascending="true" name="approval_id"/>
+         </index>
+         <index name="sqlite_autoindex_policy_approvals_2" unique="true">
+            <column ascending="true" name="originating_decision_id"/>
+         </index>
+      </table>
+      <table name="policy_continuation_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="subject_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="actor_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="policy_continuation_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_policy_continuation_events_subject" unique="false">
+            <column ascending="true" name="kind"/>
+            <column ascending="true" name="subject_id"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
       <table name="policy_decision_details" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="originating_decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_approvals"/>
             <parent column="decision_id" foreignKey="" implied="false" onDeleteCascade="true" table="policy_decisions"/>
          </column>
          <column autoUpdated="false" defaultValue="'[]'" digits="0" id="1" name="constraints_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -1163,6 +1328,99 @@
          </index>
          <index name="sqlite_autoindex_policy_decisions_1" unique="true">
             <column ascending="true" name="decision_id"/>
+         </index>
+      </table>
+      <table name="policy_revisions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="candidate_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
+            <child column="prior_known_good_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
+            <child column="parent_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+            <child column="active_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_runtime_state"/>
+            <child column="known_good_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_runtime_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="parent_revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="template_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="canonical_parameters_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="manifest_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="content_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="validation_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="validated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="validation_reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="lifecycle_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="activated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="change_summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="revision_id" sequenceNumberInPK="1"/>
+         <index name="policy_revisions_s_pk" unique="true">
+            <column ascending="true" name="revision_id"/>
+         </index>
+         <index name="idx_policy_revisions_lifecycle" unique="false">
+            <column ascending="true" name="lifecycle_status"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="sqlite_autoindex_policy_revisions_1" unique="true">
+            <column ascending="true" name="revision_id"/>
+         </index>
+         <index name="sqlite_autoindex_policy_revisions_2" unique="true">
+            <column ascending="true" name="content_hash"/>
+         </index>
+      </table>
+      <table name="policy_runtime_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="state_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="active_revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="known_good_revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="updated_by_operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="state_id" sequenceNumberInPK="1"/>
+         <index name="policy_runtime_state_s_pk" unique="true">
+            <column ascending="true" name="state_id"/>
+         </index>
+      </table>
+      <table name="policy_temporary_exceptions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="exception_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="action_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="app_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="revoked_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="exception_id" sequenceNumberInPK="1"/>
+         <index name="policy_temporary_exceptions_s_pk" unique="true">
+            <column ascending="true" name="exception_id"/>
+         </index>
+         <index name="idx_policy_exceptions_scope" unique="false">
+            <column ascending="true" name="human_id"/>
+            <column ascending="true" name="action_id"/>
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="policy_revision"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
+         </index>
+         <index name="sqlite_autoindex_policy_temporary_exceptions_1" unique="true">
+            <column ascending="true" name="exception_id"/>
          </index>
       </table>
       <table name="projection_dirty_signals" remarks="" type="TABLE">
@@ -1419,6 +1677,8 @@
             <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="auth_sessions"/>
             <child column="evidence_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_supervisor_state"/>
             <child column="profile_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_system_profiles"/>
+            <child column="authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="enterprise_configuration"/>
+            <child column="authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="enterprise_memberships"/>
             <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_installed_release_identity"/>
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_revision_events"/>

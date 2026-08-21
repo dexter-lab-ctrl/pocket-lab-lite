@@ -90,10 +90,16 @@ def resolve_auth_context(request: Request, *, write: bool = False) -> Dict[str, 
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={"reason_code": "csrf_required", "message": "Refresh the page and try again."},
                 )
-        return {
+        context = {
             **session_context,
             "auth_method": str((session_context.get("session") or {}).get("auth_method") or "session"),
         }
+        # Enterprise role and membership are resolved from SQLite for every
+        # request.  No request field, cookie value, or browser state is an
+        # authorization input.
+        from .services import lite_enterprise_identity
+
+        return lite_enterprise_identity.enrich_auth_context(context)
 
     cfg = settings()
     configured_token = cfg.api_token.strip()

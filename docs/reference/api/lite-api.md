@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ebcaaa9a615748e438c1b3c373c36d668582699d92154399d5a65c87d96c2562
+source_fingerprint: 220775195fb24f1f43cc7e4ee7e71c655d2e039b8e6fa906cb496cad6fcc7e2a
 schema_revision: 1
 validation_status: generated
 ---
@@ -768,6 +768,475 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-identity"></a>
+## GET `/api/lite/enterprise/identity`
+
+- Operation ID: `enterprise_identity_api_lite_enterprise_identity_get`
+- Summary: Enterprise Identity
+- Deprecated: no
+- Tags: `lite-enterprise-identity`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-identity-members"></a>
+## GET `/api/lite/enterprise/identity/members`
+
+- Operation ID: `enterprise_members_api_lite_enterprise_identity_members_get`
+- Summary: Enterprise Members
+- Deprecated: no
+- Tags: `lite-enterprise-identity`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="put-api-lite-enterprise-identity-members-human-id"></a>
+## PUT `/api/lite/enterprise/identity/members/{human_id}`
+
+- Operation ID: `update_enterprise_member_api_lite_enterprise_identity_members__human_id__put`
+- Summary: Update Enterprise Member
+- Deprecated: no
+- Tags: `lite-enterprise-identity`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| human_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `EnterpriseMembershipRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="put-api-lite-enterprise-identity-mode"></a>
+## PUT `/api/lite/enterprise/identity/mode`
+
+- Operation ID: `update_enterprise_mode_api_lite_enterprise_identity_mode_put`
+- Summary: Update Enterprise Mode
+- Deprecated: no
+- Tags: `lite-enterprise-identity`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `EnterpriseModeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-activations"></a>
+## POST `/api/lite/enterprise/rules/activations`
+
+- Operation ID: `activate_api_lite_enterprise_rules_activations_post`
+- Summary: Activate
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ActivationRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-activations-operation-id"></a>
+## GET `/api/lite/enterprise/rules/activations/{operation_id}`
+
+- Operation ID: `operation_api_lite_enterprise_rules_activations__operation_id__get`
+- Summary: Operation
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| operation_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-analysis"></a>
+## GET `/api/lite/enterprise/rules/analysis`
+
+- Operation ID: `analysis_api_lite_enterprise_rules_analysis_get`
+- Summary: Analysis
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| revision_id | query | no | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-approvals"></a>
+## GET `/api/lite/enterprise/rules/approvals`
+
+- Operation ID: `approvals_api_lite_enterprise_rules_approvals_get`
+- Summary: Approvals
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-approvals-approval-id"></a>
+## GET `/api/lite/enterprise/rules/approvals/{approval_id}`
+
+- Operation ID: `approval_api_lite_enterprise_rules_approvals__approval_id__get`
+- Summary: Approval
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| approval_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-approvals-approval-id"></a>
+## POST `/api/lite/enterprise/rules/approvals/{approval_id}`
+
+- Operation ID: `transition_approval_api_lite_enterprise_rules_approvals__approval_id__post`
+- Summary: Transition Approval
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| approval_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ApprovalTransitionRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-decisions"></a>
+## GET `/api/lite/enterprise/rules/decisions`
+
+- Operation ID: `decisions_api_lite_enterprise_rules_decisions_get`
+- Summary: Decisions
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| action_id | query | no | `string` |
+| allowed | query | no | `boolean` |
+| reason_code | query | no | `string` |
+| policy_revision | query | no | `string` |
+| target_type | query | no | `string` |
+| limit | query | no | `integer` |
+| cursor | query | no | `integer` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-decisions-decision-id"></a>
+## GET `/api/lite/enterprise/rules/decisions/{decision_id}`
+
+- Operation ID: `decision_api_lite_enterprise_rules_decisions__decision_id__get`
+- Summary: Decision
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| decision_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-exceptions"></a>
+## GET `/api/lite/enterprise/rules/exceptions`
+
+- Operation ID: `exceptions_api_lite_enterprise_rules_exceptions_get`
+- Summary: Exceptions
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-exceptions"></a>
+## POST `/api/lite/enterprise/rules/exceptions`
+
+- Operation ID: `create_exception_api_lite_enterprise_rules_exceptions_post`
+- Summary: Create Exception
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `TemporaryExceptionRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-exceptions-exception-id-revoke"></a>
+## POST `/api/lite/enterprise/rules/exceptions/{exception_id}/revoke`
+
+- Operation ID: `revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post`
+- Summary: Revoke Exception
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| exception_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-health"></a>
+## GET `/api/lite/enterprise/rules/health`
+
+- Operation ID: `health_api_lite_enterprise_rules_health_get`
+- Summary: Health
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-revisions"></a>
+## GET `/api/lite/enterprise/rules/revisions`
+
+- Operation ID: `revisions_api_lite_enterprise_rules_revisions_get`
+- Summary: Revisions
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-revisions"></a>
+## POST `/api/lite/enterprise/rules/revisions`
+
+- Operation ID: `create_revision_api_lite_enterprise_rules_revisions_post`
+- Summary: Create Revision
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RevisionRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-revisions-left-revision-id-compare-right-revision-id"></a>
+## GET `/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}`
+
+- Operation ID: `compare_api_lite_enterprise_rules_revisions__left_revision_id__compare__right_revision_id__get`
+- Summary: Compare
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| left_revision_id | path | yes | `string` |
+| right_revision_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-revisions-revision-id"></a>
+## GET `/api/lite/enterprise/rules/revisions/{revision_id}`
+
+- Operation ID: `revision_api_lite_enterprise_rules_revisions__revision_id__get`
+- Summary: Revision
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| revision_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-rollbacks"></a>
+## POST `/api/lite/enterprise/rules/rollbacks`
+
+- Operation ID: `rollback_api_lite_enterprise_rules_rollbacks_post`
+- Summary: Rollback
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-simulations"></a>
+## POST `/api/lite/enterprise/rules/simulations`
+
+- Operation ID: `simulate_api_lite_enterprise_rules_simulations_post`
+- Summary: Simulate
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `SimulationRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-events"></a>

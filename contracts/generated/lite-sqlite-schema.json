@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 25,
+    "migration_count": 28,
     "objects": [
       {
         "checks": [],
@@ -4069,6 +4069,227 @@
         "writer": "prepared projection scheduler"
       },
       {
+        "checks": [
+          "configuration_id = 1",
+          "enabled IN (0, 1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "configuration_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "enabled",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "authorization_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "enabled_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "disabled_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "updated_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql"
+        ],
+        "name": "enterprise_configuration",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE enterprise_configuration (\n    configuration_id INTEGER PRIMARY KEY CHECK (configuration_id = 1),\n    enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),\n    authorization_version INTEGER NOT NULL DEFAULT 1,\n    enabled_at TEXT,\n    disabled_at TEXT,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    updated_by_human_id TEXT,\n    FOREIGN KEY(updated_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "role IN ('Owner', 'Admin', 'Operator', 'Viewer', 'Auditor'",
+          "status IN ('active', 'removed'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "human_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "role",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'active'",
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "authorization_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "updated_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "created_by_human_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "human_id",
+            "id": 2,
+            "on_delete": "RESTRICT",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "status",
+              "role",
+              "updated_at"
+            ],
+            "name": "idx_enterprise_memberships_active_role",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "human_id"
+            ],
+            "name": "sqlite_autoindex_enterprise_memberships_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql"
+        ],
+        "name": "enterprise_memberships",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE enterprise_memberships (\n    human_id TEXT PRIMARY KEY,\n    role TEXT NOT NULL CHECK (role IN ('Owner', 'Admin', 'Operator', 'Viewer', 'Auditor')),\n    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'removed')),\n    authorization_version INTEGER NOT NULL DEFAULT 1,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    created_by_human_id TEXT,\n    updated_by_human_id TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id) ON DELETE RESTRICT,\n    FOREIGN KEY(created_by_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(updated_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
         "checks": [],
         "classification": "restricted operational metadata",
         "columns": [
@@ -4277,7 +4498,10 @@
         ],
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -5160,6 +5384,524 @@
         "writer": "prepared state projection services"
       },
       {
+        "checks": [
+          "state IN ('pending','validating','switching','restarting','verifying','active','rolling_back','rolled_back','uncertain','failed'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_by_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "correlation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "candidate_revision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "prior_known_good_revision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "observed_filesystem_revision",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "observed_opa_revision",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "evidence_ref",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "prior_known_good_revision_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_revisions",
+            "sequence": 0,
+            "to": "revision_id"
+          },
+          {
+            "from": "candidate_revision_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_revisions",
+            "sequence": 0,
+            "to": "revision_id"
+          },
+          {
+            "from": "requested_by_human_id",
+            "id": 2,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              null
+            ],
+            "name": "idx_policy_activation_single_nonterminal",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "state",
+              "created_at"
+            ],
+            "name": "idx_policy_activation_operations_state",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "operation_id"
+            ],
+            "name": "sqlite_autoindex_policy_activation_operations_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql"
+        ],
+        "name": "policy_activation_operations",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_ref"
+        ],
+        "sql": "CREATE TABLE policy_activation_operations (\n    operation_id TEXT PRIMARY KEY,\n    requested_by_human_id TEXT NOT NULL,\n    correlation_id TEXT NOT NULL,\n    candidate_revision_id TEXT NOT NULL,\n    prior_known_good_revision_id TEXT,\n    state TEXT NOT NULL CHECK (state IN ('pending','validating','switching','restarting','verifying','active','rolling_back','rolled_back','uncertain','failed')),\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    reason_code TEXT NOT NULL DEFAULT '',\n    observed_filesystem_revision TEXT,\n    observed_opa_revision TEXT,\n    evidence_ref TEXT,\n    FOREIGN KEY(requested_by_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(candidate_revision_id) REFERENCES policy_revisions(revision_id),\n    FOREIGN KEY(prior_known_good_revision_id) REFERENCES policy_revisions(revision_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "action_id = 'device.remove'",
+          "target_type = 'device'",
+          "required_assurance = 'policy.approval.device.remove'",
+          "status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "approval_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "originating_decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "correlation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "action_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "initiating_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "initiating_role",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "required_approver_roles_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "required_assurance",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "approved_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "approved_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "rejected_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "rejected_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "cancelled_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "cancelled_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "consumed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "evidence_ref",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "approved_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "initiating_human_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "initiating_human_id",
+              "action_id",
+              "target_id",
+              "policy_revision",
+              "status"
+            ],
+            "name": "idx_policy_approvals_scope",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "status",
+              "expires_at",
+              "created_at"
+            ],
+            "name": "idx_policy_approvals_pending",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "originating_decision_id"
+            ],
+            "name": "sqlite_autoindex_policy_approvals_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "approval_id"
+            ],
+            "name": "sqlite_autoindex_policy_approvals_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        ],
+        "name": "policy_approvals",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_ref"
+        ],
+        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK (action_id = 'device.remove'),\n    target_type TEXT NOT NULL CHECK (target_type = 'device'),\n    target_id TEXT NOT NULL,\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL CHECK (required_assurance = 'policy.approval.device.remove'),\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '', evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "kind IN ('approval','exception'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "event_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "occurred_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "kind",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "subject_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "event_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "summary",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "correlation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "kind",
+              "subject_id",
+              "event_id"
+            ],
+            "name": "idx_policy_continuation_events_subject",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        ],
+        "name": "policy_continuation_events",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE policy_continuation_events (\n    event_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    occurred_at TEXT NOT NULL,\n    kind TEXT NOT NULL CHECK (kind IN ('approval','exception')),\n    subject_id TEXT NOT NULL,\n    actor_human_id TEXT,\n    event_type TEXT NOT NULL,\n    reason_code TEXT NOT NULL,\n    summary TEXT NOT NULL,\n    correlation_id TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
         "checks": [],
         "classification": "restricted operational metadata",
         "columns": [
@@ -5371,6 +6113,424 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE policy_decisions (\n    decision_row_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    occurred_at TEXT NOT NULL,\n    decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    actor_type TEXT NOT NULL,\n    actor_id TEXT NOT NULL,\n    action_id TEXT NOT NULL,\n    target_type TEXT NOT NULL,\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL,\n    allow INTEGER NOT NULL,\n    reason_code TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    evaluation_ms REAL NOT NULL DEFAULT 0\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "validation_status IN ('pending','valid','invalid','corrupt'",
+          "lifecycle_status IN ('draft','validated','active','failed','superseded'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revision_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "parent_revision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "template_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "template_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "canonical_parameters_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "manifest_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "content_hash",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_by_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "validation_status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "validated_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "validation_reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "lifecycle_status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "activated_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "change_summary",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "created_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "parent_revision_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_revisions",
+            "sequence": 0,
+            "to": "revision_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "lifecycle_status",
+              "created_at"
+            ],
+            "name": "idx_policy_revisions_lifecycle",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "content_hash"
+            ],
+            "name": "sqlite_autoindex_policy_revisions_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "revision_id"
+            ],
+            "name": "sqlite_autoindex_policy_revisions_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql"
+        ],
+        "name": "policy_revisions",
+        "projection_owner": "control_plane",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "content_hash"
+        ],
+        "sql": "CREATE TABLE policy_revisions (\n    revision_id TEXT PRIMARY KEY,\n    parent_revision_id TEXT,\n    template_id TEXT NOT NULL,\n    template_version TEXT NOT NULL,\n    canonical_parameters_json TEXT NOT NULL,\n    manifest_json TEXT NOT NULL,\n    content_hash TEXT NOT NULL UNIQUE,\n    created_by_human_id TEXT NOT NULL,\n    created_at TEXT NOT NULL,\n    validation_status TEXT NOT NULL CHECK (validation_status IN ('pending','valid','invalid','corrupt')),\n    validated_at TEXT,\n    validation_reason_code TEXT NOT NULL DEFAULT '',\n    lifecycle_status TEXT NOT NULL CHECK (lifecycle_status IN ('draft','validated','active','failed','superseded')),\n    activated_at TEXT,\n    change_summary TEXT NOT NULL,\n    FOREIGN KEY(parent_revision_id) REFERENCES policy_revisions(revision_id),\n    FOREIGN KEY(created_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "state_id = 1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "state_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "active_revision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "known_good_revision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_by_operation_id",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "known_good_revision_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_revisions",
+            "sequence": 0,
+            "to": "revision_id"
+          },
+          {
+            "from": "active_revision_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_revisions",
+            "sequence": 0,
+            "to": "revision_id"
+          }
+        ],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql"
+        ],
+        "name": "policy_runtime_state",
+        "projection_owner": "control_plane",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE policy_runtime_state (\n    state_id INTEGER PRIMARY KEY CHECK (state_id = 1),\n    active_revision_id TEXT,\n    known_good_revision_id TEXT,\n    updated_at TEXT NOT NULL,\n    updated_by_operation_id TEXT,\n    FOREIGN KEY(active_revision_id) REFERENCES policy_revisions(revision_id),\n    FOREIGN KEY(known_good_revision_id) REFERENCES policy_revisions(revision_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "action_id = 'catalog.install'",
+          "status IN ('active','revoked','expired','consumed'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "exception_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "action_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "app_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "device_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "reason",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_by_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "created_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "human_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "human_id",
+              "action_id",
+              "app_id",
+              "device_id",
+              "policy_revision",
+              "status",
+              "expires_at"
+            ],
+            "name": "idx_policy_exceptions_scope",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "exception_id"
+            ],
+            "name": "sqlite_autoindex_policy_temporary_exceptions_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        ],
+        "name": "policy_temporary_exceptions",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE policy_temporary_exceptions (\n    exception_id TEXT PRIMARY KEY,\n    action_id TEXT NOT NULL CHECK (action_id = 'catalog.install'),\n    app_id TEXT NOT NULL,\n    device_id TEXT NOT NULL,\n    human_id TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    reason TEXT NOT NULL,\n    created_by_human_id TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('active','revoked','expired','consumed')),\n    created_at TEXT NOT NULL, expires_at TEXT NOT NULL,\n    revoked_at TEXT, revoked_by_human_id TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(created_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -9075,7 +10235,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "de26fb43c437b38093828cfc9ea0cc11f314193b72dd2d0aa290153acadad234",
+    "aggregate_fingerprint": "870c1b7a6f33a1ae622ae280172363366194f34d5b3853296ba86c32bd2cdb1d",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -9085,7 +10245,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "9f154d902dce85deaf4b3d9baf121a16bcf75d8d785a42a9e46c309c21e56aa3",
+      "contracts/metadata/documentation-platform.json": "154c717868a1e467cc6ca9f7e1ae18d458319c4dfbd0f270cffe50fca8cf03ed",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -9111,7 +10271,10 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql": "34e9e8fea33001d342bf9263e960a45098cb85a60d841d1fc8c726585088f499",
-      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql": "4bd3777a3ddc9a6e5097d3e63ea393edd17e84f276f0007997ae0a4d9d75801d",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
+      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
     },
     "validation_state": "generated"
   }

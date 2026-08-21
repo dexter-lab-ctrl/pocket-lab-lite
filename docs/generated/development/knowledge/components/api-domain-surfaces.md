@@ -93,7 +93,7 @@ Exposes domain-specific read and command endpoints while preserving backend-owne
 
 - depends_on: `FastAPI /api/lite/*`
 - depends_on: `OPA Safety Rules policy engine`
-- uses: `Safety Rules authorization decision`
+- uses: `Typed Safety Rules authorization, lifecycle, simulation, and continuations`
 
 ## Release history
 

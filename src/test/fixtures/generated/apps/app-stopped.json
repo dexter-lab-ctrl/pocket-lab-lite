@@ -14,7 +14,7 @@
     "scenario": "app-stopped",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "64d525b896f737a4066b3b800d71939bd434981b5338ceb370fce31aacd71cdd",
+    "source_fingerprint": "905c15d061b3cc0581bd9d22270d4dee2d3a02672edd6c4962cf88cd6145c032",
     "validation_status": "generated"
   }
 }

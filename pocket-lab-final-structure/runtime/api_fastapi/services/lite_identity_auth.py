@@ -724,6 +724,14 @@ def identity_projection(auth_context: dict[str, Any] | None = None) -> dict[str,
             "assurance": session_context.get("assurance") or [],
         }
     active_passkeys = [item for item in passkeys if item.get("active")] if authenticated else []
+    try:
+        from . import lite_enterprise_identity
+
+        enterprise = lite_enterprise_identity.enterprise_projection(auth_context)
+    except Exception:
+        # Identity remains usable while an additive Enterprise migration is
+        # rolling out; Enterprise routes themselves continue to fail closed.
+        enterprise = {"enabled": False, "current_membership": None, "roles": [], "updated_at": None}
     return {
         "status": "ready" if owner else "setup_required",
         "summary": "Owner access is protected by server-side sessions." if owner else "Create the local Pocket Lab owner before protected changes can run.",
@@ -747,6 +755,7 @@ def identity_projection(auth_context: dict[str, Any] | None = None) -> dict[str,
         "recovery": recovery,
         "recent_activity": activity,
         "sign_in_methods": {"password": password_configured or owner is None, "passkey": bool(active_passkeys) if authenticated else passkey_available, "oidc": False},
+        "enterprise": enterprise,
         "session_expiry_mode": "fixed",
         "updated_at": _iso(),
     }
