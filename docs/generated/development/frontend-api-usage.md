@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: fe2804c842ae22cff0c69057349d0b6d5e1de9f29e7fdaaf8159a9629152d127
+source_fingerprint: 5f6d2620713d058512e82ad7095cdaad3eccdfab85b1c0b212684eee8eed1b0b
 schema_revision: 1
 validation_status: generated
 ---
@@ -35,12 +35,24 @@ validation_status: generated
 | src/lite/LiteIdentity.jsx | liteApi.identity | GET | `/api/lite/identity` | query | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.loginIdentity | POST | `/api/lite/identity/login` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.logoutIdentity | POST | `/api/lite/identity/logout` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.consumeOwnerClaim | POST | `/api/lite/identity/owner-claim/consume` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.ownerClaimPasskeyOptions | POST | `/api/lite/identity/owner-claim/passkey/options` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.verifyOwnerClaimPasskey | POST | `/api/lite/identity/owner-claim/passkey/verify` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.ownerClaimStatus | GET | `/api/lite/identity/owner-claim/status` | query | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.passkeyLoginOptions | POST | `/api/lite/identity/passkeys/login/options` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyLogin | POST | `/api/lite/identity/passkeys/login/verify` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.passkeyRegistrationOptions | POST | `/api/lite/identity/passkeys/registration/options` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyRegistration | POST | `/api/lite/identity/passkeys/registration/verify` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.revokeIdentityPasskey | GET | `/api/lite/identity/passkeys/{param}` | query | no | dynamic |
+| src/lite/LiteIdentity.jsx | liteApi.renameIdentityPasskey | PUT | `/api/lite/identity/passkeys/{param}` | mutation | no | dynamic |
 | src/lite/LiteIdentity.jsx | liteApi.changeIdentityPassword | POST | `/api/lite/identity/password` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.recoverIdentity | POST | `/api/lite/identity/recover` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.regenerateIdentityRecovery | POST | `/api/lite/identity/recovery/regenerate` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.revokeOtherIdentitySessions | POST | `/api/lite/identity/sessions/revoke-others` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.revokeIdentitySession | GET | `/api/lite/identity/sessions/{param}` | query | no | dynamic |
 | src/lite/LiteIdentity.jsx | liteApi.setupIdentity | POST | `/api/lite/identity/setup` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.previewAppRestore | POST | `/api/lite/apps/{param}/restore/preview` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
@@ -59,6 +71,7 @@ validation_status: generated
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.checkRelease | POST | `/api/lite/release/check` | mutation | no | static |
 | src/lite/LiteRevisionSyncBridge.jsx | liteApi.domainRevisions | GET | `/api/lite/revisions` | query | no | static |
 | src/lite/LiteRules.jsx | liteApi.policy | GET | `/api/lite/policy` | query | no | static |
+| src/lite/LiteRules.jsx | liteApi.policyDecision | GET | `/api/lite/policy/decisions/{param}` | query | no | dynamic |
 | src/lite/LiteSecurity.jsx | liteApi.checkSecurityApp | POST | `/api/lite/security/apps/{param}/check` | mutation | no | dynamic |
 | src/lite/LiteSecurity.jsx | liteApi.runSecurityScan | POST | `/api/lite/security/check` | mutation | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.securityEvidenceSummary | GET | `/api/lite/security/evidence/{param}/summary` | query | no | dynamic |
@@ -147,6 +160,22 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/security/scan` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/security/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/identity` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/identity/owner-claim/consume` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/owner-claim/passkey/options` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/owner-claim/passkey/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/identity/owner-claim/status` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/:credentialId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | PUT | `/api/lite/identity/passkeys/:credentialId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/login/options` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/login/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/registration/options` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/registration/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/options` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/policy` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/policy/templates` | mock | yes | static |
 
 ## Unsupported frontend route references
 
@@ -174,8 +203,10 @@ validation_status: generated
 - `/api/lite/fleet/health-summary`
 - `/api/lite/fleet/invites/latest`
 - `/api/lite/fleet/invites/{invite_id}/revoke`
+- `/api/lite/identity/owner-claim`
 - `/api/lite/identity/rotate`
 - `/api/lite/policy/apply`
+- `/api/lite/policy/templates`
 - `/api/lite/recovery`
 - `/api/lite/recovery/apps`
 - `/api/lite/recovery/apps/{app_id}`

@@ -102,6 +102,33 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:auth_session_assurance",
+      "indexes": [
+        "idx_auth_session_assurance_current",
+        "sqlite_autoindex_auth_session_assurance_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "auth_session_assurance",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:auth_sessions",
       "indexes": [
         "idx_auth_sessions_human_active",
@@ -109,7 +136,8 @@
         "sqlite_autoindex_auth_sessions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "name": "auth_sessions",
       "owner": "not a prepared projection",
@@ -121,7 +149,8 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -736,7 +765,8 @@
         "sqlite_autoindex_human_identities_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -745,7 +775,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -832,6 +863,36 @@
     {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_claims",
+      "indexes": [
+        "idx_owner_claims_active",
+        "sqlite_autoindex_owner_claims_3",
+        "sqlite_autoindex_owner_claims_2",
+        "sqlite_autoindex_owner_claims_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "owner_claims",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "authority_hash",
+        "claim_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived prepared state persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "prepared_state",
       "id": "table:phase3b_current_state",
@@ -898,6 +959,32 @@
       "writer": "prepared state projection services"
     },
     {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:policy_decision_details",
+      "indexes": [
+        "sqlite_autoindex_policy_decision_details_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "policy_decision_details",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_ref"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "internal operational metadata",
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -909,7 +996,8 @@
         "sqlite_autoindex_policy_decisions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "name": "policy_decisions",
       "owner": "not a prepared projection",
@@ -918,7 +1006,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1465,6 +1554,86 @@
     {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:webauthn_challenges",
+      "indexes": [
+        "idx_webauthn_challenges_expiry",
+        "sqlite_autoindex_webauthn_challenges_2",
+        "sqlite_autoindex_webauthn_challenges_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "webauthn_challenges",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "challenge_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:webauthn_credentials",
+      "indexes": [
+        "idx_webauthn_credentials_human_active",
+        "sqlite_autoindex_webauthn_credentials_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "webauthn_credentials",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:webauthn_users",
+      "indexes": [
+        "sqlite_autoindex_webauthn_users_2",
+        "sqlite_autoindex_webauthn_users_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "webauthn_users",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived workflow persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "workflow",
       "id": "table:workflow_command_state",
@@ -1550,6 +1719,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
+    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
   }
 }

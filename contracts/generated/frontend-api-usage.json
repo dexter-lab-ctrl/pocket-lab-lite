@@ -191,6 +191,146 @@
         ],
         "method": "POST",
         "mocked": false,
+        "owner": "liteApi.consumeOwnerClaim",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/consume",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.ownerClaimPasskeyOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/passkey/options",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyOwnerClaimPasskey",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/passkey/verify",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.ownerClaimStatus",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/status",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.passkeyLoginOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/login/options",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyPasskeyLogin",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/login/verify",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.passkeyRegistrationOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/registration/options",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyPasskeyRegistration",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/registration/verify",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.revokeIdentityPasskey",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/{param}",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "PUT",
+        "mocked": false,
+        "owner": "liteApi.renameIdentityPasskey",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/{param}",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
         "owner": "liteApi.changeIdentityPassword",
         "resolved": true,
         "route": "/api/lite/identity/password",
@@ -264,6 +404,34 @@
         "owner": "liteApi.setupIdentity",
         "resolved": true,
         "route": "/api/lite/identity/setup",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.passkeyStepUpOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/options",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyPasskeyStepUp",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/verify",
         "source_module": "src/lite/LiteIdentity.jsx",
         "usage": "mutation"
       },
@@ -516,6 +684,20 @@
         "owner": "liteApi.policy",
         "resolved": true,
         "route": "/api/lite/policy",
+        "source_module": "src/lite/LiteRules.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteRules.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.policyDecision",
+        "resolved": true,
+        "route": "/api/lite/policy/decisions/{param}",
         "source_module": "src/lite/LiteRules.jsx",
         "usage": "query"
       },
@@ -1689,6 +1871,214 @@
         "route": "/api/lite/status",
         "source_module": "src/mocks/handlers.js",
         "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/consume",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/passkey/options",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/passkey/verify",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/owner-claim/status",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/:credentialId",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "PUT",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/:credentialId",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/login/options",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/login/verify",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/registration/options",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/passkeys/registration/verify",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/options",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/verify",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/policy",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/policy/decisions/:decisionId",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "DELETE",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/policy/templates",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
       }
     ],
     "unsupported_frontend_routes": [],
@@ -1713,8 +2103,10 @@
       "/api/lite/fleet/health-summary",
       "/api/lite/fleet/invites/latest",
       "/api/lite/fleet/invites/{invite_id}/revoke",
+      "/api/lite/identity/owner-claim",
       "/api/lite/identity/rotate",
       "/api/lite/policy/apply",
+      "/api/lite/policy/templates",
       "/api/lite/recovery",
       "/api/lite/recovery/apps",
       "/api/lite/recovery/apps/{app_id}",
@@ -1757,7 +2149,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "142beeceb5979bbc3bf214094e0df28a73349c7bdf697b16472066347239ef61",
+    "aggregate_fingerprint": "088a86ffe864709675d9681467d51fa992213fa2750b656a0b44bfbb87bd2d33",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -1767,10 +2159,10 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
-      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
+      "contracts/generated/lite-openapi.json": "05207a418ba2d44e02aeb9e3ec8f2246a1c7934f8aa68f6ee5e84438f0b94f55",
+      "contracts/metadata/documentation-platform.json": "9f154d902dce85deaf4b3d9baf121a16bcf75d8d785a42a9e46c309c21e56aa3",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
-      "src/lib/liteApi.js": "8031c51e4c2284928a5e0c40321087ce35c5348535e2ee34487a27016faad05c",
+      "src/lib/liteApi.js": "d9520cadbc3ecf522d72c2e7ba5531b51404bafc7ba4db4b68e405df492e08bd",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
       "src/lite/LiteApp.jsx": "3979db90fbd79f2222c2579c9261808270eba437a8338328f49ca679ec08a832",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
@@ -1779,7 +2171,7 @@
       "src/lite/LiteDevices.stories.jsx": "87895ccbb3ee837f93e642bab7cd03de09d8b4451f978871c0c2ae5a159c4256",
       "src/lite/LiteHome.jsx": "85add6143e4cd13a2836ed16b706a97a2aa10a5d19489aa328a0d10140d05955",
       "src/lite/LiteHome.stories.jsx": "ead9e092e4eb37399202682d42ec165f7af473d22d684ea3e75f2c55a1910062",
-      "src/lite/LiteIdentity.jsx": "d1f8ce8c01eef0982603b48d7d589b9541ef510e6fc70d56b47e8f0a121814ab",
+      "src/lite/LiteIdentity.jsx": "c11b65f55a4da032fa1520a4c7d93a21558823ddf106ad0520a7011c5c922cf3",
       "src/lite/LiteIdentity.stories.jsx": "a5c53468c8e8da6ae2c1f4365803c0eb5a7a30181c28bd7620eb5dbc6e220236",
       "src/lite/LiteMotion.jsx": "8dc0089c7a175701b33e96afac566efbde31c6eda1202ef5ed0f00ff968e72ba",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
@@ -1789,7 +2181,7 @@
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
       "src/lite/LiteRevisionSyncBridge.jsx": "68176390944b13955111b702c03f8e06d399628f88ba6174909eddda99f9398e",
-      "src/lite/LiteRules.jsx": "60a6c9f8804f160b2938a73b93bd4ae59e4f62d657b0412df3c5b388ade94dc3",
+      "src/lite/LiteRules.jsx": "a4c856c779a3c4fa3ccfc3827e1c25ceedf00adf7a80b98eabedee3dbdfa882b",
       "src/lite/LiteRules.stories.jsx": "e0c1670434e62a0ef2d323a550e680e0e7fc9fda721679baced5600b811426e1",
       "src/lite/LiteScreenBoundary.jsx": "933ae31bc9100302cbce4a037093a2fc876338571d6c104941b4826de365bc95",
       "src/lite/LiteSecurity.jsx": "7695675d564398f9f7aad5296b8deaaa8b5fcecf1453489741d6ec79746b522b",

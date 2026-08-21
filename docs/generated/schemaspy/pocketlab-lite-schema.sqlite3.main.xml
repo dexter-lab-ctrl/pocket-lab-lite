@@ -118,9 +118,36 @@
             <column ascending="true" name="evidence_ref"/>
          </index>
       </table>
+      <table name="auth_session_assurance" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="assurance_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="session_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="session_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_sessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="credential_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="credential_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_credentials"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="satisfied_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="assurance_id" sequenceNumberInPK="1"/>
+         <index name="auth_session_assurance_s_pk" unique="true">
+            <column ascending="true" name="assurance_id"/>
+         </index>
+         <index name="idx_auth_session_assurance_current" unique="false">
+            <column ascending="true" name="session_id"/>
+            <column ascending="true" name="purpose"/>
+            <column ascending="true" name="expires_at"/>
+         </index>
+         <index name="sqlite_autoindex_auth_session_assurance_1" unique="true">
+            <column ascending="true" name="assurance_id"/>
+         </index>
+      </table>
       <table name="auth_sessions" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="session_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_session_assurance"/>
             <child column="session_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="identity_audit_events"/>
+            <child column="session_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_challenges"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="token_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="csrf_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -881,8 +908,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_sessions"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_credentials"/>
-            <child column="human_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="identity_audit_events"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="recovery_code_batches"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_challenges"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_credentials"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="username_normalized" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -907,9 +936,7 @@
       <table name="identity_audit_events" remarks="" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
-            <parent column="human_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
-         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="session_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="auth_sessions"/>
          </column>
@@ -990,6 +1017,40 @@
             <column ascending="true" name="event_id"/>
          </index>
       </table>
+      <table name="owner_claims" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="claim_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="owner_claim_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_challenges"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="claim_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="installation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="rp_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="origin" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="webauthn_user_handle" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="authority_hash" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="authority_expires_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="claim_id" sequenceNumberInPK="1"/>
+         <index name="owner_claims_s_pk" unique="true">
+            <column ascending="true" name="claim_id"/>
+         </index>
+         <index name="idx_owner_claims_active" unique="false">
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="consumed_at"/>
+            <column ascending="true" name="completed_at"/>
+         </index>
+         <index name="sqlite_autoindex_owner_claims_1" unique="true">
+            <column ascending="true" name="claim_id"/>
+         </index>
+         <index name="sqlite_autoindex_owner_claims_2" unique="true">
+            <column ascending="true" name="claim_hash"/>
+         </index>
+         <index name="sqlite_autoindex_owner_claims_3" unique="true">
+            <column ascending="true" name="authority_hash"/>
+         </index>
+      </table>
       <table name="phase3b_current_state" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="domain" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="1" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -1058,10 +1119,26 @@
             <column ascending="true" name="projection_revision"/>
          </index>
       </table>
+      <table name="policy_decision_details" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="" implied="false" onDeleteCascade="true" table="policy_decisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="1" name="constraints_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="evidence_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="decision_id" sequenceNumberInPK="1"/>
+         <index name="policy_decision_details_s_pk" unique="true">
+            <column ascending="true" name="decision_id"/>
+         </index>
+         <index name="sqlite_autoindex_policy_decision_details_1" unique="true">
+            <column ascending="true" name="decision_id"/>
+         </index>
+      </table>
       <table name="policy_decisions" remarks="" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="decision_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="decision_id" foreignKey="" implied="false" onDeleteCascade="true" table="policy_decision_details"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="actor_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="actor_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -1694,6 +1771,86 @@
          </index>
          <index name="sqlite_autoindex_security_store_metadata_1" unique="true">
             <column ascending="true" name="metadata_key"/>
+         </index>
+      </table>
+      <table name="webauthn_challenges" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="challenge_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="challenge_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="session_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_sessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="owner_claim_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="claim_id" foreignKey="" implied="false" onDeleteCascade="true" table="owner_claims"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="rp_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="origin" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="challenge_id" sequenceNumberInPK="1"/>
+         <index name="webauthn_challenges_s_pk" unique="true">
+            <column ascending="true" name="challenge_id"/>
+         </index>
+         <index name="idx_webauthn_challenges_expiry" unique="false">
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="consumed_at"/>
+         </index>
+         <index name="sqlite_autoindex_webauthn_challenges_1" unique="true">
+            <column ascending="true" name="challenge_id"/>
+         </index>
+         <index name="sqlite_autoindex_webauthn_challenges_2" unique="true">
+            <column ascending="true" name="challenge_hash"/>
+         </index>
+      </table>
+      <table name="webauthn_credentials" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="credential_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="credential_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_session_assurance"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="friendly_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="public_key_x" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="public_key_y" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="algorithm" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="sign_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="7" name="transports_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="authenticator_attachment" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="last_used_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="credential_id" sequenceNumberInPK="1"/>
+         <index name="webauthn_credentials_s_pk" unique="true">
+            <column ascending="true" name="credential_id"/>
+         </index>
+         <index name="idx_webauthn_credentials_human_active" unique="false">
+            <column ascending="true" name="human_id"/>
+            <column ascending="true" name="revoked_at"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="sqlite_autoindex_webauthn_credentials_1" unique="true">
+            <column ascending="true" name="credential_id"/>
+         </index>
+      </table>
+      <table name="webauthn_users" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="user_handle" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="human_id" sequenceNumberInPK="1"/>
+         <index name="webauthn_users_s_pk" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+         <index name="sqlite_autoindex_webauthn_users_1" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+         <index name="sqlite_autoindex_webauthn_users_2" unique="true">
+            <column ascending="true" name="user_handle"/>
          </index>
       </table>
       <table name="workflow_command_state" remarks="" type="TABLE">

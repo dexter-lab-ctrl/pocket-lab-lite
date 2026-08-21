@@ -394,6 +394,19 @@ def authenticate_session_token(token: str) -> dict[str, Any] | None:
     session = _session_row_from_token(token)
     if not session:
         return None
+    assurance: list[dict[str, Any]] = []
+    try:
+        with connection() as conn:
+            rows = conn.execute(
+                """SELECT purpose,credential_id,satisfied_at,expires_at
+                   FROM auth_session_assurance
+                   WHERE session_id=? AND expires_at>? ORDER BY satisfied_at DESC LIMIT 12""",
+                (session["session_id"], _iso()),
+            ).fetchall()
+            assurance = [dict(row) for row in rows]
+    except sqlite3.OperationalError as exc:
+        if "no such table" not in str(exc).lower():
+            raise
     return {
         "actor": {
             "identity_id": session["human_id"],
@@ -407,6 +420,8 @@ def authenticate_session_token(token: str) -> dict[str, Any] | None:
             "csrf_hash": session["csrf_hash"],
             "idle_expires_at": session["idle_expires_at"],
             "absolute_expires_at": session["absolute_expires_at"],
+            "expiry_mode": "fixed",
+            "assurance": assurance,
         },
     }
 
@@ -573,7 +588,10 @@ def recover_with_code(*, username: str, recovery_code: str, new_password: str, s
 def identity_projection(auth_context: dict[str, Any] | None = None) -> dict[str, Any]:
     try:
         with connection() as conn:
-            owner_row = conn.execute("SELECT human_id,username_normalized,display_name,status,auth_version,created_at,updated_at,last_authenticated_at FROM human_identities ORDER BY created_at LIMIT 1").fetchone()
+            owner_row = conn.execute(
+                "SELECT human_id,username_normalized,display_name,status,auth_version,created_at,updated_at,last_authenticated_at "
+                "FROM human_identities ORDER BY created_at LIMIT 1"
+            ).fetchone()
     except sqlite3.OperationalError as exc:
         if "no such table" not in str(exc).lower():
             raise
@@ -585,50 +603,127 @@ def identity_projection(auth_context: dict[str, Any] | None = None) -> dict[str,
             "owner": None,
             "session": None,
             "sessions": [],
+            "passkeys": [],
             "recovery": {"configured": False, "remaining": 0, "generation": 0},
             "recent_activity": [],
             "sign_in_methods": {"password": True, "passkey": False, "oidc": False},
+            "session_expiry_mode": "fixed",
             "updated_at": _iso(),
         }
-    with connection() as conn:
-        owner = dict(owner_row) if owner_row else None
-        sessions: list[dict[str, Any]] = []
-        recovery = {"configured": False, "remaining": 0, "generation": 0}
-        activity: list[dict[str, Any]] = []
-        actor_id = str(((auth_context or {}).get("actor") or {}).get("identity_id") or "")
-        current_session_id = str(((auth_context or {}).get("session") or {}).get("session_id") or "")
-        if owner and actor_id == owner["human_id"]:
-            now = _now()
-            for row in conn.execute("SELECT session_id,auth_method,created_at,last_seen_at,idle_expires_at,absolute_expires_at,revoked_at FROM auth_sessions WHERE human_id=? ORDER BY created_at DESC LIMIT 20", (owner["human_id"],)):
-                item = dict(row)
-                idle = _parse_iso(item.get("idle_expires_at"))
-                absolute = _parse_iso(item.get("absolute_expires_at"))
-                active = not item.get("revoked_at") and idle is not None and absolute is not None and now < idle and now < absolute
-                sessions.append({
-                    "session_id": item["session_id"],
-                    "auth_method": item["auth_method"],
-                    "created_at": item["created_at"],
-                    "last_seen_at": item["last_seen_at"],
-                    "idle_expires_at": item["idle_expires_at"],
-                    "absolute_expires_at": item["absolute_expires_at"],
-                    "active": active,
-                    "current": item["session_id"] == current_session_id,
-                })
-            batch = conn.execute("SELECT batch_id,generation FROM recovery_code_batches WHERE human_id=? AND invalidated_at IS NULL ORDER BY generation DESC LIMIT 1", (owner["human_id"],)).fetchone()
-            if batch:
-                remaining_row = conn.execute("SELECT COUNT(*) AS count FROM recovery_codes WHERE batch_id=? AND consumed_at IS NULL", (batch["batch_id"],)).fetchone()
-                recovery = {"configured": True, "remaining": int(remaining_row["count"] if remaining_row else 0), "generation": int(batch["generation"])}
-            activity = [dict(row) for row in conn.execute("SELECT occurred_at,event_type,reason_code,summary,correlation_id FROM identity_audit_events WHERE human_id=? ORDER BY event_id DESC LIMIT 12", (owner["human_id"],))]
+
+    owner = dict(owner_row) if owner_row else None
+    sessions: list[dict[str, Any]] = []
+    passkeys: list[dict[str, Any]] = []
+    recovery = {"configured": False, "remaining": 0, "generation": 0}
+    activity: list[dict[str, Any]] = []
+    password_configured = False
+    passkey_available = False
+    actor_id = str(((auth_context or {}).get("actor") or {}).get("identity_id") or "")
+    current_session_id = str(((auth_context or {}).get("session") or {}).get("session_id") or "")
+
+    if owner:
+        try:
+            with connection() as conn:
+                password_configured = conn.execute(
+                    "SELECT 1 FROM human_credentials WHERE human_id=? AND kind='password' AND disabled_at IS NULL LIMIT 1",
+                    (owner["human_id"],),
+                ).fetchone() is not None
+                try:
+                    passkey_available = conn.execute(
+                        "SELECT 1 FROM webauthn_credentials WHERE human_id=? AND revoked_at IS NULL LIMIT 1",
+                        (owner["human_id"],),
+                    ).fetchone() is not None
+                except sqlite3.OperationalError as exc:
+                    if "no such table" not in str(exc).lower():
+                        raise
+                if actor_id == owner["human_id"]:
+                    now = _now()
+                    for row in conn.execute(
+                        "SELECT session_id,auth_method,created_at,last_seen_at,idle_expires_at,absolute_expires_at,revoked_at "
+                        "FROM auth_sessions WHERE human_id=? ORDER BY created_at DESC LIMIT 20",
+                        (owner["human_id"],),
+                    ):
+                        item = dict(row)
+                        idle = _parse_iso(item.get("idle_expires_at"))
+                        absolute = _parse_iso(item.get("absolute_expires_at"))
+                        active = not item.get("revoked_at") and idle is not None and absolute is not None and now < idle and now < absolute
+                        assurances = []
+                        try:
+                            assurances = [dict(value) for value in conn.execute(
+                                "SELECT purpose,credential_id,satisfied_at,expires_at FROM auth_session_assurance "
+                                "WHERE session_id=? AND expires_at>? ORDER BY satisfied_at DESC LIMIT 8",
+                                (item["session_id"], _iso(now)),
+                            )]
+                        except sqlite3.OperationalError as exc:
+                            if "no such table" not in str(exc).lower():
+                                raise
+                        sessions.append({
+                            "session_id": item["session_id"],
+                            "auth_method": item["auth_method"],
+                            "created_at": item["created_at"],
+                            "last_seen_at": item["last_seen_at"],
+                            "idle_expires_at": item["idle_expires_at"],
+                            "absolute_expires_at": item["absolute_expires_at"],
+                            "expiry_mode": "fixed",
+                            "active": active,
+                            "current": item["session_id"] == current_session_id,
+                            "assurance": assurances,
+                        })
+                    batch = conn.execute(
+                        "SELECT batch_id,generation FROM recovery_code_batches WHERE human_id=? AND invalidated_at IS NULL ORDER BY generation DESC LIMIT 1",
+                        (owner["human_id"],),
+                    ).fetchone()
+                    if batch:
+                        remaining_row = conn.execute(
+                            "SELECT COUNT(*) AS count FROM recovery_codes WHERE batch_id=? AND consumed_at IS NULL",
+                            (batch["batch_id"],),
+                        ).fetchone()
+                        recovery = {
+                            "configured": True,
+                            "remaining": int(remaining_row["count"] if remaining_row else 0),
+                            "generation": int(batch["generation"]),
+                        }
+                    activity = [dict(row) for row in conn.execute(
+                        "SELECT occurred_at,event_type,reason_code,summary,correlation_id FROM identity_audit_events "
+                        "WHERE human_id=? ORDER BY event_id DESC LIMIT 20",
+                        (owner["human_id"],),
+                    )]
+                    try:
+                        credential_rows = conn.execute(
+                            "SELECT credential_id,friendly_name,transports_json,authenticator_attachment,created_at,last_used_at,revoked_at "
+                            "FROM webauthn_credentials WHERE human_id=? ORDER BY created_at DESC LIMIT 20",
+                            (owner["human_id"],),
+                        ).fetchall()
+                        for row in credential_rows:
+                            item = dict(row)
+                            try:
+                                transports = json.loads(item.pop("transports_json") or "[]")
+                            except Exception:
+                                transports = []
+                            item["transports"] = transports
+                            item["active"] = not bool(item.get("revoked_at"))
+                            passkeys.append(item)
+                    except sqlite3.OperationalError as exc:
+                        if "no such table" not in str(exc).lower():
+                            raise
+        except sqlite3.OperationalError as exc:
+            if "no such table" not in str(exc).lower():
+                raise
+
     authenticated = bool(owner and auth_context and ((auth_context.get("actor") or {}).get("identity_id") == owner["human_id"]))
     session_payload = None
     if authenticated:
+        session_context = (auth_context or {}).get("session") or {}
         session_payload = {
-            "session_id": ((auth_context or {}).get("session") or {}).get("session_id"),
+            "session_id": session_context.get("session_id"),
             "authenticated": True,
-            "auth_method": ((auth_context or {}).get("session") or {}).get("auth_method"),
-            "idle_expires_at": ((auth_context or {}).get("session") or {}).get("idle_expires_at"),
-            "absolute_expires_at": ((auth_context or {}).get("session") or {}).get("absolute_expires_at"),
+            "auth_method": session_context.get("auth_method"),
+            "idle_expires_at": session_context.get("idle_expires_at"),
+            "absolute_expires_at": session_context.get("absolute_expires_at"),
+            "expiry_mode": "fixed",
+            "assurance": session_context.get("assurance") or [],
         }
+    active_passkeys = [item for item in passkeys if item.get("active")] if authenticated else []
     return {
         "status": "ready" if owner else "setup_required",
         "summary": "Owner access is protected by server-side sessions." if owner else "Create the local Pocket Lab owner before protected changes can run.",
@@ -641,15 +736,17 @@ def identity_projection(auth_context: dict[str, Any] | None = None) -> dict[str,
                 "display_name": owner["display_name"],
                 "status": owner["status"],
                 "last_authenticated_at": owner["last_authenticated_at"],
-                "password_algorithm": PASSWORD_ALGORITHM,
+                "password_configured": password_configured,
+                "password_algorithm": PASSWORD_ALGORITHM if password_configured else None,
             }
-            if authenticated
-            else {"configured": True, "status": owner["status"]}
+            if authenticated else {"configured": True, "status": owner["status"]}
         ),
         "session": session_payload,
         "sessions": sessions,
+        "passkeys": passkeys if authenticated else [],
         "recovery": recovery,
         "recent_activity": activity,
-        "sign_in_methods": {"password": True, "passkey": False, "oidc": False},
+        "sign_in_methods": {"password": password_configured or owner is None, "passkey": bool(active_passkeys) if authenticated else passkey_available, "oidc": False},
+        "session_expiry_mode": "fixed",
         "updated_at": _iso(),
     }

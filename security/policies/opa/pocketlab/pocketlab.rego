@@ -35,3 +35,32 @@ decision := {
 	input.target.state.revision_validated == true
 	input.target.state.protected_server_host == false
 }
+
+recent_passkey_step_up if {
+	some item in input.session.assurance
+	item.purpose == "identity.passkey.revoke"
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "passkey_step_up"],
+	"reason_code": "passkey_step_up_satisfied",
+} if {
+	input.action.id == "identity.passkey.revoke"
+	authenticated_actor
+	input.session.authenticated == true
+	recent_passkey_step_up
+	input.target.type == "passkey"
+	input.target.id != ""
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["passkey_step_up"],
+	"reason_code": "passkey_step_up_required",
+} if {
+	input.action.id == "identity.passkey.revoke"
+	authenticated_actor
+	input.session.authenticated == true
+	not recent_passkey_step_up
+}

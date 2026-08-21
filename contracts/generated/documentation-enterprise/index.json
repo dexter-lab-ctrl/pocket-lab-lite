@@ -10254,6 +10254,7 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+          "tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "tests/backend/test_lite_identity_rules_authorization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -10352,6 +10353,29 @@
       },
       {
         "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_IDENTITY_INSECURE_OWNER_CLAIM_COOKIE_NAME",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI",
           "repository tooling"
         ],
@@ -10395,6 +10419,75 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_IDENTITY_OWNER_AUTHORITY_TTL_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_IDENTITY_OWNER_CLAIM_COOKIE_NAME",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_IDENTITY_OWNER_CLAIM_TTL_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -10579,8 +10672,79 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
         "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+          "tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "tests/backend/test_lite_identity_rules_authorization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_IDENTITY_STEP_UP_TTL_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_IDENTITY_WEBAUTHN_CHALLENGE_TTL_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_INSTALLATION_ID",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -16176,7 +16340,7 @@
           ".storybook/preview.jsx",
           "src/mocks/handlers.js",
           "src/stories/pocketlabTier9MockApi.js",
-          "storybook-static/assets/preview-CJ_E1Lww.js",
+          "storybook-static/assets/preview-H4M95QXE.js",
           "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21987,6 +22151,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
           "pocket-lab-final-structure/runtime/tests/test_observability_status.py",
+          "tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "tests/backend/test_lite_identity_rules_authorization.py",
           "tests/pocket_lab_test_utils.py"
         ],
@@ -27118,7 +27283,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/main.py:99"
+          "pocket-lab-final-structure/runtime/api_fastapi/main.py:100"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -27155,7 +27320,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/main.py:171"
+          "pocket-lab-final-structure/runtime/api_fastapi/main.py:172"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -35248,8 +35413,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "c2c0a300211e91396e16d39c279c6327543ac50b",
-          "head_tree": "bc377fc7851da875b2c1b77ac97a7b931be4bfbe",
+          "head": "4b2f8ee746dfc758615ce3288f96a967601b993c",
+          "head_tree": "4376d9dd68a87bcd1093f26dabe2321dc608855e",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -37097,10 +37262,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
-        "asyncapi": "16bbfb0e3d98d7e762a6563d723242ebb69680a5876c57fc4c40ef54ae901293",
-        "documentation": "51dda1fbc9c0ef19a455ad94bec27a23ff6fd500832af7c478e8b6a5182b94d4",
-        "openapi": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
-        "operational_health": "cb8b15444f009d4dc4e362ef8c123577eeedbff6c368d97387ca71c2deb7ffdf"
+        "asyncapi": "42b04e6204ad3c6bc9e76adc4d0b5a60b45a9f1e66bee62398e2837e66962be4",
+        "documentation": "4dcdff93bfeeaec89a71b8ab85d1fbc4ee067ea47b0cd646da7b5361bc83c98b",
+        "openapi": "05207a418ba2d44e02aeb9e3ec8f2246a1c7934f8aa68f6ee5e84438f0b94f55",
+        "operational_health": "4e29f0f0914e393d9cdd8acec3db6c8247c652392863570e4a6075c9d5a675b6"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -39172,8 +39337,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "c2c0a300211e91396e16d39c279c6327543ac50b",
-        "head_tree": "bc377fc7851da875b2c1b77ac97a7b931be4bfbe",
+        "head": "4b2f8ee746dfc758615ce3288f96a967601b993c",
+        "head_tree": "4376d9dd68a87bcd1093f26dabe2321dc608855e",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -91062,5 +91227,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "2db49a41c69b3b94ce690b58fc622833039cb507aecb174dc9134331d5f42940"
+  "source_fingerprint": "ef2aa0b0d92dd29792fc92150578d9f1e84583852c0138ef9500aa84aeb1481d"
 }

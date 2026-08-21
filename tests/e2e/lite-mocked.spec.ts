@@ -39,6 +39,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toBeVisible();
     await expect(identity).toContainText('Identity & Access');
     await expect(identity).toContainText(/owner|session|recovery/i);
+    await expect(identity).toContainText('Passkeys');
+    await expect(identity).toContainText(/fixed idle and absolute expiry/i);
     await expect(identity).not.toContainText('local-admin');
 
     await page.goto('/?screen=rules');
@@ -47,6 +49,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rules).toContainText('Safety Rules');
     await expect(rules).toContainText('Open Policy Agent');
     await expect(rules).toContainText('mock-policy-revision');
+    await expect(rules).toContainText('Safe templates');
+    await expect(rules).toContainText(/Passkey confirmation/i);
     await expect(rules).not.toContainText('package pocketlab');
   });
 

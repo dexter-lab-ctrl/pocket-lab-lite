@@ -32,6 +32,7 @@ from .routers import (
     gitops,
     health,
     lite,
+    lite_identity_p1,
     observability,
     operations,
     release,
@@ -220,6 +221,7 @@ app.add_middleware(LiteSafeReadNonceMiddleware)
 for router in (
     health.router,
     lite.router,
+    lite_identity_p1.router,
     observability.router,
     telemetry.router,
     catalog.router,

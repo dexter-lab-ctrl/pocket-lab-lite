@@ -232,6 +232,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Revoke Lite Passkey",
+      "domain": "identity",
+      "id": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "method": "DELETE",
+      "name": "DELETE /api/lite/identity/passkeys/{credential_id}",
+      "operation_id": "revoke_lite_passkey_api_lite_identity_passkeys__credential_id__delete",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/{credential_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Revoke Lite Identity Session",
       "domain": "identity",
       "id": "api:delete:/api/lite/identity/sessions/{session_id}",
@@ -1172,6 +1195,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/identity",
@@ -1193,6 +1223,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Owner Claim Status",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.ownerClaimStatus",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/identity/owner-claim/status",
+      "method": "GET",
+      "name": "GET /api/lite/identity/owner-claim/status",
+      "operation_id": "owner_claim_status_api_lite_identity_owner_claim_status_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Policy",
       "domain": "rules",
       "frontend_clients": [
@@ -1208,6 +1275,13 @@
           "owner": "MSW handler",
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
           "usage": "mock"
         }
       ],
@@ -1225,6 +1299,66 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite Policy Decision",
+      "domain": "rules",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.policyDecision",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "method": "GET",
+      "name": "GET /api/lite/policy/decisions/{decision_id}",
+      "operation_id": "get_lite_policy_decision_api_lite_policy_decisions__decision_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/policy/decisions/{decision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite Policy Templates",
+      "domain": "rules",
+      "id": "api:get:/api/lite/policy/templates",
+      "method": "GET",
+      "name": "GET /api/lite/policy/templates",
+      "operation_id": "get_lite_policy_templates_api_lite_policy_templates_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/policy/templates",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
       ],
       "type": "api"
     },
@@ -3101,6 +3235,293 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Issue Lite Owner Claim",
+      "domain": "identity",
+      "id": "api:post:/api/lite/identity/owner-claim",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim",
+      "operation_id": "issue_lite_owner_claim_api_lite_identity_owner_claim_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Consume Lite Owner Claim",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.consumeOwnerClaim",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/owner-claim/consume",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim/consume",
+      "operation_id": "consume_lite_owner_claim_api_lite_identity_owner_claim_consume_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/consume",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Owner Claim Passkey Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.ownerClaimPasskeyOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim/passkey/options",
+      "operation_id": "owner_claim_passkey_options_api_lite_identity_owner_claim_passkey_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/passkey/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Owner Claim Passkey Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyOwnerClaimPasskey",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim/passkey/verify",
+      "operation_id": "owner_claim_passkey_verify_api_lite_identity_owner_claim_passkey_verify_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/passkey/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Login Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyLoginOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/login/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/login/options",
+      "operation_id": "passkey_login_options_api_lite_identity_passkeys_login_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/login/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Login Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyLogin",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/login/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/login/verify",
+      "operation_id": "passkey_login_verify_api_lite_identity_passkeys_login_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/login/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Registration Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyRegistrationOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/registration/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/registration/options",
+      "operation_id": "passkey_registration_options_api_lite_identity_passkeys_registration_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/registration/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Registration Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyRegistration",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/registration/verify",
+      "operation_id": "passkey_registration_verify_api_lite_identity_passkeys_registration_verify_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/registration/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Change Lite Identity Password",
       "domain": "identity",
       "frontend_clients": [
@@ -3314,6 +3735,84 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Step Up Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/step-up/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/step-up/options",
+      "operation_id": "passkey_step_up_options_api_lite_identity_step_up_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/step-up/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Step Up Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/step-up/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/step-up/verify",
+      "operation_id": "passkey_step_up_verify_api_lite_identity_step_up_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/step-up/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
       ],
       "type": "api"
     },
@@ -3983,6 +4482,45 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Rename Lite Passkey",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.renameIdentityPasskey",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "method": "PUT",
+      "name": "PUT /api/lite/identity/passkeys/{credential_id}",
+      "operation_id": "rename_lite_passkey_api_lite_identity_passkeys__credential_id__put",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/{credential_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
       ],
       "type": "api"
     },
@@ -10428,6 +10966,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 401,
+      "id": "reason:identity_setup_rejected",
+      "name": "identity_setup_rejected",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner claim creation could not be verified."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:identity_setup_unavailable",
+      "name": "identity_setup_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner claim creation is not enabled on this server."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is not enough safe storage for the operation.",
       "domain": "system",
       "event_mapping": [],
@@ -10665,6 +11243,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The bounded payload limit was exceeded."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested bounded Safety Rules decision record is no longer available.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:policy_decision_not_found",
+      "name": "policy_decision_not_found",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "That Safety Rules decision is no longer available."
     },
     {
       "confidence": "source-derived",
@@ -13376,7 +13974,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:99"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:100"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -13397,7 +13995,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:171"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:172"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -16592,6 +17190,33 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:auth_session_assurance",
+      "indexes": [
+        "idx_auth_session_assurance_current",
+        "sqlite_autoindex_auth_session_assurance_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "auth_session_assurance",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:auth_sessions",
       "indexes": [
         "idx_auth_sessions_human_active",
@@ -16599,7 +17224,8 @@
         "sqlite_autoindex_auth_sessions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "name": "auth_sessions",
       "owner": "not a prepared projection",
@@ -16611,7 +17237,8 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -17226,7 +17853,8 @@
         "sqlite_autoindex_human_identities_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -17235,7 +17863,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -17322,6 +17951,36 @@
     {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_claims",
+      "indexes": [
+        "idx_owner_claims_active",
+        "sqlite_autoindex_owner_claims_3",
+        "sqlite_autoindex_owner_claims_2",
+        "sqlite_autoindex_owner_claims_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "owner_claims",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "authority_hash",
+        "claim_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived prepared state persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "prepared_state",
       "id": "table:phase3b_current_state",
@@ -17388,6 +18047,32 @@
       "writer": "prepared state projection services"
     },
     {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:policy_decision_details",
+      "indexes": [
+        "sqlite_autoindex_policy_decision_details_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "policy_decision_details",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_ref"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "internal operational metadata",
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -17399,7 +18084,8 @@
         "sqlite_autoindex_policy_decisions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "name": "policy_decisions",
       "owner": "not a prepared projection",
@@ -17408,7 +18094,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -17955,6 +18642,86 @@
     {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:webauthn_challenges",
+      "indexes": [
+        "idx_webauthn_challenges_expiry",
+        "sqlite_autoindex_webauthn_challenges_2",
+        "sqlite_autoindex_webauthn_challenges_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "webauthn_challenges",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "challenge_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:webauthn_credentials",
+      "indexes": [
+        "idx_webauthn_credentials_human_active",
+        "sqlite_autoindex_webauthn_credentials_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "webauthn_credentials",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:webauthn_users",
+      "indexes": [
+        "sqlite_autoindex_webauthn_users_2",
+        "sqlite_autoindex_webauthn_users_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "name": "webauthn_users",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived workflow persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "workflow",
       "id": "table:workflow_command_state",
@@ -18410,6 +19177,16 @@
       "name": "tests/backend/test_lite_hot_path_profiler.py",
       "source_refs": [
         "tests/backend/test_lite_hot_path_profiler.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "name": "tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "source_refs": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
       ],
       "type": "test"
     },
@@ -21762,13 +22539,19 @@
       ],
       "control_plane": [
         "domain:control_plane",
+        "table:auth_session_assurance",
         "table:auth_sessions",
         "table:command_lifecycle",
         "table:human_credentials",
         "table:human_identities",
         "table:identity_audit_events",
         "table:lite_revision_events",
-        "table:policy_decisions"
+        "table:owner_claims",
+        "table:policy_decision_details",
+        "table:policy_decisions",
+        "table:webauthn_challenges",
+        "table:webauthn_credentials",
+        "table:webauthn_users"
       ],
       "database": [
         "domain:database",
@@ -21907,16 +22690,29 @@
         "limitation:home:gap-1"
       ],
       "identity": [
+        "api:delete:/api/lite/identity/passkeys/{credential_id}",
         "api:delete:/api/lite/identity/sessions/{session_id}",
         "api:get:/api/lite/identity",
+        "api:get:/api/lite/identity/owner-claim/status",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
+        "api:post:/api/lite/identity/owner-claim",
+        "api:post:/api/lite/identity/owner-claim/consume",
+        "api:post:/api/lite/identity/owner-claim/passkey/options",
+        "api:post:/api/lite/identity/owner-claim/passkey/verify",
+        "api:post:/api/lite/identity/passkeys/login/options",
+        "api:post:/api/lite/identity/passkeys/login/verify",
+        "api:post:/api/lite/identity/passkeys/registration/options",
+        "api:post:/api/lite/identity/passkeys/registration/verify",
         "api:post:/api/lite/identity/password",
         "api:post:/api/lite/identity/recover",
         "api:post:/api/lite/identity/recovery/regenerate",
         "api:post:/api/lite/identity/rotate",
         "api:post:/api/lite/identity/sessions/revoke-others",
         "api:post:/api/lite/identity/setup",
+        "api:post:/api/lite/identity/step-up/options",
+        "api:post:/api/lite/identity/step-up/verify",
+        "api:put:/api/lite/identity/passkeys/{credential_id}",
         "domain:identity",
         "journey:change-password",
         "limitation:identity:accepted-1",
@@ -21926,6 +22722,8 @@
         "reason:authentication_required",
         "reason:csrf_required",
         "reason:human_session_required",
+        "reason:identity_setup_rejected",
+        "reason:identity_setup_unavailable",
         "reason:legacy_secret_rotation_retired",
         "reason:session_not_found",
         "ui:liteidentity"
@@ -22188,12 +22986,15 @@
       ],
       "rules": [
         "api:get:/api/lite/policy",
+        "api:get:/api/lite/policy/decisions/{decision_id}",
+        "api:get:/api/lite/policy/templates",
         "api:post:/api/lite/policy/apply",
         "domain:rules",
         "journey:rules-authorization",
         "limitation:rules:accepted-1",
         "limitation:rules:gap-1",
         "reason:generic_policy_toggle_retired",
+        "reason:policy_decision_not_found",
         "reason:policy_unavailable",
         "reason:test_bypass_explicit",
         "ui:literules"
@@ -22362,6 +23163,7 @@
         "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
         "test:tests/backend/test_lite_home_capacity_contract.py",
         "test:tests/backend/test_lite_hot_path_profiler.py",
+        "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
@@ -22610,6 +23412,7 @@
       ],
       "api": [
         "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+        "api:delete:/api/lite/identity/passkeys/{credential_id}",
         "api:delete:/api/lite/identity/sessions/{session_id}",
         "api:get:/api/lite/apps/lifecycle",
         "api:get:/api/lite/apps/lifecycle/{app_id}",
@@ -22642,7 +23445,10 @@
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
         "api:get:/api/lite/identity",
+        "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/policy",
+        "api:get:/api/lite/policy/decisions/{decision_id}",
+        "api:get:/api/lite/policy/templates",
         "api:get:/api/lite/recovery",
         "api:get:/api/lite/recovery/apps",
         "api:get:/api/lite/recovery/apps/{app_id}",
@@ -22708,12 +23514,22 @@
         "api:post:/api/lite/fleet/remove-device",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
+        "api:post:/api/lite/identity/owner-claim",
+        "api:post:/api/lite/identity/owner-claim/consume",
+        "api:post:/api/lite/identity/owner-claim/passkey/options",
+        "api:post:/api/lite/identity/owner-claim/passkey/verify",
+        "api:post:/api/lite/identity/passkeys/login/options",
+        "api:post:/api/lite/identity/passkeys/login/verify",
+        "api:post:/api/lite/identity/passkeys/registration/options",
+        "api:post:/api/lite/identity/passkeys/registration/verify",
         "api:post:/api/lite/identity/password",
         "api:post:/api/lite/identity/recover",
         "api:post:/api/lite/identity/recovery/regenerate",
         "api:post:/api/lite/identity/rotate",
         "api:post:/api/lite/identity/sessions/revoke-others",
         "api:post:/api/lite/identity/setup",
+        "api:post:/api/lite/identity/step-up/options",
+        "api:post:/api/lite/identity/step-up/verify",
         "api:post:/api/lite/policy/apply",
         "api:post:/api/lite/recovery/apps/{app_id}/backup",
         "api:post:/api/lite/recovery/apps/{app_id}/backup-to-target",
@@ -22734,7 +23550,8 @@
         "api:post:/api/lite/security/apps/{app_id}/check",
         "api:post:/api/lite/security/check",
         "api:post:/api/lite/security/scan",
-        "api:put:/api/lite/fleet/devices/{device_id}/display-model"
+        "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+        "api:put:/api/lite/identity/passkeys/{credential_id}"
       ],
       "capability": [
         "capability:app-host",
@@ -22922,6 +23739,8 @@
         "reason:generic_policy_toggle_retired",
         "reason:human_session_required",
         "reason:identity_mismatch",
+        "reason:identity_setup_rejected",
+        "reason:identity_setup_unavailable",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_domain",
@@ -22934,6 +23753,7 @@
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
         "reason:payload_too_large",
+        "reason:policy_decision_not_found",
         "reason:policy_unavailable",
         "reason:projection_too_old",
         "reason:projection_unavailable",
@@ -23194,6 +24014,7 @@
         "table:app_action_lifecycle",
         "table:app_current_state",
         "table:audit_evidence_index",
+        "table:auth_session_assurance",
         "table:auth_sessions",
         "table:backup_manifest_index",
         "table:command_lifecycle",
@@ -23218,8 +24039,10 @@
         "table:identity_audit_events",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:owner_claims",
         "table:phase3b_current_state",
         "table:phase3b_revision_events",
+        "table:policy_decision_details",
         "table:policy_decisions",
         "table:projection_dirty_signals",
         "table:projection_refresh_state",
@@ -23239,6 +24062,9 @@
         "table:security_scan_runs",
         "table:security_scan_tool_runs",
         "table:security_store_metadata",
+        "table:webauthn_challenges",
+        "table:webauthn_credentials",
+        "table:webauthn_users",
         "table:workflow_command_state",
         "table:workflow_current_state",
         "table:workflow_event_index"
@@ -23282,6 +24108,7 @@
         "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
         "test:tests/backend/test_lite_home_capacity_contract.py",
         "test:tests/backend/test_lite_hot_path_profiler.py",
+        "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
@@ -23609,6 +24436,12 @@
           "type": "owns"
         }
       ],
+      "api:delete:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "api:delete:/api/lite/identity/sessions/{session_id}": [
         {
           "source": "domain:identity",
@@ -23889,6 +24722,16 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/identity/owner-claim/status": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/policy": [
         {
           "source": "journey:rules-authorization",
@@ -23905,6 +24748,22 @@
         {
           "source": "component:opa-policy-engine",
           "type": "uses"
+        }
+      ],
+      "api:get:/api/lite/policy/decisions/{decision_id}": [
+        {
+          "source": "ui:literules",
+          "type": "calls"
+        },
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/policy/templates": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
         }
       ],
       "api:get:/api/lite/recovery": [
@@ -24505,6 +25364,82 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/identity/owner-claim": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/owner-claim/consume": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/owner-claim/passkey/options": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/owner-claim/passkey/verify": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/login/options": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/login/verify": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/registration/options": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/registration/verify": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/identity/password": [
         {
           "source": "journey:change-password",
@@ -24568,6 +25503,26 @@
           "source": "journey:change-password",
           "type": "calls"
         },
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/step-up/options": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/identity/step-up/verify": [
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -24796,6 +25751,16 @@
       "api:put:/api/lite/fleet/devices/{device_id}/display-model": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:identity",
           "type": "owns"
         }
       ],
@@ -26189,6 +27154,18 @@
           "type": "owns"
         }
       ],
+      "reason:identity_setup_rejected": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:identity_setup_unavailable": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "source": "domain:system",
@@ -26258,6 +27235,12 @@
       "reason:payload_too_large": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_decision_not_found": [
+        {
+          "source": "domain:rules",
           "type": "owns"
         }
       ],
@@ -28263,6 +29246,12 @@
           "type": "owns"
         }
       ],
+      "table:auth_session_assurance": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:auth_sessions": [
         {
           "source": "component:api-guards",
@@ -28639,6 +29628,12 @@
           "type": "owns"
         }
       ],
+      "table:owner_claims": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:phase3b_current_state": [
         {
           "source": "domain:prepared_state",
@@ -28657,6 +29652,12 @@
         {
           "source": "api:get:/api/lite/status",
           "type": "reads"
+        }
+      ],
+      "table:policy_decision_details": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
         }
       ],
       "table:policy_decisions": [
@@ -28977,6 +29978,24 @@
           "type": "reads"
         }
       ],
+      "table:webauthn_challenges": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:webauthn_credentials": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:webauthn_users": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:workflow_command_state": [
         {
           "source": "domain:workflow",
@@ -29249,6 +30268,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:identity_setup_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_setup_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -29294,6 +30321,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_decision_not_found",
           "type": "verified_by"
         },
         {
@@ -29447,6 +30478,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/sessions/{session_id}",
           "type": "verified_by"
         },
@@ -29575,7 +30610,19 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/policy",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/policy/decisions/{decision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/policy/templates",
           "type": "verified_by"
         },
         {
@@ -29839,6 +30886,38 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/identity/owner-claim",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/owner-claim/consume",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/owner-claim/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/login/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/login/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/registration/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/registration/verify",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/identity/password",
           "type": "verified_by"
         },
@@ -29860,6 +30939,14 @@
         },
         {
           "source": "api:post:/api/lite/identity/setup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/step-up/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/step-up/verify",
           "type": "verified_by"
         },
         {
@@ -29944,6 +31031,10 @@
         },
         {
           "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
         {
@@ -30218,6 +31309,28 @@
         },
         {
           "source": "component:pwa",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_identity_passkeys_rules_p1.py": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:rules-authorization",
           "type": "verified_by"
         }
       ],
@@ -32387,6 +33500,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:identity_setup_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_setup_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -32432,6 +33553,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_decision_not_found",
           "type": "verified_by"
         },
         {
@@ -32637,6 +33762,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:identity_setup_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_setup_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -32682,6 +33815,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_decision_not_found",
           "type": "verified_by"
         },
         {
@@ -32845,6 +33982,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/sessions/{session_id}",
           "type": "verified_by"
         },
@@ -32973,7 +34114,19 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/policy",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/policy/decisions/{decision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/policy/templates",
           "type": "verified_by"
         },
         {
@@ -33237,6 +34390,38 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/identity/owner-claim",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/owner-claim/consume",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/owner-claim/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/login/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/login/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/registration/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/passkeys/registration/verify",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/identity/password",
           "type": "verified_by"
         },
@@ -33258,6 +34443,14 @@
         },
         {
           "source": "api:post:/api/lite/identity/setup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/step-up/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/identity/step-up/verify",
           "type": "verified_by"
         },
         {
@@ -33342,6 +34535,10 @@
         },
         {
           "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         }
       ],
@@ -33997,6 +35194,16 @@
           "type": "verified_by"
         }
       ],
+      "api:delete:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:delete:/api/lite/identity/sessions/{session_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -34453,7 +35660,37 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/identity/owner-claim/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/policy": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/policy/decisions/{decision_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/policy/templates": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -35249,6 +36486,86 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/identity/owner-claim": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/owner-claim/consume": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/owner-claim/passkey/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/owner-claim/passkey/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/login/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/login/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/registration/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/passkeys/registration/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/identity/password": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -35300,6 +36617,26 @@
         }
       ],
       "api:post:/api/lite/identity/setup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/step-up/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/identity/step-up/verify": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -35510,6 +36847,16 @@
         }
       ],
       "api:put:/api/lite/fleet/devices/{device_id}/display-model": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:put:/api/lite/identity/passkeys/{credential_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -37647,6 +38994,10 @@
           "type": "uses"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
@@ -38058,6 +39409,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "type": "verified_by"
         },
         {
@@ -39389,6 +40744,10 @@
       ],
       "domain:control_plane": [
         {
+          "target": "table:auth_session_assurance",
+          "type": "owns"
+        },
+        {
           "target": "table:auth_sessions",
           "type": "owns"
         },
@@ -39413,7 +40772,27 @@
           "type": "owns"
         },
         {
+          "target": "table:owner_claims",
+          "type": "owns"
+        },
+        {
+          "target": "table:policy_decision_details",
+          "type": "owns"
+        },
+        {
           "target": "table:policy_decisions",
+          "type": "owns"
+        },
+        {
+          "target": "table:webauthn_challenges",
+          "type": "owns"
+        },
+        {
+          "target": "table:webauthn_credentials",
+          "type": "owns"
+        },
+        {
+          "target": "table:webauthn_users",
           "type": "owns"
         }
       ],
@@ -39931,6 +41310,10 @@
           "type": "observed_by"
         },
         {
+          "target": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+          "type": "owns"
+        },
+        {
           "target": "api:delete:/api/lite/identity/sessions/{session_id}",
           "type": "owns"
         },
@@ -39939,11 +41322,47 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/identity/login",
           "type": "owns"
         },
         {
           "target": "api:post:/api/lite/identity/logout",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/consume",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/verify",
           "type": "owns"
         },
         {
@@ -39971,6 +41390,18 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/identity/step-up/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "owns"
+        },
+        {
           "target": "journey:change-password",
           "type": "owns"
         },
@@ -39984,6 +41415,14 @@
         },
         {
           "target": "reason:human_session_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:identity_setup_rejected",
+          "type": "owns"
+        },
+        {
+          "target": "reason:identity_setup_unavailable",
           "type": "owns"
         },
         {
@@ -40004,6 +41443,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "type": "verified_by"
         },
         {
@@ -40851,6 +42294,14 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/policy/templates",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/policy/apply",
           "type": "owns"
         },
@@ -40860,6 +42311,10 @@
         },
         {
           "target": "reason:generic_policy_toggle_retired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_decision_not_found",
           "type": "owns"
         },
         {
@@ -41747,6 +43202,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
@@ -42259,6 +43718,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         }
@@ -42753,6 +44216,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:identity_setup_rejected": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:identity_setup_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -42946,6 +44437,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_decision_not_found": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -43575,11 +45080,43 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/identity/login",
           "type": "calls"
         },
         {
           "target": "api:post:/api/lite/identity/logout",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/consume",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/verify",
           "type": "calls"
         },
         {
@@ -43600,6 +45137,18 @@
         },
         {
           "target": "api:post:/api/lite/identity/setup",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "calls"
         }
       ],
@@ -43680,6 +45229,10 @@
       "ui:literules": [
         {
           "target": "api:get:/api/lite/policy",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/policy/decisions/{decision_id}",
           "type": "calls"
         }
       ],
@@ -44067,6 +45620,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:040a00d534e4e847",
+      "source": "reason:identity_setup_rejected",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:045755052f23e26c",
@@ -44110,6 +45672,15 @@
       "source": "component:scanner-adapters",
       "target": "boundary:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:052faaeb6c9ce99e",
+      "source": "domain:control_plane",
+      "target": "table:webauthn_credentials",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -44494,6 +46065,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:089c6470ec24565d",
+      "source": "domain:control_plane",
+      "target": "table:webauthn_challenges",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:08df6ed61526fe8e",
@@ -44698,6 +46278,15 @@
       "source": "domain:release",
       "target": "journey:rollback",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0bcf85c4795cc566",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -45070,6 +46659,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:1036f77ca356705a",
+      "source": "api:post:/api/lite/identity/passkeys/registration/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:104fd9de9c2965a1",
@@ -45139,6 +46737,15 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.app.media.updated",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:113be63ca3caf20e",
+      "source": "api:post:/api/lite/identity/step-up/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -45229,6 +46836,15 @@
       "source": "domain:runbook",
       "target": "subject:pocketlab.events.runbook.rejection_queued",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:1206b62500e773b0",
+      "source": "reason:identity_setup_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -45328,6 +46944,15 @@
       "source": "domain:devices",
       "target": "reason:protected_server_host",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:139b1af9c252019c",
+      "source": "api:post:/api/lite/identity/passkeys/login/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -46522,6 +48147,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2179202826ce0c0e",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/passkeys/login/options",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:2183acc456ff8bf8",
@@ -46564,6 +48198,24 @@
       "source": "component:frontend-state",
       "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:228a439d83bcaa3a",
+      "source": "reason:policy_decision_not_found",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:228d97298f02fc18",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/step-up/options",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -46938,6 +48590,33 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:267a1e2d3c927a95",
+      "source": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:267b403947703db4",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:26d50bccba49f5ad",
+      "source": "api:post:/api/lite/identity/passkeys/login/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:27266685a962582b",
@@ -46956,12 +48635,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2761799abf28f99b",
+      "source": "domain:rules",
+      "target": "api:get:/api/lite/policy/templates",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:2775036ce12cfa43",
       "source": "journey:device-reconnect",
       "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2786a6dc6101c53b",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -47215,6 +48912,15 @@
       "source": "component:lan",
       "target": "threat-model:tailnet",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "id": "rel:2a4b14ea7a3a23cb",
+      "source": "journey:change-password",
+      "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -47507,6 +49213,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:2e1be7f805246bd1",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/passkeys/login/verify",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:2e2f61e21f81c4e5",
@@ -47757,6 +49472,15 @@
       "source": "component:bounded-reconciliation",
       "target": "test:tests/backend/test_lite_api.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:312ff98ff2069985",
+      "source": "domain:rules",
+      "target": "reason:policy_decision_not_found",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -48127,6 +49851,15 @@
       "id": "rel:35013087dd180b70",
       "source": "api:get:/api/lite/recovery/backups",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:3520d36303fa4317",
+      "source": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -48584,6 +50317,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:39a1dda25d1a7c4a",
+      "source": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:39ad1ed018e63212",
@@ -48599,6 +50341,15 @@
       "source": "component:bounded-reconciliation",
       "target": "test:tests/backend/test_lite_device_health_d4.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:39d72ac94210b686",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -48670,6 +50421,15 @@
       "id": "rel:3a5f5c3c47b2086b",
       "source": "component:worker",
       "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:3a6888142ed1e25c",
+      "source": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -48817,6 +50577,15 @@
       "source": "component:restore-preview",
       "target": "threat-model:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:3bf2df55016781be",
+      "source": "api:post:/api/lite/identity/step-up/verify",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -49124,6 +50893,15 @@
       "source": "journey:device-enrollment",
       "target": "api:get:/api/lite/fleet",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:410fecf32810a43a",
+      "source": "domain:identity",
+      "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -49546,6 +51324,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:45bdc6e906e5798a",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:460b16da249ca472",
@@ -49794,6 +51581,15 @@
       "id": "rel:498e8f5feed75219",
       "source": "reason:payload_too_large",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:49a0ed4172f84d55",
+      "source": "api:post:/api/lite/identity/passkeys/login/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -50110,6 +51906,15 @@
       "source": "component:proot-ubuntu",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:4dbe3319a5b4edd2",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/passkeys/registration/options",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -50619,6 +52424,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:54cfd3bc1f75bc7a",
+      "source": "reason:identity_setup_rejected",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:54edf94a57894fff",
@@ -50826,6 +52640,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:57e79900ddc26615",
+      "source": "api:post:/api/lite/identity/owner-claim/consume",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:581d1e2a9d8ffef9",
@@ -50848,6 +52671,15 @@
       ],
       "id": "rel:584ecbf3600f7ff2",
       "source": "api:get:/api/lite/apps/photoprism/storage-mappings",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:585186399c921456",
+      "source": "api:post:/api/lite/identity/passkeys/registration/verify",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
@@ -50903,6 +52735,15 @@
       "id": "rel:59010fdb1c40984a",
       "source": "component:release-artifacts",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:591a5bb92639fed9",
+      "source": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -51020,6 +52861,15 @@
       "id": "rel:5a8790e66f92f62f",
       "source": "api:get:/api/lite/security/freshness",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:5a8d4936815a5b46",
+      "source": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -51885,6 +53735,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "id": "rel:669264bd6b0eacec",
+      "source": "domain:identity",
+      "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:6696c01617334b93",
@@ -51998,6 +53857,15 @@
       "id": "rel:6784baa2a6608f33",
       "source": "journey:startup",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:678fc26da05d2b3f",
+      "source": "api:post:/api/lite/identity/owner-claim",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -52545,6 +54413,24 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:6d599a3e085f93e6",
+      "source": "api:get:/api/lite/identity/owner-claim/status",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:6d7f77f3c67c0aa3",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:6daf3f265ab2b30a",
@@ -52813,6 +54699,15 @@
       "id": "rel:70dca9303d7bcb4a",
       "source": "reason:policy_unavailable",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:70f701d89c4a01ba",
+      "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -53645,6 +55540,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:7bec89988aa802b1",
+      "source": "api:get:/api/lite/policy/templates",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteSecurity.jsx"
       ],
       "id": "rel:7c5c4f1fc89fc6ff",
@@ -53708,6 +55612,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:7cfa2445f5047271",
+      "source": "api:get:/api/lite/identity/owner-claim/status",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_n6b_install_surface.py"
       ],
       "id": "rel:7d061a1a0ba4122e",
@@ -53731,6 +55644,15 @@
       "id": "rel:7d475831b9c19015",
       "source": "reason:disabled",
       "target": "test:tests/backend/test_lite_storage_fault_injection.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:7d560d00244db7c4",
+      "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -53931,6 +55853,15 @@
       "source": "journey:app-installation",
       "target": "api:get:/api/lite/catalog",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:7f698045ffeea746",
+      "source": "reason:identity_setup_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -54792,6 +56723,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:8987dd52fe999266",
+      "source": "domain:control_plane",
+      "target": "table:webauthn_users",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:898c6dde22745eae",
@@ -55163,6 +57103,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:8db53c17f707afa5",
+      "source": "ui:liteidentity",
+      "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:8df9a38f8e2a5263",
@@ -55231,6 +57180,15 @@
       "id": "rel:8e906a26d5c4af3a",
       "source": "ui:litesecurity",
       "target": "api:get:/api/lite/security/profiles/{profile}",
+      "type": "calls"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:8eaa03f32d837629",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/step-up/verify",
       "type": "calls"
     },
     {
@@ -55751,6 +57709,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:94d1719315d709e0",
+      "source": "api:post:/api/lite/identity/owner-claim/consume",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:94d95a4dfb73df47",
@@ -55793,6 +57760,15 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.security.{tool}.completed",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:955dae87a5b1f3dd",
+      "source": "reason:policy_decision_not_found",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -55890,6 +57866,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:96c799781f6615c0",
+      "source": "domain:identity",
+      "target": "reason:identity_setup_unavailable",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:97071284eee2b449",
@@ -55913,6 +57898,15 @@
       "id": "rel:9741e2fa45f5e864",
       "source": "component:lite-api",
       "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:974addb6ac54cc9d",
+      "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -56305,12 +58299,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:9c07057bfce7b282",
+      "source": "domain:control_plane",
+      "target": "table:auth_session_assurance",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:515"
       ],
       "id": "rel:9c0708a2ede22c21",
       "source": "component:agent-recovery",
       "target": "subject:pocketlab.commands.node.all",
       "type": "related_to"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9c20fe073db9a367",
+      "source": "domain:identity",
+      "target": "reason:identity_setup_rejected",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -57247,6 +59259,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a74bb58c39f3d793",
+      "source": "reason:identity_setup_rejected",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:a7730dfb19ff82f3",
@@ -57279,6 +59300,15 @@
       "id": "rel:a84219747a1c44c3",
       "source": "api:post:/api/lite/apps/{app_id}/backup",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a8537ecb3d1fe4be",
+      "source": "reason:identity_setup_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -57692,6 +59722,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:ad21d99f9955ae2d",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/owner-claim/consume",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
@@ -57771,6 +59810,15 @@
       "source": "component:scanner-adapters",
       "target": "subject:pocketlab.commands.lite.security.scan",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ae199bfba931e054",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/step-up/options",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -58465,6 +60513,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:b6953048a2a953ef",
+      "source": "api:post:/api/lite/identity/passkeys/login/verify",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:b6a6889098bfcbab",
@@ -58567,6 +60624,15 @@
       "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
+      "id": "rel:b7fc73984b68994d",
+      "source": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
       "id": "rel:b806f46a7d1df574",
       "source": "api:get:/api/lite/apps/{app_id}/update/receipts/{operation_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -58580,6 +60646,15 @@
       "source": "component:browser",
       "target": "boundary:browser",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:b857165e33f2832f",
+      "source": "ui:liteidentity",
+      "target": "api:get:/api/lite/identity/owner-claim/status",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -58655,6 +60730,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:b999ad6a5c91d54a",
+      "source": "domain:control_plane",
+      "target": "table:owner_claims",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:b9de6286c4dc41ba",
@@ -58670,6 +60754,15 @@
       "source": "domain:apps",
       "target": "limitation:apps:gap-1",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:b9e9396567aff302",
+      "source": "api:post:/api/lite/identity/step-up/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -59188,6 +61281,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:bfd5fceb82e267a8",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:c00020846f6731a8",
@@ -59374,6 +61476,15 @@
       "source": "component:post-switch-health",
       "target": "component:release-state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:c2d41c35a0381974",
+      "source": "ui:literules",
+      "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -60172,6 +62283,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "id": "rel:ccc28c0082f52c9f",
+      "source": "component:pwa",
+      "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:ccce87bec0c53a09",
@@ -60484,6 +62604,15 @@
       "id": "rel:cfd0fb78768e3e88",
       "source": "domain:system",
       "target": "api:get:/api/lite/system/storage-pressure",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:cfe5cff1ecb48c34",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/owner-claim/consume",
       "type": "owns"
     },
     {
@@ -60905,6 +63034,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:d5b8df48fbd80434",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/owner-claim",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:d631f8382661725c",
@@ -61113,6 +63251,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d853301b4be88f6d",
+      "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_f7_split_read_contract.py"
       ],
       "id": "rel:d853ca37b24b4400",
@@ -61155,6 +63302,15 @@
       "source": "component:node-agent",
       "target": "subject:pocketlab.events.fleet.node_heartbeat",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:d90a211c5100e8c0",
+      "source": "domain:rules",
+      "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -61282,6 +63438,15 @@
       "source": "component:bounded-reconciliation",
       "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:da46d3af1e1e4ab9",
+      "source": "domain:control_plane",
+      "target": "table:policy_decision_details",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -61535,6 +63700,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:dd011380d7716e4f",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/passkeys/login/options",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:dd031fd144ad4981",
@@ -61568,6 +63742,24 @@
       "source": "reason:worker_start_timeout",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ddafa837c7c17e7f",
+      "source": "domain:identity",
+      "target": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:ddbc4cc32038108b",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/identity/passkeys/registration/options",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -61730,6 +63922,15 @@
       "source": "journey:security-review",
       "target": "api:get:/api/lite/security/details/{run_id}",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:e098f5cd26ce2865",
+      "source": "domain:identity",
+      "target": "api:post:/api/lite/identity/passkeys/login/verify",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -62430,6 +64631,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "id": "rel:e833fc928858b9ec",
+      "source": "component:opa-policy-engine",
+      "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/parity/runtime-verification-baseline.json",
         "scripts/test/parity/preflight_runtime_promotion.py",
         "scripts/test/parity/promote_runtime_verification.py"
@@ -62458,6 +64668,15 @@
       "source": "journey:startup",
       "target": "component:caddy",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:e86207c4a48df9b1",
+      "source": "api:post:/api/lite/identity/step-up/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -62749,6 +64968,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:eca26257f46a59b4",
+      "source": "api:get:/api/lite/policy/templates",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/mkdocs.spec.ts"
       ],
       "id": "rel:ecad96ec40051dc2",
@@ -62937,6 +65165,15 @@
       "source": "component:api-guards",
       "target": "subject:pocketlab.events.fleet.invite_created",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:eec1ecde08e50ab6",
+      "source": "reason:policy_decision_not_found",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -63291,6 +65528,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:f255dfa12f3a8785",
+      "source": "api:post:/api/lite/identity/passkeys/registration/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:f262530258ab0149",
@@ -63431,6 +65677,15 @@
       "id": "rel:f418b5eafc5b76b9",
       "source": "reason:remote_access_not_ready",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "id": "rel:f429b18a14763044",
+      "source": "journey:rules-authorization",
+      "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
       "type": "verified_by"
     },
     {
@@ -63757,6 +66012,15 @@
       "id": "rel:f784788ec4e56638",
       "source": "component:lite-api",
       "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:f7c70ad7dc36472f",
+      "source": "api:post:/api/lite/identity/owner-claim",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -64215,6 +66479,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:fcef1ddcaec63b10",
+      "source": "domain:identity",
+      "target": "api:get:/api/lite/identity/owner-claim/status",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:fd0a8129395f404c",
@@ -64368,33 +66641,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f",
+  "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e",
   "statistics": {
-    "entity_count": 883,
+    "entity_count": 908,
     "entity_type_counts": {
       "adr": 6,
-      "api": 126,
+      "api": 141,
       "capability": 5,
       "component": 57,
       "domain": 46,
       "glossary": 12,
       "journey": 23,
       "limitation": 18,
-      "reason-code": 42,
+      "reason-code": 45,
       "release": 2,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 201,
-      "table": 51,
-      "test": 182,
+      "table": 57,
+      "test": 183,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
       "ui": 8,
       "vocabulary": 39
     },
-    "relation_count": 2281,
-    "source_count": 219
+    "relation_count": 2361,
+    "source_count": 220
   }
 }

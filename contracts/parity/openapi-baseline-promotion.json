@@ -1,14 +1,14 @@
 {
   "approved_change_classes": [
-    "add backend-owned human Identity setup, login, logout, password-change, recovery-code, and server-side session-management API operations",
-    "retire the legacy POST /api/lite/identity/rotate 202 success contract and replace it with an explicit 410 Gone retirement contract",
-    "retire the legacy POST /api/lite/policy/apply 202 success contract and replace it with an explicit 410 Gone retirement contract because Rules policy activation is repository-owned",
-    "integrate Rules authorization enforcement while preserving FastAPI as the authoritative control API"
+    "add trusted owner-claim bootstrap API operations for passkey-first first-owner enrollment without exposing reusable setup secrets in the generated contract",
+    "add backend-owned WebAuthn passkey registration, login, credential rename/revoke, and purpose-bound passkey step-up API operations",
+    "add read-only Safety Rules template and bounded policy-decision explanation API operations while keeping raw OPA authorization input backend-only",
+    "protect passkey revocation through FastAPI-owned session assurance and loopback OPA authorization while preserving existing Identity password, recovery, session, Catalog, and device policy contracts"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "266f6ec6fe989c1809175a6e0d73213a4f633bb8d6d7681358bb4492e52aa1c6",
-  "promoted_sha256": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
+  "previous_sha256": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
+  "promoted_sha256": "05207a418ba2d44e02aeb9e3ec8f2246a1c7934f8aa68f6ee5e84438f0b94f55",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -17,7 +17,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feature/identity-rules-authorization",
+  "source_revision": "feature/identity-rules-p0-p1",
   "status": "promoted",
-  "validation_status": "locally-reviewed-identity-rules-contract"
+  "validation_status": "dev-pc-qualified-identity-rules-p0-p1-contract"
 }

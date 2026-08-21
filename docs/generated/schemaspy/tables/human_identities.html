@@ -128,12 +128,22 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="identity_audit_events.human_id&#39;s name implies that it&#39;s a child of human_identities.human_id, but it doesn&#39;t reference that column."><a href='identity_audit_events.html'>identity_audit_events</a><span class='relatedKey'>.human_id</span></td>
-                                                <td class="constraint detail">Implied Constraint</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="recovery_code_batches.human_id references human_identities.human_id via "><a href='recovery_code_batches.html'>recovery_code_batches</a><span class='relatedKey'>.human_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="recovery_code_batches.human_id references human_identities.human_id via "><a href='recovery_code_batches.html'>recovery_code_batches</a><span class='relatedKey'>.human_id</span></td>
+                                                <td title="webauthn_challenges.[session_id, human_id, owner_claim_id] references owner_claims.[session_id, human_id, claim_id] via "><a href='webauthn_challenges.html'>webauthn_challenges</a><span class='relatedKey'>.human_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="webauthn_credentials.human_id references human_identities.human_id via "><a href='webauthn_credentials.html'>webauthn_credentials</a><span class='relatedKey'>.human_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="webauthn_users.human_id references human_identities.human_id via "><a href='webauthn_users.html'>webauthn_users</a><span class='relatedKey'>.human_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -342,50 +352,65 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="497,5,725,275">
-<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,320,421,628">
-<area shape="rect" id="node3" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="484,293,737,475">
-<area shape="rect" id="node4" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="465,493,756,675">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="497,440,725,710">
+<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,428,421,736">
+<area shape="rect" id="node3" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="484,5,737,187">
+<area shape="rect" id="node4" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="465,205,756,387">
+<area shape="rect" id="node5" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="800,328,1078,627">
+<area shape="rect" id="node6" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="469,728,753,939">
+<area shape="rect" id="node7" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="496,957,726,1110">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/human_identities.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="497,5,725,275">
-<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,320,421,628">
-<area shape="rect" id="node3" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="484,293,737,475">
-<area shape="rect" id="node4" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="465,493,756,675">
-<area shape="rect" id="node5" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="800,496,1023,590">
+<area shape="rect" id="node1" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="800,631,1100,725">
+<area shape="rect" id="node2" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="469,664,753,875">
+<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="506,552,715,646">
+<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,462,421,770">
+<area shape="rect" id="node5" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="484,352,737,534">
+<area shape="rect" id="node6" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="465,5,756,187">
+<area shape="rect" id="node7" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="839,8,1062,102">
+<area shape="rect" id="node8" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="812,243,1089,337">
+<area shape="rect" id="node9" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="508,240,713,334">
+<area shape="rect" id="node10" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="496,893,726,1046">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/human_identities.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="798,440,1026,710">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,445,262,569">
-<area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,244,722,552">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="798,840,1026,1110">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,671,262,794">
+<area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,466,722,774">
 <area shape="rect" id="node4" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="785,5,1038,187">
-<area shape="rect" id="node5" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1102,257,1378,439">
-<area shape="rect" id="node6" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="766,240,1058,422">
+<area shape="rect" id="node5" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="766,205,1058,387">
+<area shape="rect" id="node6" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1102,528,1378,827">
+<area shape="rect" id="node7" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="770,440,1054,651">
+<area shape="rect" id="node8" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="796,669,1027,822">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/human_identities.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="391,120,637,214">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,708,262,802">
-<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="807,440,1016,534">
-<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,232,722,540">
-<area shape="rect" id="node5" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="364,593,664,687">
-<area shape="rect" id="node6" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="369,705,659,799">
-<area shape="rect" id="node7" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="785,205,1038,387">
-<area shape="rect" id="node8" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1102,403,1378,497">
-<area shape="rect" id="node9" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="338,817,690,911">
-<area shape="rect" id="node10" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="384,929,645,1023">
-<area shape="rect" id="node11" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="766,5,1058,187">
-<area shape="rect" id="node12" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="1129,8,1351,102">
-<area shape="rect" id="node13" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="350,1041,678,1135">
-<area shape="rect" id="node14" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="349,1153,679,1247">
+<area shape="rect" id="node1" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="391,225,637,319">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,813,262,907">
+<area shape="rect" id="node3" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="1102,88,1401,182">
+<area shape="rect" id="node4" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="770,5,1054,217">
+<area shape="rect" id="node5" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="807,235,1016,329">
+<area shape="rect" id="node6" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,373,722,681">
+<area shape="rect" id="node7" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="364,699,664,793">
+<area shape="rect" id="node8" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="369,811,659,905">
+<area shape="rect" id="node9" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="785,347,1038,529">
+<area shape="rect" id="node10" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1113,279,1390,373">
+<area shape="rect" id="node11" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="338,923,690,1017">
+<area shape="rect" id="node12" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="384,1035,645,1129">
+<area shape="rect" id="node13" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="766,864,1058,1046">
+<area shape="rect" id="node14" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="1140,867,1362,961">
+<area shape="rect" id="node15" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="350,1147,678,1241">
+<area shape="rect" id="node16" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="349,1259,679,1353">
+<area shape="rect" id="node17" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1113,508,1390,602">
+<area shape="rect" id="node18" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="809,581,1014,675">
+<area shape="rect" id="node19" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="796,693,1027,846">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/human_identities.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

@@ -1,7 +1,8 @@
 import { setupWorker } from 'msw/browser';
 import { handlers } from './handlers.js';
+import { identityRulesP1Handlers } from './identityRulesP1Handlers.js';
 
-export const worker = setupWorker(...handlers);
+export const worker = setupWorker(...identityRulesP1Handlers, ...handlers);
 
 export async function startPocketLabMocks() {
   if (typeof window === 'undefined') return;

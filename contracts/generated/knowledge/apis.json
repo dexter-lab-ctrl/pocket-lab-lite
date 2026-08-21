@@ -34,6 +34,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Revoke Lite Passkey",
+      "domain": "identity",
+      "id": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "method": "DELETE",
+      "name": "DELETE /api/lite/identity/passkeys/{credential_id}",
+      "operation_id": "revoke_lite_passkey_api_lite_identity_passkeys__credential_id__delete",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/{credential_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Revoke Lite Identity Session",
       "domain": "identity",
       "id": "api:delete:/api/lite/identity/sessions/{session_id}",
@@ -974,6 +997,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/identity",
@@ -995,6 +1025,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Owner Claim Status",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.ownerClaimStatus",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/identity/owner-claim/status",
+      "method": "GET",
+      "name": "GET /api/lite/identity/owner-claim/status",
+      "operation_id": "owner_claim_status_api_lite_identity_owner_claim_status_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Policy",
       "domain": "rules",
       "frontend_clients": [
@@ -1010,6 +1077,13 @@
           "owner": "MSW handler",
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
           "usage": "mock"
         }
       ],
@@ -1027,6 +1101,66 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite Policy Decision",
+      "domain": "rules",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.policyDecision",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "method": "GET",
+      "name": "GET /api/lite/policy/decisions/{decision_id}",
+      "operation_id": "get_lite_policy_decision_api_lite_policy_decisions__decision_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/policy/decisions/{decision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite Policy Templates",
+      "domain": "rules",
+      "id": "api:get:/api/lite/policy/templates",
+      "method": "GET",
+      "name": "GET /api/lite/policy/templates",
+      "operation_id": "get_lite_policy_templates_api_lite_policy_templates_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/policy/templates",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
       ],
       "type": "api"
     },
@@ -2903,6 +3037,293 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Issue Lite Owner Claim",
+      "domain": "identity",
+      "id": "api:post:/api/lite/identity/owner-claim",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim",
+      "operation_id": "issue_lite_owner_claim_api_lite_identity_owner_claim_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Consume Lite Owner Claim",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.consumeOwnerClaim",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/owner-claim/consume",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim/consume",
+      "operation_id": "consume_lite_owner_claim_api_lite_identity_owner_claim_consume_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/consume",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Owner Claim Passkey Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.ownerClaimPasskeyOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim/passkey/options",
+      "operation_id": "owner_claim_passkey_options_api_lite_identity_owner_claim_passkey_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/passkey/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Owner Claim Passkey Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyOwnerClaimPasskey",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/owner-claim/passkey/verify",
+      "operation_id": "owner_claim_passkey_verify_api_lite_identity_owner_claim_passkey_verify_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/owner-claim/passkey/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Login Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyLoginOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/login/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/login/options",
+      "operation_id": "passkey_login_options_api_lite_identity_passkeys_login_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/login/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Login Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyLogin",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/login/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/login/verify",
+      "operation_id": "passkey_login_verify_api_lite_identity_passkeys_login_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/login/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Registration Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyRegistrationOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/registration/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/registration/options",
+      "operation_id": "passkey_registration_options_api_lite_identity_passkeys_registration_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/registration/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Registration Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyRegistration",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/passkeys/registration/verify",
+      "operation_id": "passkey_registration_verify_api_lite_identity_passkeys_registration_verify_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/registration/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Change Lite Identity Password",
       "domain": "identity",
       "frontend_clients": [
@@ -3116,6 +3537,84 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Step Up Options",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/step-up/options",
+      "method": "POST",
+      "name": "POST /api/lite/identity/step-up/options",
+      "operation_id": "passkey_step_up_options_api_lite_identity_step_up_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/step-up/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Passkey Step Up Verify",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/identity/step-up/verify",
+      "method": "POST",
+      "name": "POST /api/lite/identity/step-up/verify",
+      "operation_id": "passkey_step_up_verify_api_lite_identity_step_up_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/step-up/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
       ],
       "type": "api"
     },
@@ -3787,6 +4286,45 @@
         "lite"
       ],
       "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Rename Lite Passkey",
+      "domain": "identity",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.renameIdentityPasskey",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "method": "PUT",
+      "name": "PUT /api/lite/identity/passkeys/{credential_id}",
+      "operation_id": "rename_lite_passkey_api_lite_identity_passkeys__credential_id__put",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/identity/passkeys/{credential_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-identity-p1"
+      ],
+      "type": "api"
     }
   ],
   "metadata": {
@@ -3795,6 +4333,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
+    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
   }
 }

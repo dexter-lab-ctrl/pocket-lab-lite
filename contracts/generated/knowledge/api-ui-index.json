@@ -16,7 +16,13 @@
       "api:get:/api/lite/identity": [
         "ui:liteidentity"
       ],
+      "api:get:/api/lite/identity/owner-claim/status": [
+        "ui:liteidentity"
+      ],
       "api:get:/api/lite/policy": [
+        "ui:literules"
+      ],
+      "api:get:/api/lite/policy/decisions/{decision_id}": [
         "ui:literules"
       ],
       "api:get:/api/lite/recovery/database": [
@@ -73,6 +79,27 @@
       "api:post:/api/lite/identity/logout": [
         "ui:liteidentity"
       ],
+      "api:post:/api/lite/identity/owner-claim/consume": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/owner-claim/passkey/options": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/owner-claim/passkey/verify": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/passkeys/login/options": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/passkeys/login/verify": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/passkeys/registration/options": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/passkeys/registration/verify": [
+        "ui:liteidentity"
+      ],
       "api:post:/api/lite/identity/password": [
         "ui:liteidentity"
       ],
@@ -86,6 +113,12 @@
         "ui:liteidentity"
       ],
       "api:post:/api/lite/identity/setup": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/step-up/options": [
+        "ui:liteidentity"
+      ],
+      "api:post:/api/lite/identity/step-up/verify": [
         "ui:liteidentity"
       ],
       "api:post:/api/lite/recovery/backup": [
@@ -123,6 +156,9 @@
       ],
       "api:post:/api/lite/security/check": [
         "ui:litesecurity"
+      ],
+      "api:put:/api/lite/identity/passkeys/{credential_id}": [
+        "ui:liteidentity"
       ]
     },
     "ui_to_api": {
@@ -139,13 +175,24 @@
       ],
       "ui:liteidentity": [
         "api:get:/api/lite/identity",
+        "api:get:/api/lite/identity/owner-claim/status",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
+        "api:post:/api/lite/identity/owner-claim/consume",
+        "api:post:/api/lite/identity/owner-claim/passkey/options",
+        "api:post:/api/lite/identity/owner-claim/passkey/verify",
+        "api:post:/api/lite/identity/passkeys/login/options",
+        "api:post:/api/lite/identity/passkeys/login/verify",
+        "api:post:/api/lite/identity/passkeys/registration/options",
+        "api:post:/api/lite/identity/passkeys/registration/verify",
         "api:post:/api/lite/identity/password",
         "api:post:/api/lite/identity/recover",
         "api:post:/api/lite/identity/recovery/regenerate",
         "api:post:/api/lite/identity/sessions/revoke-others",
-        "api:post:/api/lite/identity/setup"
+        "api:post:/api/lite/identity/setup",
+        "api:post:/api/lite/identity/step-up/options",
+        "api:post:/api/lite/identity/step-up/verify",
+        "api:put:/api/lite/identity/passkeys/{credential_id}"
       ],
       "ui:literecovery": [
         "api:get:/api/lite/recovery/database",
@@ -171,7 +218,8 @@
         "api:get:/api/lite/revisions"
       ],
       "ui:literules": [
-        "api:get:/api/lite/policy"
+        "api:get:/api/lite/policy",
+        "api:get:/api/lite/policy/decisions/{decision_id}"
       ],
       "ui:litesecurity": [
         "api:get:/api/lite/security/evidence/{run_id}/summary",
@@ -191,6 +239,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
+    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
   }
 }

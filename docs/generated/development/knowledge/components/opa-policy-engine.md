@@ -83,6 +83,7 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 - protected_by: `Control API boundary`
 - protected_by: `Control API boundary`
 - uses: `GET /api/lite/policy`
+- verified_by: `tests/backend/test_lite_identity_passkeys_rules_p1.py`
 - verified_by: `tests/backend/test_lite_identity_rules_authorization.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 4c506f3c2d7eb0f19e0dc657293a3905cafc1cf98b6dc043ee40e1e881280a7a
+source_fingerprint: 8b7e457bdeb6cbdf9bf6dc80faa75c6bbcbe4b1a448ea3d2c75c39d81a65f0a0
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the generated Lite-only view.
 
-## Lite paths (124)
+## Lite paths (138)
 
 - `/api/lite/apps/lifecycle`
 - `/api/lite/apps/lifecycle/{app_id}`
@@ -71,6 +71,16 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/identity`
 - `/api/lite/identity/login`
 - `/api/lite/identity/logout`
+- `/api/lite/identity/owner-claim`
+- `/api/lite/identity/owner-claim/consume`
+- `/api/lite/identity/owner-claim/passkey/options`
+- `/api/lite/identity/owner-claim/passkey/verify`
+- `/api/lite/identity/owner-claim/status`
+- `/api/lite/identity/passkeys/login/options`
+- `/api/lite/identity/passkeys/login/verify`
+- `/api/lite/identity/passkeys/registration/options`
+- `/api/lite/identity/passkeys/registration/verify`
+- `/api/lite/identity/passkeys/{credential_id}`
 - `/api/lite/identity/password`
 - `/api/lite/identity/recover`
 - `/api/lite/identity/recovery/regenerate`
@@ -78,8 +88,12 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/identity/sessions/revoke-others`
 - `/api/lite/identity/sessions/{session_id}`
 - `/api/lite/identity/setup`
+- `/api/lite/identity/step-up/options`
+- `/api/lite/identity/step-up/verify`
 - `/api/lite/policy`
 - `/api/lite/policy/apply`
+- `/api/lite/policy/decisions/{decision_id}`
+- `/api/lite/policy/templates`
 - `/api/lite/recovery`
 - `/api/lite/recovery/apps`
 - `/api/lite/recovery/apps/{app_id}`
