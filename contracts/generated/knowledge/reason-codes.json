@@ -242,6 +242,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 401,
+      "id": "reason:identity_setup_rejected",
+      "name": "identity_setup_rejected",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner claim creation could not be verified."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:identity_setup_unavailable",
+      "name": "identity_setup_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner claim creation is not enabled on this server."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is not enough safe storage for the operation.",
       "domain": "system",
       "event_mapping": [],
@@ -479,6 +519,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The bounded payload limit was exceeded."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested bounded Safety Rules decision record is no longer available.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:policy_decision_not_found",
+      "name": "policy_decision_not_found",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "That Safety Rules decision is no longer available."
     },
     {
       "confidence": "source-derived",
@@ -847,6 +907,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
+    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
   }
 }

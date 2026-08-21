@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 24,
+    "migration_count": 25,
     "objects": [
       {
         "checks": [],
@@ -493,6 +493,119 @@
           {
             "declared_type": "TEXT",
             "default": null,
+            "name": "assurance_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "session_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "credential_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "satisfied_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "credential_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "webauthn_credentials",
+            "sequence": 0,
+            "to": "credential_id"
+          },
+          {
+            "from": "session_id",
+            "id": 1,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "auth_sessions",
+            "sequence": 0,
+            "to": "session_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "session_id",
+              "purpose",
+              "expires_at"
+            ],
+            "name": "idx_auth_session_assurance_current",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "assurance_id"
+            ],
+            "name": "sqlite_autoindex_auth_session_assurance_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        ],
+        "name": "auth_session_assurance",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "credential_id"
+        ],
+        "sql": "CREATE TABLE auth_session_assurance (\n    assurance_id TEXT PRIMARY KEY,\n    session_id TEXT NOT NULL,\n    credential_id TEXT NOT NULL,\n    purpose TEXT NOT NULL,\n    satisfied_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    created_at TEXT NOT NULL,\n    FOREIGN KEY(session_id) REFERENCES auth_sessions(session_id) ON DELETE CASCADE,\n    FOREIGN KEY(credential_id) REFERENCES webauthn_credentials(credential_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
             "name": "session_id",
             "nullable": true,
             "primary_key_position": 1
@@ -619,7 +732,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
         ],
         "name": "auth_sessions",
         "projection_owner": "not a prepared projection",
@@ -4162,7 +4276,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -4568,6 +4683,154 @@
         "writer": "source-defined control-plane service"
       },
       {
+        "checks": [],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claim_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claim_hash",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "installation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "rp_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "origin",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "webauthn_user_handle",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "consumed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "authority_hash",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "authority_expires_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "expires_at",
+              "consumed_at",
+              "completed_at"
+            ],
+            "name": "idx_owner_claims_active",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "authority_hash"
+            ],
+            "name": "sqlite_autoindex_owner_claims_3",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "claim_hash"
+            ],
+            "name": "sqlite_autoindex_owner_claims_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "claim_id"
+            ],
+            "name": "sqlite_autoindex_owner_claims_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        ],
+        "name": "owner_claims",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "authority_hash",
+          "claim_hash"
+        ],
+        "sql": "CREATE TABLE owner_claims (\n    claim_id TEXT PRIMARY KEY,\n    claim_hash TEXT NOT NULL UNIQUE,\n    installation_id TEXT NOT NULL,\n    rp_id TEXT NOT NULL,\n    origin TEXT NOT NULL,\n    webauthn_user_handle TEXT NOT NULL,\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    consumed_at TEXT,\n    authority_hash TEXT UNIQUE,\n    authority_expires_at TEXT,\n    completed_at TEXT\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
         "checks": [
           "sanitized IN (0, 1"
         ],
@@ -4898,6 +5161,71 @@
       },
       {
         "checks": [],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "constraints_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "evidence_ref",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "decision_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_decisions",
+            "sequence": 0,
+            "to": "decision_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "decision_id"
+            ],
+            "name": "sqlite_autoindex_policy_decision_details_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        ],
+        "name": "policy_decision_details",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_ref"
+        ],
+        "sql": "CREATE TABLE policy_decision_details (\n    decision_id TEXT PRIMARY KEY,\n    constraints_json TEXT NOT NULL DEFAULT '[]',\n    evidence_ref TEXT,\n    FOREIGN KEY(decision_id) REFERENCES policy_decisions(decision_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [],
         "classification": "internal operational metadata",
         "columns": [
           {
@@ -5032,7 +5360,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
         ],
         "name": "policy_decisions",
         "projection_owner": "not a prepared projection",
@@ -8026,6 +8355,375 @@
           {
             "declared_type": "TEXT",
             "default": null,
+            "name": "challenge_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "challenge_hash",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "session_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_claim_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "rp_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "origin",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "consumed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "owner_claim_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "owner_claims",
+            "sequence": 0,
+            "to": "claim_id"
+          },
+          {
+            "from": "session_id",
+            "id": 1,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "auth_sessions",
+            "sequence": 0,
+            "to": "session_id"
+          },
+          {
+            "from": "human_id",
+            "id": 2,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "expires_at",
+              "consumed_at"
+            ],
+            "name": "idx_webauthn_challenges_expiry",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "challenge_hash"
+            ],
+            "name": "sqlite_autoindex_webauthn_challenges_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "challenge_id"
+            ],
+            "name": "sqlite_autoindex_webauthn_challenges_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        ],
+        "name": "webauthn_challenges",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "challenge_hash"
+        ],
+        "sql": "CREATE TABLE webauthn_challenges (\n    challenge_id TEXT PRIMARY KEY,\n    challenge_hash TEXT NOT NULL UNIQUE,\n    purpose TEXT NOT NULL,\n    human_id TEXT,\n    session_id TEXT,\n    owner_claim_id TEXT,\n    rp_id TEXT NOT NULL,\n    origin TEXT NOT NULL,\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    consumed_at TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id) ON DELETE CASCADE,\n    FOREIGN KEY(session_id) REFERENCES auth_sessions(session_id) ON DELETE CASCADE,\n    FOREIGN KEY(owner_claim_id) REFERENCES owner_claims(claim_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "credential_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "friendly_name",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "public_key_x",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "public_key_y",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "algorithm",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "sign_count",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "transports_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "authenticator_attachment",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_used_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "human_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "human_id",
+              "revoked_at",
+              "created_at"
+            ],
+            "name": "idx_webauthn_credentials_human_active",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "credential_id"
+            ],
+            "name": "sqlite_autoindex_webauthn_credentials_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        ],
+        "name": "webauthn_credentials",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "credential_id"
+        ],
+        "sql": "CREATE TABLE webauthn_credentials (\n    credential_id TEXT PRIMARY KEY,\n    human_id TEXT NOT NULL,\n    friendly_name TEXT NOT NULL,\n    public_key_x TEXT NOT NULL,\n    public_key_y TEXT NOT NULL,\n    algorithm INTEGER NOT NULL,\n    sign_count INTEGER NOT NULL DEFAULT 0,\n    transports_json TEXT NOT NULL DEFAULT '[]',\n    authenticator_attachment TEXT,\n    created_at TEXT NOT NULL,\n    last_used_at TEXT,\n    revoked_at TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "human_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "user_handle",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "human_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "user_handle"
+            ],
+            "name": "sqlite_autoindex_webauthn_users_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "human_id"
+            ],
+            "name": "sqlite_autoindex_webauthn_users_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        ],
+        "name": "webauthn_users",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE webauthn_users (\n    human_id TEXT PRIMARY KEY,\n    user_handle TEXT NOT NULL UNIQUE,\n    created_at TEXT NOT NULL,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
             "name": "command_id",
             "nullable": true,
             "primary_key_position": 1
@@ -8377,7 +9075,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "32048a75f46668075b3201a4f84f593aa4d4f84db27eb8889a4e52a00822fef9",
+    "aggregate_fingerprint": "de26fb43c437b38093828cfc9ea0cc11f314193b72dd2d0aa290153acadad234",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -8387,7 +9085,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
+      "contracts/metadata/documentation-platform.json": "9f154d902dce85deaf4b3d9baf121a16bcf75d8d785a42a9e46c309c21e56aa3",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -8412,6 +9110,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql": "c5c8bdc2f1c3ad764862fd6f034a67287fffdc1dc6ced852f602137a3480165c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql": "34e9e8fea33001d342bf9263e960a45098cb85a60d841d1fc8c726585088f499",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "generated"

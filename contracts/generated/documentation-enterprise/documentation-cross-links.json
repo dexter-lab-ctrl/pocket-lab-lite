@@ -3587,17 +3587,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:78d47b94f2b960f3",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:identity:7a4fff6fcbc4b368",
       "relation_type": "related_to",
       "source": "page:generated/enterprise/journeys/identity",
@@ -3624,6 +3613,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:82848b47f1416513",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
       "target_type": "test"
     },
     {

@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">18 Foreign Key Constraints</h3>
+                            <h3 class="box-title">23 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -103,6 +103,48 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/auth_session_assurance.html'>auth_session_assurance</a><span>.session_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/auth_session_assurance.html'>auth_session_assurance</a><span>.credential_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.session_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_credentials.html'>webauthn_credentials</a><span>.credential_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_users.html'>webauthn_users</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
                                     <tr>
                                         <td></td>
                                         <td>
@@ -288,6 +330,42 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
+                                                    <td><a href='tables/policy_decision_details.html'>policy_decision_details</a><span>.decision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_decisions.html'>policy_decisions</a><span>.decision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_credentials.html'>webauthn_credentials</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
                                                     <td><a href='tables/device_health_attention.html'>device_health_attention</a><span>.device_id</span></td>
                                                 </tr>
                                             </table>
@@ -410,6 +488,36 @@
                                                 </tr>
                                                 <tr>
                                                     <td><a href='tables/device_lifecycle_events.html'>device_lifecycle_events</a><span>.event_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_challenges.html'>webauthn_challenges</a><span>.session_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_challenges.html'>webauthn_challenges</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_challenges.html'>webauthn_challenges</a><span>.owner_claim_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.session_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/owner_claims.html'>owner_claims</a><span>.claim_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>

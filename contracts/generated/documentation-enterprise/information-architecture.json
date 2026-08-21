@@ -1302,6 +1302,12 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py"
         },
         {
@@ -1699,12 +1705,6 @@
           "relation_type": "verified_by",
           "source": "component:lite-api",
           "target": "test:tests/backend/test_lite_api.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:lite-api",
-          "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
         }
       ],
       "expansion": {
@@ -1734,6 +1734,7 @@
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_device_health_d4.py",
+        "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
@@ -15225,7 +15226,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9032d64ad5130a47468bca7a885de97a97e52876e8e9aca14b3e99f2cab8134a",
+  "source_fingerprint": "026602a891a88ca2fc66819873d8265ba3bc44df067ba9384b4e8f44c63e2de7",
   "top_level": [
     "start-here",
     "use",

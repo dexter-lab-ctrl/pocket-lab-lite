@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: d9924faa09d7f50eae9ff6eb717a4875a1c0281e88373112597d48b3a9d1b94e
+source_fingerprint: de38eb6ee607377dacce45f6f8db9c93c081bc63fcfc7a869a2f603b7cb79e76
 schema_revision: 1
 validation_status: generated
 ---
@@ -76,8 +76,8 @@ Missing delivery metadata is explicitly marked `incomplete`; the generator does 
 | `pocketlab.commands.vault.dynamic_secret` | vault | command |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101, pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1390 |
 | `pocketlab.commands.vault.rotate` | vault | command |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91, pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1389 |
 | `pocketlab.events` | unknown | telemetry |  | nats_bus.py | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:30, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:483 |
-| `pocketlab.events.api.started` | api | event | main.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/main.py:99 |
-| `pocketlab.events.api.stopped` | api | event | main.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/main.py:171 |
+| `pocketlab.events.api.started` | api | event | main.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/main.py:100 |
+| `pocketlab.events.api.stopped` | api | event | main.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/main.py:172 |
 | `pocketlab.events.catalog.refresh_started` | catalog | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:100 |
 | `pocketlab.events.catalog.refreshed` | catalog | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:115 |
 | `pocketlab.events.command.dead_lettered` | command | event | nats_bus.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1106 |

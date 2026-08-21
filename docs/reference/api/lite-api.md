@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e400925a2410df7d28dadc0db958a83cb9862b05048dbb7f0bafa05932312184
+source_fingerprint: ebcaaa9a615748e438c1b3c373c36d668582699d92154399d5a65c87d96c2562
 schema_revision: 1
 validation_status: generated
 ---
@@ -1139,6 +1139,243 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="post-api-lite-identity-owner-claim"></a>
+## POST `/api/lite/identity/owner-claim`
+
+- Operation ID: `issue_lite_owner_claim_api_lite_identity_owner_claim_post`
+- Summary: Issue Lite Owner Claim
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteOwnerClaimIssueRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-owner-claim-consume"></a>
+## POST `/api/lite/identity/owner-claim/consume`
+
+- Operation ID: `consume_lite_owner_claim_api_lite_identity_owner_claim_consume_post`
+- Summary: Consume Lite Owner Claim
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteOwnerClaimConsumeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-owner-claim-passkey-options"></a>
+## POST `/api/lite/identity/owner-claim/passkey/options`
+
+- Operation ID: `owner_claim_passkey_options_api_lite_identity_owner_claim_passkey_options_post`
+- Summary: Owner Claim Passkey Options
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteOwnerClaimPasskeyOptionsRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-owner-claim-passkey-verify"></a>
+## POST `/api/lite/identity/owner-claim/passkey/verify`
+
+- Operation ID: `owner_claim_passkey_verify_api_lite_identity_owner_claim_passkey_verify_post`
+- Summary: Owner Claim Passkey Verify
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LitePasskeyVerifyRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-identity-owner-claim-status"></a>
+## GET `/api/lite/identity/owner-claim/status`
+
+- Operation ID: `owner_claim_status_api_lite_identity_owner_claim_status_get`
+- Summary: Owner Claim Status
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-passkeys-login-options"></a>
+## POST `/api/lite/identity/passkeys/login/options`
+
+- Operation ID: `passkey_login_options_api_lite_identity_passkeys_login_options_post`
+- Summary: Passkey Login Options
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-passkeys-login-verify"></a>
+## POST `/api/lite/identity/passkeys/login/verify`
+
+- Operation ID: `passkey_login_verify_api_lite_identity_passkeys_login_verify_post`
+- Summary: Passkey Login Verify
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LitePasskeyVerifyRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-passkeys-registration-options"></a>
+## POST `/api/lite/identity/passkeys/registration/options`
+
+- Operation ID: `passkey_registration_options_api_lite_identity_passkeys_registration_options_post`
+- Summary: Passkey Registration Options
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-passkeys-registration-verify"></a>
+## POST `/api/lite/identity/passkeys/registration/verify`
+
+- Operation ID: `passkey_registration_verify_api_lite_identity_passkeys_registration_verify_post`
+- Summary: Passkey Registration Verify
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LitePasskeyVerifyRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="delete-api-lite-identity-passkeys-credential-id"></a>
+## DELETE `/api/lite/identity/passkeys/{credential_id}`
+
+- Operation ID: `revoke_lite_passkey_api_lite_identity_passkeys__credential_id__delete`
+- Summary: Revoke Lite Passkey
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| credential_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="put-api-lite-identity-passkeys-credential-id"></a>
+## PUT `/api/lite/identity/passkeys/{credential_id}`
+
+- Operation ID: `rename_lite_passkey_api_lite_identity_passkeys__credential_id__put`
+- Summary: Rename Lite Passkey
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| credential_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LitePasskeyRenameRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="post-api-lite-identity-password"></a>
 ## POST `/api/lite/identity/password`
 
@@ -1286,6 +1523,52 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="post-api-lite-identity-step-up-options"></a>
+## POST `/api/lite/identity/step-up/options`
+
+- Operation ID: `passkey_step_up_options_api_lite_identity_step_up_options_post`
+- Summary: Passkey Step Up Options
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LitePasskeyStepUpRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-identity-step-up-verify"></a>
+## POST `/api/lite/identity/step-up/verify`
+
+- Operation ID: `passkey_step_up_verify_api_lite_identity_step_up_verify_post`
+- Summary: Passkey Step Up Verify
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LitePasskeyStepUpVerifyRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="get-api-lite-policy"></a>
 ## GET `/api/lite/policy`
 
@@ -1322,6 +1605,44 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 410 | Legacy policy mutation is retired; Rules policy activation is repository-owned. | application/json: `object` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-policy-decisions-decision-id"></a>
+## GET `/api/lite/policy/decisions/{decision_id}`
+
+- Operation ID: `get_lite_policy_decision_api_lite_policy_decisions__decision_id__get`
+- Summary: Get Lite Policy Decision
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| decision_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-policy-templates"></a>
+## GET `/api/lite/policy/templates`
+
+- Operation ID: `get_lite_policy_templates_api_lite_policy_templates_get`
+- Summary: Get Lite Policy Templates
+- Deprecated: no
+- Tags: `lite-identity-p1`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery"></a>

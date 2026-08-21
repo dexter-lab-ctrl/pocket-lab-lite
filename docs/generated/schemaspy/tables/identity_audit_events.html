@@ -143,7 +143,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="human_id">human_id</span></td>
+                                    <td><span id="human_id">human_id</span></td>
                                     <td>TEXT</td>
                                     <td>2000000000</td>
                                     <td title='nullable'>√</td>
@@ -155,11 +155,6 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="identity_audit_events.human_id&#39;s name implies that it&#39;s a child of human_identities.human_id, but it doesn&#39;t reference that column."><a href='human_identities.html'>human_identities</a><span class='relatedKey'>.human_id</span></td>
-                                                <td class="constraint detail">Implied Constraint</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
@@ -326,20 +321,19 @@
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="296,119,524,389">
-<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,110,252,292">
-<area shape="rect" id="node3" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="568,5,999,313">
+<area shape="rect" id="node1" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="277,5,708,313">
+<area shape="rect" id="node2" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="5,95,233,365">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/identity_audit_events.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="630,264,839,358">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,207,262,301">
-<area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,155,545,249">
-<area shape="rect" id="node4" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="608,5,861,99">
-<area shape="rect" id="node5" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="924,114,1355,422">
-<area shape="rect" id="node6" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="589,152,880,246">
+<area shape="rect" id="node1" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="926,443,1226,537">
+<area shape="rect" id="node2" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="589,176,817,446">
+<area shape="rect" id="node3" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,231,262,325">
+<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,195,545,289">
+<area shape="rect" id="node5" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="861,117,1292,425">
+<area shape="rect" id="node6" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="938,5,1215,99">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/identity_audit_events.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

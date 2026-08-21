@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: adaededc718f2c42f3a383e69d0105ea4462a67f6a6ea69e296c054ed8f30316
+source_fingerprint: a0206421338e9ba3691cabcf30aa3685c61edf546afa3630e83746e303dfadaf
 schema_revision: 1
 validation_status: generated
 ---
@@ -34,6 +34,8 @@ validation_status: generated
 | `generic_policy_toggle_retired` | rules | The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned. | no | yes | 410 | info | structured reason/failure fields in Lite backend or contracts metadata |
 | `human_session_required` | identity | The requested credential or session lifecycle action requires the signed-in local owner session. | yes | no | 403 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `identity_mismatch` | devices | The local identity does not match the requested enrollment. | no | yes | 409 | high | structured reason/failure fields in Lite backend or contracts metadata |
+| `identity_setup_rejected` | identity | Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid. | yes | no | 401 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `identity_setup_unavailable` | identity | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | yes | no | 503 | error | structured reason/failure fields in Lite backend or contracts metadata |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `interrupted` | system | The operation was interrupted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `invalid_domain` | projections | The requested projection domain is invalid. | yes | no | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -46,6 +48,7 @@ validation_status: generated
 | `no_active_generation` | projections | There is no active generation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `payload_too_large` | validation | The bounded payload limit was exceeded. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `policy_decision_not_found` | rules | The requested bounded Safety Rules decision record is no longer available. | no | yes | 404 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `policy_unavailable` | rules | The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution. | yes | no | 503 | error | structured reason/failure fields in Lite backend or contracts metadata |
 | `projection_too_old` | projections | The last committed projection is too old for a safe write. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `projection_unavailable` | projections | The prepared projection is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |

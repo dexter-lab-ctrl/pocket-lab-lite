@@ -383,6 +383,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "name": "tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "source_refs": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_identity_rules_authorization.py",
       "name": "tests/backend/test_lite_identity_rules_authorization.py",
       "source_refs": [
@@ -1827,6 +1837,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1fa01d333762b4219c427a4e20027eae5c2722dac7e659d8de013ba945261d3f"
+    "source_fingerprint": "f1482ac16a8182ade6f10f44b3f8099ff3f403e8fc378b85e0417048e0800e5e"
   }
 }

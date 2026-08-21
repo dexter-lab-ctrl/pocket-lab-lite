@@ -26,6 +26,8 @@ generator_version: 3
 | `generic_policy_toggle_retired` | rules | The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned. | info | no | yes | This legacy Rules action is no longer available. |
 | `human_session_required` | identity | The requested credential or session lifecycle action requires the signed-in local owner session. | warning | yes | no | A signed-in owner session is required. |
 | `identity_mismatch` | devices | The local identity does not match the requested enrollment. | high | no | yes | The local identity does not match the requested enrollment. |
+| `identity_setup_rejected` | identity | Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid. | warning | yes | no | Owner claim creation could not be verified. |
+| `identity_setup_unavailable` | identity | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | error | yes | no | Owner claim creation is not enabled on this server. |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | warning | yes | no | There is not enough safe storage for the operation. |
 | `interrupted` | system | The operation was interrupted. | warning | yes | no | The operation was interrupted. |
 | `invalid_domain` | projections | The requested projection domain is invalid. | warning | yes | no | The requested projection domain is invalid. |
@@ -38,6 +40,7 @@ generator_version: 3
 | `no_active_generation` | projections | There is no active generation. | warning | yes | no | There is no active generation. |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | warning | yes | no | The record is not present in the restored snapshot. |
 | `payload_too_large` | validation | The bounded payload limit was exceeded. | warning | yes | no | The bounded payload limit was exceeded. |
+| `policy_decision_not_found` | rules | The requested bounded Safety Rules decision record is no longer available. | warning | no | yes | That Safety Rules decision is no longer available. |
 | `policy_unavailable` | rules | The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution. | error | yes | no | Safety Rules are not ready, so this protected action was not started. |
 | `projection_too_old` | projections | The last committed projection is too old for a safe write. | warning | yes | no | The last committed projection is too old for a safe write. |
 | `projection_unavailable` | projections | The prepared projection is unavailable. | warning | yes | no | The prepared projection is unavailable. |

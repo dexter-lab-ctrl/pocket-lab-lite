@@ -23,7 +23,9 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/fleet` | ui:litedevices | table:device_awareness_state, table:device_enrollment_registry, table:device_health_attention, table:device_health_current, table:device_health_transitions, table:device_heartbeats, table:device_identity_guards, table:device_invite_lifecycle, table:device_lifecycle_events, table:device_lifecycle_transactions, table:device_recovery_history, table:device_removal_receipts, table:device_supervisor_state, table:device_system_profiles | contract-derived |
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | ui:litedevices | — | unvalidated |
 | `GET /api/lite/identity` | ui:liteidentity | — | unvalidated |
+| `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
+| `GET /api/lite/policy/decisions/{decision_id}` | ui:literules | — | unvalidated |
 | `GET /api/lite/recovery/database` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_code_batches, table:recovery_codes, table:recovery_current_state, table:recovery_operations | contract-derived |
 | `GET /api/lite/recovery/summary` | ui:literecovery | — | unvalidated |
@@ -42,11 +44,20 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/fleet/remove-device` | ui:litedevices | — | unvalidated |
 | `POST /api/lite/identity/login` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/logout` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/owner-claim/consume` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/owner-claim/passkey/options` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/owner-claim/passkey/verify` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/passkeys/login/options` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/passkeys/login/verify` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/passkeys/registration/options` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/passkeys/registration/verify` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/password` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/recover` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/recovery/regenerate` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/sessions/revoke-others` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/setup` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/step-up/options` | ui:liteidentity | — | unvalidated |
+| `POST /api/lite/identity/step-up/verify` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/recovery/backup` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/backups/{backup_id}/verify` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/database/backup` | ui:literecovery | — | unvalidated |
@@ -59,6 +70,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/release/check` | ui:litereleaseupdatecard | — | unvalidated |
 | `POST /api/lite/security/apps/{app_id}/check` | ui:litesecurity | — | unvalidated |
 | `POST /api/lite/security/check` | ui:litesecurity | — | unvalidated |
+| `PUT /api/lite/identity/passkeys/{credential_id}` | ui:liteidentity | — | unvalidated |
 
 ## Field lineage
 

@@ -31,6 +31,8 @@ confidence: generated
 | generic_policy_toggle_retired | rules | info | no | The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned. | Review the owning evidence and operator guidance before another action. |
 | human_session_required | identity | warning | yes | The requested credential or session lifecycle action requires the signed-in local owner session. | Correct the prerequisite and retry through the owning backend workflow. |
 | identity_mismatch | devices | high | no | The local identity does not match the requested enrollment. | Review the owning evidence and operator guidance before another action. |
+| identity_setup_rejected | identity | warning | yes | Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid. | Correct the prerequisite and retry through the owning backend workflow. |
+| identity_setup_unavailable | identity | error | yes | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | Correct the prerequisite and retry through the owning backend workflow. |
 | insufficient_storage | system | warning | yes | There is not enough safe storage for the operation. | Correct the prerequisite and retry through the owning backend workflow. |
 | interrupted | system | warning | yes | The operation was interrupted. | Correct the prerequisite and retry through the owning backend workflow. |
 | invalid_domain | projections | warning | yes | The requested projection domain is invalid. | Correct the prerequisite and retry through the owning backend workflow. |
@@ -43,6 +45,7 @@ confidence: generated
 | no_active_generation | projections | warning | yes | There is no active generation. | Correct the prerequisite and retry through the owning backend workflow. |
 | not_found_in_restored_snapshot | system | warning | yes | The record is not present in the restored snapshot. | Correct the prerequisite and retry through the owning backend workflow. |
 | payload_too_large | validation | warning | yes | The bounded payload limit was exceeded. | Correct the prerequisite and retry through the owning backend workflow. |
+| policy_decision_not_found | rules | warning | no | The requested bounded Safety Rules decision record is no longer available. | Review the owning evidence and operator guidance before another action. |
 | policy_unavailable | rules | error | yes | The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution. | Correct the prerequisite and retry through the owning backend workflow. |
 | projection_too_old | projections | warning | yes | The last committed projection is too old for a safe write. | Capture fresh sanitized runtime evidence and explicitly promote it before claiming current readiness. |
 | projection_unavailable | projections | warning | yes | The prepared projection is unavailable. | Correct the prerequisite and retry through the owning backend workflow. |

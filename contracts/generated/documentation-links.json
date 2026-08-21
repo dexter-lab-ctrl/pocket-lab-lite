@@ -53,6 +53,10 @@
         "title": "DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-apps-photoprism-storage-mappings-mapping-id"
       },
+      "endpoint:DELETE:/api/lite/identity/passkeys/{credential_id}": {
+        "title": "DELETE /api/lite/identity/passkeys/{credential_id}",
+        "url": "../../docs/reference/api/lite-api.md#delete-api-lite-identity-passkeys-credential-id"
+      },
       "endpoint:DELETE:/api/lite/identity/sessions/{session_id}": {
         "title": "DELETE /api/lite/identity/sessions/{session_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-identity-sessions-session-id"
@@ -181,9 +185,21 @@
         "title": "GET /api/lite/identity",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-identity"
       },
+      "endpoint:GET:/api/lite/identity/owner-claim/status": {
+        "title": "GET /api/lite/identity/owner-claim/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-identity-owner-claim-status"
+      },
       "endpoint:GET:/api/lite/policy": {
         "title": "GET /api/lite/policy",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-policy"
+      },
+      "endpoint:GET:/api/lite/policy/decisions/{decision_id}": {
+        "title": "GET /api/lite/policy/decisions/{decision_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-policy-decisions-decision-id"
+      },
+      "endpoint:GET:/api/lite/policy/templates": {
+        "title": "GET /api/lite/policy/templates",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-policy-templates"
       },
       "endpoint:GET:/api/lite/recovery": {
         "title": "GET /api/lite/recovery",
@@ -445,6 +461,38 @@
         "title": "POST /api/lite/identity/logout",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-logout"
       },
+      "endpoint:POST:/api/lite/identity/owner-claim": {
+        "title": "POST /api/lite/identity/owner-claim",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-owner-claim"
+      },
+      "endpoint:POST:/api/lite/identity/owner-claim/consume": {
+        "title": "POST /api/lite/identity/owner-claim/consume",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-owner-claim-consume"
+      },
+      "endpoint:POST:/api/lite/identity/owner-claim/passkey/options": {
+        "title": "POST /api/lite/identity/owner-claim/passkey/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-owner-claim-passkey-options"
+      },
+      "endpoint:POST:/api/lite/identity/owner-claim/passkey/verify": {
+        "title": "POST /api/lite/identity/owner-claim/passkey/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-owner-claim-passkey-verify"
+      },
+      "endpoint:POST:/api/lite/identity/passkeys/login/options": {
+        "title": "POST /api/lite/identity/passkeys/login/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-passkeys-login-options"
+      },
+      "endpoint:POST:/api/lite/identity/passkeys/login/verify": {
+        "title": "POST /api/lite/identity/passkeys/login/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-passkeys-login-verify"
+      },
+      "endpoint:POST:/api/lite/identity/passkeys/registration/options": {
+        "title": "POST /api/lite/identity/passkeys/registration/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-passkeys-registration-options"
+      },
+      "endpoint:POST:/api/lite/identity/passkeys/registration/verify": {
+        "title": "POST /api/lite/identity/passkeys/registration/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-passkeys-registration-verify"
+      },
       "endpoint:POST:/api/lite/identity/password": {
         "title": "POST /api/lite/identity/password",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-password"
@@ -468,6 +516,14 @@
       "endpoint:POST:/api/lite/identity/setup": {
         "title": "POST /api/lite/identity/setup",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-setup"
+      },
+      "endpoint:POST:/api/lite/identity/step-up/options": {
+        "title": "POST /api/lite/identity/step-up/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-step-up-options"
+      },
+      "endpoint:POST:/api/lite/identity/step-up/verify": {
+        "title": "POST /api/lite/identity/step-up/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-step-up-verify"
       },
       "endpoint:POST:/api/lite/policy/apply": {
         "title": "POST /api/lite/policy/apply",
@@ -552,6 +608,10 @@
       "endpoint:PUT:/api/lite/fleet/devices/{device_id}/display-model": {
         "title": "PUT /api/lite/fleet/devices/{device_id}/display-model",
         "url": "../../docs/reference/api/lite-api.md#put-api-lite-fleet-devices-device-id-display-model"
+      },
+      "endpoint:PUT:/api/lite/identity/passkeys/{credential_id}": {
+        "title": "PUT /api/lite/identity/passkeys/{credential_id}",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-identity-passkeys-credential-id"
       },
       "event:pocketlab.commands": {
         "title": "pocketlab.commands",
@@ -1433,6 +1493,14 @@
         "title": "identity_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#identity-mismatch"
       },
+      "reason:identity_setup_rejected": {
+        "title": "identity_setup_rejected",
+        "url": "../../docs/generated/development/reason-codes.md#identity-setup-rejected"
+      },
+      "reason:identity_setup_unavailable": {
+        "title": "identity_setup_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#identity-setup-unavailable"
+      },
       "reason:insufficient_storage": {
         "title": "insufficient_storage",
         "url": "../../docs/generated/development/reason-codes.md#insufficient-storage"
@@ -1480,6 +1548,10 @@
       "reason:payload_too_large": {
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
+      },
+      "reason:policy_decision_not_found": {
+        "title": "policy_decision_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#policy-decision-not-found"
       },
       "reason:policy_unavailable": {
         "title": "policy_unavailable",
@@ -1595,6 +1667,11 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#audit-evidence-index",
         "schema_url": "../../docs/generated/schemaspy/tables/audit_evidence_index.html",
         "title": "audit_evidence_index"
+      },
+      "table:auth_session_assurance": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#auth-session-assurance",
+        "schema_url": "../../docs/generated/schemaspy/tables/auth_session_assurance.html",
+        "title": "auth_session_assurance"
       },
       "table:auth_sessions": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#auth-sessions",
@@ -1716,6 +1793,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
         "title": "lite_revision_events"
       },
+      "table:owner_claims": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-claims",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_claims.html",
+        "title": "owner_claims"
+      },
       "table:phase3b_current_state": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#phase3b-current-state",
         "schema_url": "../../docs/generated/schemaspy/tables/phase3b_current_state.html",
@@ -1725,6 +1807,11 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#phase3b-revision-events",
         "schema_url": "../../docs/generated/schemaspy/tables/phase3b_revision_events.html",
         "title": "phase3b_revision_events"
+      },
+      "table:policy_decision_details": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-decision-details",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_decision_details.html",
+        "title": "policy_decision_details"
       },
       "table:policy_decisions": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-decisions",
@@ -1821,6 +1908,21 @@
         "schema_url": "../../docs/generated/schemaspy/tables/security_store_metadata.html",
         "title": "security_store_metadata"
       },
+      "table:webauthn_challenges": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#webauthn-challenges",
+        "schema_url": "../../docs/generated/schemaspy/tables/webauthn_challenges.html",
+        "title": "webauthn_challenges"
+      },
+      "table:webauthn_credentials": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#webauthn-credentials",
+        "schema_url": "../../docs/generated/schemaspy/tables/webauthn_credentials.html",
+        "title": "webauthn_credentials"
+      },
+      "table:webauthn_users": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#webauthn-users",
+        "schema_url": "../../docs/generated/schemaspy/tables/webauthn_users.html",
+        "title": "webauthn_users"
+      },
       "table:workflow_command_state": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#workflow-command-state",
         "schema_url": "../../docs/generated/schemaspy/tables/workflow_command_state.html",
@@ -1839,7 +1941,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "3a06fc21522766164bb568da038eee6243719afe4d469e433d0eaba1b14e4ab4",
+    "aggregate_fingerprint": "00942c1aad4f74efdd81ad519001cf33a58f9fd9dccc907e01d1fc6b65041663",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -1849,8 +1951,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "85bdc74842aa511c6deeb5fd07721dc203acc9bcee62db0d3b84d1c3258c024f",
-      "contracts/metadata/documentation-platform.json": "5911b44a7db71cd7713dabd563bbcf4b3d063fe124aa1c80bd59c257ca05a8b9",
+      "contracts/generated/lite-openapi.json": "05207a418ba2d44e02aeb9e3ec8f2246a1c7934f8aa68f6ee5e84438f0b94f55",
+      "contracts/metadata/documentation-platform.json": "9f154d902dce85deaf4b3d9baf121a16bcf75d8d785a42a9e46c309c21e56aa3",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -1875,6 +1977,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql": "c5c8bdc2f1c3ad764862fd6f034a67287fffdc1dc6ced852f602137a3480165c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql": "2d991cdd1fe9a24f8363dfd52b0c0a7fb35e4fe1d428e4184022fb288544c069",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql": "34e9e8fea33001d342bf9263e960a45098cb85a60d841d1fc8c726585088f499",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "generated"
