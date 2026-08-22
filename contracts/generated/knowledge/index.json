@@ -22779,6 +22779,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_policy_first_activation_recovery.py",
+      "name": "tests/backend/test_lite_policy_first_activation_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_policy_first_activation_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
       "name": "tests/backend/test_lite_policy_lifecycle_p2_2.py",
       "source_refs": [
@@ -26680,6 +26690,7 @@
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
         "test:tests/backend/test_lite_policy_analysis_p2_3.py",
         "test:tests/backend/test_lite_policy_approvals_p3_1.py",
+        "test:tests/backend/test_lite_policy_first_activation_recovery.py",
         "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_production_architecture_platform.py",
@@ -27778,6 +27789,7 @@
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
         "test:tests/backend/test_lite_policy_analysis_p2_3.py",
         "test:tests/backend/test_lite_policy_approvals_p3_1.py",
+        "test:tests/backend/test_lite_policy_first_activation_recovery.py",
         "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_production_architecture_platform.py",
@@ -81013,9 +81025,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60",
+  "source_fingerprint": "f1a7008882adbb6b53c602e090693d9a0c30d7fcd4002ca89078f3112816c922",
   "statistics": {
-    "entity_count": 1061,
+    "entity_count": 1062,
     "entity_type_counts": {
       "adr": 6,
       "api": 163,
@@ -81032,7 +81044,7 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 65,
-      "test": 187,
+      "test": 188,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 23,
@@ -81040,6 +81052,6 @@
       "vocabulary": 39
     },
     "relation_count": 2954,
-    "source_count": 224
+    "source_count": 225
   }
 }

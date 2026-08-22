@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-SUPERVISOR_VERSION = "1.2.0-adaptive-restart-budgets"
+SUPERVISOR_VERSION = "1.2.1-policy-bootstrap-recovery"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_CADDY_FAILURE_THRESHOLD = 3
@@ -541,6 +541,29 @@ class LiteCoreSupervisor:
         except Exception:
             return False
 
+    def _filesystem_known_good_revision(self) -> str:
+        """Return only a proved staged revision referenced by the known-good symlink."""
+        pointer = self.state_root / "opa" / "known-good"
+        stage_root = self.state_root / "opa" / "stage"
+        try:
+            if not pointer.is_symlink():
+                return ""
+            resolved = pointer.resolve(strict=True)
+            if resolved.parent.resolve(strict=True) != stage_root.resolve(strict=True):
+                return ""
+            revision = (
+                resolved / "revision.txt"
+            ).read_text(encoding="utf-8").strip()
+            if (
+                not revision
+                or resolved.name != revision
+                or not self._stage_is_valid(revision)
+            ):
+                return ""
+            return revision
+        except Exception:
+            return ""
+
     def _stage_matches_revision(self, revision: str, database_manifest: str, content_hash: str) -> bool:
         try:
             stage = json.loads((self.state_root / "opa" / "stage" / revision / "manifest.json").read_text(encoding="utf-8"))
@@ -567,7 +590,7 @@ class LiteCoreSupervisor:
             return False
 
     def reconcile_policy_activation(self) -> Dict[str, Any] | None:
-        """Advance exactly one durable operation; all failures restore known-good."""
+        """Advance one durable operation; uncertain operations remain quarantined."""
         try:
             begin_immediate, connection, _ = self._policy_runtime_modules()
         except Exception as exc:
@@ -576,7 +599,7 @@ class LiteCoreSupervisor:
             if not locked:
                 return {"event": "policy_activation_lock_busy", "acted": False}
             with connection() as conn:
-                operation = conn.execute("SELECT * FROM policy_activation_operations WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back','uncertain') ORDER BY created_at LIMIT 1").fetchone()
+                operation = conn.execute("SELECT * FROM policy_activation_operations WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back') ORDER BY created_at LIMIT 1").fetchone()
                 if not operation:
                     return None
                 op = dict(operation)
@@ -618,6 +641,10 @@ class LiteCoreSupervisor:
     def _rollback_policy(self, op: Dict[str, Any], reason: str, *, observed: str | None = None) -> Dict[str, Any]:
         self._set_policy_operation(op["operation_id"], "rolling_back", reason=reason, opa=observed)
         known_good = str(op.get("prior_known_good_revision_id") or "")
+        bootstrap_known_good = False
+        if not known_good:
+            known_good = self._filesystem_known_good_revision()
+            bootstrap_known_good = bool(known_good)
         if not known_good or not self._stage_is_valid(known_good) or not self._prepare_policy("activate", known_good):
             self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_pointer_failed", opa=observed)
             return {"event": "policy_activation_uncertain", "reason": "rollback_pointer_failed", "acted": False}
@@ -626,8 +653,26 @@ class LiteCoreSupervisor:
         if not restart.get("acted") or fetch_json("http://127.0.0.1:8181/health") is None or restored != known_good:
             self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_unproved", opa=restored)
             return {"event": "policy_activation_uncertain", "reason": "rollback_unproved", "acted": False}
-        self._set_policy_operation(op["operation_id"], "rolled_back", reason=reason, filesystem=known_good, opa=restored, evidence="policy:rollback-proved")
-        self._append_event({"event": "policy_activation_rolled_back", "operation_id": op["operation_id"], "reason": reason, "acted": True})
+        evidence = (
+            "policy:rollback-proved:filesystem-known-good"
+            if bootstrap_known_good
+            else "policy:rollback-proved"
+        )
+        self._set_policy_operation(
+            op["operation_id"],
+            "rolled_back",
+            reason=reason,
+            filesystem=known_good,
+            opa=restored,
+            evidence=evidence,
+        )
+        self._append_event({
+            "event": "policy_activation_rolled_back",
+            "operation_id": op["operation_id"],
+            "reason": reason,
+            "bootstrap_known_good": bootstrap_known_good,
+            "acted": True,
+        })
         return {"event": "policy_activation_rolled_back", "operation_id": op["operation_id"], "reason": reason, "acted": True}
 
     def tick(self) -> Dict[str, Any]:

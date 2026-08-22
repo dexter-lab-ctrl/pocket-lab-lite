@@ -2720,6 +2720,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_policy_first_activation_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_policy_first_activation_recovery.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_policy_lifecycle_p2_2.py"
       ],
       "source": "tests/backend/test_lite_policy_lifecycle_p2_2.py"
@@ -3439,6 +3445,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ccec520544f8d6277badea5d2e0a8cda6500d497ee8dc5afe2e0332435c62b60"
+    "source_fingerprint": "f1a7008882adbb6b53c602e090693d9a0c30d7fcd4002ca89078f3112816c922"
   }
 }
