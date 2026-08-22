@@ -85,6 +85,7 @@ def sanitize(value: Any) -> Any:
     if isinstance(value, tuple):
         return [sanitize(item) for item in value]
     if isinstance(value, str):
+        # Avoid leaking user:password@host style URLs if one accidentally reaches evidence.
         return re.sub(r"(nats|http|https)://([^:/@]+):([^@]+)@", r"\1://***REDACTED***:***REDACTED***@", value)
     return value
 
@@ -166,8 +167,12 @@ def status_summary(
         "checks": {
             "nats_tcp_reachable": nats_tcp,
             "api_nats_connected": not nats_api_status_unhealthy(api_nats_status),
+            # caddy_tcp_reachable is the proxy-owned liveness signal.
+            # caddy_upstream_http_reachable traverses Caddy to FastAPI and is
+            # diagnostic only; it must never trigger a Caddy restart by itself.
             "caddy_tcp_reachable": caddy_tcp,
             "caddy_upstream_http_reachable": caddy_upstream_http,
+            # Backward-compatible field retained for existing evidence readers.
             "caddy_http_reachable": caddy_upstream_http,
         },
         "api_nats_mode": (api_nats_status or {}).get("mode"),
@@ -225,9 +230,16 @@ class LiteCoreSupervisor:
         return normalized or "pocket-lab-lite-server"
 
     def _persist_canonical_evidence(self, payload: Dict[str, Any]) -> None:
+        """Persist bounded Server Host supervisor truth through the canonical store.
+
+        This path is deliberately independent from PM2 discovery in the API process and
+        from NATS availability. The supervisor owns the observation, while the existing
+        SQLite writer owns serialization, ordering fences, and projection invalidation.
+        """
         observed = payload.get("observed_after") if isinstance(payload.get("observed_after"), dict) else {}
         if not observed:
             observed = payload.get("observed_before") if isinstance(payload.get("observed_before"), dict) else {}
+        services = observed.get("services") if isinstance(observed.get("services"), dict) else {}
         checks = observed.get("checks") if isinstance(observed.get("checks"), dict) else {}
         processes = load_pm2_processes()
         supervisor_process_status = process_status(processes, "pocketlab-core-supervisor")
@@ -254,9 +266,14 @@ class LiteCoreSupervisor:
             if runtime_root not in sys.path:
                 sys.path.insert(0, runtime_root)
             from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+
             CONTROL_PLANE.record_supervisor_evidence(evidence)
         except Exception as exc:
-            self._append_event({"event": "canonical_supervisor_evidence_write_failed", "error_type": type(exc).__name__, "acted": False})
+            self._append_event({
+                "event": "canonical_supervisor_evidence_write_failed",
+                "error_type": type(exc).__name__,
+                "acted": False,
+            })
 
     def _finalize_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         self._write_json(self.state_file, payload)
@@ -311,7 +328,10 @@ class LiteCoreSupervisor:
         if len(recent) >= self.max_restarts_per_window:
             retry_after = max(1, int(recent[0] + self.restart_window_seconds - now + 0.999))
             return False, "restart_budget_exhausted", retry_after, generation
-        exponential_cooldown = min(self.max_restart_backoff_seconds, self.cooldown * (2 ** min(len(recent), 5)))
+        exponential_cooldown = min(
+            self.max_restart_backoff_seconds,
+            self.cooldown * (2 ** min(len(recent), 5)),
+        )
         last_at = self.last_actions.get(action, 0.0)
         if now - last_at < exponential_cooldown:
             retry_after = max(1, int(exponential_cooldown - (now - last_at) + 0.999))
@@ -360,7 +380,15 @@ class LiteCoreSupervisor:
         action = f"restart:{service}"
         allowed, blocked_reason, retry_after, generation = self._restart_admission(service, action)
         if not allowed:
-            event = {"event": "restart_suppressed", "service": service, "reason": reason, "suppressed_reason": blocked_reason, "retry_after_seconds": retry_after, "restart_generation": generation, "acted": False}
+            event = {
+                "event": "restart_suppressed",
+                "service": service,
+                "reason": reason,
+                "suppressed_reason": blocked_reason,
+                "retry_after_seconds": retry_after,
+                "restart_generation": generation,
+                "acted": False,
+            }
             self._append_event(event)
             return event
         try:
@@ -372,14 +400,30 @@ class LiteCoreSupervisor:
             if acted:
                 generation = self.restart_generations.get(service, 0) + 1
                 self.restart_generations[service] = generation
-            event = {"event": "restart_attempted", "service": service, "reason": reason, "returncode": result.returncode, "acted": acted, "restart_generation": generation, "restart_window_count": len(self._prune_restart_history(service))}
+            event = {
+                "event": "restart_attempted",
+                "service": service,
+                "reason": reason,
+                "returncode": result.returncode,
+                "acted": acted,
+                "restart_generation": generation,
+                "restart_window_count": len(self._prune_restart_history(service)),
+            }
             self._append_event(event)
             return event
         except Exception as exc:
             attempted_at = epoch()
             self.mark_action(action)
             self.restart_history.setdefault(service, []).append(attempted_at)
-            event = {"event": "restart_failed", "service": service, "reason": reason, "error_type": type(exc).__name__, "acted": False, "restart_generation": generation, "restart_window_count": len(self._prune_restart_history(service))}
+            event = {
+                "event": "restart_failed",
+                "service": service,
+                "reason": reason,
+                "error_type": type(exc).__name__,
+                "acted": False,
+                "restart_generation": generation,
+                "restart_window_count": len(self._prune_restart_history(service)),
+            }
             self._append_event(event)
             return event
 
@@ -400,7 +444,13 @@ class LiteCoreSupervisor:
         api_nats = fetch_json(api_nats_url)
         caddy_tcp = tcp_reachable("127.0.0.1", self.caddy_port)
         caddy_upstream_http = fetch_json(caddy_url) is not None
-        return status_summary(statuses, nats_tcp, api_nats, caddy_tcp, caddy_upstream_http)
+        return status_summary(
+            statuses,
+            nats_tcp,
+            api_nats,
+            caddy_tcp,
+            caddy_upstream_http,
+        )
 
     def _restore_guard_state(self) -> Dict[str, Any]:
         journals: List[Dict[str, Any]] = []
@@ -428,7 +478,11 @@ class LiteCoreSupervisor:
             "state": phase,
             "writers_stopped": True,
             "api_worker_restart_allowed": bool(active.get("api_worker_restart_allowed")),
-            "summary": "Restore rollback needs operator attention." if phase == "rollback_failed" else "Restore recovery is in progress.",
+            "summary": (
+                "Restore rollback needs operator attention."
+                if phase == "rollback_failed"
+                else "Restore recovery is in progress."
+            ),
             "sanitized": True,
         })
 
@@ -497,8 +551,14 @@ class LiteCoreSupervisor:
             resolved = pointer.resolve(strict=True)
             if resolved.parent.resolve(strict=True) != stage_root.resolve(strict=True):
                 return ""
-            revision = (resolved / "revision.txt").read_text(encoding="utf-8").strip()
-            if not revision or resolved.name != revision or not self._stage_is_valid(revision):
+            revision = (
+                resolved / "revision.txt"
+            ).read_text(encoding="utf-8").strip()
+            if (
+                not revision
+                or resolved.name != revision
+                or not self._stage_is_valid(revision)
+            ):
                 return ""
             return revision
         except Exception:
@@ -514,6 +574,7 @@ class LiteCoreSupervisor:
 
     @staticmethod
     def _opa_metadata_revision(payload: Optional[Dict[str, Any]]) -> str | None:
+        # Proven against OPA 1.19.0: GET /v1/data/pocketlab/meta/revision -> {"result":"<revision>"}.
         result = (payload or {}).get("result")
         return result if isinstance(result, str) and 8 <= len(result) <= 80 else None
 
@@ -529,7 +590,7 @@ class LiteCoreSupervisor:
             return False
 
     def reconcile_policy_activation(self) -> Dict[str, Any] | None:
-        """Advance exactly one durable operation; uncertain operations remain quarantined."""
+        """Advance one durable operation; uncertain operations remain quarantined."""
         try:
             begin_immediate, connection, _ = self._policy_runtime_modules()
         except Exception as exc:
@@ -570,6 +631,7 @@ class LiteCoreSupervisor:
                     now = now_iso()
                     tx.execute("INSERT INTO policy_runtime_state(state_id,active_revision_id,known_good_revision_id,updated_at,updated_by_operation_id) VALUES (1,?,?,?,?) ON CONFLICT(state_id) DO UPDATE SET active_revision_id=excluded.active_revision_id,known_good_revision_id=excluded.known_good_revision_id,updated_at=excluded.updated_at,updated_by_operation_id=excluded.updated_by_operation_id", (op["candidate_revision_id"], op["candidate_revision_id"], now, op["operation_id"]))
                     tx.execute("UPDATE policy_revisions SET validation_status='valid',validated_at=?,lifecycle_status='active',activated_at=? WHERE revision_id=?", (now, now, op["candidate_revision_id"]))
+            # known-good advances only after the metadata proof and durable state.
             if not self._prepare_policy("known-good", op["candidate_revision_id"]):
                 return self._rollback_policy(op, "known_good_pointer_failed", observed=observed)
             self._set_policy_operation(op["operation_id"], "active", opa=observed, evidence="policy:metadata-proved")
@@ -591,9 +653,26 @@ class LiteCoreSupervisor:
         if not restart.get("acted") or fetch_json("http://127.0.0.1:8181/health") is None or restored != known_good:
             self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_unproved", opa=restored)
             return {"event": "policy_activation_uncertain", "reason": "rollback_unproved", "acted": False}
-        evidence = "policy:rollback-proved:filesystem-known-good" if bootstrap_known_good else "policy:rollback-proved"
-        self._set_policy_operation(op["operation_id"], "rolled_back", reason=reason, filesystem=known_good, opa=restored, evidence=evidence)
-        self._append_event({"event": "policy_activation_rolled_back", "operation_id": op["operation_id"], "reason": reason, "bootstrap_known_good": bootstrap_known_good, "acted": True})
+        evidence = (
+            "policy:rollback-proved:filesystem-known-good"
+            if bootstrap_known_good
+            else "policy:rollback-proved"
+        )
+        self._set_policy_operation(
+            op["operation_id"],
+            "rolled_back",
+            reason=reason,
+            filesystem=known_good,
+            opa=restored,
+            evidence=evidence,
+        )
+        self._append_event({
+            "event": "policy_activation_rolled_back",
+            "operation_id": op["operation_id"],
+            "reason": reason,
+            "bootstrap_known_good": bootstrap_known_good,
+            "acted": True,
+        })
         return {"event": "policy_activation_rolled_back", "operation_id": op["operation_id"], "reason": reason, "acted": True}
 
     def tick(self) -> Dict[str, Any]:
@@ -603,7 +682,13 @@ class LiteCoreSupervisor:
             payload = {
                 "supervisor": "pocketlab-core-supervisor",
                 "version": SUPERVISOR_VERSION,
-                "supervisor_status": "recovery_blocked" if maintenance.get("state") == "rollback_failed" else "rollback_in_progress" if str(maintenance.get("state") or "").startswith("rollback") else "maintenance",
+                "supervisor_status": (
+                    "recovery_blocked"
+                    if maintenance.get("state") == "rollback_failed"
+                    else "rollback_in_progress"
+                    if str(maintenance.get("state") or "").startswith("rollback")
+                    else "maintenance"
+                ),
                 "checked_at": now_iso(),
                 "maintenance": maintenance,
                 "observed_before": observed,
@@ -616,10 +701,24 @@ class LiteCoreSupervisor:
                 "capabilities": ["core-service-supervision", "maintenance-aware", "restore-recovery-aware", "pm2-repair", "restart-budgets"],
             }
             self._finalize_payload(payload)
-            self._append_event({"event": "maintenance_restart_suppressed", "operation_id": maintenance.get("operation_id"), "state": maintenance.get("state"), "acted": False})
+            self._append_event({
+                "event": "maintenance_restart_suppressed",
+                "operation_id": maintenance.get("operation_id"),
+                "state": maintenance.get("state"),
+                "acted": False,
+            })
             return payload
         if not pm2_available():
-            payload = {"supervisor_status": "degraded", "reason": "pm2_missing", "checked_at": now_iso(), "version": SUPERVISOR_VERSION, "last_actions": self.last_actions, "restart_history": self.restart_history, "restart_generations": self.restart_generations, "restart_policy": self.restart_diagnostics()}
+            payload = {
+                "supervisor_status": "degraded",
+                "reason": "pm2_missing",
+                "checked_at": now_iso(),
+                "version": SUPERVISOR_VERSION,
+                "last_actions": self.last_actions,
+                "restart_history": self.restart_history,
+                "restart_generations": self.restart_generations,
+                "restart_policy": self.restart_diagnostics(),
+            }
             self._finalize_payload(payload)
             self._append_event({"event": "pm2_missing", "severity": "warning"})
             return payload
@@ -641,34 +740,75 @@ class LiteCoreSupervisor:
             if not is_online(statuses.get("pocket-api", "missing")):
                 actions.append(self.restart_pm2("pocket-api", "api_pm2_not_online"))
             elif observed["checks"].get("api_nats_connected") is not True:
-                event = {"event": API_NATS_CLIENT_UNHEALTHY_EVENT, "service": "pocket-api", "reason": "api_nats_client_probe_degraded", "acted": False}
+                # Do not restart a healthy FastAPI process merely because its own
+                # NATS status probe is briefly degraded.  App actions and UI
+                # refetches can create a short reconnect window on Android/Termux;
+                # restarting the API here makes the UI stale and turns a recoverable
+                # NATS client reconnect into visible control-plane downtime.  Keep
+                # evidence for observability and let the API/worker NATS clients
+                # reconnect in-process.  Hard repairs remain reserved for missing
+                # PM2 processes or an actually unreachable NATS server.
+                event = {
+                    "event": API_NATS_CLIENT_UNHEALTHY_EVENT,
+                    "service": "pocket-api",
+                    "reason": "api_nats_client_probe_degraded",
+                    "acted": False,
+                }
                 self._append_event(event)
                 actions.append(event)
+
             if not is_online(statuses.get("pocket-worker", "missing")):
                 actions.append(self.restart_pm2("pocket-worker", "worker_pm2_not_online"))
 
         caddy_status = statuses.get("caddy-proxy", "missing")
         caddy_tcp_reachable = bool(observed["checks"].get("caddy_tcp_reachable"))
-        caddy_upstream_http_reachable = bool(observed["checks"].get("caddy_upstream_http_reachable"))
+        caddy_upstream_http_reachable = bool(
+            observed["checks"].get("caddy_upstream_http_reachable")
+        )
         if not is_online(caddy_status):
             self.caddy_tcp_failure_streak = 0
             actions.append(self.restart_pm2("caddy-proxy", "caddy_pm2_not_online"))
         elif caddy_tcp_reachable:
             self.caddy_tcp_failure_streak = 0
             if not caddy_upstream_http_reachable:
-                self._append_event({"event": "caddy_upstream_probe_degraded", "service": "caddy-proxy", "reason": "api_health_unavailable_through_proxy", "acted": False, "caddy_tcp_reachable": True})
+                # /health is reverse-proxied to FastAPI. A failed upstream probe
+                # does not prove that Caddy is unhealthy. Restarting Caddy here
+                # causes visible control-plane interruptions and can create a
+                # restart loop while the API is merely busy. Preserve evidence
+                # and let API-specific recovery own the upstream condition.
+                self._append_event({
+                    "event": "caddy_upstream_probe_degraded",
+                    "service": "caddy-proxy",
+                    "reason": "api_health_unavailable_through_proxy",
+                    "acted": False,
+                    "caddy_tcp_reachable": True,
+                })
         else:
             self.caddy_tcp_failure_streak += 1
-            self._append_event({"event": "caddy_tcp_probe_failed", "service": "caddy-proxy", "reason": "caddy_port_unreachable", "acted": False, "failure_streak": self.caddy_tcp_failure_streak, "failure_threshold": self.caddy_failure_threshold})
+            self._append_event({
+                "event": "caddy_tcp_probe_failed",
+                "service": "caddy-proxy",
+                "reason": "caddy_port_unreachable",
+                "acted": False,
+                "failure_streak": self.caddy_tcp_failure_streak,
+                "failure_threshold": self.caddy_failure_threshold,
+            })
             if self.caddy_tcp_failure_streak >= self.caddy_failure_threshold:
-                actions.append(self.restart_pm2("caddy-proxy", "caddy_tcp_unreachable_confirmed"))
+                actions.append(self.restart_pm2(
+                    "caddy-proxy",
+                    "caddy_tcp_unreachable_confirmed",
+                ))
                 self.caddy_tcp_failure_streak = 0
 
         if not is_online(statuses.get("pocket-telemetry", "missing")):
             actions.append(self.restart_pm2("pocket-telemetry", "telemetry_pm2_not_online"))
 
         post = self.collect()
-        required_unhealthy = [spec.name for spec in CORE_SERVICES if spec.required and not is_online(post["services"].get(spec.name, "missing"))]
+        required_unhealthy = [
+            spec.name
+            for spec in CORE_SERVICES
+            if spec.required and not is_online(post["services"].get(spec.name, "missing"))
+        ]
         supervisor_status = "healthy"
         if actions:
             supervisor_status = "repairing"
@@ -687,7 +827,12 @@ class LiteCoreSupervisor:
             "restart_history": self.restart_history,
             "restart_generations": self.restart_generations,
             "restart_policy": self.restart_diagnostics(),
-            "caddy_health": {"tcp_failure_streak": self.caddy_tcp_failure_streak, "failure_threshold": self.caddy_failure_threshold, "tcp_reachable": bool(post["checks"].get("caddy_tcp_reachable")), "upstream_http_reachable": bool(post["checks"].get("caddy_upstream_http_reachable"))},
+            "caddy_health": {
+                "tcp_failure_streak": self.caddy_tcp_failure_streak,
+                "failure_threshold": self.caddy_failure_threshold,
+                "tcp_reachable": bool(post["checks"].get("caddy_tcp_reachable")),
+                "upstream_http_reachable": bool(post["checks"].get("caddy_upstream_http_reachable")),
+            },
             "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "policy-activation-reconciliation", "policy-rollback", "activation-lock", "anti-flap-proxy-health", "restart-budgets", "restart-generation-evidence"],
         }
         self._finalize_payload(payload)
