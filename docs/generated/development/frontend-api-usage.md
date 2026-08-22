@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 48895f006092571bc24c446b849aacc9bd8619c37d6eabd61a3fc1a8aa2cb67c
+source_fingerprint: 0818b10a6656bf27cba8d17c6060b3c20d44448626db939d1172ed6c82eba6a9
 schema_revision: 1
 validation_status: generated
 ---
@@ -227,6 +227,7 @@ validation_status: generated
 - `/api/lite/enterprise/identity/members/{human_id}`
 - `/api/lite/enterprise/rules/activations`
 - `/api/lite/enterprise/rules/activations/{operation_id}`
+- `/api/lite/enterprise/rules/activations/{operation_id}/resolve`
 - `/api/lite/enterprise/rules/decisions/{decision_id}`
 - `/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}`
 - `/api/lite/enterprise/rules/revisions/{revision_id}`

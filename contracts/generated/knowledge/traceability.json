@@ -1200,6 +1200,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+      "name": "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
       "name": "POST /api/lite/enterprise/rules/approvals/{approval_id}",
       "note": "A test link does not by itself prove runtime verification.",
@@ -3615,6 +3626,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1a7008882adbb6b53c602e090693d9a0c30d7fcd4002ca89078f3112816c922"
+    "source_fingerprint": "d71ef3c1e7b9e880d92c60b0a8eb033a3b96ca1f98017972afedd3c4ced264ee"
   }
 }

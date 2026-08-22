@@ -80,6 +80,14 @@ def activate(payload: ActivationRequest, request: Request, response: Response) -
     return _call(response, lambda: lite_policy_lifecycle.request_activation(auth_context=deps.require_auth(request, write=True), revision_id=payload.revision_id, correlation_id=uuid.uuid4().hex))
 
 
+@router.post("/activations/{operation_id}/resolve")
+def resolve_activation(operation_id: str, request: Request, response: Response) -> dict[str, Any]:
+    return _call(response, lambda: lite_policy_lifecycle.resolve_uncertain_operation(
+        auth_context=deps.require_auth(request, write=True),
+        operation_id=operation_id,
+    ))
+
+
 @router.post("/rollbacks", status_code=202)
 def rollback(request: Request, response: Response) -> dict[str, Any]:
     return _call(response, lambda: lite_policy_lifecycle.request_rollback(auth_context=deps.require_auth(request, write=True), correlation_id=uuid.uuid4().hex))

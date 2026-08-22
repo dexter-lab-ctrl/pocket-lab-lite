@@ -1043,6 +1043,12 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
         {
           "source": "ui:literules",
@@ -3541,7 +3547,19 @@
           "type": "owns"
         }
       ],
+      "reason:policy_activation_not_uncertain": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "reason:policy_activation_pending": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_activation_state_changed": [
         {
           "source": "domain:rules",
           "type": "owns"
@@ -3602,6 +3620,30 @@
         }
       ],
       "reason:policy_parameters_invalid": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_recovery_not_rollback": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_recovery_pointer_mismatch": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_recovery_revision_mismatch": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:policy_recovery_unproved": [
         {
           "source": "domain:rules",
           "type": "owns"
@@ -6279,6 +6321,12 @@
           "type": "owns"
         }
       ],
+      "table:policy_recovery_resolutions": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:policy_revisions": [
         {
           "source": "domain:control_plane",
@@ -7223,7 +7271,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_activation_not_uncertain",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_activation_pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_activation_state_changed",
           "type": "verified_by"
         },
         {
@@ -7264,6 +7320,22 @@
         },
         {
           "source": "reason:policy_parameters_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_not_rollback",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_pointer_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_revision_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_unproved",
           "type": "verified_by"
         },
         {
@@ -7990,6 +8062,10 @@
         },
         {
           "source": "api:post:/api/lite/enterprise/rules/activations",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
           "type": "verified_by"
         },
         {
@@ -8878,6 +8954,20 @@
         },
         {
           "source": "reason:policy_activation_in_progress",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_policy_uncertain_resolution.py": [
+        {
+          "source": "reason:policy_recovery_pointer_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:rollback_pointer_failed",
           "type": "verified_by"
         }
       ],
@@ -11149,7 +11239,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_activation_not_uncertain",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_activation_pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_activation_state_changed",
           "type": "verified_by"
         },
         {
@@ -11190,6 +11288,22 @@
         },
         {
           "source": "reason:policy_parameters_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_not_rollback",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_pointer_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_revision_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_unproved",
           "type": "verified_by"
         },
         {
@@ -11863,7 +11977,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_activation_not_uncertain",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_activation_pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_activation_state_changed",
           "type": "verified_by"
         },
         {
@@ -11904,6 +12026,22 @@
         },
         {
           "source": "reason:policy_parameters_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_not_rollback",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_pointer_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_revision_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_recovery_unproved",
           "type": "verified_by"
         },
         {
@@ -12640,6 +12778,10 @@
         },
         {
           "source": "api:post:/api/lite/enterprise/rules/activations",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
           "type": "verified_by"
         },
         {
@@ -14854,6 +14996,16 @@
         }
       ],
       "api:post:/api/lite/enterprise/rules/activations": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -19345,6 +19497,10 @@
           "type": "owns"
         },
         {
+          "target": "table:policy_recovery_resolutions",
+          "type": "owns"
+        },
+        {
           "target": "table:policy_revisions",
           "type": "owns"
         },
@@ -19854,6 +20010,10 @@
         },
         {
           "target": "api:post:/api/lite/enterprise/rules/activations",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
           "type": "owns"
         },
         {
@@ -21357,7 +21517,15 @@
           "type": "owns"
         },
         {
+          "target": "reason:policy_activation_not_uncertain",
+          "type": "owns"
+        },
+        {
           "target": "reason:policy_activation_pending",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_activation_state_changed",
           "type": "owns"
         },
         {
@@ -21398,6 +21566,22 @@
         },
         {
           "target": "reason:policy_parameters_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_recovery_not_rollback",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_recovery_pointer_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_recovery_revision_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_recovery_unproved",
           "type": "owns"
         },
         {
@@ -24679,7 +24863,35 @@
           "type": "verified_by"
         }
       ],
+      "reason:policy_activation_not_uncertain": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:policy_activation_pending": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_activation_state_changed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -24834,6 +25046,70 @@
       "reason:policy_parameters_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_recovery_not_rollback": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_recovery_pointer_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_policy_uncertain_resolution.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_recovery_revision_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_recovery_unproved": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_policy_uncertain_resolution.py",
           "type": "verified_by"
         },
         {
@@ -25180,6 +25456,10 @@
       "reason:rollback_pointer_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_policy_uncertain_resolution.py",
           "type": "verified_by"
         },
         {
@@ -26241,6 +26521,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1a7008882adbb6b53c602e090693d9a0c30d7fcd4002ca89078f3112816c922"
+    "source_fingerprint": "d71ef3c1e7b9e880d92c60b0a8eb033a3b96ca1f98017972afedd3c4ced264ee"
   }
 }

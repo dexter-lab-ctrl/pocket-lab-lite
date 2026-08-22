@@ -1,14 +1,20 @@
 """Server-owned, typed Enterprise Rules revision lifecycle.
 
-This module intentionally has no shell, OPA, PM2, or pointer operations.  It
+This module intentionally has no shell, PM2, or pointer mutation operations. It
 creates immutable intent and durable operation records; the core supervisor is
-the only component allowed to materialise and activate a candidate.
+the only component allowed to materialise and activate a candidate. Explicit
+uncertain-operation resolution is limited to read-only proof of an already
+recovered local runtime before governance state is terminalized.
 """
 from __future__ import annotations
 
+import contextlib
+import fcntl
 import hashlib
 import json
+import os
 import sqlite3
+import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,7 +33,7 @@ class PolicyLifecycleError(RuntimeError):
         self.status_code = status_code
 
 
-# A deliberately small allow-list is safer than accepting policy text.  New
+# A deliberately small allow-list is safer than accepting policy text. New
 # templates need a source review and an explicit version bump.
 TEMPLATES: dict[str, dict[str, Any]] = {
     "baseline": {"version": "1", "parameters": {}},
@@ -39,6 +45,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
 NONTERMINAL_STATES = frozenset({"pending", "validating", "switching", "restarting", "verifying", "rolling_back", "uncertain"})
 READ_ROLES = frozenset({"Owner", "Admin", "Operator", "Viewer", "Auditor"})
 MUTATE_ROLES = frozenset({"Owner", "Admin"})
+MANUAL_RECOVERY_EVIDENCE = "policy:manual-recovery-proved"
 
 
 def _now() -> str:
@@ -127,6 +134,89 @@ def _public_revision(row: sqlite3.Row | dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _state_root() -> Path:
+    configured = os.environ.get("POCKETLAB_STATE_DIR") or os.environ.get("STATE_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    return Path.home() / ".pocket_lab"
+
+
+@contextlib.contextmanager
+def _activation_lock() -> Any:
+    lock_path = _state_root() / "opa" / "activation.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def _stage_is_valid(revision: str) -> bool:
+    stage = _state_root() / "opa" / "stage" / revision
+    try:
+        manifest = json.loads((stage / "manifest.json").read_text(encoding="utf-8"))
+        if manifest.get("revision") != revision or not isinstance(manifest.get("files"), list):
+            return False
+        for item in manifest["files"]:
+            path = stage / str(item.get("path") or "")
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != item.get("sha256"):
+                return False
+        digest = hashlib.sha256(json.dumps(manifest["files"], sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        return digest == manifest.get("candidate_hash") and (stage / "revision.txt").read_text(encoding="utf-8").strip() == revision
+    except Exception:
+        return False
+
+
+def _pointer_revision(pointer_name: str) -> str:
+    state = _state_root()
+    pointer = state / "opa" / pointer_name
+    stage_root = state / "opa" / "stage"
+    try:
+        if not pointer.is_symlink():
+            return ""
+        resolved = pointer.resolve(strict=True)
+        if resolved.parent.resolve(strict=True) != stage_root.resolve(strict=True):
+            return ""
+        revision = (resolved / "revision.txt").read_text(encoding="utf-8").strip()
+        if not revision or resolved.name != revision or not _stage_is_valid(revision):
+            return ""
+        return revision
+    except Exception:
+        return ""
+
+
+def _fetch_local_json(url: str) -> dict[str, Any] | None:
+    try:
+        with urllib.request.urlopen(url, timeout=4) as response:  # nosec B310 - fixed loopback OPA probes only
+            payload = response.read(256 * 1024).decode("utf-8", errors="replace")
+        parsed = json.loads(payload)
+        return parsed if isinstance(parsed, dict) else None
+    except Exception:
+        return None
+
+
+def _manual_recovery_proof(operation: sqlite3.Row | dict[str, Any]) -> str:
+    data = dict(operation)
+    active = _pointer_revision("active")
+    known_good = _pointer_revision("known-good")
+    if not active or active != known_good:
+        raise PolicyLifecycleError("policy_recovery_pointer_mismatch", "Recovered policy pointers do not agree.", status_code=409)
+    prior_known_good = str(data.get("prior_known_good_revision_id") or "")
+    candidate = str(data.get("candidate_revision_id") or "")
+    if prior_known_good and active != prior_known_good:
+        raise PolicyLifecycleError("policy_recovery_revision_mismatch", "Recovered policy does not match the prior known-good revision.", status_code=409)
+    if not prior_known_good and active == candidate:
+        raise PolicyLifecycleError("policy_recovery_not_rollback", "Recovered policy still matches the uncertain candidate revision.", status_code=409)
+    health = _fetch_local_json("http://127.0.0.1:8181/health")
+    metadata = _fetch_local_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision")
+    observed = (metadata or {}).get("result")
+    if health is None or not isinstance(observed, str) or observed != active:
+        raise PolicyLifecycleError("policy_recovery_unproved", "Recovered OPA health and revision could not be proved.", status_code=409)
+    return active
+
+
 def create_revision(*, auth_context: dict[str, Any], template_id: str, parameters: Any, change_summary: str) -> dict[str, Any]:
     apply_migrations()
     actor = _actor(auth_context, mutate=True)
@@ -137,7 +227,7 @@ def create_revision(*, auth_context: dict[str, Any], template_id: str, parameter
     canonical_parameters = _canonical(normalized)
     revision_id, tree = policy_source_tree(name, version, normalized)
     manifest, content_hash = manifest_for_tree(tree)
-    # A revision is deterministic and immutable.  The supervisor independently
+    # A revision is deterministic and immutable. The supervisor independently
     # recomputes the full runtime candidate manifest before activation.
     now = _now()
     with connection() as conn:
@@ -211,6 +301,62 @@ def request_rollback(*, auth_context: dict[str, Any], correlation_id: str | None
     if not revision_id:
         raise PolicyLifecycleError("policy_known_good_unavailable", "No proved known-good policy revision is available.", status_code=409)
     return _admit_operation(auth_context=auth_context, candidate_revision_id=revision_id, correlation_id=correlation_id)
+
+
+def resolve_uncertain_operation(*, auth_context: dict[str, Any], operation_id: str) -> dict[str, Any]:
+    """Terminalize only an already recovered uncertain operation after local proof.
+
+    The caller supplies only the operation identifier. The recovered revision,
+    filesystem pointers, staged hashes, OPA health, and OPA metadata revision are
+    derived locally. This function never switches a pointer or restarts OPA.
+    """
+    apply_migrations()
+    actor = _actor(auth_context, mutate=True)
+    bounded_operation_id = str(operation_id or "")[:80]
+    with _activation_lock():
+        with connection() as conn:
+            operation = conn.execute("SELECT * FROM policy_activation_operations WHERE operation_id=?", (bounded_operation_id,)).fetchone()
+        if not operation:
+            raise PolicyLifecycleError("policy_activation_unknown", "That policy activation operation does not exist.", status_code=404)
+        if operation["state"] != "uncertain":
+            raise PolicyLifecycleError("policy_activation_not_uncertain", "Only an uncertain policy activation can be resolved this way.", status_code=409)
+        recovered_revision = _manual_recovery_proof(operation)
+        resolved_at = _now()
+        resolution_id = "plx-" + uuid.uuid4().hex
+        original_reason = str(operation["reason_code"] or "policy_activation_uncertain")[:80]
+        with connection() as conn:
+            with begin_immediate(conn) as tx:
+                current = tx.execute("SELECT state,reason_code FROM policy_activation_operations WHERE operation_id=?", (bounded_operation_id,)).fetchone()
+                if not current or current["state"] != "uncertain":
+                    raise PolicyLifecycleError("policy_activation_state_changed", "The policy activation changed while recovery was being proved.", status_code=409)
+                tx.execute(
+                    """INSERT INTO policy_recovery_resolutions(
+                           resolution_id,operation_id,requested_by_human_id,requested_at,resolved_at,
+                           original_reason_code,recovered_revision_id,status,evidence_ref,summary
+                       ) VALUES (?,?,?,?,?,?,?,'proved',?,?)""",
+                    (
+                        resolution_id,
+                        bounded_operation_id,
+                        actor,
+                        resolved_at,
+                        resolved_at,
+                        original_reason,
+                        recovered_revision,
+                        MANUAL_RECOVERY_EVIDENCE,
+                        "Operator-restored policy runtime matched validated known-good filesystem and OPA evidence.",
+                    ),
+                )
+                updated = tx.execute(
+                    """UPDATE policy_activation_operations
+                       SET state='rolled_back',updated_at=?,observed_filesystem_revision=?,observed_opa_revision=?,evidence_ref=?
+                       WHERE operation_id=? AND state='uncertain'""",
+                    (resolved_at, recovered_revision, recovered_revision, MANUAL_RECOVERY_EVIDENCE, bounded_operation_id),
+                )
+                if updated.rowcount != 1:
+                    raise PolicyLifecycleError("policy_activation_state_changed", "The policy activation changed while recovery was being recorded.", status_code=409)
+                resolution = tx.execute("SELECT * FROM policy_recovery_resolutions WHERE resolution_id=?", (resolution_id,)).fetchone()
+                terminal = tx.execute("SELECT * FROM policy_activation_operations WHERE operation_id=?", (bounded_operation_id,)).fetchone()
+    return {"operation": dict(terminal), "resolution": dict(resolution)}
 
 
 def read_operation(*, auth_context: dict[str, Any], operation_id: str) -> dict[str, Any]:

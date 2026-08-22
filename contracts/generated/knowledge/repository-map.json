@@ -463,6 +463,7 @@
         "api:post:/api/lite/catalog/remove",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
         "api:post:/api/lite/enterprise/rules/activations",
+        "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
         "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
         "api:post:/api/lite/enterprise/rules/exceptions",
         "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
@@ -633,6 +634,7 @@
         "table:policy_continuation_events",
         "table:policy_decision_details",
         "table:policy_decisions",
+        "table:policy_recovery_resolutions",
         "table:policy_revisions",
         "table:policy_runtime_state",
         "table:policy_temporary_exceptions",
@@ -781,7 +783,9 @@
         "reason:payload_too_large",
         "reason:policy_action_not_registered",
         "reason:policy_activation_in_progress",
+        "reason:policy_activation_not_uncertain",
         "reason:policy_activation_pending",
+        "reason:policy_activation_state_changed",
         "reason:policy_activation_unknown",
         "reason:policy_change_summary_invalid",
         "reason:policy_decision_not_found",
@@ -792,6 +796,10 @@
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
+        "reason:policy_recovery_not_rollback",
+        "reason:policy_recovery_pointer_mismatch",
+        "reason:policy_recovery_revision_mismatch",
+        "reason:policy_recovery_unproved",
         "reason:policy_revision_mismatch",
         "reason:policy_revision_unavailable",
         "reason:policy_revision_uncertain",
@@ -1022,7 +1030,9 @@
         "reason:payload_too_large",
         "reason:policy_action_not_registered",
         "reason:policy_activation_in_progress",
+        "reason:policy_activation_not_uncertain",
         "reason:policy_activation_pending",
+        "reason:policy_activation_state_changed",
         "reason:policy_activation_unknown",
         "reason:policy_change_summary_invalid",
         "reason:policy_decision_not_found",
@@ -1033,6 +1043,10 @@
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
+        "reason:policy_recovery_not_rollback",
+        "reason:policy_recovery_pointer_mismatch",
+        "reason:policy_recovery_revision_mismatch",
+        "reason:policy_recovery_unproved",
         "reason:policy_revision_mismatch",
         "reason:policy_revision_unavailable",
         "reason:policy_revision_uncertain",
@@ -1547,6 +1561,14 @@
         "table:policy_temporary_exceptions"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:policy_activation_operations",
+        "table:policy_recovery_resolutions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
     },
     {
       "entities": [
@@ -2732,6 +2754,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_policy_uncertain_resolution.py"
+      ],
+      "source": "tests/backend/test_lite_policy_uncertain_resolution.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_premium_tab_polish.py"
       ],
       "source": "tests/backend/test_lite_premium_tab_polish.py"
@@ -3445,6 +3473,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f1a7008882adbb6b53c602e090693d9a0c30d7fcd4002ca89078f3112816c922"
+    "source_fingerprint": "d71ef3c1e7b9e880d92c60b0a8eb033a3b96ca1f98017972afedd3c4ced264ee"
   }
 }

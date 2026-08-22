@@ -4,12 +4,13 @@
     "add immutable typed Safety Rules revision, activation, rollback, health, simulation, deterministic analysis, and bounded decision-explorer API operations with backend-local OPA ownership",
     "add policy-derived independent approval lifecycle operations for Enterprise device.remove with purpose-bound passkey step-up, expiry, explicit retry, and replay protection",
     "add bounded expiring and revocable catalog.install temporary-exception API operations scoped to exact app, device, identity, and policy revision",
+    "add an Owner/Admin + CSRF-protected P2.2 uncertain-activation resolution operation that accepts only the operation ID, proves an already-recovered local policy state, preserves original incident reason evidence, and does not perform shell, PM2, pointer, OPA mutation, or browser-supplied recovery-state actions",
     "preserve FastAPI hard safeguards, sanitized evidence, backend-only policy input, and existing local passkey/password/recovery authentication while leaving OIDC and scoped service identities unimplemented"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "05207a418ba2d44e02aeb9e3ec8f2246a1c7934f8aa68f6ee5e84438f0b94f55",
-  "promoted_sha256": "8f222db8c0cc83414c5fd5bbc989180e99956369410a914594e648d5ed35208a",
+  "previous_sha256": "8f222db8c0cc83414c5fd5bbc989180e99956369410a914594e648d5ed35208a",
+  "promoted_sha256": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -18,7 +19,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feature/identity-rules-p2-p3",
+  "source_revision": "fix/p2-2-uncertain-resolution",
   "status": "promoted",
-  "validation_status": "dev-pc-qualified-identity-rules-p2-p3-contract"
+  "validation_status": "dev-pc-qualified-p2-2-uncertain-resolution-contract"
 }

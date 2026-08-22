@@ -125,6 +125,7 @@ generator_version: 3
 | `POST /api/lite/catalog/remove` | apps | — | remove_lite_catalog_item_api_lite_catalog_remove_post | contract-derived |
 | `POST /api/lite/diagnostics/frontend-lifecycle` | diagnostics | — | record_frontend_lifecycle_diagnostics_api_lite_diagnostics_frontend_lifecycle_post | contract-derived |
 | `POST /api/lite/enterprise/rules/activations` | enterprise | — | activate_api_lite_enterprise_rules_activations_post | contract-derived |
+| `POST /api/lite/enterprise/rules/activations/{operation_id}/resolve` | enterprise | — | resolve_activation_api_lite_enterprise_rules_activations__operation_id__resolve_post | contract-derived |
 | `POST /api/lite/enterprise/rules/approvals/{approval_id}` | enterprise | LiteRules | transition_approval_api_lite_enterprise_rules_approvals__approval_id__post | contract-derived |
 | `POST /api/lite/enterprise/rules/exceptions` | enterprise | LiteRules | create_exception_api_lite_enterprise_rules_exceptions_post | contract-derived |
 | `POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke` | enterprise | LiteRules | revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post | contract-derived |

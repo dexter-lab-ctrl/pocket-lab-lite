@@ -18,6 +18,7 @@ recovery_code_batches
 security_database_restores
 webauthn_credentials
 device_lifecycle_events
+policy_activation_operations
 app_action_lifecycle
 device_awareness_state
 device_health_attention
@@ -44,8 +45,8 @@ device_lifecycle_transactions
 device_system_profiles
 enterprise_configuration
 policy_runtime_state
-policy_activation_operations
 policy_approvals
+policy_recovery_resolutions
 policy_temporary_exceptions
 webauthn_challenges
 enterprise_memberships

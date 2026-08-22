@@ -2478,6 +2478,7 @@
       "/api/lite/enterprise/identity/members/{human_id}",
       "/api/lite/enterprise/rules/activations",
       "/api/lite/enterprise/rules/activations/{operation_id}",
+      "/api/lite/enterprise/rules/activations/{operation_id}/resolve",
       "/api/lite/enterprise/rules/decisions/{decision_id}",
       "/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
       "/api/lite/enterprise/rules/revisions/{revision_id}",
@@ -2536,7 +2537,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "b0d4dd57c809b3c0cb50da5eba4a66ee2cd3e969704e04193a84e4c4ddf2d0fd",
+    "aggregate_fingerprint": "79b37db34b1e5c847ca67c18febd5baa5ed293bb7eedc86827e9bba43e04eeb6",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2546,8 +2547,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "8f222db8c0cc83414c5fd5bbc989180e99956369410a914594e648d5ed35208a",
-      "contracts/metadata/documentation-platform.json": "154c717868a1e467cc6ca9f7e1ae18d458319c4dfbd0f270cffe50fca8cf03ed",
+      "contracts/generated/lite-openapi.json": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
+      "contracts/metadata/documentation-platform.json": "0a889bcdadd48600f2fa362a0e528c7b5066bdfe03406c0b4019ca54bc2ae554",
       "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260",
       "src/lib/liteApi.js": "cef8ecf7027611150c3f1bb20ddbf9513262fb4821a4aa5b93e233841000f553",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
