@@ -138,7 +138,7 @@ def revoke_exception(exception_id: str, request: Request, response: Response) ->
 
 @router.post("/simulations")
 def simulate(payload: SimulationRequest, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_analysis.simulate(auth_context=deps.require_auth(request, write=False), revision_id=payload.revision_id, action_id=payload.action_id, target_id=payload.target_id, mode=payload.mode, scenario=scenario if (scenario := payload.scenario) is not None else None))
+    return _call(response, lambda: lite_policy_analysis.simulate(auth_context=deps.require_auth(request, write=False), revision_id=payload.revision_id, action_id=payload.action_id, target_id=payload.target_id, mode=payload.mode, scenario=payload.scenario))
 
 
 @router.get("/analysis")
