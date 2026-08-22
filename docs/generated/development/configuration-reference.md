@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 4158f422fb7e86f70f9763f2a2b4773a74bed159bf042ba0608d62ab58c7a92a
+source_fingerprint: 96bfaa17bd4a44bae401c32205b45c35a36b0de4580c153b42df758427c48185
 schema_revision: 1
 validation_status: generated
 ---
@@ -575,6 +575,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_OPA_ACTIVE_POLICY_DIR` | configuration | $POCKETLAB_STATE_DIR/opa/active | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
 | `POCKETLAB_OPA_BIN` | configuration | $(command -v opa \|\| true) | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py |
 | `POCKETLAB_OPA_POLICY_SOURCE_DIR` | configuration | $REPO_ROOT/security/policies/opa/pocketlab | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh |
+| `POCKETLAB_OPA_READINESS_INTERVAL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
+| `POCKETLAB_OPA_READINESS_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
 | `POCKETLAB_OPA_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
 | `POCKETLAB_OPA_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
 | `POCKETLAB_OPERATION_DEADLINE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py |

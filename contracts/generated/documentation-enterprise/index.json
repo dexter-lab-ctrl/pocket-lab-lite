@@ -17466,6 +17466,52 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_OPA_READINESS_INTERVAL_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_OPA_READINESS_TIMEOUT_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI"
         ],
         "affects_release": true,
@@ -35473,8 +35519,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "dcb592d80780ddd6955e06efefdd51ffcc3e2323",
-          "head_tree": "142dac188d2761f17668153939f02450be1a0b86",
+          "head": "789092d040d3ffccac90c36103d667b982205f47",
+          "head_tree": "1e9f342461062fe65c11f95d464fd6d01e0848c4",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -37323,7 +37369,7 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "393cdb968e103571933e15fb6692878f7665a8059ee6b0c1b6b6922ce208a54c",
+        "documentation": "74bf6eafa54eeba1d69c49a0e8904fe3866e2cfdb9c5fa7d280cdfae35fdb809",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "eb3befd02eb0a0128683369917a7f705cdd77cb2cfbcd408026f62e345821538"
       },
@@ -39397,8 +39443,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "dcb592d80780ddd6955e06efefdd51ffcc3e2323",
-        "head_tree": "142dac188d2761f17668153939f02450be1a0b86",
+        "head": "789092d040d3ffccac90c36103d667b982205f47",
+        "head_tree": "1e9f342461062fe65c11f95d464fd6d01e0848c4",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -91287,5 +91333,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "b6ad3d6ceb5e917b155908e88a294187f25f66a8a845db5dfb099195897228c3"
+  "source_fingerprint": "3d250d8adeb7fcaa4312a544187deebada0c818a3fa0e696ff16987f74f51121"
 }

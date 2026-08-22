@@ -10368,6 +10368,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_policy_opa_readiness.py",
+      "name": "tests/backend/test_lite_policy_opa_readiness.py",
+      "source_refs": [
+        "tests/backend/test_lite_policy_opa_readiness.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_policy_uncertain_resolution.py",
       "name": "tests/backend/test_lite_policy_uncertain_resolution.py",
       "source_refs": [
@@ -29110,6 +29121,20 @@
       "id": "rel:63b4265f62808388",
       "source": "reason:worker_start_timeout",
       "target": "test:tests/backend/test_lite_worker_recovery.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_policy_opa_readiness.py"
+      ],
+      "id": "rel:63bb93ab6a0de539",
+      "source": "reason:rollback_unproved",
+      "target": "test:tests/backend/test_lite_policy_opa_readiness.py",
       "type": "verified_by"
     },
     {
