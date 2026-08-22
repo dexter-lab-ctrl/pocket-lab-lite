@@ -964,6 +964,7 @@
             <child column="requested_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
             <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
             <child column="initiating_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
+            <child column="requested_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_recovery_resolutions"/>
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_temporary_exceptions"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_temporary_exceptions"/>
@@ -1179,7 +1180,9 @@
          </index>
       </table>
       <table name="policy_activation_operations" remarks="" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="operation_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_recovery_resolutions"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="requested_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
@@ -1330,10 +1333,43 @@
             <column ascending="true" name="decision_id"/>
          </index>
       </table>
+      <table name="policy_recovery_resolutions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="resolution_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="operation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="operation_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="requested_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="requested_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="resolved_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="original_reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="recovered_revision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="revision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="evidence_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="resolution_id" sequenceNumberInPK="1"/>
+         <index name="policy_recovery_resolutions_s_pk" unique="true">
+            <column ascending="true" name="resolution_id"/>
+         </index>
+         <index name="idx_policy_recovery_resolutions_operation" unique="false">
+            <column ascending="true" name="operation_id"/>
+            <column ascending="true" name="resolved_at"/>
+         </index>
+         <index name="sqlite_autoindex_policy_recovery_resolutions_1" unique="true">
+            <column ascending="true" name="resolution_id"/>
+         </index>
+         <index name="sqlite_autoindex_policy_recovery_resolutions_2" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+      </table>
       <table name="policy_revisions" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="candidate_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
             <child column="prior_known_good_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
+            <child column="recovered_revision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_recovery_resolutions"/>
             <child column="parent_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
             <child column="active_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_runtime_state"/>
             <child column="known_good_revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_runtime_state"/>

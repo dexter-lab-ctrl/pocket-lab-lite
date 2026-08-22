@@ -485,6 +485,10 @@
         "title": "POST /api/lite/enterprise/rules/activations",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-activations"
       },
+      "endpoint:POST:/api/lite/enterprise/rules/activations/{operation_id}/resolve": {
+        "title": "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-activations-operation-id-resolve"
+      },
       "endpoint:POST:/api/lite/enterprise/rules/approvals/{approval_id}": {
         "title": "POST /api/lite/enterprise/rules/approvals/{approval_id}",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-approvals-approval-id"
@@ -1905,9 +1909,17 @@
         "title": "policy_activation_in_progress",
         "url": "../../docs/generated/development/reason-codes.md#policy-activation-in-progress"
       },
+      "reason:policy_activation_not_uncertain": {
+        "title": "policy_activation_not_uncertain",
+        "url": "../../docs/generated/development/reason-codes.md#policy-activation-not-uncertain"
+      },
       "reason:policy_activation_pending": {
         "title": "policy_activation_pending",
         "url": "../../docs/generated/development/reason-codes.md#policy-activation-pending"
+      },
+      "reason:policy_activation_state_changed": {
+        "title": "policy_activation_state_changed",
+        "url": "../../docs/generated/development/reason-codes.md#policy-activation-state-changed"
       },
       "reason:policy_activation_unknown": {
         "title": "policy_activation_unknown",
@@ -1948,6 +1960,22 @@
       "reason:policy_parameters_invalid": {
         "title": "policy_parameters_invalid",
         "url": "../../docs/generated/development/reason-codes.md#policy-parameters-invalid"
+      },
+      "reason:policy_recovery_not_rollback": {
+        "title": "policy_recovery_not_rollback",
+        "url": "../../docs/generated/development/reason-codes.md#policy-recovery-not-rollback"
+      },
+      "reason:policy_recovery_pointer_mismatch": {
+        "title": "policy_recovery_pointer_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#policy-recovery-pointer-mismatch"
+      },
+      "reason:policy_recovery_revision_mismatch": {
+        "title": "policy_recovery_revision_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#policy-recovery-revision-mismatch"
+      },
+      "reason:policy_recovery_unproved": {
+        "title": "policy_recovery_unproved",
+        "url": "../../docs/generated/development/reason-codes.md#policy-recovery-unproved"
       },
       "reason:policy_revision_mismatch": {
         "title": "policy_revision_mismatch",
@@ -2383,6 +2411,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/policy_decisions.html",
         "title": "policy_decisions"
       },
+      "table:policy_recovery_resolutions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-recovery-resolutions",
+        "schema_url": "../../docs/generated/schemaspy/tables/policy_recovery_resolutions.html",
+        "title": "policy_recovery_resolutions"
+      },
       "table:policy_revisions": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#policy-revisions",
         "schema_url": "../../docs/generated/schemaspy/tables/policy_revisions.html",
@@ -2521,7 +2554,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "5c3aaa5cbe451daef006e01dc4037eafbd720df8da877d3c59a1ef132cb2cb71",
+    "aggregate_fingerprint": "d7aef5950ec2abb49f7a808437ef92c16b66593ea5c9e69c668acd9c1fe6629e",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2531,8 +2564,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "8f222db8c0cc83414c5fd5bbc989180e99956369410a914594e648d5ed35208a",
-      "contracts/metadata/documentation-platform.json": "154c717868a1e467cc6ca9f7e1ae18d458319c4dfbd0f270cffe50fca8cf03ed",
+      "contracts/generated/lite-openapi.json": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
+      "contracts/metadata/documentation-platform.json": "0a889bcdadd48600f2fa362a0e528c7b5066bdfe03406c0b4019ca54bc2ae554",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -2561,6 +2594,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql": "4bd3777a3ddc9a6e5097d3e63ea393edd17e84f276f0007997ae0a4d9d75801d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
       "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
     },
     "validation_state": "generated"

@@ -1117,7 +1117,31 @@
       "user_message": "The requested Identity or Rules action could not continue."
     },
     {
+      "code": "policy_activation_not_uncertain",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
       "code": "policy_activation_pending",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "policy_activation_state_changed",
       "domain": "rules",
       "http_status": 403,
       "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
@@ -1238,6 +1262,54 @@
     },
     {
       "code": "policy_parameters_invalid",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "policy_recovery_not_rollback",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "policy_recovery_pointer_mismatch",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "policy_recovery_revision_mismatch",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "policy_recovery_unproved",
       "domain": "rules",
       "http_status": 403,
       "meaning": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
@@ -1902,5 +1974,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "b649d5e5f6aed4f36bcecb444b511e2adc150d54dc3c01894a6f7996635c30c1"
+  "source_fingerprint": "6e16768df9584a190383499ef20baeffba75d138bbb0d7238253f0eec2945f99"
 }

@@ -584,6 +584,21 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_policy_decisions_action, idx_policy_decisions_recent, sqlite_autoindex_policy_decisions_1 |
 | Confidence | inferred |
 
+## `policy_recovery_resolutions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_policy_recovery_resolutions_operation, sqlite_autoindex_policy_recovery_resolutions_2, sqlite_autoindex_policy_recovery_resolutions_1 |
+| Confidence | inferred |
+
 ## `policy_revisions`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.

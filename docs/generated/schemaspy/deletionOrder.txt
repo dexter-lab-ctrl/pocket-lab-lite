@@ -15,8 +15,8 @@ audit_evidence_index
 enterprise_memberships
 webauthn_challenges
 policy_temporary_exceptions
+policy_recovery_resolutions
 policy_approvals
-policy_activation_operations
 policy_runtime_state
 enterprise_configuration
 device_system_profiles
@@ -43,6 +43,7 @@ device_health_current
 device_health_attention
 device_awareness_state
 app_action_lifecycle
+policy_activation_operations
 device_lifecycle_events
 webauthn_credentials
 security_database_restores

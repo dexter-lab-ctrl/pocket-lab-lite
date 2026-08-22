@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 220775195fb24f1f43cc7e4ee7e71c655d2e039b8e6fa906cb496cad6fcc7e2a
+source_fingerprint: 542671b75e5dbf7828e093173f066bb64998a00b78c1984b0878d80ade223821
 schema_revision: 1
 validation_status: generated
 ---
@@ -895,6 +895,29 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
 | 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-enterprise-rules-activations-operation-id-resolve"></a>
+## POST `/api/lite/enterprise/rules/activations/{operation_id}/resolve`
+
+- Operation ID: `resolve_activation_api_lite_enterprise_rules_activations__operation_id__resolve_post`
+- Summary: Resolve Activation
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| operation_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 

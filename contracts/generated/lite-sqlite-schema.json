@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 28,
+    "migration_count": 29,
     "objects": [
       {
         "checks": [],
@@ -4501,7 +4501,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -5535,7 +5536,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
         ],
         "name": "policy_activation_operations",
         "projection_owner": "not a prepared projection",
@@ -6113,6 +6115,151 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE policy_decisions (\n    decision_row_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    occurred_at TEXT NOT NULL,\n    decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    actor_type TEXT NOT NULL,\n    actor_id TEXT NOT NULL,\n    action_id TEXT NOT NULL,\n    target_type TEXT NOT NULL,\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL,\n    allow INTEGER NOT NULL,\n    reason_code TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    evaluation_ms REAL NOT NULL DEFAULT 0\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "status = 'proved'",
+          "evidence_ref = 'policy:manual-recovery-proved'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "resolution_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_by_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "resolved_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "original_reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "recovered_revision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "evidence_ref",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "summary",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "requested_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "operation_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_activation_operations",
+            "sequence": 0,
+            "to": "operation_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "operation_id",
+              "resolved_at"
+            ],
+            "name": "idx_policy_recovery_resolutions_operation",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "operation_id"
+            ],
+            "name": "sqlite_autoindex_policy_recovery_resolutions_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "resolution_id"
+            ],
+            "name": "sqlite_autoindex_policy_recovery_resolutions_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
+        ],
+        "name": "policy_recovery_resolutions",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_ref"
+        ],
+        "sql": "CREATE TABLE policy_recovery_resolutions (\n    resolution_id TEXT PRIMARY KEY,\n    operation_id TEXT NOT NULL UNIQUE,\n    requested_by_human_id TEXT NOT NULL,\n    requested_at TEXT NOT NULL,\n    resolved_at TEXT NOT NULL,\n    original_reason_code TEXT NOT NULL,\n    recovered_revision_id TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status = 'proved'),\n    evidence_ref TEXT NOT NULL CHECK (evidence_ref = 'policy:manual-recovery-proved'),\n    summary TEXT NOT NULL,\n    FOREIGN KEY(operation_id) REFERENCES policy_activation_operations(operation_id),\n    FOREIGN KEY(requested_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -10235,7 +10382,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "870c1b7a6f33a1ae622ae280172363366194f34d5b3853296ba86c32bd2cdb1d",
+    "aggregate_fingerprint": "0c94761c6d33a30f99734ca912271c30b9323dd2ac495f5e15357810685a4f07",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10245,7 +10392,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "154c717868a1e467cc6ca9f7e1ae18d458319c4dfbd0f270cffe50fca8cf03ed",
+      "contracts/metadata/documentation-platform.json": "0a889bcdadd48600f2fa362a0e528c7b5066bdfe03406c0b4019ca54bc2ae554",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -10274,6 +10421,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql": "4bd3777a3ddc9a6e5097d3e63ea393edd17e84f276f0007997ae0a4d9d75801d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
       "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
     },
     "validation_state": "generated"
