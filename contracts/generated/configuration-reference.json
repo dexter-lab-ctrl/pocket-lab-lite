@@ -10234,6 +10234,42 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_READINESS_INTERVAL_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_READINESS_TIMEOUT_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_OPA_TIMEOUT_SECONDS",
       "production": true,
       "required": false,
@@ -15536,7 +15572,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "51eb847932c6a77ce2da7fdbb60a4ade59e9fa80c7fd7b234a826762ef32f067",
+    "aggregate_fingerprint": "4f25b186758079e579777e997a17eed0e9855e05493d82359dfcf5029762dca8",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15688,7 +15724,7 @@
       "pocket-lab-final-structure/runtime/core/state/__init__.py": "1f391af9b3dbe3f4dfc80c9f43af97494c479b8317bf2f06a74afac7be61b64e",
       "pocket-lab-final-structure/runtime/core/state/models.py": "6d5302fae1cecb9e48894b87d17763184fc8f0b2ce50eff7757ee0abe31b05ec",
       "pocket-lab-final-structure/runtime/core/state/repositories.py": "7fa7398cc80a7fd71da065e9baba3ef669f75a72b9335b2baeed8c50544eaab4",
-      "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py": "ade3bebf6271a9317e7aee44b5dc497331063158f00d1da7dde27d150f4183a3",
+      "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py": "92b2b3e8fcf0462fa179ef149019bc25284f25e81749f67769087466a61e7b19",
       "pocket-lab-final-structure/runtime/tests/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/tests/test_adaptive_approval_policy.py": "fbe131b1cbd862fbf2c16159787276c2143d7914ba67341813c4334422c72d6e",
       "pocket-lab-final-structure/runtime/tests/test_catalog.py": "178855275062527558805f909efb8c072312330f44f392fe2e3c30718abb2f65",

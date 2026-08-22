@@ -27,13 +27,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-SUPERVISOR_VERSION = "1.2.1-policy-bootstrap-recovery"
+SUPERVISOR_VERSION = "1.2.2-opa-readiness-proof"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_CADDY_FAILURE_THRESHOLD = 3
 DEFAULT_API_PORT = 8080
 DEFAULT_CADDY_PORT = 8443
 DEFAULT_NATS_PORT = 4222
+DEFAULT_OPA_READINESS_TIMEOUT_SECONDS = 20.0
+DEFAULT_OPA_READINESS_INTERVAL_SECONDS = 0.5
 API_NATS_CLIENT_UNHEALTHY_EVENT = "api_nats_client_unhealthy_observed"
 
 _STOP = False
@@ -209,6 +211,12 @@ class LiteCoreSupervisor:
         self.max_restart_backoff_seconds = max(self.cooldown, int(os.environ.get(
             "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1800"
         )))
+        self.opa_readiness_timeout = max(2.0, min(60.0, float(os.environ.get(
+            "POCKETLAB_OPA_READINESS_TIMEOUT_SECONDS", DEFAULT_OPA_READINESS_TIMEOUT_SECONDS
+        ))))
+        self.opa_readiness_interval = max(0.1, min(2.0, float(os.environ.get(
+            "POCKETLAB_OPA_READINESS_INTERVAL_SECONDS", DEFAULT_OPA_READINESS_INTERVAL_SECONDS
+        ))))
         self.restart_history, self.restart_generations = self._load_restart_state()
         self.server_node_id = self._canonical_server_node_id()
         self.policy_lock_file = self.state_root / "opa" / "activation.lock"
@@ -578,6 +586,102 @@ class LiteCoreSupervisor:
         result = (payload or {}).get("result")
         return result if isinstance(result, str) and 8 <= len(result) <= 80 else None
 
+    def _wait_for_opa_revision(
+        self,
+        expected_revision: str,
+        *,
+        timeout_seconds: float | None = None,
+        interval_seconds: float | None = None,
+    ) -> Dict[str, Any]:
+        """Bound readiness proof after an OPA restart to health plus exact revision."""
+        timeout = self.opa_readiness_timeout if timeout_seconds is None else max(0.0, float(timeout_seconds))
+        interval = self.opa_readiness_interval if interval_seconds is None else max(0.0, float(interval_seconds))
+        deadline = time.monotonic() + timeout
+        attempts = 0
+        observed: str | None = None
+        health_ready = False
+        while True:
+            attempts += 1
+            remaining = max(0.0, deadline - time.monotonic())
+            probe_timeout = max(0.1, min(1.0, remaining if remaining > 0 else 0.1))
+            health_ready = fetch_json("http://127.0.0.1:8181/health", timeout=probe_timeout) is not None
+            remaining = max(0.0, deadline - time.monotonic())
+            probe_timeout = max(0.1, min(1.0, remaining if remaining > 0 else 0.1))
+            observed = self._opa_metadata_revision(
+                fetch_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision", timeout=probe_timeout)
+            )
+            if health_ready and observed == expected_revision:
+                return {
+                    "proved": True,
+                    "observed_revision": observed,
+                    "health_ready": True,
+                    "attempts": attempts,
+                }
+            if time.monotonic() >= deadline:
+                return {
+                    "proved": False,
+                    "observed_revision": observed,
+                    "health_ready": health_ready,
+                    "attempts": attempts,
+                }
+            time.sleep(min(interval, max(0.0, deadline - time.monotonic())))
+
+    def _restore_policy_runtime_state_after_rollback(self, op: Dict[str, Any], known_good: str) -> bool:
+        """Repair durable lifecycle state only after OPA proves the rollback target."""
+        candidate_revision = str(op.get("candidate_revision_id") or "")
+        if not candidate_revision:
+            return True
+        try:
+            begin_immediate, connection, _ = self._policy_runtime_modules()
+            with connection() as conn:
+                with begin_immediate(conn) as tx:
+                    candidate = tx.execute(
+                        "SELECT revision_id,lifecycle_status FROM policy_revisions WHERE revision_id=?",
+                        (candidate_revision,),
+                    ).fetchone()
+                    known_good_row = tx.execute(
+                        "SELECT revision_id,lifecycle_status FROM policy_revisions WHERE revision_id=?",
+                        (known_good,),
+                    ).fetchone()
+                    runtime = tx.execute(
+                        "SELECT active_revision_id,known_good_revision_id,updated_by_operation_id FROM policy_runtime_state WHERE state_id=1"
+                    ).fetchone()
+                    now = now_iso()
+                    if (
+                        runtime
+                        and str(runtime["updated_by_operation_id"] or "") == str(op.get("operation_id") or "")
+                        and str(runtime["active_revision_id"] or "") == candidate_revision
+                    ):
+                        if known_good_row:
+                            tx.execute(
+                                "UPDATE policy_runtime_state SET active_revision_id=?,known_good_revision_id=?,updated_at=?,updated_by_operation_id=? WHERE state_id=1",
+                                (known_good, known_good, now, op["operation_id"]),
+                            )
+                        else:
+                            tx.execute(
+                                "DELETE FROM policy_runtime_state WHERE state_id=1 AND updated_by_operation_id=?",
+                                (op["operation_id"],),
+                            )
+                    if candidate and str(candidate["lifecycle_status"] or "") == "active":
+                        tx.execute(
+                            "UPDATE policy_revisions SET lifecycle_status='validated',activated_at=NULL WHERE revision_id=?",
+                            (candidate_revision,),
+                        )
+                    if known_good_row and str(known_good_row["lifecycle_status"] or "") != "active":
+                        tx.execute(
+                            "UPDATE policy_revisions SET lifecycle_status='active' WHERE revision_id=?",
+                            (known_good,),
+                        )
+            return True
+        except Exception as exc:
+            self._append_event({
+                "event": "policy_rollback_state_repair_failed",
+                "operation_id": op.get("operation_id"),
+                "error_type": type(exc).__name__,
+                "acted": False,
+            })
+            return False
+
     def _prepare_policy(self, action: str, revision: str, template_json: str = "") -> bool:
         env = os.environ.copy()
         env["POCKETLAB_STATE_DIR"] = str(self.state_root)
@@ -622,9 +726,19 @@ class LiteCoreSupervisor:
             if not restart.get("acted"):
                 return self._rollback_policy(op, "opa_restart_failed")
             self._set_policy_operation(op["operation_id"], "verifying")
-            health = fetch_json("http://127.0.0.1:8181/health")
-            observed = self._opa_metadata_revision(fetch_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision"))
-            if health is None or observed != op["candidate_revision_id"]:
+            proof = self._wait_for_opa_revision(op["candidate_revision_id"])
+            observed = proof.get("observed_revision")
+            if proof.get("proved") is not True:
+                self._append_event({
+                    "event": "policy_opa_readiness_timeout",
+                    "operation_id": op["operation_id"],
+                    "phase": "activation",
+                    "expected_revision": op["candidate_revision_id"],
+                    "observed_revision": observed,
+                    "health_ready": bool(proof.get("health_ready")),
+                    "attempts": int(proof.get("attempts") or 0),
+                    "acted": False,
+                })
                 return self._rollback_policy(op, "opa_revision_mismatch", observed=observed)
             with connection() as conn:
                 with begin_immediate(conn) as tx:
@@ -649,8 +763,25 @@ class LiteCoreSupervisor:
             self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_pointer_failed", opa=observed)
             return {"event": "policy_activation_uncertain", "reason": "rollback_pointer_failed", "acted": False}
         restart = self.restart_pm2("pocket-opa", "policy_activation_rollback")
-        restored = self._opa_metadata_revision(fetch_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision"))
-        if not restart.get("acted") or fetch_json("http://127.0.0.1:8181/health") is None or restored != known_good:
+        if not restart.get("acted"):
+            self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_unproved", opa=observed)
+            return {"event": "policy_activation_uncertain", "reason": "rollback_unproved", "acted": False}
+        proof = self._wait_for_opa_revision(known_good)
+        restored = proof.get("observed_revision")
+        if proof.get("proved") is not True:
+            self._append_event({
+                "event": "policy_opa_readiness_timeout",
+                "operation_id": op["operation_id"],
+                "phase": "rollback",
+                "expected_revision": known_good,
+                "observed_revision": restored,
+                "health_ready": bool(proof.get("health_ready")),
+                "attempts": int(proof.get("attempts") or 0),
+                "acted": False,
+            })
+            self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_unproved", opa=restored)
+            return {"event": "policy_activation_uncertain", "reason": "rollback_unproved", "acted": False}
+        if not self._restore_policy_runtime_state_after_rollback(op, known_good):
             self._set_policy_operation(op["operation_id"], "uncertain", reason="rollback_unproved", opa=restored)
             return {"event": "policy_activation_uncertain", "reason": "rollback_unproved", "acted": False}
         evidence = (

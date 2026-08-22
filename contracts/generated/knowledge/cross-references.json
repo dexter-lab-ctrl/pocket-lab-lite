@@ -8957,6 +8957,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_policy_opa_readiness.py": [
+        {
+          "source": "reason:rollback_unproved",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_policy_uncertain_resolution.py": [
         {
           "source": "reason:policy_recovery_pointer_mismatch",
@@ -25477,6 +25483,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_policy_opa_readiness.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -26521,6 +26531,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d71ef3c1e7b9e880d92c60b0a8eb033a3b96ca1f98017972afedd3c4ced264ee"
+    "source_fingerprint": "ef30e2ae55edc2a633de8a90a19f9f0c1b6aa3c4777d05083f2984daa33c399f"
   }
 }
