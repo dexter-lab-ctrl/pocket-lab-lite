@@ -10,29 +10,36 @@
       "api:get:/api/lite/enterprise/identity": [
         "ui:literules"
       ],
+      "api:get:/api/lite/enterprise/identity/members": [
+        "ui:liteidentityenterprise"
+      ],
       "api:get:/api/lite/enterprise/rules/analysis": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/enterprise/rules/approvals": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/enterprise/rules/approvals/{approval_id}": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/enterprise/rules/decisions": [
-        "ui:literules"
+        "ui:literulesenterprise"
+      ],
+      "api:get:/api/lite/enterprise/rules/decisions/{decision_id}": [
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/enterprise/rules/exceptions": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/enterprise/rules/health": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/enterprise/rules/revisions": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/fleet": [
-        "ui:litedevices"
+        "ui:litedevices",
+        "ui:literulesenterprise"
       ],
       "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status": [
         "ui:litedevices"
@@ -44,9 +51,6 @@
         "ui:liteidentity"
       ],
       "api:get:/api/lite/policy": [
-        "ui:literules"
-      ],
-      "api:get:/api/lite/policy/decisions/{decision_id}": [
         "ui:literules"
       ],
       "api:get:/api/lite/recovery/database": [
@@ -89,16 +93,16 @@
         "ui:literecovery"
       ],
       "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:post:/api/lite/enterprise/rules/exceptions": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:post:/api/lite/enterprise/rules/simulations": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:post:/api/lite/fleet/add-device": [
         "ui:litedevices"
@@ -153,11 +157,11 @@
       ],
       "api:post:/api/lite/identity/step-up/options": [
         "ui:liteidentity",
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:post:/api/lite/identity/step-up/verify": [
         "ui:liteidentity",
-        "ui:literules"
+        "ui:literulesenterprise"
       ],
       "api:post:/api/lite/recovery/backup": [
         "ui:literecovery"
@@ -194,6 +198,9 @@
       ],
       "api:post:/api/lite/security/check": [
         "ui:litesecurity"
+      ],
+      "api:put:/api/lite/enterprise/identity/members/{human_id}": [
+        "ui:liteidentityenterprise"
       ],
       "api:put:/api/lite/enterprise/identity/mode": [
         "ui:liteidentity"
@@ -236,6 +243,10 @@
         "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/identity/passkeys/{credential_id}"
       ],
+      "ui:liteidentityenterprise": [
+        "api:get:/api/lite/enterprise/identity/members",
+        "api:put:/api/lite/enterprise/identity/members/{human_id}"
+      ],
       "ui:literecovery": [
         "api:get:/api/lite/recovery/database",
         "api:get:/api/lite/recovery/details",
@@ -261,15 +272,18 @@
       ],
       "ui:literules": [
         "api:get:/api/lite/enterprise/identity",
+        "api:get:/api/lite/policy"
+      ],
+      "ui:literulesenterprise": [
         "api:get:/api/lite/enterprise/rules/analysis",
         "api:get:/api/lite/enterprise/rules/approvals",
         "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
         "api:get:/api/lite/enterprise/rules/decisions",
+        "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
         "api:get:/api/lite/enterprise/rules/exceptions",
         "api:get:/api/lite/enterprise/rules/health",
         "api:get:/api/lite/enterprise/rules/revisions",
-        "api:get:/api/lite/policy",
-        "api:get:/api/lite/policy/decisions/{decision_id}",
+        "api:get:/api/lite/fleet",
         "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
         "api:post:/api/lite/enterprise/rules/exceptions",
         "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
@@ -295,6 +309,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ef30e2ae55edc2a633de8a90a19f9f0c1b6aa3c4777d05083f2984daa33c399f"
+    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
   }
 }

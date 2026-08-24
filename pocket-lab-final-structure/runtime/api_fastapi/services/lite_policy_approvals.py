@@ -57,14 +57,45 @@ def _event(tx: Any, *, kind: str, subject_id: str, actor_human_id: str | None, e
     )
 
 
-def _public_approval(row: Any) -> dict[str, Any]:
-    item = dict(row)
+def _eligible_approver_count(conn: Any, initiating_human_id: str) -> int:
+    row = conn.execute(
+        """SELECT COUNT(*) AS count
+           FROM enterprise_memberships m
+           JOIN human_identities h ON h.human_id=m.human_id
+           WHERE m.status='active' AND m.role IN ('Owner','Admin') AND h.status='active' AND m.human_id<>?""",
+        (initiating_human_id,),
+    ).fetchone()
+    return int(row["count"] or 0) if row else 0
+
+
+def _public_approval(
+    row: Any,
+    *,
+    viewer_actor_id: str | None = None,
+    viewer_role: str | None = None,
+    eligible_approver_count: int | None = None,
+) -> dict[str, Any]:
+    raw = dict(row)
+    initiating_human_id = str(raw.get("initiating_human_id") or "")
+    item = dict(raw)
     for field in ("initiating_human_id", "approved_by_human_id", "rejected_by_human_id", "cancelled_by_human_id"):
         item.pop(field, None)
     try:
         item["required_approver_roles"] = json.loads(item.pop("required_approver_roles_json", "[]"))
     except (TypeError, ValueError):
         item["required_approver_roles"] = []
+
+    if viewer_actor_id is not None:
+        viewer_is_requester = bool(viewer_actor_id and viewer_actor_id == initiating_human_id)
+        viewer_is_approver = str(viewer_role or "") in APPROVER_ROLES
+        still_pending = item.get("status") == "pending" and str(item.get("expires_at") or "") > _iso()
+        item["viewer_relationship"] = "requester" if viewer_is_requester else ("reviewer" if viewer_is_approver else "observer")
+        item["viewer_actions"] = {
+            "approve": bool(still_pending and viewer_is_approver and not viewer_is_requester),
+            "reject": bool(still_pending and viewer_is_approver),
+            "cancel": bool(still_pending and viewer_is_requester),
+        }
+        item["eligible_approver_count"] = max(0, int(eligible_approver_count or 0))
     return item
 
 
@@ -116,7 +147,16 @@ def list_approvals(*, auth_context: dict[str, Any]) -> dict[str, Any]:
             rows = conn.execute("SELECT * FROM policy_approvals ORDER BY created_at DESC LIMIT 100").fetchall()
         else:
             rows = conn.execute("SELECT * FROM policy_approvals WHERE initiating_human_id=? ORDER BY created_at DESC LIMIT 100", (actor_id,)).fetchall()
-    return {"approvals": [_public_approval(row) for row in rows]}
+        approvals = [
+            _public_approval(
+                row,
+                viewer_actor_id=actor_id,
+                viewer_role=role,
+                eligible_approver_count=_eligible_approver_count(conn, str(row["initiating_human_id"])),
+            )
+            for row in rows
+        ]
+    return {"approvals": approvals}
 
 
 def read_approval(*, auth_context: dict[str, Any], approval_id: str) -> dict[str, Any]:
@@ -129,7 +169,13 @@ def read_approval(*, auth_context: dict[str, Any], approval_id: str) -> dict[str
         if actor_id != row["initiating_human_id"] and role not in APPROVER_ROLES | {"Auditor"}:
             raise ApprovalError("approval_read_forbidden", "That approval is not available to your current role.")
         events = conn.execute("SELECT occurred_at,event_type,reason_code,summary FROM policy_continuation_events WHERE kind='approval' AND subject_id=? ORDER BY event_id ASC LIMIT 40", (row["approval_id"],)).fetchall()
-    return {"approval": _public_approval(row), "history": [dict(event) for event in events]}
+        approval = _public_approval(
+            row,
+            viewer_actor_id=actor_id,
+            viewer_role=role,
+            eligible_approver_count=_eligible_approver_count(conn, str(row["initiating_human_id"])),
+        )
+    return {"approval": approval, "history": [dict(event) for event in events]}
 
 
 def transition(*, auth_context: dict[str, Any], approval_id: str, action: str) -> dict[str, Any]:
@@ -168,7 +214,13 @@ def transition(*, auth_context: dict[str, Any], approval_id: str, action: str) -
                 raise ApprovalError("approval_transition_invalid", "That approval action is invalid.", 422)
             _event(tx, kind="approval", subject_id=row["approval_id"], actor_human_id=actor_id, event_type=event_type, reason_code=event_type.replace(".", "_"), summary=message, correlation_id=row["correlation_id"])
             updated = tx.execute("SELECT * FROM policy_approvals WHERE approval_id=?", (row["approval_id"],)).fetchone()
-    return {"approval": _public_approval(updated), "message": message}
+            public_updated = _public_approval(
+                updated,
+                viewer_actor_id=actor_id,
+                viewer_role=role,
+                eligible_approver_count=_eligible_approver_count(tx, str(updated["initiating_human_id"])),
+            )
+    return {"approval": public_updated, "message": message}
 
 
 def matching_approved(*, initiating_human_id: str, action_id: str, target_type: str, target_id: str, policy_revision: str) -> str | None:
@@ -257,11 +309,28 @@ def create_exception(*, auth_context: dict[str, Any], app_id: str, device_id: st
 
 def list_exceptions(*, auth_context: dict[str, Any]) -> dict[str, Any]:
     apply_migrations()
-    _actor_context(auth_context, roles=EXCEPTION_ROLES | {"Auditor"})
+    _, _, role = _actor_context(auth_context, roles=EXCEPTION_ROLES | {"Auditor"})
     with connection() as conn:
         conn.execute("UPDATE policy_temporary_exceptions SET status='expired' WHERE status='active' AND expires_at<=?", (_iso(),))
         rows = conn.execute("SELECT * FROM policy_temporary_exceptions ORDER BY created_at DESC LIMIT 100").fetchall()
-    return {"exceptions": [_public_exception(row) for row in rows]}
+        eligible_people = []
+        if role in EXCEPTION_ROLES:
+            people = conn.execute(
+                """SELECT h.human_id,h.display_name,m.role
+                   FROM human_identities h
+                   LEFT JOIN enterprise_memberships m ON m.human_id=h.human_id AND m.status='active'
+                   WHERE h.status='active'
+                   ORDER BY COALESCE(h.display_name,''),h.created_at"""
+            ).fetchall()
+            eligible_people = [
+                {
+                    "human_id": str(person["human_id"]),
+                    "display_name": str(person["display_name"] or "Pocket Lab person"),
+                    "role": str(person["role"] or "Member"),
+                }
+                for person in people
+            ]
+    return {"exceptions": [_public_exception(row) for row in rows], "eligible_people": eligible_people}
 
 
 def revoke_exception(*, auth_context: dict[str, Any], exception_id: str) -> dict[str, Any]:

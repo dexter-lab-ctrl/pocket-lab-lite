@@ -830,6 +830,15 @@
       "confidence": "contract-derived",
       "description": "Enterprise Members",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseMembers",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
+          "usage": "query"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/identity/members",
       "method": "GET",
       "name": "GET /api/lite/enterprise/identity/members",
@@ -879,7 +888,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRulesAnalysis",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -917,7 +926,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRuleApprovals",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -954,7 +963,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRuleApproval",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -993,7 +1002,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRuleDecisions",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         }
       ],
@@ -1021,6 +1030,13 @@
       "description": "Decision",
       "domain": "enterprise",
       "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.enterpriseRuleDecision",
+          "resolved": true,
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
+          "usage": "query"
+        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1057,7 +1073,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRuleExceptions",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -1094,7 +1110,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRulesHealth",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -1131,7 +1147,7 @@
           "mocked": false,
           "owner": "liteApi.enterpriseRuleRevisions",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -1245,6 +1261,13 @@
           "owner": "liteApi.fleet",
           "resolved": true,
           "source_module": "src/lite/LiteDevices.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.fleet",
+          "resolved": true,
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
         },
         {
@@ -1525,13 +1548,6 @@
       "description": "Get Lite Policy Decision",
       "domain": "rules",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.policyDecision",
-          "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3243,7 +3259,7 @@
           "mocked": false,
           "owner": "liteApi.transitionEnterpriseRuleApproval",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -3282,7 +3298,7 @@
           "mocked": false,
           "owner": "liteApi.createEnterpriseRuleException",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -3321,7 +3337,7 @@
           "mocked": false,
           "owner": "liteApi.revokeEnterpriseRuleException",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -3405,7 +3421,7 @@
           "mocked": false,
           "owner": "liteApi.simulateEnterpriseRule",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -4219,7 +4235,7 @@
           "mocked": false,
           "owner": "liteApi.passkeyStepUpOptions",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -4265,7 +4281,7 @@
           "mocked": false,
           "owner": "liteApi.verifyPasskeyStepUp",
           "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
+          "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -4936,6 +4952,15 @@
       "confidence": "contract-derived",
       "description": "Update Enterprise Member",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.updateEnterpriseMember",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
+          "usage": "mutation"
+        }
+      ],
       "id": "api:put:/api/lite/enterprise/identity/members/{human_id}",
       "method": "PUT",
       "name": "PUT /api/lite/enterprise/identity/members/{human_id}",
@@ -5065,6 +5090,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ef30e2ae55edc2a633de8a90a19f9f0c1b6aa3c4777d05083f2984daa33c399f"
+    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
   }
 }

@@ -35,6 +35,17 @@
     },
     {
       "confidence": "source-derived",
+      "domain": "platform",
+      "id": "ui:liteidentityenterprise",
+      "name": "LiteIdentityEnterprise",
+      "source_refs": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
       "domain": "recovery",
       "id": "ui:literecovery",
       "name": "LiteRecovery",
@@ -79,6 +90,17 @@
     },
     {
       "confidence": "source-derived",
+      "domain": "platform",
+      "id": "ui:literulesenterprise",
+      "name": "LiteRulesEnterprise",
+      "source_refs": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
       "domain": "security",
       "id": "ui:litesecurity",
       "name": "LiteSecurity",
@@ -95,6 +117,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ef30e2ae55edc2a633de8a90a19f9f0c1b6aa3c4777d05083f2984daa33c399f"
+    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
   }
 }

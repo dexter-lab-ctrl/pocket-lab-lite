@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0818b10a6656bf27cba8d17c6060b3c20d44448626db939d1172ed6c82eba6a9
+source_fingerprint: c8864753ea67e3eec8b2017ea9495995462370a2c6a7ee3249d0fcee17e6d146
 schema_revision: 1
 validation_status: generated
 ---
@@ -54,6 +54,8 @@ validation_status: generated
 | src/lite/LiteIdentity.jsx | liteApi.setupIdentity | POST | `/api/lite/identity/setup` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
+| src/lite/LiteIdentityEnterprise.jsx | liteApi.enterpriseMembers | GET | `/api/lite/enterprise/identity/members` | query | no | static |
+| src/lite/LiteIdentityEnterprise.jsx | liteApi.updateEnterpriseMember | PUT | `/api/lite/enterprise/identity/members/{param}` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.previewAppRestore | POST | `/api/lite/apps/{param}/restore/preview` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
@@ -72,21 +74,22 @@ validation_status: generated
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.checkRelease | POST | `/api/lite/release/check` | mutation | no | static |
 | src/lite/LiteRevisionSyncBridge.jsx | liteApi.domainRevisions | GET | `/api/lite/revisions` | query | no | static |
 | src/lite/LiteRules.jsx | liteApi.enterpriseIdentity | GET | `/api/lite/enterprise/identity` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRulesAnalysis | GET | `/api/lite/enterprise/rules/analysis` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRuleApprovals | GET | `/api/lite/enterprise/rules/approvals` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRuleApproval | GET | `/api/lite/enterprise/rules/approvals/{param}` | query | no | dynamic |
-| src/lite/LiteRules.jsx | liteApi.transitionEnterpriseRuleApproval | POST | `/api/lite/enterprise/rules/approvals/{param}` | mutation | no | dynamic |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRuleDecisions | GET | `/api/lite/enterprise/rules/decisions` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRuleExceptions | GET | `/api/lite/enterprise/rules/exceptions` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.createEnterpriseRuleException | POST | `/api/lite/enterprise/rules/exceptions` | mutation | no | static |
-| src/lite/LiteRules.jsx | liteApi.revokeEnterpriseRuleException | POST | `/api/lite/enterprise/rules/exceptions/{param}/revoke` | mutation | no | dynamic |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRulesHealth | GET | `/api/lite/enterprise/rules/health` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.enterpriseRuleRevisions | GET | `/api/lite/enterprise/rules/revisions` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.simulateEnterpriseRule | POST | `/api/lite/enterprise/rules/simulations` | mutation | no | static |
-| src/lite/LiteRules.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
-| src/lite/LiteRules.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRules.jsx | liteApi.policy | GET | `/api/lite/policy` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.policyDecision | GET | `/api/lite/policy/decisions/{param}` | query | no | dynamic |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRulesAnalysis | GET | `/api/lite/enterprise/rules/analysis` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleApprovals | GET | `/api/lite/enterprise/rules/approvals` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleApproval | GET | `/api/lite/enterprise/rules/approvals/{param}` | query | no | dynamic |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.transitionEnterpriseRuleApproval | POST | `/api/lite/enterprise/rules/approvals/{param}` | mutation | no | dynamic |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleDecisions | GET | `/api/lite/enterprise/rules/decisions` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleDecision | GET | `/api/lite/enterprise/rules/decisions/{param}` | query | no | dynamic |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleExceptions | GET | `/api/lite/enterprise/rules/exceptions` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.createEnterpriseRuleException | POST | `/api/lite/enterprise/rules/exceptions` | mutation | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.revokeEnterpriseRuleException | POST | `/api/lite/enterprise/rules/exceptions/{param}/revoke` | mutation | no | dynamic |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRulesHealth | GET | `/api/lite/enterprise/rules/health` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleRevisions | GET | `/api/lite/enterprise/rules/revisions` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.simulateEnterpriseRule | POST | `/api/lite/enterprise/rules/simulations` | mutation | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.fleet | GET | `/api/lite/fleet` | query | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
+| src/lite/LiteRulesEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.checkSecurityApp | POST | `/api/lite/security/apps/{param}/check` | mutation | no | dynamic |
 | src/lite/LiteSecurity.jsx | liteApi.runSecurityScan | POST | `/api/lite/security/check` | mutation | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.securityEvidenceSummary | GET | `/api/lite/security/evidence/{param}/summary` | query | no | dynamic |
@@ -223,12 +226,9 @@ validation_status: generated
 - `/api/lite/diagnostics/frontend-lifecycle`
 - `/api/lite/diagnostics/frontend-lifecycle/challenge`
 - `/api/lite/diagnostics/runtime/full`
-- `/api/lite/enterprise/identity/members`
-- `/api/lite/enterprise/identity/members/{human_id}`
 - `/api/lite/enterprise/rules/activations`
 - `/api/lite/enterprise/rules/activations/{operation_id}`
 - `/api/lite/enterprise/rules/activations/{operation_id}/resolve`
-- `/api/lite/enterprise/rules/decisions/{decision_id}`
 - `/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}`
 - `/api/lite/enterprise/rules/revisions/{revision_id}`
 - `/api/lite/enterprise/rules/rollbacks`
@@ -243,6 +243,7 @@ validation_status: generated
 - `/api/lite/identity/owner-claim`
 - `/api/lite/identity/rotate`
 - `/api/lite/policy/apply`
+- `/api/lite/policy/decisions/{decision_id}`
 - `/api/lite/policy/templates`
 - `/api/lite/recovery`
 - `/api/lite/recovery/apps`

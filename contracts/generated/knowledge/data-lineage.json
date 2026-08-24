@@ -43,6 +43,19 @@
       ]
     },
     {
+      "api": "api:get:/api/lite/enterprise/identity/members",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/enterprise/identity/members",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:liteidentityenterprise"
+      ]
+    },
+    {
       "api": "api:get:/api/lite/enterprise/rules/analysis",
       "confidence": "unvalidated",
       "method": "GET",
@@ -52,7 +65,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -65,7 +78,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -78,7 +91,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -91,7 +104,20 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/enterprise/rules/decisions/{decision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -104,7 +130,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -117,7 +143,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -130,7 +156,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -158,7 +184,8 @@
         "table:device_system_profiles"
       ],
       "ui": [
-        "ui:litedevices"
+        "ui:litedevices",
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -205,19 +232,6 @@
       "confidence": "unvalidated",
       "method": "GET",
       "route": "/api/lite/policy",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literules"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/policy/decisions/{decision_id}",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/policy/decisions/{decision_id}",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -437,7 +451,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -450,7 +464,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -463,7 +477,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -476,7 +490,7 @@
       ],
       "sqlite": [],
       "ui": [
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -711,7 +725,7 @@
       "sqlite": [],
       "ui": [
         "ui:liteidentity",
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -725,7 +739,7 @@
       "sqlite": [],
       "ui": [
         "ui:liteidentity",
-        "ui:literules"
+        "ui:literulesenterprise"
       ]
     },
     {
@@ -885,6 +899,19 @@
       ]
     },
     {
+      "api": "api:put:/api/lite/enterprise/identity/members/{human_id}",
+      "confidence": "unvalidated",
+      "method": "PUT",
+      "route": "/api/lite/enterprise/identity/members/{human_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:liteidentityenterprise"
+      ]
+    },
+    {
       "api": "api:put:/api/lite/enterprise/identity/mode",
       "confidence": "unvalidated",
       "method": "PUT",
@@ -917,6 +944,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ef30e2ae55edc2a633de8a90a19f9f0c1b6aa3c4777d05083f2984daa33c399f"
+    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
   }
 }

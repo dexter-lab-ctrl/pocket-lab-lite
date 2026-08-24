@@ -450,6 +450,34 @@
         "usage": "mutation"
       },
       {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteIdentityEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseMembers",
+        "resolved": true,
+        "route": "/api/lite/enterprise/identity/members",
+        "source_module": "src/lite/LiteIdentityEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentityEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "PUT",
+        "mocked": false,
+        "owner": "liteApi.updateEnterpriseMember",
+        "resolved": true,
+        "route": "/api/lite/enterprise/identity/members/{param}",
+        "source_module": "src/lite/LiteIdentityEnterprise.jsx",
+        "usage": "mutation"
+      },
+      {
         "dynamic": true,
         "import_chain": [
           "src/lite/LiteRecovery.jsx",
@@ -709,188 +737,6 @@
         ],
         "method": "GET",
         "mocked": false,
-        "owner": "liteApi.enterpriseRulesAnalysis",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/analysis",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "liteApi.enterpriseRuleApprovals",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/approvals",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "liteApi.enterpriseRuleApproval",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/approvals/{param}",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.transitionEnterpriseRuleApproval",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/approvals/{param}",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "liteApi.enterpriseRuleDecisions",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/decisions",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "liteApi.enterpriseRuleExceptions",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/exceptions",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.createEnterpriseRuleException",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/exceptions",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": true,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.revokeEnterpriseRuleException",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/exceptions/{param}/revoke",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "liteApi.enterpriseRulesHealth",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/health",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
-        "owner": "liteApi.enterpriseRuleRevisions",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/revisions",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "query"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.simulateEnterpriseRule",
-        "resolved": true,
-        "route": "/api/lite/enterprise/rules/simulations",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.passkeyStepUpOptions",
-        "resolved": true,
-        "route": "/api/lite/identity/step-up/options",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "POST",
-        "mocked": false,
-        "owner": "liteApi.verifyPasskeyStepUp",
-        "resolved": true,
-        "route": "/api/lite/identity/step-up/verify",
-        "source_module": "src/lite/LiteRules.jsx",
-        "usage": "mutation"
-      },
-      {
-        "dynamic": false,
-        "import_chain": [
-          "src/lite/LiteRules.jsx",
-          "src/lib/liteApi.js"
-        ],
-        "method": "GET",
-        "mocked": false,
         "owner": "liteApi.policy",
         "resolved": true,
         "route": "/api/lite/policy",
@@ -898,18 +744,214 @@
         "usage": "query"
       },
       {
-        "dynamic": true,
+        "dynamic": false,
         "import_chain": [
-          "src/lite/LiteRules.jsx",
+          "src/lite/LiteRulesEnterprise.jsx",
           "src/lib/liteApi.js"
         ],
         "method": "GET",
         "mocked": false,
-        "owner": "liteApi.policyDecision",
+        "owner": "liteApi.enterpriseRulesAnalysis",
         "resolved": true,
-        "route": "/api/lite/policy/decisions/{param}",
-        "source_module": "src/lite/LiteRules.jsx",
+        "route": "/api/lite/enterprise/rules/analysis",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
         "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRuleApprovals",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/approvals",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRuleApproval",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/approvals/{param}",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.transitionEnterpriseRuleApproval",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/approvals/{param}",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRuleDecisions",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/decisions",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRuleDecision",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/decisions/{param}",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRuleExceptions",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/exceptions",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.createEnterpriseRuleException",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/exceptions",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.revokeEnterpriseRuleException",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/exceptions/{param}/revoke",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRulesHealth",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/health",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.enterpriseRuleRevisions",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/revisions",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.simulateEnterpriseRule",
+        "resolved": true,
+        "route": "/api/lite/enterprise/rules/simulations",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.fleet",
+        "resolved": true,
+        "route": "/api/lite/fleet",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.passkeyStepUpOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/options",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRulesEnterprise.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyPasskeyStepUp",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/verify",
+        "source_module": "src/lite/LiteRulesEnterprise.jsx",
+        "usage": "mutation"
       },
       {
         "dynamic": true,
@@ -2474,12 +2516,9 @@
       "/api/lite/diagnostics/frontend-lifecycle",
       "/api/lite/diagnostics/frontend-lifecycle/challenge",
       "/api/lite/diagnostics/runtime/full",
-      "/api/lite/enterprise/identity/members",
-      "/api/lite/enterprise/identity/members/{human_id}",
       "/api/lite/enterprise/rules/activations",
       "/api/lite/enterprise/rules/activations/{operation_id}",
       "/api/lite/enterprise/rules/activations/{operation_id}/resolve",
-      "/api/lite/enterprise/rules/decisions/{decision_id}",
       "/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
       "/api/lite/enterprise/rules/revisions/{revision_id}",
       "/api/lite/enterprise/rules/rollbacks",
@@ -2494,6 +2533,7 @@
       "/api/lite/identity/owner-claim",
       "/api/lite/identity/rotate",
       "/api/lite/policy/apply",
+      "/api/lite/policy/decisions/{decision_id}",
       "/api/lite/policy/templates",
       "/api/lite/recovery",
       "/api/lite/recovery/apps",
@@ -2537,7 +2577,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "79b37db34b1e5c847ca67c18febd5baa5ed293bb7eedc86827e9bba43e04eeb6",
+    "aggregate_fingerprint": "a33a7ff8630fc0e6311814af0e31e722db4c713c5899410c9a51e6f12c45dcaf",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2559,8 +2599,9 @@
       "src/lite/LiteDevices.stories.jsx": "87895ccbb3ee837f93e642bab7cd03de09d8b4451f978871c0c2ae5a159c4256",
       "src/lite/LiteHome.jsx": "85add6143e4cd13a2836ed16b706a97a2aa10a5d19489aa328a0d10140d05955",
       "src/lite/LiteHome.stories.jsx": "ead9e092e4eb37399202682d42ec165f7af473d22d684ea3e75f2c55a1910062",
-      "src/lite/LiteIdentity.jsx": "d1c9575fc727a3a6c69b969d512f24b54e87844f1c1aa448032750f621bb1385",
+      "src/lite/LiteIdentity.jsx": "23233bbf6b6f1455c5e8e59b1d98eae111e4438a66ee170316850edc05e065d3",
       "src/lite/LiteIdentity.stories.jsx": "a5c53468c8e8da6ae2c1f4365803c0eb5a7a30181c28bd7620eb5dbc6e220236",
+      "src/lite/LiteIdentityEnterprise.jsx": "27066545e3b73074f867d243ab4f46b0ed1dab94aa7c243698f9ce45d728b04b",
       "src/lite/LiteMotion.jsx": "8dc0089c7a175701b33e96afac566efbde31c6eda1202ef5ed0f00ff968e72ba",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
@@ -2569,8 +2610,9 @@
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
       "src/lite/LiteRevisionSyncBridge.jsx": "68176390944b13955111b702c03f8e06d399628f88ba6174909eddda99f9398e",
-      "src/lite/LiteRules.jsx": "d1ee5e68b7dd9c165660cbc9fd0159e06f61734eae6c4dd94ab7ef7002c8426f",
+      "src/lite/LiteRules.jsx": "a1318843e2ec6adc7f1df6a1e1f15be5f49e9e0adc6928505d10c877c32d9235",
       "src/lite/LiteRules.stories.jsx": "e0c1670434e62a0ef2d323a550e680e0e7fc9fda721679baced5600b811426e1",
+      "src/lite/LiteRulesEnterprise.jsx": "51545febd943c05ac206c7259704a51b87f6418c39f523316209114e1739d208",
       "src/lite/LiteScreenBoundary.jsx": "933ae31bc9100302cbce4a037093a2fc876338571d6c104941b4826de365bc95",
       "src/lite/LiteSecurity.jsx": "7695675d564398f9f7aad5296b8deaaa8b5fcecf1453489741d6ec79746b522b",
       "src/lite/LiteSecurity.stories.jsx": "83adef458f532e8ba0bc26534760a469a2d315badb71fe7f08e82723742bbd57",

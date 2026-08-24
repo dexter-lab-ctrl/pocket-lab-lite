@@ -297,6 +297,10 @@
           "type": "calls"
         },
         {
+          "source": "ui:liteidentityenterprise",
+          "type": "calls"
+        },
+        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -309,7 +313,7 @@
       ],
       "api:get:/api/lite/enterprise/rules/analysis": [
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -323,7 +327,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -333,7 +337,7 @@
       ],
       "api:get:/api/lite/enterprise/rules/approvals/{approval_id}": [
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -343,7 +347,7 @@
       ],
       "api:get:/api/lite/enterprise/rules/decisions": [
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -353,13 +357,17 @@
       ],
       "api:get:/api/lite/enterprise/rules/decisions/{decision_id}": [
         {
+          "source": "ui:literulesenterprise",
+          "type": "calls"
+        },
+        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/exceptions": [
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -373,7 +381,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -387,7 +395,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -444,6 +452,10 @@
         },
         {
           "source": "ui:litedevices",
+          "type": "calls"
+        },
+        {
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -528,10 +540,6 @@
         }
       ],
       "api:get:/api/lite/policy/decisions/{decision_id}": [
-        {
-          "source": "ui:literules",
-          "type": "calls"
-        },
         {
           "source": "domain:rules",
           "type": "owns"
@@ -1051,7 +1059,7 @@
       ],
       "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1065,7 +1073,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1075,7 +1083,7 @@
       ],
       "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": [
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1105,7 +1113,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1371,7 +1379,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1385,7 +1393,7 @@
           "type": "calls"
         },
         {
-          "source": "ui:literules",
+          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1612,6 +1620,10 @@
       "api:put:/api/lite/enterprise/identity/members/{human_id}": [
         {
           "source": "journey:enterprise-identity",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentityenterprise",
           "type": "calls"
         },
         {
@@ -8729,6 +8741,32 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_identity_rules_ui_projection.py": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:enterprise-identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_idle_efficiency_runtime.py": [
         {
           "source": "reason:shutdown",
@@ -13617,6 +13655,12 @@
           "type": "owns"
         }
       ],
+      "ui:liteidentityenterprise": [
+        {
+          "source": "domain:platform",
+          "type": "owns"
+        }
+      ],
       "ui:literecovery": [
         {
           "source": "domain:recovery",
@@ -13638,6 +13682,12 @@
       "ui:literules": [
         {
           "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "ui:literulesenterprise": [
+        {
+          "source": "domain:platform",
           "type": "owns"
         }
       ],
@@ -20539,6 +20589,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
@@ -20939,11 +20993,19 @@
           "type": "owns"
         },
         {
+          "target": "ui:liteidentityenterprise",
+          "type": "owns"
+        },
+        {
           "target": "ui:litereleaseupdatecard",
           "type": "owns"
         },
         {
           "target": "ui:literevisionsyncbridge",
+          "type": "owns"
+        },
+        {
+          "target": "ui:literulesenterprise",
           "type": "owns"
         },
         {
@@ -22523,6 +22585,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
           "type": "verified_by"
         },
@@ -22728,6 +22794,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         }
       ],
@@ -23106,6 +23176,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         }
       ],
@@ -23498,6 +23572,10 @@
       "reason:approval_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         },
         {
@@ -25331,6 +25409,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_policy_analysis_p2_3.py",
           "type": "verified_by"
         },
@@ -26349,6 +26431,16 @@
           "type": "calls"
         }
       ],
+      "ui:liteidentityenterprise": [
+        {
+          "target": "api:get:/api/lite/enterprise/identity/members",
+          "type": "calls"
+        },
+        {
+          "target": "api:put:/api/lite/enterprise/identity/members/{human_id}",
+          "type": "calls"
+        }
+      ],
       "ui:literecovery": [
         {
           "target": "api:get:/api/lite/recovery/database",
@@ -26429,6 +26521,12 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/policy",
+          "type": "calls"
+        }
+      ],
+      "ui:literulesenterprise": [
+        {
           "target": "api:get:/api/lite/enterprise/rules/analysis",
           "type": "calls"
         },
@@ -26445,6 +26543,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/rules/exceptions",
           "type": "calls"
         },
@@ -26457,11 +26559,7 @@
           "type": "calls"
         },
         {
-          "target": "api:get:/api/lite/policy",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+          "target": "api:get:/api/lite/fleet",
           "type": "calls"
         },
         {
@@ -26531,6 +26629,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ef30e2ae55edc2a633de8a90a19f9f0c1b6aa3c4777d05083f2984daa33c399f"
+    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
   }
 }
