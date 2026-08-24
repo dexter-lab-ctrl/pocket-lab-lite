@@ -35519,8 +35519,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "789092d040d3ffccac90c36103d667b982205f47",
-          "head_tree": "1e9f342461062fe65c11f95d464fd6d01e0848c4",
+          "head": "f1cbe008cd797d8956b8d89d680370dc0a936ab7",
+          "head_tree": "4ec1917fbb4ed0df7f70f1f1cb367ef967952cbc",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -37369,9 +37369,9 @@
       "fingerprints": {
         "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "74bf6eafa54eeba1d69c49a0e8904fe3866e2cfdb9c5fa7d280cdfae35fdb809",
+        "documentation": "6b185d789fc46b22fff8c01c96e6e3cde6f360189847ea5d1bd35d7642834bb4",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
-        "operational_health": "eb3befd02eb0a0128683369917a7f705cdd77cb2cfbcd408026f62e345821538"
+        "operational_health": "2c85a340734f3e4bcc1f6a382111a8bb79ad327e22bec7366673252513f77457"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -39443,8 +39443,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "789092d040d3ffccac90c36103d667b982205f47",
-        "head_tree": "1e9f342461062fe65c11f95d464fd6d01e0848c4",
+        "head": "f1cbe008cd797d8956b8d89d680370dc0a936ab7",
+        "head_tree": "4ec1917fbb4ed0df7f70f1f1cb367ef967952cbc",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -91333,5 +91333,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "3d250d8adeb7fcaa4312a544187deebada0c818a3fa0e696ff16987f74f51121"
+  "source_fingerprint": "793604f87bfed70d694702e0d150675733905fa2117f14e4b55cf6c2a35ddbcd"
 }

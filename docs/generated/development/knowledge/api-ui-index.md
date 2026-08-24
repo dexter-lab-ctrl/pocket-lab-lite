@@ -43,20 +43,20 @@ generator_version: 3
 | `GET /api/lite/diagnostics/runtime` | diagnostics | — | get_lite_runtime_diagnostics_api_lite_diagnostics_runtime_get | contract-derived |
 | `GET /api/lite/diagnostics/runtime/full` | diagnostics | — | get_lite_runtime_diagnostics_full_api_lite_diagnostics_runtime_full_get | contract-derived |
 | `GET /api/lite/enterprise/identity` | enterprise | LiteRules | enterprise_identity_api_lite_enterprise_identity_get | contract-derived |
-| `GET /api/lite/enterprise/identity/members` | enterprise | — | enterprise_members_api_lite_enterprise_identity_members_get | contract-derived |
+| `GET /api/lite/enterprise/identity/members` | enterprise | LiteIdentityEnterprise | enterprise_members_api_lite_enterprise_identity_members_get | contract-derived |
 | `GET /api/lite/enterprise/rules/activations/{operation_id}` | enterprise | — | operation_api_lite_enterprise_rules_activations__operation_id__get | contract-derived |
-| `GET /api/lite/enterprise/rules/analysis` | enterprise | LiteRules | analysis_api_lite_enterprise_rules_analysis_get | contract-derived |
-| `GET /api/lite/enterprise/rules/approvals` | enterprise | LiteRules | approvals_api_lite_enterprise_rules_approvals_get | contract-derived |
-| `GET /api/lite/enterprise/rules/approvals/{approval_id}` | enterprise | LiteRules | approval_api_lite_enterprise_rules_approvals__approval_id__get | contract-derived |
-| `GET /api/lite/enterprise/rules/decisions` | enterprise | LiteRules | decisions_api_lite_enterprise_rules_decisions_get | contract-derived |
-| `GET /api/lite/enterprise/rules/decisions/{decision_id}` | enterprise | — | decision_api_lite_enterprise_rules_decisions__decision_id__get | contract-derived |
-| `GET /api/lite/enterprise/rules/exceptions` | enterprise | LiteRules | exceptions_api_lite_enterprise_rules_exceptions_get | contract-derived |
-| `GET /api/lite/enterprise/rules/health` | enterprise | LiteRules | health_api_lite_enterprise_rules_health_get | contract-derived |
-| `GET /api/lite/enterprise/rules/revisions` | enterprise | LiteRules | revisions_api_lite_enterprise_rules_revisions_get | contract-derived |
+| `GET /api/lite/enterprise/rules/analysis` | enterprise | LiteRulesEnterprise | analysis_api_lite_enterprise_rules_analysis_get | contract-derived |
+| `GET /api/lite/enterprise/rules/approvals` | enterprise | LiteRulesEnterprise | approvals_api_lite_enterprise_rules_approvals_get | contract-derived |
+| `GET /api/lite/enterprise/rules/approvals/{approval_id}` | enterprise | LiteRulesEnterprise | approval_api_lite_enterprise_rules_approvals__approval_id__get | contract-derived |
+| `GET /api/lite/enterprise/rules/decisions` | enterprise | LiteRulesEnterprise | decisions_api_lite_enterprise_rules_decisions_get | contract-derived |
+| `GET /api/lite/enterprise/rules/decisions/{decision_id}` | enterprise | LiteRulesEnterprise | decision_api_lite_enterprise_rules_decisions__decision_id__get | contract-derived |
+| `GET /api/lite/enterprise/rules/exceptions` | enterprise | LiteRulesEnterprise | exceptions_api_lite_enterprise_rules_exceptions_get | contract-derived |
+| `GET /api/lite/enterprise/rules/health` | enterprise | LiteRulesEnterprise | health_api_lite_enterprise_rules_health_get | contract-derived |
+| `GET /api/lite/enterprise/rules/revisions` | enterprise | LiteRulesEnterprise | revisions_api_lite_enterprise_rules_revisions_get | contract-derived |
 | `GET /api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}` | enterprise | — | compare_api_lite_enterprise_rules_revisions__left_revision_id__compare__right_revision_id__get | contract-derived |
 | `GET /api/lite/enterprise/rules/revisions/{revision_id}` | enterprise | — | revision_api_lite_enterprise_rules_revisions__revision_id__get | contract-derived |
 | `GET /api/lite/events` | events | — | get_lite_revision_events_api_lite_events_get | contract-derived |
-| `GET /api/lite/fleet` | devices | LiteDevices | get_lite_fleet_api_lite_fleet_get | contract-derived |
+| `GET /api/lite/fleet` | devices | LiteDevices, LiteRulesEnterprise | get_lite_fleet_api_lite_fleet_get | contract-derived |
 | `GET /api/lite/fleet/agent/bootstrap.sh` | devices | — | lite_fleet_agent_bootstrap_script_api_lite_fleet_agent_bootstrap_sh_get | contract-derived |
 | `GET /api/lite/fleet/devices/{device_id}/recovery-history` | devices | — | get_lite_device_recovery_history_api_lite_fleet_devices__device_id__recovery_history_get | contract-derived |
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | devices | LiteDevices | lite_fleet_agent_restart_status_api_lite_fleet_devices__node_id__restart_agent_status_get | contract-derived |
@@ -65,7 +65,7 @@ generator_version: 3
 | `GET /api/lite/identity` | identity | LiteIdentity | get_lite_identity_api_lite_identity_get | contract-derived |
 | `GET /api/lite/identity/owner-claim/status` | identity | LiteIdentity | owner_claim_status_api_lite_identity_owner_claim_status_get | contract-derived |
 | `GET /api/lite/policy` | rules | LiteRules | get_lite_policy_api_lite_policy_get | contract-derived |
-| `GET /api/lite/policy/decisions/{decision_id}` | rules | LiteRules | get_lite_policy_decision_api_lite_policy_decisions__decision_id__get | contract-derived |
+| `GET /api/lite/policy/decisions/{decision_id}` | rules | — | get_lite_policy_decision_api_lite_policy_decisions__decision_id__get | contract-derived |
 | `GET /api/lite/policy/templates` | rules | — | get_lite_policy_templates_api_lite_policy_templates_get | contract-derived |
 | `GET /api/lite/recovery` | recovery | — | get_lite_recovery_api_lite_recovery_get | contract-derived |
 | `GET /api/lite/recovery/apps` | recovery | — | get_lite_recovery_apps_api_lite_recovery_apps_get | contract-derived |
@@ -126,12 +126,12 @@ generator_version: 3
 | `POST /api/lite/diagnostics/frontend-lifecycle` | diagnostics | — | record_frontend_lifecycle_diagnostics_api_lite_diagnostics_frontend_lifecycle_post | contract-derived |
 | `POST /api/lite/enterprise/rules/activations` | enterprise | — | activate_api_lite_enterprise_rules_activations_post | contract-derived |
 | `POST /api/lite/enterprise/rules/activations/{operation_id}/resolve` | enterprise | — | resolve_activation_api_lite_enterprise_rules_activations__operation_id__resolve_post | contract-derived |
-| `POST /api/lite/enterprise/rules/approvals/{approval_id}` | enterprise | LiteRules | transition_approval_api_lite_enterprise_rules_approvals__approval_id__post | contract-derived |
-| `POST /api/lite/enterprise/rules/exceptions` | enterprise | LiteRules | create_exception_api_lite_enterprise_rules_exceptions_post | contract-derived |
-| `POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke` | enterprise | LiteRules | revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post | contract-derived |
+| `POST /api/lite/enterprise/rules/approvals/{approval_id}` | enterprise | LiteRulesEnterprise | transition_approval_api_lite_enterprise_rules_approvals__approval_id__post | contract-derived |
+| `POST /api/lite/enterprise/rules/exceptions` | enterprise | LiteRulesEnterprise | create_exception_api_lite_enterprise_rules_exceptions_post | contract-derived |
+| `POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke` | enterprise | LiteRulesEnterprise | revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post | contract-derived |
 | `POST /api/lite/enterprise/rules/revisions` | enterprise | — | create_revision_api_lite_enterprise_rules_revisions_post | contract-derived |
 | `POST /api/lite/enterprise/rules/rollbacks` | enterprise | — | rollback_api_lite_enterprise_rules_rollbacks_post | contract-derived |
-| `POST /api/lite/enterprise/rules/simulations` | enterprise | LiteRules | simulate_api_lite_enterprise_rules_simulations_post | contract-derived |
+| `POST /api/lite/enterprise/rules/simulations` | enterprise | LiteRulesEnterprise | simulate_api_lite_enterprise_rules_simulations_post | contract-derived |
 | `POST /api/lite/fleet/add-device` | devices | LiteDevices | add_lite_device_api_lite_fleet_add_device_post | contract-derived |
 | `POST /api/lite/fleet/agent/bootstrap-blocked` | devices | — | lite_fleet_agent_bootstrap_blocked_api_lite_fleet_agent_bootstrap_blocked_post | contract-derived |
 | `POST /api/lite/fleet/agent/bootstrap.env` | devices | — | lite_fleet_agent_bootstrap_env_api_lite_fleet_agent_bootstrap_env_post | contract-derived |
@@ -154,8 +154,8 @@ generator_version: 3
 | `POST /api/lite/identity/rotate` | identity | — | rotate_lite_identity_api_lite_identity_rotate_post | contract-derived |
 | `POST /api/lite/identity/sessions/revoke-others` | identity | LiteIdentity | revoke_other_lite_identity_sessions_api_lite_identity_sessions_revoke_others_post | contract-derived |
 | `POST /api/lite/identity/setup` | identity | LiteIdentity | setup_lite_identity_api_lite_identity_setup_post | contract-derived |
-| `POST /api/lite/identity/step-up/options` | identity | LiteIdentity, LiteRules | passkey_step_up_options_api_lite_identity_step_up_options_post | contract-derived |
-| `POST /api/lite/identity/step-up/verify` | identity | LiteIdentity, LiteRules | passkey_step_up_verify_api_lite_identity_step_up_verify_post | contract-derived |
+| `POST /api/lite/identity/step-up/options` | identity | LiteIdentity, LiteRulesEnterprise | passkey_step_up_options_api_lite_identity_step_up_options_post | contract-derived |
+| `POST /api/lite/identity/step-up/verify` | identity | LiteIdentity, LiteRulesEnterprise | passkey_step_up_verify_api_lite_identity_step_up_verify_post | contract-derived |
 | `POST /api/lite/policy/apply` | rules | — | apply_lite_policy_api_lite_policy_apply_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/backup` | recovery | — | backup_lite_app_api_lite_recovery_apps__app_id__backup_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/backup-to-target` | recovery | — | backup_lite_app_to_target_api_lite_recovery_apps__app_id__backup_to_target_post | contract-derived |
@@ -176,7 +176,7 @@ generator_version: 3
 | `POST /api/lite/security/apps/{app_id}/check` | security | LiteSecurity | check_lite_security_app_api_lite_security_apps__app_id__check_post | contract-derived |
 | `POST /api/lite/security/check` | security | LiteSecurity | check_lite_security_api_lite_security_check_post | contract-derived |
 | `POST /api/lite/security/scan` | security | — | scan_lite_security_api_lite_security_scan_post | contract-derived |
-| `PUT /api/lite/enterprise/identity/members/{human_id}` | enterprise | — | update_enterprise_member_api_lite_enterprise_identity_members__human_id__put | contract-derived |
+| `PUT /api/lite/enterprise/identity/members/{human_id}` | enterprise | LiteIdentityEnterprise | update_enterprise_member_api_lite_enterprise_identity_members__human_id__put | contract-derived |
 | `PUT /api/lite/enterprise/identity/mode` | enterprise | LiteIdentity | update_enterprise_mode_api_lite_enterprise_identity_mode_put | contract-derived |
 | `PUT /api/lite/fleet/devices/{device_id}/display-model` | devices | — | update_lite_device_display_model_api_lite_fleet_devices__device_id__display_model_put | contract-derived |
 | `PUT /api/lite/identity/passkeys/{credential_id}` | identity | LiteIdentity | rename_lite_passkey_api_lite_identity_passkeys__credential_id__put | contract-derived |
@@ -188,8 +188,10 @@ generator_version: 3
 | LiteApp | GET /api/lite/catalog |
 | LiteDevices | GET /api/lite/devices/{device_id}/removal-assessment, GET /api/lite/fleet, GET /api/lite/fleet/devices/{node_id}/restart-agent/status, POST /api/lite/fleet/add-device, POST /api/lite/fleet/devices/{node_id}/restart-agent, POST /api/lite/fleet/remove-device |
 | LiteIdentity | GET /api/lite/identity, GET /api/lite/identity/owner-claim/status, POST /api/lite/identity/login, POST /api/lite/identity/logout, POST /api/lite/identity/owner-claim/consume, POST /api/lite/identity/owner-claim/passkey/options, POST /api/lite/identity/owner-claim/passkey/verify, POST /api/lite/identity/passkeys/login/options, POST /api/lite/identity/passkeys/login/verify, POST /api/lite/identity/passkeys/registration/options, POST /api/lite/identity/passkeys/registration/verify, POST /api/lite/identity/password, POST /api/lite/identity/recover, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/sessions/revoke-others, POST /api/lite/identity/setup, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify, PUT /api/lite/enterprise/identity/mode, PUT /api/lite/identity/passkeys/{credential_id} |
+| LiteIdentityEnterprise | GET /api/lite/enterprise/identity/members, PUT /api/lite/enterprise/identity/members/{human_id} |
 | LiteRecovery | GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/apps/{app_id}/restore/preview, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
 | LiteReleaseUpdateCard | GET /api/lite/release, POST /api/lite/release/apply, POST /api/lite/release/check |
 | LiteRevisionSyncBridge | GET /api/lite/revisions |
-| LiteRules | GET /api/lite/enterprise/identity, GET /api/lite/enterprise/rules/analysis, GET /api/lite/enterprise/rules/approvals, GET /api/lite/enterprise/rules/approvals/{approval_id}, GET /api/lite/enterprise/rules/decisions, GET /api/lite/enterprise/rules/exceptions, GET /api/lite/enterprise/rules/health, GET /api/lite/enterprise/rules/revisions, GET /api/lite/policy, GET /api/lite/policy/decisions/{decision_id}, POST /api/lite/enterprise/rules/approvals/{approval_id}, POST /api/lite/enterprise/rules/exceptions, POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke, POST /api/lite/enterprise/rules/simulations, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
+| LiteRules | GET /api/lite/enterprise/identity, GET /api/lite/policy |
+| LiteRulesEnterprise | GET /api/lite/enterprise/rules/analysis, GET /api/lite/enterprise/rules/approvals, GET /api/lite/enterprise/rules/approvals/{approval_id}, GET /api/lite/enterprise/rules/decisions, GET /api/lite/enterprise/rules/decisions/{decision_id}, GET /api/lite/enterprise/rules/exceptions, GET /api/lite/enterprise/rules/health, GET /api/lite/enterprise/rules/revisions, GET /api/lite/fleet, POST /api/lite/enterprise/rules/approvals/{approval_id}, POST /api/lite/enterprise/rules/exceptions, POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke, POST /api/lite/enterprise/rules/simulations, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |

@@ -10049,6 +10049,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "name": "tests/backend/test_lite_identity_rules_ui_projection.py",
+      "source_refs": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_idle_efficiency_runtime.py",
       "name": "tests/backend/test_lite_idle_efficiency_runtime.py",
       "source_refs": [
@@ -12072,6 +12083,17 @@
     {
       "confidence": "source-derived",
       "description": "",
+      "domain": "platform",
+      "id": "ui:liteidentityenterprise",
+      "name": "LiteIdentityEnterprise",
+      "source_refs": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
       "domain": "recovery",
       "id": "ui:literecovery",
       "name": "LiteRecovery",
@@ -12110,6 +12132,17 @@
       "name": "LiteRules",
       "source_refs": [
         "src/lite/LiteRules.jsx"
+      ],
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "platform",
+      "id": "ui:literulesenterprise",
+      "name": "LiteRulesEnterprise",
+      "source_refs": [
+        "src/lite/LiteRulesEnterprise.jsx"
       ],
       "type": "ui"
     },
@@ -13357,6 +13390,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:0475047d87b94097",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:04e19e392c70d556",
@@ -14228,20 +14275,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:09f065d40f3cdd35",
-      "source": "ui:literules",
-      "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:0a0b904d1fe55852",
@@ -14556,6 +14589,20 @@
       "source": "component:last-known-good",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:0bf2b1a131ba3abd",
+      "source": "ui:literulesenterprise",
+      "target": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -16781,20 +16828,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:186571cb6b71ed92",
-      "source": "ui:literules",
-      "target": "api:post:/api/lite/enterprise/rules/simulations",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:1872223070eab807",
@@ -18865,6 +18898,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:24ee6314c903dea8",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/health",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:250339e0e4b453c6",
@@ -20431,6 +20478,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:2e573c33985453ea",
+      "source": "ui:literulesenterprise",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:2e582f3cf7505966",
@@ -20690,6 +20751,20 @@
       "source": "reason:passkey_verified",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:2ff78beaf06c15fb",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -20999,20 +21074,6 @@
       "source": "reason:exception_identity_unknown",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:31e9ad46f753b66d",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/approvals",
-      "type": "calls"
     },
     {
       "derivation": {
@@ -22072,6 +22133,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:37864fd2f45e2b42",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/decisions",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:37ab327ec20abe81",
@@ -22870,6 +22945,20 @@
       "source": "journey:restart-agent",
       "target": "component:agent-command-executor",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:3b33cb20bb469d7d",
+      "source": "domain:platform",
+      "target": "ui:literulesenterprise",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -24690,6 +24779,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "id": "rel:458913f4951adc93",
+      "source": "domain:platform",
+      "target": "ui:liteidentityenterprise",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:458f33a83bd3c364",
@@ -24710,6 +24813,20 @@
       "source": "domain:identity",
       "target": "api:post:/api/lite/identity/passkeys/registration/verify",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:45d71d51b19c9b96",
+      "source": "ui:literulesenterprise",
+      "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -25588,6 +25705,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "id": "rel:4bb363c8a89808cc",
+      "source": "domain:identity",
+      "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:4bb3e662cdc1774a",
@@ -26420,20 +26551,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:512f8fd183ec632e",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:51472932b0c38ed7",
@@ -27051,6 +27168,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "id": "rel:55e9e8d5b67a8b09",
+      "source": "ui:liteidentityenterprise",
+      "target": "api:put:/api/lite/enterprise/identity/members/{human_id}",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:55fb36d45bb68a94",
@@ -27127,20 +27258,6 @@
       "source": "component:app-lifecycle-worker",
       "target": "subject:pocketlab.events.release.available",
       "type": "publishes"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:5660a30ebe7ee299",
-      "source": "ui:literules",
-      "target": "api:post:/api/lite/enterprise/rules/exceptions",
-      "type": "calls"
     },
     {
       "derivation": {
@@ -27267,6 +27384,20 @@
       "source": "domain:apps",
       "target": "subject:pocketlab.events.catalog.refresh_started",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "id": "rel:56e359fcf608c4f6",
+      "source": "reason:approval_required",
+      "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -28920,6 +29051,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:61e965f4c1d0e76f",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/approvals",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:61f02f451b36e7f8",
@@ -29318,6 +29463,20 @@
       "source": "domain:identity",
       "target": "reason:legacy_secret_rotation_retired",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:657ce687770f52f5",
+      "source": "ui:literulesenterprise",
+      "target": "api:post:/api/lite/enterprise/rules/simulations",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -30534,20 +30693,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:6be92602455e8006",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/decisions",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:6bf9f025e9f6d022",
@@ -30834,20 +30979,6 @@
       "source": "component:release-staging",
       "target": "subject:pocketlab.events.release.stage.failed",
       "type": "publishes"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:6d28e30a5ac584e0",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/exceptions",
-      "type": "calls"
     },
     {
       "derivation": {
@@ -34171,6 +34302,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "id": "rel:80754d874530ba2b",
+      "source": "journey:rules-authorization",
+      "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:80c8df7d1780667a",
@@ -36546,6 +36691,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:8f5c98c85f75a2af",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/revisions",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:8f63b3d63d331f35",
@@ -36854,6 +37013,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "id": "rel:912c9d161c70d88b",
+      "source": "journey:change-password",
+      "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_devices_durable_enrollment.py"
       ],
       "id": "rel:914df40b3388c004",
@@ -37143,6 +37316,20 @@
       "source": "component:security-coordinator",
       "target": "component:completion-evidence",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:939b0014ac3647b3",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/exceptions",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -37470,6 +37657,20 @@
       "source": "component:github-release",
       "target": "boundary:external-release",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:95b9c64b978d2200",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/fleet",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -38239,20 +38440,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:9b0986da328796f6",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/revisions",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:9b0cfabdadf2846d",
@@ -38343,6 +38530,20 @@
       "source": "api:get:/api/lite/recovery/summary",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "id": "rel:9b614fbcc16c9c17",
+      "source": "ui:liteidentityenterprise",
+      "target": "api:get:/api/lite/enterprise/identity/members",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -40728,20 +40929,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:aa21fc5f91977d91",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/health",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:aa2f1244dca6d66b",
@@ -42466,20 +42653,6 @@
       "source": "component:lite-api",
       "target": "component:api-read-surfaces",
       "type": "depends_on"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:b44876540ed326ce",
-      "source": "ui:literules",
-      "target": "api:post:/api/lite/identity/step-up/verify",
-      "type": "calls"
     },
     {
       "derivation": {
@@ -44629,20 +44802,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:c2d41c35a0381974",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/policy/decisions/{decision_id}",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:c32250d6b904edab",
@@ -46088,20 +46247,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:ccc7c428fb11779d",
-      "source": "ui:literules",
-      "target": "api:post:/api/lite/identity/step-up/options",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:ccce87bec0c53a09",
@@ -46966,20 +47111,6 @@
       "source": "journey:add-device",
       "target": "component:agent-supervisor",
       "type": "uses"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:d1e2cf297fee07f8",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/rules/analysis",
-      "type": "calls"
     },
     {
       "derivation": {
@@ -48464,6 +48595,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "id": "rel:dab2256c93cd36c3",
+      "source": "journey:enterprise-identity",
+      "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:dabe876c6ccd86c6",
@@ -48639,6 +48784,20 @@
       "source": "component:tailscale",
       "target": "troubleshooting:tailscale-unavailable",
       "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:db71f92373a533d6",
+      "source": "ui:literulesenterprise",
+      "target": "api:post:/api/lite/enterprise/rules/exceptions",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -48882,6 +49041,20 @@
       "source": "reason:policy_recovery_revision_mismatch",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:dcbb29c70a1cdb37",
+      "source": "ui:literulesenterprise",
+      "target": "api:post:/api/lite/identity/step-up/options",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -49560,6 +49733,20 @@
       "source": "reason:passkey_last_sign_in_method",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRulesEnterprise.jsx"
+      ],
+      "id": "rel:e13ca2d2a2681962",
+      "source": "ui:literulesenterprise",
+      "target": "api:get:/api/lite/enterprise/rules/analysis",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -53771,20 +53958,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:f9b3fd787d67fdd9",
-      "source": "ui:literules",
-      "target": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:f9db9cd451e85218",
@@ -54511,6 +54684,20 @@
       "id": "rel:fee9142c14b4bceb",
       "source": "api:get:/api/lite/diagnostics/runtime",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_identity_rules_ui_projection.py"
+      ],
+      "id": "rel:ff23e9592dbc542f",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
       "type": "verified_by"
     },
     {
