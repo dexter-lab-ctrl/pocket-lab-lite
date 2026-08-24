@@ -37,6 +37,7 @@ export default function RulesScreen() {
     backendDegraded,
   } = useLiteResource(liteApi.policy, []);
   const enterprise = useLiteResource(liteApi.enterpriseIdentity, []);
+  const [advancedOpen, setAdvancedOpen] = React.useState(false);
   const enterpriseEnabled = Boolean(enterprise.data?.enabled);
   const ready = data?.status === 'ready' && data?.engine?.healthy && data?.engine?.loopback_only;
   const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions.slice(0, 4) : [];
@@ -101,7 +102,7 @@ export default function RulesScreen() {
 
       {!loading && data ? (
         <GlassCard className="lite-rules-card mt-5">
-          <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Safeguards</span></div>
+          <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Safe templates</span></div>
           <h2>How Pocket Lab protects changes</h2>
           <p>Safeguards are server-owned and intentionally bounded. The browser cannot grant itself a role, assurance, approval or exception.</p>
           <div className="lite-rules-template-grid">
@@ -113,17 +114,24 @@ export default function RulesScreen() {
             ))}
             {!templates.length ? <StateSurface tone="neutral" title="No safeguard summaries" description="Pocket Lab will show the current safe templates here when the backend returns them." /> : null}
           </div>
-          <details className="lite-rules-advanced-details mt-4">
+          <details
+            className="lite-rules-advanced-details mt-4"
+            onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}
+          >
             <summary>Advanced diagnostics</summary>
-            <div className="lite-rules-facts mt-3">
-              <div><span>Rules runtime</span><strong>{data?.engine?.name || 'Local policy runtime'}</strong></div>
-              <div><span>Runtime version</span><strong>{data?.engine?.version || 'unknown'}</strong></div>
-              <div><span>Network boundary</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs attention'}</strong></div>
-              <div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected exposure' : 'Not exposed'}</strong></div>
-              <div><span>Rules package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div>
-              <div><span>Revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div>
-            </div>
-            {data?.degraded_reason ? <p>Reason code: <code>{data.degraded_reason}</code></p> : null}
+            {advancedOpen ? (
+              <div className="mt-3">
+                <div className="lite-rules-facts">
+                  <div><span>Policy engine</span><strong>{data?.engine?.name || 'Local policy runtime'}</strong></div>
+                  <div><span>Runtime version</span><strong>{data?.engine?.version || 'unknown'}</strong></div>
+                  <div><span>Network boundary</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs attention'}</strong></div>
+                  <div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected exposure' : 'Not exposed'}</strong></div>
+                  <div><span>Rules package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div>
+                  <div><span>Revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div>
+                </div>
+                {data?.degraded_reason ? <p>Reason code: <code>{data.degraded_reason}</code></p> : null}
+              </div>
+            ) : null}
           </details>
         </GlassCard>
       ) : null}
@@ -132,7 +140,7 @@ export default function RulesScreen() {
         <GlassCard className="lite-rules-card mt-5">
           <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Recent activity</span></div>
           <h2>Recent protected decisions</h2>
-          <p>Only bounded metadata is shown. Raw policy input, credentials, authenticator data and command payloads remain hidden.</p>
+          <p>Only bounded metadata is shown. Raw policy input is not exposed; credentials, authenticator data and command payloads remain hidden.</p>
           <div className="lite-rules-decision-list">
             {recent.length ? recent.map((decision) => {
               const reason = getLiteReasonPresentation(decision.reason_code, decision.reason_code || 'Decision recorded');
