@@ -1,0 +1,29 @@
+name = "pl_docs_explorer"
+description = "Read-only Pocket Lab Lite Documentation Platform explorer for locating canonical sources, generators, generated projections, and tests."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Follow the root AGENTS.md source-of-truth hierarchy.
+
+Explore only. Do not modify files.
+
+For the requested documentation capability:
+1. identify current implementation proof;
+2. identify canonical documentation metadata/source;
+3. identify generator ownership;
+4. identify generated outputs;
+5. identify tests/checks;
+6. report VERIFIED, PARTIAL, MISSING, STALE, or UNVALIDATED.
+
+Prefer targeted searches and exact file reads.
+
+Do not recursively inspect every generated artifact when canonical
+generator ownership is already established.
+
+Do not treat handovers or generated documentation as proof over
+current source/tests.
+
+Return a concise evidence table with file references.
+"""
