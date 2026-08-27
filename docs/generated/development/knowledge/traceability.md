@@ -254,7 +254,7 @@ generator_version: 3
 | Events | domain | — | unvalidated |
 | Health | domain | — | unvalidated |
 | Home | domain | test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
-| Identity | domain | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_enterprise_identity_p2.py, test:tests/backend/test_lite_identity_passkeys_rules_p1.py, test:tests/backend/test_lite_identity_rules_authorization.py, test:tests/backend/test_lite_identity_rules_ui_projection.py, test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Identity | domain | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_enterprise_identity_p2.py, test:tests/backend/test_lite_identity_passkeys_rules_p1.py, test:tests/backend/test_lite_identity_rules_authorization.py, test:tests/backend/test_lite_identity_rules_ui_projection.py, test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | Lite | domain | — | unvalidated |
 | Live Status | domain | — | unvalidated |
 | Manual | domain | — | unvalidated |

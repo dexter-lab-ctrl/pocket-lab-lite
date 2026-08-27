@@ -5615,8 +5615,8 @@
           "POST /api/lite/identity/passkeys/login/verify",
           "POST /api/lite/identity/passkeys/registration/options",
           "POST /api/lite/identity/passkeys/registration/verify",
-          "POST /api/lite/identity/passkeys/step-up/options",
-          "POST /api/lite/identity/passkeys/step-up/verify",
+          "POST /api/lite/identity/step-up/options",
+          "POST /api/lite/identity/step-up/verify",
           "PUT /api/lite/identity/passkeys/{credential_id}",
           "DELETE /api/lite/identity/passkeys/{credential_id}"
         ],
@@ -6284,5 +6284,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "8f85e68d036e5b91b59a5b30dbc89b00384941621061e462ebf2373ddaa00256"
+  "source_fingerprint": "c004b4380d4ff9ee5b85cac53a2430bb550499a8bc10b22be89d506c71a7a6db"
 }

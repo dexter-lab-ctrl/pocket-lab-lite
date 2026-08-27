@@ -11322,6 +11322,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_identity_rules_threat_model_d3.py",
+      "name": "tests/docs/test_identity_rules_threat_model_d3.py",
+      "source_refs": [
+        "tests/docs/test_identity_rules_threat_model_d3.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_living_knowledgebase.py",
       "name": "tests/docs/test_living_knowledgebase.py",
       "source_refs": [
@@ -14428,6 +14439,20 @@
       "source": "domain:devices",
       "target": "api:post:/api/lite/fleet/agent/bootstrap.env",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:0ac3663b2f4ae0d5",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

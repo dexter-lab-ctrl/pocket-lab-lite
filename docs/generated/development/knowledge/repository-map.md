@@ -16,7 +16,7 @@ generator_version: 3
 
 > Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>93</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>22</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>188</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>93</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>22</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>189</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -366,6 +366,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/docs/test_documentation_presentation_polish.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_documentation_presentation_polish.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_enterprise_completion.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_enterprise_completion.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_enterprise_documentation.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_enterprise_documentation.py</span></div></article>
+<article class="pl-repository-card"><code>tests/docs/test_identity_rules_threat_model_d3.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_identity_rules_threat_model_d3.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_living_knowledgebase.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_living_knowledgebase.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_operational_health_bridge.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_operational_health_bridge.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_release_model.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_release_model.py</span></div></article>
