@@ -279,6 +279,7 @@ Read these as needed:
 - `engineering/chatgpt/architecture-contract.md` — architecture/trust/recovery invariants.
 - `engineering/chatgpt/agent-roles.md` — specialist scopes and output contracts.
 - `engineering/chatgpt/operating-workflow.md` — Chat + Work end-to-end workflows.
+- `engineering/chatgpt/codex-subagent-examples.md` — named Codex subagent routing, delegation boundaries and practical prompts.
 - `engineering/chatgpt/validation-matrix.md` — validation by change category.
 - `engineering/chatgpt/handoff-template.md` — Work↔Chat/session handoff format.
 - `engineering/chatgpt/maintenance-release.md` — maintenance, CI, PR and release reviews.
@@ -287,71 +288,84 @@ Keep this file concise enough to be read at session start; put detailed procedur
 
 ## Codex subagent model and budget policy
 
-Use Codex subagents only when delegation isolates meaningful
-independent work. Subagent capacity is a budget ceiling, not a target.
+Use Codex subagents only when delegation isolates meaningful independent work.
+Subagent capacity is a budget ceiling, not a target. Choose the narrowest
+specialist that matches the problem; do not spawn an agent for every category.
 
 ### Default routing
 
-For Pocket Lab Lite Codex work:
+#### Low-cost / read-heavy
 
-- exploration, inventory, source mapping, generated-output scanning,
-  and log reduction → `pl_docs_explorer` or Luna / low;
-- validation-output and generated-diff analysis →
-  `pl_validation_reader` or Luna / low;
-- documentation semantics, knowledge relationships, glossary,
-  vocabulary, journeys, and traceability →
-  `pl_docs_reviewer` or Terra / medium;
-- approved canonical metadata/generator/test implementation →
-  `pl_docs_builder` or Terra / medium;
-- final independent candidate review →
-  `pl_final_reviewer` or Terra / high;
-- unresolved security, authorization, trust-boundary, policy-lifecycle,
-  or Threat Model ambiguity only →
-  `pl_security_architect` or GPT-5.6 / high.
+- repository/documentation source mapping
+  → `pl_docs_explorer` / Luna low;
+- validation, CI and failure-log reduction
+  → `pl_validation_reader` / Luna low;
+- maintenance/hygiene inventory
+  → `pl_maintenance_scout` / Luna low.
+
+#### Normal reasoning / implementation
+
+- documentation semantic review
+  → `pl_docs_reviewer` / Terra medium;
+- approved documentation implementation
+  → `pl_docs_builder` / Terra medium;
+- UI/UX implementation
+  → `pl_uiux_engineer` / Terra medium;
+- focused regression/test implementation
+  → `pl_test_engineer` / Terra medium;
+- FastAPI/OpenAPI/AsyncAPI/frontend contract review
+  → `pl_api_contract_guardian` / Terra medium;
+- edge/runtime debugging
+  → `pl_edge_runtime_debugger` / Terra medium.
+
+#### High-judgement
+
+- independent final candidate review
+  → `pl_final_reviewer` / Terra high;
+- unresolved security/authorization/trust-boundary/policy-lifecycle/Threat Model ambiguity
+  → `pl_security_architect` / GPT-5.6 high.
 
 ### Budget rules
 
 - Prefer 1–3 subagents per delegation wave.
-- Never spawn the configured maximum merely because capacity is
-  available.
-- Keep write-heavy implementation serialized unless ownership and
-  files are demonstrably independent.
-- Do not send the same broad task to several agents unless independent
-  review is explicitly required.
-- Prefer distilled findings with exact source references over raw
-  search output, logs, stack traces, or generated-file dumps.
-- Do not use GPT-5.6/Sol for repository inventory, grep/search,
-  generated-file comparison, routine validation, mechanical edits,
-  formatting, or ordinary generator implementation.
-- Escalate to GPT-5.6/Sol only for unresolved architecture, security,
-  authorization, trust-model, or difficult cross-system ambiguity.
-- Use Luna for clear high-volume read work, Terra for normal reasoning
-  and implementation, and GPT-5.6/Sol for exceptional judgement.
-- The primary Codex session should normally remain Terra / medium for
-  medium or large Pocket Lab Lite implementation work.
-- A subagent must not commit, push, merge, tag, publish a release,
-  mutate the live Server Phone, perform destructive cleanup/reset, or
-  change secrets/credentials without explicit human authorization.
-- Generated documentation remains a projection: do not manually fix
-  `docs/generated/**` or `contracts/generated/**` when a canonical
-  source or generator owns the result.
+- Max four concurrent threads is a ceiling; never spawn maximum capacity merely because it exists.
+- Keep write-heavy implementation serialized unless files and ownership are demonstrably independent.
+- Do not send identical broad tasks to several agents unless independent review is needed.
+- Use Luna for clear high-volume read work.
+- Use Terra for ordinary reasoning and implementation.
+- Use GPT-5.6/Sol only for exceptional architecture/security ambiguity.
+- Do not use expensive models for grep/search/log reduction/mechanical edits.
+- Separate builders and reviewers.
+- Prefer distilled findings with exact source references over raw search output, logs, stack traces or generated-file dumps.
+- The primary Codex session should normally remain Terra / medium for medium or large Pocket Lab Lite implementation work.
+- A subagent must not commit, push, merge, tag, publish a release, mutate the live Server Phone, perform destructive cleanup/reset, or change secrets/credentials.
+- Generated documentation remains a projection: do not manually fix `docs/generated/**` or `contracts/generated/**` when a canonical source or generator owns the result.
 
-### Documentation Platform workflow
+### General Chat / Work / Codex workflow
 
-For substantial Documentation Platform changes, prefer:
+For substantial work, prefer:
 
 ```text
-Work read-only investigation
-→ Chat synthesis and implementation contract
-→ Codex Terra/medium primary
-→ Luna exploration/validation subagents
-→ Terra documentation/build subagents
-→ GPT-5.6/Sol security escalation only when required
-→ Terra/high independent Codex review
-→ Work independent review
-→ Chat reconciliation and GitHub lifecycle
+Work read-only investigation / design / architecture
+→ bounded engineering handoff
+→ Chat verifies current GitHub source and defines the execution contract
+→ Codex Terra/medium primary owns the local candidate
+→ 1–3 narrow Codex subagents perform bounded exploration/implementation/test/debug/review work
+→ focused and broader validation
+→ pl_final_reviewer independent candidate review
+→ optional Work independent review for important changes
+→ Chat reconciles evidence and manages explicit GitHub qualification
+→ human authorizes merge/release/live/destructive/credential actions
 ```
 
-Separate builders from reviewers and keep the main Codex thread focused
-on requirements, decisions, accepted findings, validation state, and
-the final diff rather than noisy exploration output.
+For substantial Documentation Platform changes, `pl_docs_explorer`,
+`pl_docs_reviewer` and `pl_docs_builder` remain the preferred specialist path.
+For final review use the single general `pl_final_reviewer` rather than
+creating domain-specific final-review agents.
+
+See `engineering/chatgpt/codex-subagent-examples.md` for practical prompts,
+access boundaries and primary-thread responsibilities for every named agent.
+
+Separate builders from reviewers and keep the primary Codex thread focused on
+requirements, decisions, accepted findings, validation state and the final
+diff rather than noisy exploration output.
