@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
+source_fingerprint: f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated

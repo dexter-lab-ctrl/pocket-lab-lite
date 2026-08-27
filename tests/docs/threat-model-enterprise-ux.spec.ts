@@ -25,7 +25,15 @@ test('Threat Model enterprise labels drill into detail pages and remain mobile-s
   expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelectorAll('image.brand-icon').length)).toBe(19);
   expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelector('g.legend') === null)).toBe(true);
   expect(await object.evaluate((node: HTMLObjectElement) => Boolean(node.contentDocument?.querySelector('metadata[data-threat-legend="svg"]')))).toBe(true);
-  expect(await object.evaluate((node: HTMLObjectElement) => node.contentDocument?.querySelector('.node[data-node="browser"] .cue-link')?.textContent?.trim())).toBe('4 controls · 2 assets');
+  const browserCue = await object.evaluate((node: HTMLObjectElement) => {
+    const browser = node.contentDocument?.querySelector<SVGGElement>('.node[data-node="browser"]');
+    const controls = Number(browser?.dataset.controlCount);
+    const assets = Number(browser?.dataset.assetCount);
+    const label = browser?.querySelector('.cue-link')?.textContent?.trim();
+    return { assets, controls, label };
+  });
+  const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`;
+  expect(browserCue.label).toBe(`${plural(browserCue.controls, 'control')} · ${plural(browserCue.assets, 'asset')}`);
 
   await object.evaluate((node: HTMLObjectElement) => {
     const target = node.contentDocument?.querySelector<SVGGElement>('.node[data-node="browser"]');

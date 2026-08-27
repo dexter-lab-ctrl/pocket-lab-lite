@@ -46,4 +46,8 @@ digraph component_opa_policy_engine {
   "opa-policy-engine" -> "api-domain-surfaces" [label="returns allow/deny/constraints/reason code", tooltip="returns allow/deny/constraints/reason code (Loopback HTTP JSON)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1", penwidth="1.15", arrowsize="0.72"];
   "state_dependency_0" [label="policy_decisions", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
   "opa-policy-engine" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_1" [label="policy_revisions", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "opa-policy-engine" -> "state_dependency_1" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_2" [label="policy_runtime_state", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "opa-policy-engine" -> "state_dependency_2" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
 }

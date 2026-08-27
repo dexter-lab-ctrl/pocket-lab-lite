@@ -9,11 +9,34 @@ ENTERPRISE = ROOT / "scripts/docs/enterprise"
 if str(ENTERPRISE) not in sys.path:
     sys.path.insert(0, str(ENTERPRISE))
 
-from threat_model_layout import ENGINE_VERSION, compile_layout, render_security_projection_svg
+from threat_model_layout import (
+    CONTROL_OWNERS,
+    ENGINE_VERSION,
+    compile_layout,
+    render_security_projection_svg,
+)
 
 
 def _poster() -> dict:
     return json.loads((ROOT / "contracts/generated/documentation-enterprise/security-poster.json").read_text(encoding="utf-8"))
+
+
+def test_layout_engine_has_bounded_owners_for_every_security_control():
+    poster = _poster()
+
+    poster_control_ids = {row["id"] for row in poster["controls"]}
+
+    assert poster_control_ids == set(CONTROL_OWNERS)
+
+    for layout in ("wide", "stacked"):
+        compiled = compile_layout(poster, layout=layout)
+
+        assert set(compiled["control_boxes"]) == poster_control_ids
+
+        ordered = sorted(compiled["control_boxes"].items())
+        for index, (_a_id, a) in enumerate(ordered):
+            for _b_id, b in ordered[index + 1 :]:
+                assert not a.intersects(b, gap=3)
 
 
 def test_single_layout_engine_covers_every_canonical_presentation_node_without_overlap():

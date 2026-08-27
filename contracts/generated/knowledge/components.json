@@ -370,6 +370,7 @@
       "domain": null,
       "durable_state_dependencies": [
         "auth_sessions",
+        "auth_session_assurance",
         "device_identity_guards",
         "device_invite_lifecycle",
         "human_credentials",
@@ -427,7 +428,9 @@
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
       ],
       "status_dimensions": {
         "capability_status": "implemented",
@@ -1613,6 +1616,86 @@
     },
     {
       "confidence": "verified",
+      "data_owner": "SQLite passkey, session-assurance, Enterprise configuration, and membership state",
+      "description": "Verifies passkeys, records purpose-bound session assurance, and resolves server-owned Enterprise memberships and final-Owner protection; it does not create a browser-held authority.",
+      "documentation_links": [
+        "docs/generated/production/identity.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "webauthn_credentials",
+        "auth_session_assurance",
+        "enterprise_configuration",
+        "enterprise_memberships",
+        "identity_audit_events"
+      ],
+      "evidence": [
+        "identity audit events"
+      ],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "passkey verification refused",
+        "step-up expired",
+        "final Owner protection"
+      ],
+      "health_signals": [
+        "authenticated human context",
+        "Enterprise Mode state"
+      ],
+      "icon": "semantic-api-guard",
+      "id": "component:identity-access-controls",
+      "inputs": [
+        "authenticated human context",
+        "WebAuthn assertion",
+        "membership update request"
+      ],
+      "name": "Passkey, step-up, and Enterprise identity controls",
+      "outputs": [
+        "purpose-bound assurance",
+        "authoritative membership context",
+        "sanitized identity projection"
+      ],
+      "owner": "Lite API Identity",
+      "protocols": [
+        "HTTP JSON",
+        "WebAuthn"
+      ],
+      "recovery_behavior": [
+        "fail closed",
+        "explicit recovery"
+      ],
+      "recovery_owner": "FastAPI Identity",
+      "runtime_owner": "pocket-api",
+      "runtime_platform": "FastAPI process",
+      "runtime_process": "FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
       "data_owner": "SQLite",
       "description": "Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.",
       "documentation_links": [
@@ -2164,7 +2247,13 @@
       ],
       "domain": null,
       "durable_state_dependencies": [
-        "policy_decisions"
+        "policy_decisions",
+        "policy_revisions",
+        "policy_runtime_state",
+        "policy_approvals",
+        "policy_continuation_events",
+        "policy_temporary_exceptions",
+        "policy_recovery_resolutions"
       ],
       "evidence": [
         "bounded authorization decision metadata"
@@ -2209,6 +2298,8 @@
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
         "security/policies/opa/pocketlab/pocketlab.rego"
       ],
@@ -3938,6 +4029,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
+    "source_fingerprint": "4406f0ebcd546f6d2bf98cc6235ac3e9f8f7ee1506f055af3170ad64c6162114"
   }
 }

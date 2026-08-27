@@ -2,7 +2,7 @@
   "architecture_runtime_verification": {
     "baseline": "architecture/runtime-baselines/server-phone.json",
     "baseline_state": "verified",
-    "canonical_component_count": 57,
+    "canonical_component_count": 58,
     "components": [
       {
         "classification": "source-verified",
@@ -162,6 +162,13 @@
         "classification": "source-verified",
         "component_id": "github-repository",
         "component_name": "GitHub repository",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "identity-access-controls",
+        "component_name": "Passkey, step-up, and Enterprise identity controls",
         "runtime_evidence_state": "not-selected",
         "runtime_selector": null
       },

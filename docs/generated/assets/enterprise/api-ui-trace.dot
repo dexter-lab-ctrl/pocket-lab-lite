@@ -10,4 +10,13 @@ digraph flow {
   n6 [label="Preview Restore"]; n6 -> m6; m6 [label="GET /api/lite/apps/photoprism/storage-preview → backend execution"];
   n7 [label="Restore"]; n7 -> m7; m7 [label="POST /api/lite/apps/{app_id}/restore/preview → backend execution"];
   n8 [label="Remove Old Device"]; n8 -> m8; m8 [label="POST /api/lite/catalog/remove → backend execution"];
+  n9 [label="Passkey registration"]; n9 -> m9; m9 [label="POST /api/lite/identity/passkeys/registration/options → backend execution"];
+  n10 [label="Passkey sign-in"]; n10 -> m10; m10 [label="POST /api/lite/identity/passkeys/login/options → backend execution"];
+  n11 [label="Passkey step-up"]; n11 -> m11; m11 [label="POST /api/lite/identity/step-up/options → backend execution"];
+  n12 [label="Passkey rename or revoke"]; n12 -> m12; m12 [label="DELETE /api/lite/identity/passkeys/{credential_id} → backend execution"];
+  n13 [label="Enterprise membership"]; n13 -> m13; m13 [label="GET /api/lite/enterprise/identity → backend execution"];
+  n14 [label="Rules revision lifecycle"]; n14 -> m14; m14 [label="POST /api/lite/enterprise/rules/activations → backend execution"];
+  n15 [label="Rules analysis and simulation"]; n15 -> m15; m15 [label="GET /api/lite/enterprise/rules/analysis → backend execution"];
+  n16 [label="Rules approval review"]; n16 -> m16; m16 [label="GET /api/lite/enterprise/rules/approvals → backend execution"];
+  n17 [label="Rules temporary exception"]; n17 -> m17; m17 [label="GET /api/lite/enterprise/rules/exceptions → backend execution"];
 }

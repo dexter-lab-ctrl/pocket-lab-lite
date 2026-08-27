@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
+source_fingerprint: f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -84,6 +84,7 @@ Applies human authentication/session/CSRF guards plus device identity, duplicate
 ## Durable state
 
 - auth_sessions
+- auth_session_assurance
 - device_identity_guards
 - device_invite_lifecycle
 - human_credentials
@@ -125,6 +126,7 @@ Applies human authentication/session/CSRF guards plus device identity, duplicate
 
 ### Outgoing
 
+- applies passkey, step-up, and membership controls — Passkey, step-up, and Enterprise identity controls
 - backend-generated bootstrap — Lite node agent
 - stores invite/identity state — Invite and identity lifecycle
 
@@ -137,6 +139,11 @@ Applies human authentication/session/CSRF guards plus device identity, duplicate
 - `route` — `POST /api/lite/identity/login`
 - `sqlite_table` — `human_identities`
 - `sqlite_table` — `auth_sessions`
+- `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py`
+- `sqlite_table` — `webauthn_credentials`
+- `sqlite_table` — `auth_session_assurance`
+- `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py`
+- `sqlite_table` — `enterprise_memberships`
 
 ## Existing documentation
 

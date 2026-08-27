@@ -9,7 +9,7 @@ confidence: generated
 
 # Cross-link model
 
-Cross-links are generated from canonical page targets and the Knowledge Graph cross-reference index. The current contract contains **755** stable relations.
+Cross-links are generated from canonical page targets and the Knowledge Graph cross-reference index. The current contract contains **896** stable relations.
 
 ## Algorithm
 

@@ -1,13 +1,13 @@
 ---
 title: "Identity and Rules implementation boundaries"
-description: "Identity now implements one local human owner, hash-only credentials/sessions/recovery records, CSRF-protected browser writes, and explicit session lifecycle. Rules now reports a loopback OPA engine and enforces the first bounded policy set for app install and old-device removal."
+description: "Identity implements local human authentication, passkeys, step-up, and opt-in Enterprise memberships. Rules provides bounded policy governance without moving execution authority from FastAPI."
 status: verified
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2c00a172d3837d03655330db878706b3c00cba2028169da9c596a847dcdc4e5e
+source_fingerprint: 3bd1846004fa5a873680d41dd98c02813d700c3d91507c781e5de3b5baa151ca
 schema_revision: 1
 validation_status: generated
 ---
@@ -19,12 +19,12 @@ validation_status: generated
 <span class="pl-status pl-status--patch-provided">Development guidance</span>
 </div>
 
-Identity now implements one local human owner, hash-only credentials/sessions/recovery records, CSRF-protected browser writes, and explicit session lifecycle. Rules now reports a loopback OPA engine and enforces the first bounded policy set for app install and old-device removal.
+Identity implements local human authentication, passkeys, step-up, and opt-in Enterprise memberships. Rules provides bounded policy governance without moving execution authority from FastAPI.
 
 ## Identity
 
-The implemented local-owner flow covers setup, sign-in, password change, logout/session revocation, and one-time recovery codes. Passkeys/WebAuthn and OIDC federation remain optional and are not presented as enabled. Device identities remain owned by Devices; API-token service identity remains separate from the human session.
+The local human flow covers setup, sign-in, password change, logout/session revocation, one-time recovery codes, and passkey registration, sign-in, rename, and revoke. WebAuthn validates origin, RP ID, and one-use challenges; purpose-bound passkey step-up expires. Personal Mode is the default. Opt-in Enterprise Mode uses server-owned memberships and roles, with final-Owner protection. Device identities remain owned by Devices. The separate API-token actor/path is not a browser human session. External OIDC federation and service-identity provisioning or management remain deferred.
 
 ## Rules
 
-FastAPI builds the authorization input, preserves non-bypassable domain invariants, asks loopback OPA only for registered protected actions, records bounded sanitized decision metadata, and fails closed on unavailable/invalid policy responses. The first registered actions are `catalog.install` and `device.remove`; this is not an Approval Model.
+FastAPI builds server-owned authorization input, preserves non-bypassable domain invariants, asks loopback OPA only for registered protected actions, records bounded sanitized decisions, and fails closed on unavailable or invalid policy responses. Rules supports immutable typed revisions, validation, activation/readiness, known-good rollback, uncertain-recovery resolution, deterministic analysis, and non-executing simulation. Independent approval is a bounded gate: an eligible Owner or Admin other than the initiator completes passkey step-up for the exact action, target, and revision; the initiator retries with a one-use continuation. Approval never executes the action. Temporary exceptions are limited to exact `catalog.install` app/device/human/revision scope, are revocable, and last no more than 60 minutes.

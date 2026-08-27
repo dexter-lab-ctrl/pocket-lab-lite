@@ -435,6 +435,251 @@
         "external-release",
         "application-container"
       ]
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "boundary": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "a human session could gain privileged assurance without the intended short-lived, origin/RP-bound WebAuthn ceremony"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-WEBAUTHN-ASSURANCE",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Identity/WebAuthn boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ]
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "durable-state"
+      ],
+      "boundary": [
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "enterprise membership could be elevated or the final active Owner could be removed without server-authoritative governance protection"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Enterprise Identity boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_enterprise_identity_p2.py"
+      ],
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "control-api",
+        "durable-state"
+      ]
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "durable-state",
+        "server-host"
+      ],
+      "boundary": [
+        "control-api",
+        "durable-state",
+        "server-host"
+      ],
+      "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "the running policy could diverge from the intended active/known-good revision or remain ambiguous after activation/rollback uncertainty"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Rules lifecycle and loopback OPA boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+        "tests/backend/test_lite_policy_opa_readiness.py",
+        "tests/backend/test_lite_policy_first_activation_recovery.py",
+        "tests/backend/test_lite_policy_uncertain_resolution.py"
+      ],
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "where_used": [
+        "control-api",
+        "durable-state",
+        "server-host"
+      ]
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "boundary": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "a requester could bypass independent review, substitute action/target/revision context, or replay an already-consumed continuation"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Rules approval/continuation boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_policy_approvals_p3_1.py"
+      ],
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ]
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "boundary": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+      "effect": "mitigates",
+      "failure_consequences": [
+        "a temporary catalog-install exception could be widened, reused after expiry/revoke, or applied outside its exact human/app/device/revision scope"
+      ],
+      "freshness": "source-current",
+      "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "mitigation_adequacy": "human-review-required",
+      "owner": "FastAPI Rules temporary-exception boundary",
+      "prevention_claim": false,
+      "runtime_evidence": [],
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "status": "mitigation-source-derived",
+      "tests": [
+        "tests/backend/test_lite_policy_approvals_p3_1.py"
+      ],
+      "threats": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "threats_mitigated": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "where_used": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ]
     }
   ]
 }

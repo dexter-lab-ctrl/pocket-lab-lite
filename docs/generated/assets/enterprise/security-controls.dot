@@ -10,4 +10,9 @@ digraph flow {
   n6 [label="CTRL-EVIDENCE-SANITIZE"]; n6 -> m6; m6 [label="durable-state,external-release,server-host → control-observed"];
   n7 [label="CTRL-EXPLICIT-PROMOTION"]; n7 -> m7; m7 [label="external-release,durable-state,server-host → control-observed"];
   n8 [label="CTRL-SUPPLY-CHAIN"]; n8 -> m8; m8 [label="external-release,application-container → control-observed"];
+  n9 [label="CTRL-WEBAUTHN-ASSURANCE"]; n9 -> m9; m9 [label="browser,control-api,durable-state → mitigation-source-derived"];
+  n10 [label="CTRL-ENTERPRISE-ROLE-FINAL-OWNER"]; n10 -> m10; m10 [label="control-api,durable-state → mitigation-source-derived"];
+  n11 [label="CTRL-POLICY-REVISION-LIFECYCLE"]; n11 -> m11; m11 [label="control-api,durable-state,server-host → mitigation-source-derived"];
+  n12 [label="CTRL-INDEPENDENT-APPROVAL-CONTINUATION"]; n12 -> m12; m12 [label="browser,control-api,durable-state → mitigation-source-derived"];
+  n13 [label="CTRL-TEMPORARY-EXCEPTION-SCOPE"]; n13 -> m13; m13 [label="browser,control-api,durable-state → mitigation-source-derived"];
 }

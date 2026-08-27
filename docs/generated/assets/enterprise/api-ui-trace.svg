@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="556" viewBox="0 0 1080 556" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1042" viewBox="0 0 1080 1042" role="img">
 <style>.t{font-family:system-ui,sans-serif;fill:#101828}.h{font-size:17px;font-weight:700}.s{font-size:12px}.b{fill:#f8fafc;stroke:#98a2b3}.e{stroke:#667085;stroke-width:1.5}</style>
 <text class="t h" x="24" y="30">API-to-UI trace</text>
 <rect class="b" x="24" y="50" width="420" height="36" rx="7"/>
@@ -56,4 +56,58 @@
 <polygon points="610,500 600,494 600,506" fill="#667085"/>
 <rect class="b" x="620" y="482" width="430" height="36" rx="7"/>
 <text class="t s" x="632" y="505">POST /api/lite/catalog/remove → backend execution</text>
+<rect class="b" x="24" y="536" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="559">Passkey registration</text>
+<line class="e" x1="444" y1="554" x2="610" y2="554"/>
+<polygon points="610,554 600,548 600,560" fill="#667085"/>
+<rect class="b" x="620" y="536" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="559">POST /api/lite/identity/passkeys/registration/options → backend ex</text>
+<rect class="b" x="24" y="590" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="613">Passkey sign-in</text>
+<line class="e" x1="444" y1="608" x2="610" y2="608"/>
+<polygon points="610,608 600,602 600,614" fill="#667085"/>
+<rect class="b" x="620" y="590" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="613">POST /api/lite/identity/passkeys/login/options → backend execution</text>
+<rect class="b" x="24" y="644" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="667">Passkey step-up</text>
+<line class="e" x1="444" y1="662" x2="610" y2="662"/>
+<polygon points="610,662 600,656 600,668" fill="#667085"/>
+<rect class="b" x="620" y="644" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="667">POST /api/lite/identity/step-up/options → backend execution</text>
+<rect class="b" x="24" y="698" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="721">Passkey rename or revoke</text>
+<line class="e" x1="444" y1="716" x2="610" y2="716"/>
+<polygon points="610,716 600,710 600,722" fill="#667085"/>
+<rect class="b" x="620" y="698" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="721">DELETE /api/lite/identity/passkeys/{credential_id} → backend execu</text>
+<rect class="b" x="24" y="752" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="775">Enterprise membership</text>
+<line class="e" x1="444" y1="770" x2="610" y2="770"/>
+<polygon points="610,770 600,764 600,776" fill="#667085"/>
+<rect class="b" x="620" y="752" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="775">GET /api/lite/enterprise/identity → backend execution</text>
+<rect class="b" x="24" y="806" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="829">Rules revision lifecycle</text>
+<line class="e" x1="444" y1="824" x2="610" y2="824"/>
+<polygon points="610,824 600,818 600,830" fill="#667085"/>
+<rect class="b" x="620" y="806" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="829">POST /api/lite/enterprise/rules/activations → backend execution</text>
+<rect class="b" x="24" y="860" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="883">Rules analysis and simulation</text>
+<line class="e" x1="444" y1="878" x2="610" y2="878"/>
+<polygon points="610,878 600,872 600,884" fill="#667085"/>
+<rect class="b" x="620" y="860" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="883">GET /api/lite/enterprise/rules/analysis → backend execution</text>
+<rect class="b" x="24" y="914" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="937">Rules approval review</text>
+<line class="e" x1="444" y1="932" x2="610" y2="932"/>
+<polygon points="610,932 600,926 600,938" fill="#667085"/>
+<rect class="b" x="620" y="914" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="937">GET /api/lite/enterprise/rules/approvals → backend execution</text>
+<rect class="b" x="24" y="968" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="991">Rules temporary exception</text>
+<line class="e" x1="444" y1="986" x2="610" y2="986"/>
+<polygon points="610,986 600,980 600,992" fill="#667085"/>
+<rect class="b" x="620" y="968" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="991">GET /api/lite/enterprise/rules/exceptions → backend execution</text>
 </svg>

@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
+source_fingerprint: f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -79,6 +79,12 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 ## Durable state
 
 - policy_decisions
+- policy_revisions
+- policy_runtime_state
+- policy_approvals
+- policy_continuation_events
+- policy_temporary_exceptions
+- policy_recovery_resolutions
 
 ## Health and readiness
 
@@ -122,6 +128,10 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 - `pm2_process` — `pocket-opa`
 - `route` — `GET /api/lite/policy`
 - `sqlite_table` — `policy_decisions`
+- `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py`
+- `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py`
+- `sqlite_table` — `policy_approvals`
+- `sqlite_table` — `policy_temporary_exceptions`
 
 ## Existing documentation
 
@@ -130,6 +140,7 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 
 ## Related architecture views
 
-- None
+- [Complete Pocket Lab Lite system map](../complete-system.md)
+- [Request and control flow](../request-control.md)
 
 [Back to component catalog](../component-catalog.md) · [Architecture overview](../index.md)

@@ -282,6 +282,220 @@
         "Denial of Service"
       ],
       "target": "recovery-state"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "confidence": "source-derived",
+      "confirmed_exploit": false,
+      "consequences": [
+        "human or browser-session impersonation",
+        "unauthorized passkey or step-up assurance use",
+        "privileged mutation without intended purpose-bound assurance"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "entry_point": "browser",
+      "id": "AP-09",
+      "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+      "name": "Human identity and WebAuthn assurance misuse",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "status": "modeled",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "lite-api"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "confidence": "source-derived",
+      "confirmed_exploit": false,
+      "consequences": [
+        "unauthorized enterprise role elevation",
+        "loss of final-Owner recovery authority",
+        "audit attribution failure"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+      ],
+      "entry_point": "browser",
+      "id": "AP-10",
+      "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+      "name": "Enterprise membership and final-Owner privilege escalation",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "status": "modeled",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "target": "sqlite"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api"
+      ],
+      "confidence": "source-derived",
+      "confirmed_exploit": false,
+      "consequences": [
+        "protected mutation proceeds without valid policy admission",
+        "policy decision ambiguity",
+        "control-plane availability impact"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "entry_point": "browser",
+      "id": "AP-11",
+      "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+      "name": "OPA authorization decision integrity failure",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api"
+      ],
+      "review_status": "human-review-required",
+      "status": "modeled",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege",
+        "Denial of Service"
+      ],
+      "target": "lite-api"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "confidence": "source-derived",
+      "confirmed_exploit": false,
+      "consequences": [
+        "wrong policy revision observed or activated",
+        "loss of known-good recovery integrity",
+        "governance availability locked in uncertain state"
+      ],
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "entry_point": "browser",
+      "id": "AP-12",
+      "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+      "name": "Policy revision activation and recovery integrity",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "status": "modeled",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "target": "sqlite"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "confidence": "source-derived",
+      "confirmed_exploit": false,
+      "consequences": [
+        "requester self-approval or ineligible review",
+        "exact action, target, or revision binding bypass",
+        "approved continuation replay or double-use"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "entry_point": "browser",
+      "id": "AP-13",
+      "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+      "name": "Approval and continuation integrity",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "status": "modeled",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "target": "sqlite"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "confidence": "source-derived",
+      "confirmed_exploit": false,
+      "consequences": [
+        "exception widened beyond approved scope",
+        "expired or revoked exception reused",
+        "unauthorized catalog install admission"
+      ],
+      "controls": [
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "entry_point": "browser",
+      "id": "AP-14",
+      "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+      "name": "Temporary-exception scope and expiry bypass",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "status": "modeled",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "sqlite"
     }
   ],
   "control_bindings": [
@@ -498,6 +712,146 @@
       "threats": [
         "Tampering",
         "Information Disclosure",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "browser",
+      "control": "CTRL-WEBAUTHN-ASSURANCE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-WEBAUTHN-ASSURANCE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "durable-state",
+      "control": "CTRL-WEBAUTHN-ASSURANCE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "durable-state",
+      "control": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ]
+    },
+    {
+      "boundary": "durable-state",
+      "control": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ]
+    },
+    {
+      "boundary": "server-host",
+      "control": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ]
+    },
+    {
+      "boundary": "browser",
+      "control": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "durable-state",
+      "control": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "browser",
+      "control": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "control-api",
+      "control": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "boundary": "durable-state",
+      "control": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "status": "mitigation-source-derived",
+      "threats": [
+        "Tampering",
         "Elevation of Privilege"
       ]
     }
@@ -875,12 +1229,12 @@
     }
   ],
   "posture_summary": {
-    "attack_paths": 8,
+    "attack_paths": 14,
     "control_states": {
       "control-observed": 5,
-      "mitigation-source-derived": 4
+      "mitigation-source-derived": 9
     },
-    "controls": 9,
+    "controls": 14,
     "human_review_required": true,
     "posture_states": {
       "control-observed": 31,

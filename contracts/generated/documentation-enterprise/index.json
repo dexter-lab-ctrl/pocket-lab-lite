@@ -1223,6 +1223,587 @@
           "src/lib/liteApi.js"
         ],
         "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+      },
+      {
+        "action": "Passkey registration",
+        "api": [
+          {
+            "method": "POST",
+            "operation_id": "passkey_registration_options_api_lite_identity_passkeys_registration_options_post",
+            "path": "/api/lite/identity/passkeys/registration/options"
+          },
+          {
+            "method": "POST",
+            "operation_id": "passkey_registration_verify_api_lite_identity_passkeys_registration_verify_post",
+            "path": "/api/lite/identity/passkeys/registration/verify"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+          "src/lib/liteApi.js",
+          "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Passkey sign-in",
+        "api": [
+          {
+            "method": "POST",
+            "operation_id": "passkey_login_options_api_lite_identity_passkeys_login_options_post",
+            "path": "/api/lite/identity/passkeys/login/options"
+          },
+          {
+            "method": "POST",
+            "operation_id": "passkey_login_verify_api_lite_identity_passkeys_login_verify_post",
+            "path": "/api/lite/identity/passkeys/login/verify"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+          "src/lib/liteApi.js",
+          "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Passkey step-up",
+        "api": [
+          {
+            "method": "POST",
+            "operation_id": "passkey_step_up_options_api_lite_identity_step_up_options_post",
+            "path": "/api/lite/identity/step-up/options"
+          },
+          {
+            "method": "POST",
+            "operation_id": "passkey_step_up_verify_api_lite_identity_step_up_verify_post",
+            "path": "/api/lite/identity/step-up/verify"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+          "src/lib/liteApi.js",
+          "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Passkey rename or revoke",
+        "api": [
+          {
+            "method": "DELETE",
+            "operation_id": "revoke_lite_passkey_api_lite_identity_passkeys__credential_id__delete",
+            "path": "/api/lite/identity/passkeys/{credential_id}"
+          },
+          {
+            "method": "PUT",
+            "operation_id": "rename_lite_passkey_api_lite_identity_passkeys__credential_id__put",
+            "path": "/api/lite/identity/passkeys/{credential_id}"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+          "src/lib/liteApi.js",
+          "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/mocks/handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Enterprise membership",
+        "api": [
+          {
+            "method": "GET",
+            "operation_id": "enterprise_identity_api_lite_enterprise_identity_get",
+            "path": "/api/lite/enterprise/identity"
+          },
+          {
+            "method": "GET",
+            "operation_id": "enterprise_members_api_lite_enterprise_identity_members_get",
+            "path": "/api/lite/enterprise/identity/members"
+          },
+          {
+            "method": "PUT",
+            "operation_id": "update_enterprise_member_api_lite_enterprise_identity_members__human_id__put",
+            "path": "/api/lite/enterprise/identity/members/{human_id}"
+          },
+          {
+            "method": "PUT",
+            "operation_id": "update_enterprise_mode_api_lite_enterprise_identity_mode_put",
+            "path": "/api/lite/enterprise/identity/mode"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
+          "src/lib/liteApi.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Rules revision lifecycle",
+        "api": [
+          {
+            "method": "POST",
+            "operation_id": "activate_api_lite_enterprise_rules_activations_post",
+            "path": "/api/lite/enterprise/rules/activations"
+          },
+          {
+            "method": "GET",
+            "operation_id": "operation_api_lite_enterprise_rules_activations__operation_id__get",
+            "path": "/api/lite/enterprise/rules/activations/{operation_id}"
+          },
+          {
+            "method": "POST",
+            "operation_id": "resolve_activation_api_lite_enterprise_rules_activations__operation_id__resolve_post",
+            "path": "/api/lite/enterprise/rules/activations/{operation_id}/resolve"
+          },
+          {
+            "method": "GET",
+            "operation_id": "revisions_api_lite_enterprise_rules_revisions_get",
+            "path": "/api/lite/enterprise/rules/revisions"
+          },
+          {
+            "method": "POST",
+            "operation_id": "create_revision_api_lite_enterprise_rules_revisions_post",
+            "path": "/api/lite/enterprise/rules/revisions"
+          },
+          {
+            "method": "GET",
+            "operation_id": "compare_api_lite_enterprise_rules_revisions__left_revision_id__compare__right_revision_id__get",
+            "path": "/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}"
+          },
+          {
+            "method": "GET",
+            "operation_id": "revision_api_lite_enterprise_rules_revisions__revision_id__get",
+            "path": "/api/lite/enterprise/rules/revisions/{revision_id}"
+          },
+          {
+            "method": "POST",
+            "operation_id": "rollback_api_lite_enterprise_rules_rollbacks_post",
+            "path": "/api/lite/enterprise/rules/rollbacks"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py",
+          "src/lib/liteApi.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Rules analysis and simulation",
+        "api": [
+          {
+            "method": "GET",
+            "operation_id": "analysis_api_lite_enterprise_rules_analysis_get",
+            "path": "/api/lite/enterprise/rules/analysis"
+          },
+          {
+            "method": "POST",
+            "operation_id": "simulate_api_lite_enterprise_rules_simulations_post",
+            "path": "/api/lite/enterprise/rules/simulations"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+          "src/lib/liteApi.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Rules approval review",
+        "api": [
+          {
+            "method": "GET",
+            "operation_id": "approvals_api_lite_enterprise_rules_approvals_get",
+            "path": "/api/lite/enterprise/rules/approvals"
+          },
+          {
+            "method": "GET",
+            "operation_id": "approval_api_lite_enterprise_rules_approvals__approval_id__get",
+            "path": "/api/lite/enterprise/rules/approvals/{approval_id}"
+          },
+          {
+            "method": "POST",
+            "operation_id": "transition_approval_api_lite_enterprise_rules_approvals__approval_id__post",
+            "path": "/api/lite/enterprise/rules/approvals/{approval_id}"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "src/lib/liteApi.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
+      },
+      {
+        "action": "Rules temporary exception",
+        "api": [
+          {
+            "method": "GET",
+            "operation_id": "exceptions_api_lite_enterprise_rules_exceptions_get",
+            "path": "/api/lite/enterprise/rules/exceptions"
+          },
+          {
+            "method": "POST",
+            "operation_id": "create_exception_api_lite_enterprise_rules_exceptions_post",
+            "path": "/api/lite/enterprise/rules/exceptions"
+          },
+          {
+            "method": "POST",
+            "operation_id": "revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post",
+            "path": "/api/lite/enterprise/rules/exceptions/{exception_id}/revoke"
+          }
+        ],
+        "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py"
+        ],
+        "error_reason_codes": "contracts/generated/reason-codes.json",
+        "events": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "evidence": "backend-owned durable control-plane state and sanitized API projection",
+        "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+        "failure_states": [
+          "request rejected or backend unavailable",
+          "authorization or invariant guard refuses the request"
+        ],
+        "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py"
+        ],
+        "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "frontend_projection": "FastAPI/TanStack safe read projection",
+        "implementation_status": "implemented",
+        "nats_or_event": [
+          "no exact event channel relationship is emitted for this control-plane operation"
+        ],
+        "related_reason_codes": "contracts/generated/reason-codes.json",
+        "result_event": "backend-owned durable state or sanitized API projection",
+        "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+          "src/lib/liteApi.js",
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "tests": [
+          "test:tests/backend/test_lite_development_documentation_platform.py",
+          "test:tests/parity/test_api_contract_fences.py"
+        ],
+        "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
+          "src/lib/liteApi.js"
+        ],
+        "worker_agent_supervisor": "FastAPI control-plane service"
       }
     ],
     "change_advisor": {
@@ -25344,7 +25925,7 @@
       }
     ],
     "documentation_search": {
-      "alias_groups": 11,
+      "alias_groups": 13,
       "contract": "contracts/generated/documentation-enterprise/documentation-search.json",
       "implementation_status": "implemented",
       "local_static": true,
@@ -33573,11 +34154,11 @@
     ],
     "information_architecture": {
       "contract": "contracts/generated/documentation-enterprise/information-architecture.json",
-      "cross_link_count": 755,
-      "feature_journey_count": 7,
+      "cross_link_count": 896,
+      "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 419,
+      "page_count": 422,
       "top_level": [
         "start-here",
         "use",
@@ -35519,8 +36100,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "f1cbe008cd797d8956b8d89d680370dc0a936ab7",
-          "head_tree": "4ec1917fbb4ed0df7f70f1f1cb367ef967952cbc",
+          "head": "a25405dacf895f4dbecba0287dd60d6abefb3807",
+          "head_tree": "c52cb3002a3c0121eafb383e3dfa23af92300b0f",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -37367,9 +37948,9 @@
       "evidence_status": "source-and-canonical-evidence",
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
-        "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
+        "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "6b185d789fc46b22fff8c01c96e6e3cde6f360189847ea5d1bd35d7642834bb4",
+        "documentation": "5555ed42191e0d7e32c704d6276289ab1cd8a2d39d1c45399a8ce2da8a8047b2",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2c85a340734f3e4bcc1f6a382111a8bb79ad327e22bec7366673252513f77457"
       },
@@ -38568,13 +39149,13 @@
         },
         {
           "description": "Entry surfaces, trust boundaries and reviewed modeled attack paths.",
-          "entry_count": 17,
+          "entry_count": 23,
           "id": "attack-surface",
           "label": "Attack Surface Atlas"
         },
         {
           "description": "Controls, coverage, threat relationships and consequences if controls fail.",
-          "entry_count": 9,
+          "entry_count": 14,
           "id": "controls",
           "label": "Control Atlas"
         },
@@ -39022,6 +39603,251 @@
           "external-release",
           "application-container"
         ]
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "boundary": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "a human session could gain privileged assurance without the intended short-lived, origin/RP-bound WebAuthn ceremony"
+        ],
+        "freshness": "source-current",
+        "id": "CTRL-WEBAUTHN-ASSURANCE",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "mitigation_adequacy": "human-review-required",
+        "owner": "FastAPI Identity/WebAuthn boundary",
+        "prevention_claim": false,
+        "runtime_evidence": [],
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+        ],
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "threats_mitigated": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "where_used": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ]
+      },
+      {
+        "boundaries": [
+          "control-api",
+          "durable-state"
+        ],
+        "boundary": [
+          "control-api",
+          "durable-state"
+        ],
+        "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "enterprise membership could be elevated or the final active Owner could be removed without server-authoritative governance protection"
+        ],
+        "freshness": "source-current",
+        "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "mitigation_adequacy": "human-review-required",
+        "owner": "FastAPI Enterprise Identity boundary",
+        "prevention_claim": false,
+        "runtime_evidence": [],
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_enterprise_identity_p2.py"
+        ],
+        "threats": [
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ],
+        "threats_mitigated": [
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ],
+        "where_used": [
+          "control-api",
+          "durable-state"
+        ]
+      },
+      {
+        "boundaries": [
+          "control-api",
+          "durable-state",
+          "server-host"
+        ],
+        "boundary": [
+          "control-api",
+          "durable-state",
+          "server-host"
+        ],
+        "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "the running policy could diverge from the intended active/known-good revision or remain ambiguous after activation/rollback uncertainty"
+        ],
+        "freshness": "source-current",
+        "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+        ],
+        "mitigation_adequacy": "human-review-required",
+        "owner": "FastAPI Rules lifecycle and loopback OPA boundary",
+        "prevention_claim": false,
+        "runtime_evidence": [],
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+          "tests/backend/test_lite_policy_opa_readiness.py",
+          "tests/backend/test_lite_policy_first_activation_recovery.py",
+          "tests/backend/test_lite_policy_uncertain_resolution.py"
+        ],
+        "threats": [
+          "Tampering",
+          "Repudiation",
+          "Denial of Service"
+        ],
+        "threats_mitigated": [
+          "Tampering",
+          "Repudiation",
+          "Denial of Service"
+        ],
+        "where_used": [
+          "control-api",
+          "durable-state",
+          "server-host"
+        ]
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "boundary": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "a requester could bypass independent review, substitute action/target/revision context, or replay an already-consumed continuation"
+        ],
+        "freshness": "source-current",
+        "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "mitigation_adequacy": "human-review-required",
+        "owner": "FastAPI Rules approval/continuation boundary",
+        "prevention_claim": false,
+        "runtime_evidence": [],
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_policy_approvals_p3_1.py"
+        ],
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ],
+        "threats_mitigated": [
+          "Spoofing",
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ],
+        "where_used": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ]
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "boundary": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+        "effect": "mitigates",
+        "failure_consequences": [
+          "a temporary catalog-install exception could be widened, reused after expiry/revoke, or applied outside its exact human/app/device/revision scope"
+        ],
+        "freshness": "source-current",
+        "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "mitigation_adequacy": "human-review-required",
+        "owner": "FastAPI Rules temporary-exception boundary",
+        "prevention_claim": false,
+        "runtime_evidence": [],
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_policy_approvals_p3_1.py"
+        ],
+        "threats": [
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "threats_mitigated": [
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "where_used": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ]
       }
     ],
     "security_poster": {
@@ -39443,8 +40269,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "f1cbe008cd797d8956b8d89d680370dc0a936ab7",
-        "head_tree": "4ec1917fbb4ed0df7f70f1f1cb367ef967952cbc",
+        "head": "a25405dacf895f4dbecba0287dd60d6abefb3807",
+        "head_tree": "c52cb3002a3c0121eafb383e3dfa23af92300b0f",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -84879,6 +85705,220 @@
             "Denial of Service"
           ],
           "target": "recovery-state"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "human or browser-session impersonation",
+            "unauthorized passkey or step-up assurance use",
+            "privileged mutation without intended purpose-bound assurance"
+          ],
+          "controls": [
+            "CTRL-HUMAN-SESSION-CSRF",
+            "CTRL-WEBAUTHN-ASSURANCE"
+          ],
+          "entry_point": "browser",
+          "id": "AP-09",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Human identity and WebAuthn assurance misuse",
+          "path_nodes": [
+            "browser",
+            "caddy",
+            "lite-api",
+            "sqlite"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Spoofing",
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "target": "lite-api"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "unauthorized enterprise role elevation",
+            "loss of final-Owner recovery authority",
+            "audit attribution failure"
+          ],
+          "controls": [
+            "CTRL-WEBAUTHN-ASSURANCE",
+            "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+          ],
+          "entry_point": "browser",
+          "id": "AP-10",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Enterprise membership and final-Owner privilege escalation",
+          "path_nodes": [
+            "browser",
+            "caddy",
+            "lite-api",
+            "sqlite"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Repudiation",
+            "Elevation of Privilege"
+          ],
+          "target": "sqlite"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "protected mutation proceeds without valid policy admission",
+            "policy decision ambiguity",
+            "control-plane availability impact"
+          ],
+          "controls": [
+            "CTRL-API-CONTROL",
+            "CTRL-OPA-FAIL-CLOSED"
+          ],
+          "entry_point": "browser",
+          "id": "AP-11",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "OPA authorization decision integrity failure",
+          "path_nodes": [
+            "browser",
+            "caddy",
+            "lite-api"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Elevation of Privilege",
+            "Denial of Service"
+          ],
+          "target": "lite-api"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "wrong policy revision observed or activated",
+            "loss of known-good recovery integrity",
+            "governance availability locked in uncertain state"
+          ],
+          "controls": [
+            "CTRL-POLICY-REVISION-LIFECYCLE",
+            "CTRL-OPA-FAIL-CLOSED"
+          ],
+          "entry_point": "browser",
+          "id": "AP-12",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Policy revision activation and recovery integrity",
+          "path_nodes": [
+            "browser",
+            "caddy",
+            "lite-api",
+            "sqlite"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Repudiation",
+            "Denial of Service"
+          ],
+          "target": "sqlite"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "requester self-approval or ineligible review",
+            "exact action, target, or revision binding bypass",
+            "approved continuation replay or double-use"
+          ],
+          "controls": [
+            "CTRL-WEBAUTHN-ASSURANCE",
+            "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+          ],
+          "entry_point": "browser",
+          "id": "AP-13",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Approval and continuation integrity",
+          "path_nodes": [
+            "browser",
+            "caddy",
+            "lite-api",
+            "sqlite"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Spoofing",
+            "Tampering",
+            "Repudiation",
+            "Elevation of Privilege"
+          ],
+          "target": "sqlite"
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "confidence": "source-derived",
+          "confirmed_exploit": false,
+          "consequences": [
+            "exception widened beyond approved scope",
+            "expired or revoked exception reused",
+            "unauthorized catalog install admission"
+          ],
+          "controls": [
+            "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+            "CTRL-OPA-FAIL-CLOSED"
+          ],
+          "entry_point": "browser",
+          "id": "AP-14",
+          "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+          "name": "Temporary-exception scope and expiry bypass",
+          "path_nodes": [
+            "browser",
+            "caddy",
+            "lite-api",
+            "sqlite"
+          ],
+          "review_status": "human-review-required",
+          "status": "modeled",
+          "stride": [
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "target": "sqlite"
         }
       ],
       "boundaries": [
@@ -84981,7 +86021,10 @@
             "CTRL-BROWSER-NATS",
             "CTRL-BROWSER-SHELL",
             "CTRL-API-CONTROL",
-            "CTRL-HUMAN-SESSION-CSRF"
+            "CTRL-HUMAN-SESSION-CSRF",
+            "CTRL-WEBAUTHN-ASSURANCE",
+            "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+            "CTRL-TEMPORARY-EXCEPTION-SCOPE"
           ],
           "data_classifications": [
             "sanitized operational metadata",
@@ -85038,7 +86081,12 @@
           "controls": [
             "CTRL-API-CONTROL",
             "CTRL-HUMAN-SESSION-CSRF",
-            "CTRL-OPA-FAIL-CLOSED"
+            "CTRL-OPA-FAIL-CLOSED",
+            "CTRL-WEBAUTHN-ASSURANCE",
+            "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+            "CTRL-POLICY-REVISION-LIFECYCLE",
+            "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+            "CTRL-TEMPORARY-EXCEPTION-SCOPE"
           ],
           "data_classifications": [
             "sanitized operational metadata",
@@ -85104,7 +86152,12 @@
           "controls": [
             "CTRL-HUMAN-SESSION-CSRF",
             "CTRL-EVIDENCE-SANITIZE",
-            "CTRL-EXPLICIT-PROMOTION"
+            "CTRL-EXPLICIT-PROMOTION",
+            "CTRL-WEBAUTHN-ASSURANCE",
+            "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+            "CTRL-POLICY-REVISION-LIFECYCLE",
+            "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+            "CTRL-TEMPORARY-EXCEPTION-SCOPE"
           ],
           "data_classifications": [
             "sanitized operational metadata",
@@ -85441,7 +86494,8 @@
           "controls": [
             "CTRL-EXECUTION-OWNERS",
             "CTRL-EVIDENCE-SANITIZE",
-            "CTRL-EXPLICIT-PROMOTION"
+            "CTRL-EXPLICIT-PROMOTION",
+            "CTRL-POLICY-REVISION-LIFECYCLE"
           ],
           "data_classifications": [
             "sanitized operational metadata",
@@ -86030,6 +87084,251 @@
             "external-release",
             "application-container"
           ]
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "boundary": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "a human session could gain privileged assurance without the intended short-lived, origin/RP-bound WebAuthn ceremony"
+          ],
+          "freshness": "source-current",
+          "id": "CTRL-WEBAUTHN-ASSURANCE",
+          "implementation": [
+            "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+            "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          ],
+          "mitigation_adequacy": "human-review-required",
+          "owner": "FastAPI Identity/WebAuthn boundary",
+          "prevention_claim": false,
+          "runtime_evidence": [],
+          "source_refs": [
+            "architecture/metadata/pocket-lab-architecture.json"
+          ],
+          "status": "mitigation-source-derived",
+          "tests": [
+            "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+          ],
+          "threats": [
+            "Spoofing",
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "threats_mitigated": [
+            "Spoofing",
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "where_used": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ]
+        },
+        {
+          "boundaries": [
+            "control-api",
+            "durable-state"
+          ],
+          "boundary": [
+            "control-api",
+            "durable-state"
+          ],
+          "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "enterprise membership could be elevated or the final active Owner could be removed without server-authoritative governance protection"
+          ],
+          "freshness": "source-current",
+          "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+          "implementation": [
+            "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+            "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          ],
+          "mitigation_adequacy": "human-review-required",
+          "owner": "FastAPI Enterprise Identity boundary",
+          "prevention_claim": false,
+          "runtime_evidence": [],
+          "source_refs": [
+            "architecture/metadata/pocket-lab-architecture.json"
+          ],
+          "status": "mitigation-source-derived",
+          "tests": [
+            "tests/backend/test_lite_enterprise_identity_p2.py"
+          ],
+          "threats": [
+            "Tampering",
+            "Repudiation",
+            "Elevation of Privilege"
+          ],
+          "threats_mitigated": [
+            "Tampering",
+            "Repudiation",
+            "Elevation of Privilege"
+          ],
+          "where_used": [
+            "control-api",
+            "durable-state"
+          ]
+        },
+        {
+          "boundaries": [
+            "control-api",
+            "durable-state",
+            "server-host"
+          ],
+          "boundary": [
+            "control-api",
+            "durable-state",
+            "server-host"
+          ],
+          "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "the running policy could diverge from the intended active/known-good revision or remain ambiguous after activation/rollback uncertainty"
+          ],
+          "freshness": "source-current",
+          "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+          "implementation": [
+            "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+            "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+          ],
+          "mitigation_adequacy": "human-review-required",
+          "owner": "FastAPI Rules lifecycle and loopback OPA boundary",
+          "prevention_claim": false,
+          "runtime_evidence": [],
+          "source_refs": [
+            "architecture/metadata/pocket-lab-architecture.json"
+          ],
+          "status": "mitigation-source-derived",
+          "tests": [
+            "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+            "tests/backend/test_lite_policy_opa_readiness.py",
+            "tests/backend/test_lite_policy_first_activation_recovery.py",
+            "tests/backend/test_lite_policy_uncertain_resolution.py"
+          ],
+          "threats": [
+            "Tampering",
+            "Repudiation",
+            "Denial of Service"
+          ],
+          "threats_mitigated": [
+            "Tampering",
+            "Repudiation",
+            "Denial of Service"
+          ],
+          "where_used": [
+            "control-api",
+            "durable-state",
+            "server-host"
+          ]
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "boundary": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "a requester could bypass independent review, substitute action/target/revision context, or replay an already-consumed continuation"
+          ],
+          "freshness": "source-current",
+          "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+          "implementation": [
+            "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+            "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          ],
+          "mitigation_adequacy": "human-review-required",
+          "owner": "FastAPI Rules approval/continuation boundary",
+          "prevention_claim": false,
+          "runtime_evidence": [],
+          "source_refs": [
+            "architecture/metadata/pocket-lab-architecture.json"
+          ],
+          "status": "mitigation-source-derived",
+          "tests": [
+            "tests/backend/test_lite_policy_approvals_p3_1.py"
+          ],
+          "threats": [
+            "Spoofing",
+            "Tampering",
+            "Repudiation",
+            "Elevation of Privilege"
+          ],
+          "threats_mitigated": [
+            "Spoofing",
+            "Tampering",
+            "Repudiation",
+            "Elevation of Privilege"
+          ],
+          "where_used": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ]
+        },
+        {
+          "boundaries": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "boundary": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ],
+          "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+          "effect": "mitigates",
+          "failure_consequences": [
+            "a temporary catalog-install exception could be widened, reused after expiry/revoke, or applied outside its exact human/app/device/revision scope"
+          ],
+          "freshness": "source-current",
+          "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+          "implementation": [
+            "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+            "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          ],
+          "mitigation_adequacy": "human-review-required",
+          "owner": "FastAPI Rules temporary-exception boundary",
+          "prevention_claim": false,
+          "runtime_evidence": [],
+          "source_refs": [
+            "architecture/metadata/pocket-lab-architecture.json"
+          ],
+          "status": "mitigation-source-derived",
+          "tests": [
+            "tests/backend/test_lite_policy_approvals_p3_1.py"
+          ],
+          "threats": [
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "threats_mitigated": [
+            "Tampering",
+            "Elevation of Privilege"
+          ],
+          "where_used": [
+            "browser",
+            "control-api",
+            "durable-state"
+          ]
         }
       ],
       "exclusions": [
@@ -86076,7 +87375,7 @@
       "posture_rule": "derived only from canonical source plus promoted sanitized runtime/security/release/dependency evidence; never live monitoring",
       "production_posture": {
         "authority": "promoted/canonical evidence only",
-        "controls_source_derived": 4,
+        "controls_source_derived": 9,
         "controls_verified": 5,
         "implementation_status": "implemented",
         "live_monitoring": false,
@@ -88362,6 +89661,220 @@
               "Denial of Service"
             ],
             "target": "recovery-state"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api",
+              "durable-state"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "human or browser-session impersonation",
+              "unauthorized passkey or step-up assurance use",
+              "privileged mutation without intended purpose-bound assurance"
+            ],
+            "controls": [
+              "CTRL-HUMAN-SESSION-CSRF",
+              "CTRL-WEBAUTHN-ASSURANCE"
+            ],
+            "entry_point": "browser",
+            "id": "AP-09",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Human identity and WebAuthn assurance misuse",
+            "path_nodes": [
+              "browser",
+              "caddy",
+              "lite-api",
+              "sqlite"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ],
+            "target": "lite-api"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api",
+              "durable-state"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "unauthorized enterprise role elevation",
+              "loss of final-Owner recovery authority",
+              "audit attribution failure"
+            ],
+            "controls": [
+              "CTRL-WEBAUTHN-ASSURANCE",
+              "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+            ],
+            "entry_point": "browser",
+            "id": "AP-10",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Enterprise membership and final-Owner privilege escalation",
+            "path_nodes": [
+              "browser",
+              "caddy",
+              "lite-api",
+              "sqlite"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ],
+            "target": "sqlite"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "protected mutation proceeds without valid policy admission",
+              "policy decision ambiguity",
+              "control-plane availability impact"
+            ],
+            "controls": [
+              "CTRL-API-CONTROL",
+              "CTRL-OPA-FAIL-CLOSED"
+            ],
+            "entry_point": "browser",
+            "id": "AP-11",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "OPA authorization decision integrity failure",
+            "path_nodes": [
+              "browser",
+              "caddy",
+              "lite-api"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Elevation of Privilege",
+              "Denial of Service"
+            ],
+            "target": "lite-api"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api",
+              "durable-state"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "wrong policy revision observed or activated",
+              "loss of known-good recovery integrity",
+              "governance availability locked in uncertain state"
+            ],
+            "controls": [
+              "CTRL-POLICY-REVISION-LIFECYCLE",
+              "CTRL-OPA-FAIL-CLOSED"
+            ],
+            "entry_point": "browser",
+            "id": "AP-12",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Policy revision activation and recovery integrity",
+            "path_nodes": [
+              "browser",
+              "caddy",
+              "lite-api",
+              "sqlite"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Repudiation",
+              "Denial of Service"
+            ],
+            "target": "sqlite"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api",
+              "durable-state"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "requester self-approval or ineligible review",
+              "exact action, target, or revision binding bypass",
+              "approved continuation replay or double-use"
+            ],
+            "controls": [
+              "CTRL-WEBAUTHN-ASSURANCE",
+              "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+            ],
+            "entry_point": "browser",
+            "id": "AP-13",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Approval and continuation integrity",
+            "path_nodes": [
+              "browser",
+              "caddy",
+              "lite-api",
+              "sqlite"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Spoofing",
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ],
+            "target": "sqlite"
+          },
+          {
+            "boundaries": [
+              "browser",
+              "control-api",
+              "durable-state"
+            ],
+            "confidence": "source-derived",
+            "confirmed_exploit": false,
+            "consequences": [
+              "exception widened beyond approved scope",
+              "expired or revoked exception reused",
+              "unauthorized catalog install admission"
+            ],
+            "controls": [
+              "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+              "CTRL-OPA-FAIL-CLOSED"
+            ],
+            "entry_point": "browser",
+            "id": "AP-14",
+            "mitigation_language": "controls mitigate/reduce exposure; prevention is not claimed unless separately evidenced",
+            "name": "Temporary-exception scope and expiry bypass",
+            "path_nodes": [
+              "browser",
+              "caddy",
+              "lite-api",
+              "sqlite"
+            ],
+            "review_status": "human-review-required",
+            "status": "modeled",
+            "stride": [
+              "Tampering",
+              "Elevation of Privilege"
+            ],
+            "target": "sqlite"
           }
         ],
         "control_bindings": [
@@ -88578,6 +90091,146 @@
             "threats": [
               "Tampering",
               "Information Disclosure",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "browser",
+            "control": "CTRL-WEBAUTHN-ASSURANCE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "control-api",
+            "control": "CTRL-WEBAUTHN-ASSURANCE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-WEBAUTHN-ASSURANCE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "control-api",
+            "control": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "control-api",
+            "control": "CTRL-POLICY-REVISION-LIFECYCLE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Denial of Service"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-POLICY-REVISION-LIFECYCLE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Denial of Service"
+            ]
+          },
+          {
+            "boundary": "server-host",
+            "control": "CTRL-POLICY-REVISION-LIFECYCLE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Repudiation",
+              "Denial of Service"
+            ]
+          },
+          {
+            "boundary": "browser",
+            "control": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "control-api",
+            "control": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Spoofing",
+              "Tampering",
+              "Repudiation",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "browser",
+            "control": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "control-api",
+            "control": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
+              "Elevation of Privilege"
+            ]
+          },
+          {
+            "boundary": "durable-state",
+            "control": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+            "status": "mitigation-source-derived",
+            "threats": [
+              "Tampering",
               "Elevation of Privilege"
             ]
           }
@@ -88955,12 +90608,12 @@
           }
         ],
         "posture_summary": {
-          "attack_paths": 8,
+          "attack_paths": 14,
           "control_states": {
             "control-observed": 5,
-            "mitigation-source-derived": 4
+            "mitigation-source-derived": 9
           },
-          "controls": 9,
+          "controls": 14,
           "human_review_required": true,
           "posture_states": {
             "control-observed": 31,
@@ -91333,5 +92986,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "793604f87bfed70d694702e0d150675733905fa2117f14e4b55cf6c2a35ddbcd"
+  "source_fingerprint": "89a218fda1987d6b9b7cb1bbc9cb62e8b364236076ff4a412db267501f234748"
 }

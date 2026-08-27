@@ -13,7 +13,7 @@ confidence: generated
 
 <div class="pl-page-lede pl-threat-boundary-lede"><strong>Saved evidence enters documentation through an explicit projection zone.</strong><p>This lane uses the same review anatomy as canonical boundaries while remaining a presentation/evidence projection. It does not create a tenth canonical threat boundary or imply live monitoring.</p></div>
 
-<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Evidence projection zone</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>3</strong></article><article><span>Review</span><strong>Human review required</strong></article></div>
+<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Evidence projection zone</strong></article><article><span>Assets</span><strong>3</strong></article><article><span>Controls</span><strong>8</strong></article><article><span>Review</span><strong>Human review required</strong></article></div>
 
 ## Boundary
 
@@ -64,9 +64,14 @@ No canonical STRIDE threat is assigned directly to this projection zone because 
 
 | Control | Description | Status |
 | --- | --- | --- |
+| CTRL-ENTERPRISE-ROLE-FINAL-OWNER | Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner. | mitigation-source-derived |
 | CTRL-EVIDENCE-SANITIZE | Runtime/scanner evidence is sanitized before canonical documentation ingestion. | control-observed |
 | CTRL-EXPLICIT-PROMOTION | Runtime and scanner evidence promotion is explicit; MkDocs does not capture or promote. | control-observed |
 | CTRL-HUMAN-SESSION-CSRF | Human browser writes require an authenticated local-owner session plus a separate same-site CSRF proof; session credentials remain HttpOnly and hash-only at rest. | mitigation-source-derived |
+| CTRL-INDEPENDENT-APPROVAL-CONTINUATION | Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal. | mitigation-source-derived |
+| CTRL-POLICY-REVISION-LIFECYCLE | Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain. | mitigation-source-derived |
+| CTRL-TEMPORARY-EXCEPTION-SCOPE | Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope. | mitigation-source-derived |
+| CTRL-WEBAUTHN-ASSURANCE | WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session. | mitigation-source-derived |
 
 ## Runtime evidence & provenance
 

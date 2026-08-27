@@ -78,11 +78,23 @@
         "POST /api/lite/identity/password",
         "POST /api/lite/identity/logout",
         "POST /api/lite/identity/recovery/regenerate",
-        "POST /api/lite/identity/recover"
+        "POST /api/lite/identity/recover",
+        "POST /api/lite/identity/owner-claim/passkey/options",
+        "POST /api/lite/identity/owner-claim/passkey/verify",
+        "POST /api/lite/identity/passkeys/login/options",
+        "POST /api/lite/identity/passkeys/login/verify",
+        "POST /api/lite/identity/passkeys/registration/options",
+        "POST /api/lite/identity/passkeys/registration/verify",
+        "POST /api/lite/identity/step-up/options",
+        "POST /api/lite/identity/step-up/verify",
+        "PUT /api/lite/identity/passkeys/{credential_id}",
+        "DELETE /api/lite/identity/passkeys/{credential_id}"
       ],
       "source_refs": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "type": "journey"
@@ -375,9 +387,14 @@
         "POST /api/lite/fleet/remove-device",
         "GET /api/lite/enterprise/rules/revisions",
         "POST /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/activations",
+        "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
+        "POST /api/lite/enterprise/rules/rollbacks",
         "GET /api/lite/enterprise/rules/health",
+        "GET /api/lite/enterprise/rules/analysis",
         "POST /api/lite/enterprise/rules/simulations",
         "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/approvals/{approval_id}",
         "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
@@ -492,6 +509,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
+    "source_fingerprint": "4406f0ebcd546f6d2bf98cc6235ac3e9f8f7ee1506f055af3170ad64c6162114"
   }
 }

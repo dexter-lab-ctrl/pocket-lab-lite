@@ -2154,6 +2154,19 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "component:identity-access-controls",
+      "name": "Passkey, step-up, and Enterprise identity controls",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_documentation_presentation_polish.py",
+        "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/docs/test_living_knowledgebase.py"
+      ],
+      "type": "component",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "component:invite-state",
       "name": "Invite and identity lifecycle",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2857,6 +2870,7 @@
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/docs/test_documentation_intelligence.py",
+        "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/e2e/lite-mocked.spec.ts",
@@ -3630,6 +3644,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
+    "source_fingerprint": "4406f0ebcd546f6d2bf98cc6235ac3e9f8f7ee1506f055af3170ad64c6162114"
   }
 }

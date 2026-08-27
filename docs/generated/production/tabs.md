@@ -7,7 +7,7 @@ audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2c00a172d3837d03655330db878706b3c00cba2028169da9c596a847dcdc4e5e
+source_fingerprint: 3bd1846004fa5a873680d41dd98c02813d700c3d91507c781e5de3b5baa151ca
 schema_revision: 1
 validation_status: generated
 ---
@@ -26,5 +26,5 @@ The deployed PWA exposes seven Lite-friendly sections.
 - Apps: PhotoPrism catalog/lifecycle/action surface where installed.
 - Recovery: backup readiness, verification, restore preview, checkpoint, and restore status.
 - Security: Quick, Full, and app-scoped safety results where enabled.
-- Identity: local owner setup/sign-in, password lifecycle, session revocation, one-time recovery codes, and safe human/device/service identity-class visibility.
-- Rules: loopback OPA health/revision, protected action groups, reason codes, and bounded decision evidence for the current registered enforcement points.
+- Identity: local owner setup/sign-in, password lifecycle, session revocation, one-time recovery codes, passkey registration/login/rename/revoke, purpose-bound step-up, and opt-in Enterprise memberships and roles.
+- Rules: loopback OPA health plus immutable revision/lifecycle, deterministic analysis and non-executing simulation, bounded decision evidence, independent approval/one-use continuation, and narrow temporary-exception views.

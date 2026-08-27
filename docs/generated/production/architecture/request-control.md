@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
+source_fingerprint: f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -43,6 +43,8 @@ Same-origin request validation, command admission, durable execution, prepared r
 | [Caddy same-origin proxy](components/caddy.md) | proxy | Server host | PM2 | Server-host boundary |
 | [FastAPI /api/lite/*](components/lite-api.md) | service | Server host | PM2 | Control API boundary |
 | [Identity, authentication, and invite guards](components/api-guards.md) | service | FastAPI process | pocket-api | Control API boundary |
+| [Passkey, step-up, and Enterprise identity controls](components/identity-access-controls.md) | service | FastAPI process | pocket-api | Control API boundary |
+| [OPA Safety Rules policy engine](components/opa-policy-engine.md) | decision | Server host loopback | PM2 | Control API boundary |
 | [Fleet, Apps, Security, Recovery, and Release APIs](components/api-domain-surfaces.md) | service | FastAPI process | pocket-api | Control API boundary |
 | [NATS / JetStream](components/nats-jetstream.md) | event | Server host | PM2 | Messaging and execution boundary |
 | [Worker process](components/worker.md) | process | Server host | PM2 | Messaging and execution boundary |
@@ -60,6 +62,7 @@ Same-origin request validation, command admission, durable execution, prepared r
 | FastAPI /api/lite/* | dispatches domain request | Fleet, Apps, Security, Recovery, and Release APIs | control | Python |
 | FastAPI /api/lite/* | validates identity and intent | Identity, authentication, and invite guards | control | Python |
 | Fleet, Apps, Security, Recovery, and Release APIs | publishes validated command | NATS / JetStream | control | NATS |
+| Fleet, Apps, Security, Recovery, and Release APIs | evaluates registered protected action | OPA Safety Rules policy engine | control | Loopback HTTP JSON |
 | FastAPI /api/lite/* | serves safe reads | Prepared read, health, readiness, diagnostics, and evidence APIs | data | Python |
 | FastAPI /api/lite/* | transactional read/write | SQLite control-plane store | data | SQLite |
 | Browser | loads and hosts | React / Vite PWA | control | Browser runtime |
@@ -67,7 +70,10 @@ Same-origin request validation, command admission, durable execution, prepared r
 | Command admission and lifecycle | records sanitized lifecycle | Completion and audit evidence | evidence | SQLite/NATS |
 | Completion and audit evidence | indexes evidence | Audit index, projection refresh, prepared projections, and domain revisions | data | SQLite |
 | Completion and audit evidence | sanitized lookup | Prepared read, health, readiness, diagnostics, and evidence APIs | evidence | HTTP |
+| Identity, authentication, and invite guards | applies passkey, step-up, and membership controls | Passkey, step-up, and Enterprise identity controls | control | Python |
+| Passkey, step-up, and Enterprise identity controls | stores assurance, membership, and audit state | SQLite control-plane store | data | SQLite |
 | NATS / JetStream | durable delivery | Worker process | control | JetStream |
+| OPA Safety Rules policy engine | returns allow/deny/constraints/reason code | Fleet, Apps, Security, Recovery, and Release APIs | control | Loopback HTTP JSON |
 | React / Vite PWA | same-origin request | Caddy same-origin proxy | control | HTTPS |
 | React / Vite PWA | selects and renders | Frontend state ownership | data | React |
 | Prepared read, health, readiness, diagnostics, and evidence APIs | safe summary | Frontend state ownership | data | HTTPS |

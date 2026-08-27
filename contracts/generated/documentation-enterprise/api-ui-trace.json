@@ -824,6 +824,587 @@
         "src/lib/liteApi.js"
       ],
       "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
+    },
+    {
+      "action": "Passkey registration",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "passkey_registration_options_api_lite_identity_passkeys_registration_options_post",
+          "path": "/api/lite/identity/passkeys/registration/options"
+        },
+        {
+          "method": "POST",
+          "operation_id": "passkey_registration_verify_api_lite_identity_passkeys_registration_verify_post",
+          "path": "/api/lite/identity/passkeys/registration/verify"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Passkey sign-in",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "passkey_login_options_api_lite_identity_passkeys_login_options_post",
+          "path": "/api/lite/identity/passkeys/login/options"
+        },
+        {
+          "method": "POST",
+          "operation_id": "passkey_login_verify_api_lite_identity_passkeys_login_verify_post",
+          "path": "/api/lite/identity/passkeys/login/verify"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Passkey step-up",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "passkey_step_up_options_api_lite_identity_step_up_options_post",
+          "path": "/api/lite/identity/step-up/options"
+        },
+        {
+          "method": "POST",
+          "operation_id": "passkey_step_up_verify_api_lite_identity_step_up_verify_post",
+          "path": "/api/lite/identity/step-up/verify"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Passkey rename or revoke",
+      "api": [
+        {
+          "method": "DELETE",
+          "operation_id": "revoke_lite_passkey_api_lite_identity_passkeys__credential_id__delete",
+          "path": "/api/lite/identity/passkeys/{credential_id}"
+        },
+        {
+          "method": "PUT",
+          "operation_id": "rename_lite_passkey_api_lite_identity_passkeys__credential_id__put",
+          "path": "/api/lite/identity/passkeys/{credential_id}"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "src/lib/liteApi.js",
+        "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/mocks/handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Enterprise membership",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "enterprise_identity_api_lite_enterprise_identity_get",
+          "path": "/api/lite/enterprise/identity"
+        },
+        {
+          "method": "GET",
+          "operation_id": "enterprise_members_api_lite_enterprise_identity_members_get",
+          "path": "/api/lite/enterprise/identity/members"
+        },
+        {
+          "method": "PUT",
+          "operation_id": "update_enterprise_member_api_lite_enterprise_identity_members__human_id__put",
+          "path": "/api/lite/enterprise/identity/members/{human_id}"
+        },
+        {
+          "method": "PUT",
+          "operation_id": "update_enterprise_mode_api_lite_enterprise_identity_mode_put",
+          "path": "/api/lite/enterprise/identity/mode"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
+        "src/lib/liteApi.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Rules revision lifecycle",
+      "api": [
+        {
+          "method": "POST",
+          "operation_id": "activate_api_lite_enterprise_rules_activations_post",
+          "path": "/api/lite/enterprise/rules/activations"
+        },
+        {
+          "method": "GET",
+          "operation_id": "operation_api_lite_enterprise_rules_activations__operation_id__get",
+          "path": "/api/lite/enterprise/rules/activations/{operation_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "resolve_activation_api_lite_enterprise_rules_activations__operation_id__resolve_post",
+          "path": "/api/lite/enterprise/rules/activations/{operation_id}/resolve"
+        },
+        {
+          "method": "GET",
+          "operation_id": "revisions_api_lite_enterprise_rules_revisions_get",
+          "path": "/api/lite/enterprise/rules/revisions"
+        },
+        {
+          "method": "POST",
+          "operation_id": "create_revision_api_lite_enterprise_rules_revisions_post",
+          "path": "/api/lite/enterprise/rules/revisions"
+        },
+        {
+          "method": "GET",
+          "operation_id": "compare_api_lite_enterprise_rules_revisions__left_revision_id__compare__right_revision_id__get",
+          "path": "/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}"
+        },
+        {
+          "method": "GET",
+          "operation_id": "revision_api_lite_enterprise_rules_revisions__revision_id__get",
+          "path": "/api/lite/enterprise/rules/revisions/{revision_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "rollback_api_lite_enterprise_rules_rollbacks_post",
+          "path": "/api/lite/enterprise/rules/rollbacks"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py",
+        "src/lib/liteApi.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Rules analysis and simulation",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "analysis_api_lite_enterprise_rules_analysis_get",
+          "path": "/api/lite/enterprise/rules/analysis"
+        },
+        {
+          "method": "POST",
+          "operation_id": "simulate_api_lite_enterprise_rules_simulations_post",
+          "path": "/api/lite/enterprise/rules/simulations"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "src/lib/liteApi.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Rules approval review",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "approvals_api_lite_enterprise_rules_approvals_get",
+          "path": "/api/lite/enterprise/rules/approvals"
+        },
+        {
+          "method": "GET",
+          "operation_id": "approval_api_lite_enterprise_rules_approvals__approval_id__get",
+          "path": "/api/lite/enterprise/rules/approvals/{approval_id}"
+        },
+        {
+          "method": "POST",
+          "operation_id": "transition_approval_api_lite_enterprise_rules_approvals__approval_id__post",
+          "path": "/api/lite/enterprise/rules/approvals/{approval_id}"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "src/lib/liteApi.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
+    },
+    {
+      "action": "Rules temporary exception",
+      "api": [
+        {
+          "method": "GET",
+          "operation_id": "exceptions_api_lite_enterprise_rules_exceptions_get",
+          "path": "/api/lite/enterprise/rules/exceptions"
+        },
+        {
+          "method": "POST",
+          "operation_id": "create_exception_api_lite_enterprise_rules_exceptions_post",
+          "path": "/api/lite/enterprise/rules/exceptions"
+        },
+        {
+          "method": "POST",
+          "operation_id": "revoke_exception_api_lite_enterprise_rules_exceptions__exception_id__revoke_post",
+          "path": "/api/lite/enterprise/rules/exceptions/{exception_id}/revoke"
+        }
+      ],
+      "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py"
+      ],
+      "error_reason_codes": "contracts/generated/reason-codes.json",
+      "events": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "evidence": "backend-owned durable control-plane state and sanitized API projection",
+      "execution_owner": "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred",
+      "failure_states": [
+        "request rejected or backend unavailable",
+        "authorization or invariant guard refuses the request"
+      ],
+      "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py"
+      ],
+      "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "frontend_projection": "FastAPI/TanStack safe read projection",
+      "implementation_status": "implemented",
+      "nats_or_event": [
+        "no exact event channel relationship is emitted for this control-plane operation"
+      ],
+      "related_reason_codes": "contracts/generated/reason-codes.json",
+      "result_event": "backend-owned durable state or sanitized API projection",
+      "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "src/lib/liteApi.js",
+        "src/mocks/identityRulesP1Handlers.js"
+      ],
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
+        "src/lib/liteApi.js"
+      ],
+      "worker_agent_supervisor": "FastAPI control-plane service"
     }
   ]
 }

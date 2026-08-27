@@ -92,6 +92,7 @@ Stores canonical Lite lifecycle state and prepared projections; the frontend nev
 
 - depends_on: `App, command, and workflow state`
 - depends_on: `Enrollment and device lifecycle state`
+- depends_on: `Passkey, step-up, and Enterprise identity controls`
 - depends_on: `Invite and identity lifecycle`
 - depends_on: `FastAPI /api/lite/*`
 - depends_on: `Audit index, projection refresh, prepared projections, and domain revisions`

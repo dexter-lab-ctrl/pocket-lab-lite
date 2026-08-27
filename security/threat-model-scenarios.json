@@ -42,6 +42,88 @@
     "Duplicated, missing or weakly evidenced controls are harder to identify.",
     "Residual risk and human-review decisions become less auditable."
   ],
+  "controls": [
+    {
+      "id": "CTRL-WEBAUTHN-ASSURANCE",
+      "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "owner": "FastAPI Identity/WebAuthn boundary",
+      "status": "mitigation-source-derived",
+      "freshness": "source-current",
+      "threats": ["Spoofing", "Tampering", "Elevation of Privilege"],
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "source_refs": ["architecture/metadata/pocket-lab-architecture.json"],
+      "tests": ["tests/backend/test_lite_identity_passkeys_rules_p1.py"]
+    },
+    {
+      "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+      "boundaries": ["control-api", "durable-state"],
+      "owner": "FastAPI Enterprise Identity boundary",
+      "status": "mitigation-source-derived",
+      "freshness": "source-current",
+      "threats": ["Tampering", "Repudiation", "Elevation of Privilege"],
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "source_refs": ["architecture/metadata/pocket-lab-architecture.json"],
+      "tests": ["tests/backend/test_lite_enterprise_identity_p2.py"]
+    },
+    {
+      "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+      "boundaries": ["control-api", "durable-state", "server-host"],
+      "owner": "FastAPI Rules lifecycle and loopback OPA boundary",
+      "status": "mitigation-source-derived",
+      "freshness": "source-current",
+      "threats": ["Tampering", "Repudiation", "Denial of Service"],
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+      ],
+      "source_refs": ["architecture/metadata/pocket-lab-architecture.json"],
+      "tests": [
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+        "tests/backend/test_lite_policy_opa_readiness.py",
+        "tests/backend/test_lite_policy_first_activation_recovery.py",
+        "tests/backend/test_lite_policy_uncertain_resolution.py"
+      ]
+    },
+    {
+      "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "owner": "FastAPI Rules approval/continuation boundary",
+      "status": "mitigation-source-derived",
+      "freshness": "source-current",
+      "threats": ["Spoofing", "Tampering", "Repudiation", "Elevation of Privilege"],
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "source_refs": ["architecture/metadata/pocket-lab-architecture.json"],
+      "tests": ["tests/backend/test_lite_policy_approvals_p3_1.py"]
+    },
+    {
+      "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "owner": "FastAPI Rules temporary-exception boundary",
+      "status": "mitigation-source-derived",
+      "freshness": "source-current",
+      "threats": ["Tampering", "Elevation of Privilege"],
+      "implementation": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+      ],
+      "source_refs": ["architecture/metadata/pocket-lab-architecture.json"],
+      "tests": ["tests/backend/test_lite_policy_approvals_p3_1.py"]
+    }
+  ],
   "attack_paths": [
     {
       "id": "AP-01", "name": "Browser control-plane bypass", "entry_point": "browser", "target": "nats-jetstream",
@@ -113,6 +195,60 @@
       "stride": ["Tampering", "Repudiation", "Denial of Service"],
       "controls": ["CTRL-EVIDENCE-SANITIZE", "CTRL-EXPLICIT-PROMOTION", "CTRL-API-CONTROL"],
       "consequences": ["unsafe restore decisions", "loss of recovery evidence integrity", "recovery unavailability"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-09", "name": "Human identity and WebAuthn assurance misuse", "entry_point": "browser", "target": "lite-api",
+      "path_nodes": ["browser", "caddy", "lite-api", "sqlite"],
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "stride": ["Spoofing", "Tampering", "Elevation of Privilege"],
+      "controls": ["CTRL-HUMAN-SESSION-CSRF", "CTRL-WEBAUTHN-ASSURANCE"],
+      "consequences": ["human or browser-session impersonation", "unauthorized passkey or step-up assurance use", "privileged mutation without intended purpose-bound assurance"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-10", "name": "Enterprise membership and final-Owner privilege escalation", "entry_point": "browser", "target": "sqlite",
+      "path_nodes": ["browser", "caddy", "lite-api", "sqlite"],
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "stride": ["Tampering", "Repudiation", "Elevation of Privilege"],
+      "controls": ["CTRL-WEBAUTHN-ASSURANCE", "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"],
+      "consequences": ["unauthorized enterprise role elevation", "loss of final-Owner recovery authority", "audit attribution failure"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-11", "name": "OPA authorization decision integrity failure", "entry_point": "browser", "target": "lite-api",
+      "path_nodes": ["browser", "caddy", "lite-api"],
+      "boundaries": ["browser", "control-api"],
+      "stride": ["Tampering", "Elevation of Privilege", "Denial of Service"],
+      "controls": ["CTRL-API-CONTROL", "CTRL-OPA-FAIL-CLOSED"],
+      "consequences": ["protected mutation proceeds without valid policy admission", "policy decision ambiguity", "control-plane availability impact"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-12", "name": "Policy revision activation and recovery integrity", "entry_point": "browser", "target": "sqlite",
+      "path_nodes": ["browser", "caddy", "lite-api", "sqlite"],
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "stride": ["Tampering", "Repudiation", "Denial of Service"],
+      "controls": ["CTRL-POLICY-REVISION-LIFECYCLE", "CTRL-OPA-FAIL-CLOSED"],
+      "consequences": ["wrong policy revision observed or activated", "loss of known-good recovery integrity", "governance availability locked in uncertain state"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-13", "name": "Approval and continuation integrity", "entry_point": "browser", "target": "sqlite",
+      "path_nodes": ["browser", "caddy", "lite-api", "sqlite"],
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "stride": ["Spoofing", "Tampering", "Repudiation", "Elevation of Privilege"],
+      "controls": ["CTRL-WEBAUTHN-ASSURANCE", "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"],
+      "consequences": ["requester self-approval or ineligible review", "exact action, target, or revision binding bypass", "approved continuation replay or double-use"],
+      "status": "modeled", "review_status": "human-review-required"
+    },
+    {
+      "id": "AP-14", "name": "Temporary-exception scope and expiry bypass", "entry_point": "browser", "target": "sqlite",
+      "path_nodes": ["browser", "caddy", "lite-api", "sqlite"],
+      "boundaries": ["browser", "control-api", "durable-state"],
+      "stride": ["Tampering", "Elevation of Privilege"],
+      "controls": ["CTRL-TEMPORARY-EXCEPTION-SCOPE", "CTRL-OPA-FAIL-CLOSED"],
+      "consequences": ["exception widened beyond approved scope", "expired or revoked exception reused", "unauthorized catalog install admission"],
       "status": "modeled", "review_status": "human-review-required"
     }
   ]

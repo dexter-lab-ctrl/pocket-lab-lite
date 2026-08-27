@@ -362,6 +362,26 @@ def test_component_encyclopedia_covers_canonical_architecture():
         assert "## Canonical sources" in text
 
 
+def test_identity_rules_relationships_are_source_backed_and_discoverable():
+    arch = json.loads((ROOT / "architecture/metadata/pocket-lab-architecture.json").read_text())
+    assert "identity-access-controls" in arch["components"]
+    assert arch["components"]["identity-access-controls"]["security_boundary"] == "control-api"
+    assert {"webauthn_credentials", "enterprise_memberships"} <= set(
+        arch["components"]["identity-access-controls"]["durable_state_dependencies"]
+    )
+    assert {"policy_revisions", "policy_approvals", "policy_temporary_exceptions"} <= set(
+        arch["components"]["opa-policy-engine"]["durable_state_dependencies"]
+    )
+    edges = {(row["source"], row["target"]) for row in arch["connections"]}
+    assert ("identity-access-controls", "sqlite") in edges
+
+    for domain, journey in (("identity", "identity"), ("rules", "rules")):
+        page = ROOT / "docs/generated/enterprise/knowledgebase/domains" / f"{domain}.md"
+        text = page.read_text(encoding="utf-8")
+        assert f"../../journeys/{journey}.md" in text
+        assert "../../reference/api-ui-trace.md" in text
+
+
 def test_search_terms_are_discoverable_in_generated_pages():
     corpus = "\n".join(p.read_text(encoding="utf-8") for p in list(DEV.rglob("*.md")) + list(PROD.rglob("*.md")))
     for term in ("projection_too_old", "Restart Agent", "NATS", "security_database_restores", "PhotoPrism", "Tailscale", "supervisor", "FastAPI"):

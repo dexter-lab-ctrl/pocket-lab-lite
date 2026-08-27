@@ -120,12 +120,24 @@
         "POST /api/lite/identity/password",
         "POST /api/lite/identity/logout",
         "POST /api/lite/identity/recovery/regenerate",
-        "POST /api/lite/identity/recover"
+        "POST /api/lite/identity/recover",
+        "POST /api/lite/identity/owner-claim/passkey/options",
+        "POST /api/lite/identity/owner-claim/passkey/verify",
+        "POST /api/lite/identity/passkeys/login/options",
+        "POST /api/lite/identity/passkeys/login/verify",
+        "POST /api/lite/identity/passkeys/registration/options",
+        "POST /api/lite/identity/passkeys/registration/verify",
+        "POST /api/lite/identity/step-up/options",
+        "POST /api/lite/identity/step-up/verify",
+        "PUT /api/lite/identity/passkeys/{credential_id}",
+        "DELETE /api/lite/identity/passkeys/{credential_id}"
       ],
       "source_refs": [
         "src/lite/LiteIdentity.jsx",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
       ],
       "stages": [
         "User intent",
@@ -594,9 +606,14 @@
         "POST /api/lite/fleet/remove-device",
         "GET /api/lite/enterprise/rules/revisions",
         "POST /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/activations",
+        "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
+        "POST /api/lite/enterprise/rules/rollbacks",
         "GET /api/lite/enterprise/rules/health",
+        "GET /api/lite/enterprise/rules/analysis",
         "POST /api/lite/enterprise/rules/simulations",
         "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/approvals/{approval_id}",
         "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
@@ -777,5 +794,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "6991b300f3fa3953cd988fdfb264305c612fe93e6bbf59bb2873f73623c62746"
+  "source_fingerprint": "c004b4380d4ff9ee5b85cac53a2430bb550499a8bc10b22be89d506c71a7a6db"
 }

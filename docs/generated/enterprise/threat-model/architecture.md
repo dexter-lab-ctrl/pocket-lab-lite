@@ -24,13 +24,13 @@ This is a security overlay on the [canonical Pocket Lab Lite Architecture](../..
 | Boundary | Assets | Controls | Review |
 | --- | --- | --- | --- |
 | Application-container boundary | PhotoPrism runtime/config, app route | CTRL-SUPPLY-CHAIN | human-review-required |
-| Browser trust boundary | PWA session/UI state, safe snapshots | CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF | human-review-required |
-| Control API boundary | API request/response contracts, authorization/context | CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF, CTRL-OPA-FAIL-CLOSED | human-review-required |
-| Durable-state boundary | SQLite state, audit evidence, backup metadata | CTRL-HUMAN-SESSION-CSRF, CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION | human-review-required |
+| Browser trust boundary | PWA session/UI state, safe snapshots | CTRL-BROWSER-NATS, CTRL-BROWSER-SHELL, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF, CTRL-WEBAUTHN-ASSURANCE, CTRL-INDEPENDENT-APPROVAL-CONTINUATION, CTRL-TEMPORARY-EXCEPTION-SCOPE | human-review-required |
+| Control API boundary | API request/response contracts, authorization/context | CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF, CTRL-OPA-FAIL-CLOSED, CTRL-WEBAUTHN-ASSURANCE, CTRL-ENTERPRISE-ROLE-FINAL-OWNER, CTRL-POLICY-REVISION-LIFECYCLE, CTRL-INDEPENDENT-APPROVAL-CONTINUATION, CTRL-TEMPORARY-EXCEPTION-SCOPE | human-review-required |
+| Durable-state boundary | SQLite state, audit evidence, backup metadata | CTRL-HUMAN-SESSION-CSRF, CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-WEBAUTHN-ASSURANCE, CTRL-ENTERPRISE-ROLE-FINAL-OWNER, CTRL-POLICY-REVISION-LIFECYCLE, CTRL-INDEPENDENT-APPROVAL-CONTINUATION, CTRL-TEMPORARY-EXCEPTION-SCOPE | human-review-required |
 | External release boundary | dist.zip, SBOM, release manifest, provenance | CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-SUPPLY-CHAIN | human-review-required |
 | Managed-device boundary | device identity, agent state, bootstrap state | CTRL-EXECUTION-OWNERS | human-review-required |
 | Messaging and execution boundary | commands, events, durable consumers | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-EXECUTION-OWNERS | human-review-required |
-| Server-host boundary | Termux runtime, PM2 services, local secrets | CTRL-EXECUTION-OWNERS, CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION | human-review-required |
+| Server-host boundary | Termux runtime, PM2 services, local secrets | CTRL-EXECUTION-OWNERS, CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-POLICY-REVISION-LIFECYCLE | human-review-required |
 | Private network and Tailnet boundary | Tailnet connectivity, same-origin remote access | — | human-review-required |
 
 ## Boundary pages

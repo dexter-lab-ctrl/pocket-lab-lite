@@ -116,6 +116,9 @@
     "data_owner:SQLite lifecycle state": [
       "component:bounded-reconciliation"
     ],
+    "data_owner:SQLite passkey, session-assurance, Enterprise configuration, and membership state": [
+      "component:identity-access-controls"
+    ],
     "data_owner:SQLite prepared projections": [
       "component:projection-subprocesses"
     ],
@@ -157,6 +160,7 @@
       "component:api-domain-surfaces",
       "component:api-guards",
       "component:api-read-surfaces",
+      "component:identity-access-controls",
       "component:invite-state",
       "component:remote-readiness"
     ],
@@ -350,6 +354,9 @@
       "component:lite-api",
       "component:remote-readiness"
     ],
+    "owner:Lite API Identity": [
+      "component:identity-access-controls"
+    ],
     "owner:Lite API domains": [
       "component:api-domain-surfaces"
     ],
@@ -494,6 +501,9 @@
     ],
     "recovery_owner:Explicit retry": [
       "component:security-profiles"
+    ],
+    "recovery_owner:FastAPI Identity": [
+      "component:identity-access-controls"
     ],
     "recovery_owner:Last-known-good rollback": [
       "component:release-subprocess"
@@ -665,6 +675,7 @@
       "component:api-domain-surfaces",
       "component:api-guards",
       "component:api-read-surfaces",
+      "component:identity-access-controls",
       "component:remote-readiness"
     ],
     "runtime_owner:pocket-api / pocket-worker": [
@@ -720,6 +731,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
+    "source_fingerprint": "4406f0ebcd546f6d2bf98cc6235ac3e9f8f7ee1506f055af3170ad64c6162114"
   }
 }

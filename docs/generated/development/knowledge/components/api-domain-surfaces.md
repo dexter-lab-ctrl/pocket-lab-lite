@@ -79,6 +79,7 @@ Exposes domain-specific read and command endpoints while preserving backend-owne
 - depends_on: `OPA Safety Rules policy engine`
 - protected_by: `Control API boundary`
 - protected_by: `Control API boundary`
+- recovers_with: `Rules policy readiness failed`
 - uses: `GET /api/lite/catalog`
 - uses: `GET /api/lite/fleet`
 - uses: `GET /api/lite/recovery/summary`

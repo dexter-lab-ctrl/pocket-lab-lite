@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672
+source_fingerprint: f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -30,7 +30,7 @@ Stores canonical Lite lifecycle state and prepared projections; the frontend nev
   <figcaption>SQLite control-plane store mini architecture. <a href="../../../../../assets/diagrams/production/components/sqlite.light.svg">View full-size diagram</a></figcaption>
 </figure>
 
-The mini diagram deterministically collapses **6** additional connections.
+The mini diagram deterministically collapses **7** additional connections.
 
 
 ## Function and use
@@ -108,6 +108,7 @@ The mini diagram deterministically collapses **6** additional connections.
 
 - App, command, and workflow state — stored in
 - Enrollment and device lifecycle state — stored in
+- Passkey, step-up, and Enterprise identity controls — stores assurance, membership, and audit state
 - Invite and identity lifecycle — stored in
 - FastAPI /api/lite/* — transactional read/write
 - Audit index, projection refresh, prepared projections, and domain revisions — stored in

@@ -97,6 +97,21 @@
     },
     {
       "aliases": [
+        "enterprise membership",
+        "final owner",
+        "passkey",
+        "step-up",
+        "webauthn"
+      ],
+      "canonical": "identity passkey",
+      "destinations": [
+        "generated/enterprise/journeys/identity.md",
+        "generated/production/identity.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
         "release delta",
         "upgrade impact",
         "what changed"
@@ -121,6 +136,22 @@
         "generated/enterprise/operate/troubleshooting.md"
       ],
       "intent_priority": "operator-diagnostic"
+    },
+    {
+      "aliases": [
+        "approval",
+        "continuation",
+        "opa",
+        "policy revision",
+        "temporary exception"
+      ],
+      "canonical": "rules authorization",
+      "destinations": [
+        "generated/enterprise/journeys/rules.md",
+        "generated/production/rules.md",
+        "generated/enterprise/reference/api-ui-trace.md"
+      ],
+      "intent_priority": "canonical-reference"
     },
     {
       "aliases": [

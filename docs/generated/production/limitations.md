@@ -7,7 +7,7 @@ audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2c00a172d3837d03655330db878706b3c00cba2028169da9c596a847dcdc4e5e
+source_fingerprint: 3bd1846004fa5a873680d41dd98c02813d700c3d91507c781e5de3b5baa151ca
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,8 +21,10 @@ validation_status: generated
 
 Only source-implemented behavior is listed; live server-phone qualification remains separate.
 
-- Passkeys/WebAuthn and OIDC federation are not enabled; Pocket Lab Lite remains self-contained with the local owner flow.
-- Rules currently protects the explicitly registered `catalog.install` and `device.remove` actions; broader authorization coverage is not implied.
+- Passkeys/WebAuthn are implemented for local human registration/login/rename/revoke and purpose-bound step-up. External OIDC federation and service-identity provisioning or management remain deferred; the separate API-token actor/path is not a browser human session.
+- Enterprise Mode is opt-in. Memberships and roles are server-owned, including final-Owner protection; it does not imply external federation.
+- Rules protects only explicitly registered actions; broader authorization coverage is not implied. Approval is an independent, expiring gate and never executes an action automatically.
+- Temporary exceptions apply only to exact `catalog.install` app/device/human/revision scope, are revocable, and last at most 60 minutes.
 - The legacy generic secret store remains separate from the human Identity credential store and must not be treated as the owner password backend.
 - Android performance and live OPA/process claims require server-phone evidence; desktop/source validation alone is insufficient.
 - Live browser and long-duration qualification require a running isolated stack and explicit user action.

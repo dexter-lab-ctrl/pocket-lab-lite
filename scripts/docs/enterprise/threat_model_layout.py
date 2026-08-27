@@ -61,6 +61,14 @@ CONTROL_OWNERS = {
     "CTRL-EVIDENCE-SANITIZE": ("promoted-evidence", "SANITIZE", -30, 59),
     "CTRL-EXPLICIT-PROMOTION": ("documentation", "PROMOTE", -30, 59),
     "CTRL-SUPPLY-CHAIN": ("release-artifacts", "SUPPLY", 30, 59),
+
+    # Identity + Rules D3 controls. Each control is anchored to an existing
+    # canonical presentation node; no topology node or trust boundary is added.
+    "CTRL-WEBAUTHN-ASSURANCE": ("lite-api", "WEBAUTHN", 260, 59),
+    "CTRL-ENTERPRISE-ROLE-FINAL-OWNER": ("sqlite", "FINAL OWNER", 0, 59),
+    "CTRL-POLICY-REVISION-LIFECYCLE": ("server-host", "POLICY REV", 0, 59),
+    "CTRL-INDEPENDENT-APPROVAL-CONTINUATION": ("sqlite", "APPROVAL", -150, 59),
+    "CTRL-TEMPORARY-EXCEPTION-SCOPE": ("server-host", "EXCEPTION", -150, 59),
 }
 
 WIDE_LANES = (

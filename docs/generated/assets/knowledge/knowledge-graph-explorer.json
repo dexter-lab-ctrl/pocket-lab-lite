@@ -2109,7 +2109,9 @@
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
       ],
       "type": "component"
     },
@@ -2319,6 +2321,19 @@
     },
     {
       "confidence": "verified",
+      "description": "Verifies passkeys, records purpose-bound session assurance, and resolves server-owned Enterprise memberships and final-Owner protection; it does not create a browser-held authority.",
+      "domain": "",
+      "id": "component:identity-access-controls",
+      "name": "Passkey, step-up, and Enterprise identity controls",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
       "description": "Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.",
       "domain": "",
       "id": "component:invite-state",
@@ -2420,6 +2435,8 @@
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
         "security/policies/opa/pocketlab/pocketlab.rego"
       ],
@@ -3543,7 +3560,9 @@
       "name": "Local owner, passkey, recovery, and session lifecycle",
       "source_refs": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "type": "journey"
@@ -11303,6 +11322,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_identity_rules_threat_model_d3.py",
+      "name": "tests/docs/test_identity_rules_threat_model_d3.py",
+      "source_refs": [
+        "tests/docs/test_identity_rules_threat_model_d3.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_living_knowledgebase.py",
       "name": "tests/docs/test_living_knowledgebase.py",
       "source_refs": [
@@ -11886,6 +11916,28 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "operations",
+      "id": "troubleshooting:enterprise-membership-protected",
+      "name": "Enterprise membership change protected",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "operations",
+      "id": "troubleshooting:identity-passkey-or-step-up-refused",
+      "name": "Passkey or step-up refused",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "operations",
       "id": "troubleshooting:missing-release-tag",
       "name": "Release tag missing locally",
       "source_refs": [
@@ -11965,6 +12017,28 @@
       "domain": "operations",
       "id": "troubleshooting:restore-blocked",
       "name": "Restore blocked or preview stale",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "operations",
+      "id": "troubleshooting:rules-approval-or-exception-refused",
+      "name": "Rules approval, continuation, or exception refused",
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "operations",
+      "id": "troubleshooting:rules-policy-readiness-failed",
+      "name": "Rules policy readiness failed",
       "source_refs": [
         "contracts/metadata/knowledge-base.json"
       ],
@@ -14373,6 +14447,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:0ac3663b2f4ae0d5",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:294"
       ],
       "id": "rel:0ac802cb44216311",
@@ -14919,6 +15007,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:0d6937ad729c47e8",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:0da6c5997e53f7d3",
@@ -15037,6 +15139,24 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.commands.lite.app.media",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0e5abe83db439bf9",
+      "source": "journey:change-password",
+      "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -15429,6 +15549,20 @@
       "source": "journey:security-review",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:109dae5eac4eebd4",
+      "source": "component:opa-policy-engine",
+      "target": "troubleshooting:rules-approval-or-exception-refused",
+      "type": "recovers_with"
     },
     {
       "derivation": {
@@ -15849,6 +15983,20 @@
       "source": "api:get:/api/lite/security/summary",
       "target": "table:security_database_restores",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:12b001fcd8bc176c",
+      "source": "component:api-guards",
+      "target": "troubleshooting:enterprise-membership-protected",
+      "type": "recovers_with"
     },
     {
       "derivation": {
@@ -16799,7 +16947,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:1830854467cb667e",
@@ -17312,6 +17462,24 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:1ab7e9f79f010381",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/login/options",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:1ac30d5091f8d9ec",
@@ -17557,6 +17725,20 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.commands.lite.maintenance.retention",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:1c35f47175f353cb",
+      "source": "component:api-guards",
+      "target": "table:auth_session_assurance",
+      "type": "depends_on"
     },
     {
       "derivation": {
@@ -18083,6 +18265,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:1f06104f5699f278",
+      "source": "component:identity-access-controls",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "runbooks/backup_restore_verify.yaml",
         "src/lite/LiteRecovery.jsx"
       ],
@@ -18155,7 +18351,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:1feb512e274ea3fb",
@@ -18576,6 +18774,24 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:2351ecc60289863e",
+      "source": "journey:change-password",
+      "target": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:23a11a886051680e",
@@ -18736,6 +18952,20 @@
       "source": "component:security-coordinator",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:242d157cf50773e4",
+      "source": "component:api-guards",
+      "target": "troubleshooting:identity-passkey-or-step-up-refused",
+      "type": "recovers_with"
     },
     {
       "derivation": {
@@ -20296,6 +20526,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:2d4aa2c45c021c6d",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_recovery_resolutions",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:2d5eadfe6756709d",
@@ -21465,6 +21709,20 @@
       "id": "rel:3414fa1411bd471d",
       "source": "reason:policy_simulation_revision_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_termux_runtime_documentation.py"
+      ],
+      "id": "rel:342254cdd708ca97",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
     },
     {
@@ -23233,6 +23491,25 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:3cd82ad3b74b6ae2",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:3ce3266257ff5ee7",
@@ -23771,6 +24048,20 @@
       "source": "reason:approval_continuation_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:40b4b9aca2fe19be",
+      "source": "component:identity-access-controls",
+      "target": "table:enterprise_memberships",
+      "type": "depends_on"
     },
     {
       "derivation": {
@@ -24680,7 +24971,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:450cc5802deb214a",
@@ -24869,6 +25162,25 @@
       "source": "domain:platform",
       "target": "ui:liteapp",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:468eadf0cda305f2",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/rollbacks",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -27154,6 +27466,25 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:55b954c48fd1ccc8",
+      "source": "journey:rules-authorization",
+      "target": "api:get:/api/lite/enterprise/rules/analysis",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:55cfee3ffb3045ea",
@@ -27664,6 +27995,20 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_security_progress_projection_cutover.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:58bd393f5d8f82ef",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_temporary_exceptions",
+      "type": "depends_on"
     },
     {
       "derivation": {
@@ -29149,6 +29494,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:628c9ce62d47a0c7",
+      "source": "component:identity-access-controls",
+      "target": "table:identity_audit_events",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:629d17e637b15099",
@@ -29225,6 +29584,24 @@
       "source": "journey:recovery-reconciliation",
       "target": "component:sqlite",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:63818a9c171feb8c",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -30215,7 +30592,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:69125029459d7f13",
@@ -30390,6 +30769,24 @@
       "source": "journey:app-installation",
       "target": "component:app-catalog",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:6a5c48ccc1f7a87c",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/login/verify",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -32156,6 +32553,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:73613f1b3cd3ca30",
+      "source": "component:opa-policy-engine",
+      "target": "troubleshooting:rules-policy-readiness-failed",
+      "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:7371c7c06112eb37",
@@ -33407,6 +33818,20 @@
       "id": "rel:7c054ff88e6ec5ea",
       "source": "reason:webauthn_assertion_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_documentation_presentation_polish.py"
+      ],
+      "id": "rel:7c5a3f58983499f3",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/docs/test_documentation_presentation_polish.py",
       "type": "verified_by"
     },
     {
@@ -35373,6 +35798,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:87b2cd40a179bbea",
+      "source": "component:identity-access-controls",
+      "target": "troubleshooting:identity-passkey-or-step-up-refused",
+      "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_identity_rules_authorization.py"
       ],
       "id": "rel:87c23b0b3f13cef9",
@@ -35625,6 +36064,25 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:894b51de33862ade",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
       ],
       "id": "rel:894e3f760e77af7e",
@@ -35771,6 +36229,20 @@
       "source": "reason:approval_step_up_required",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:89e1d0dec7387b85",
+      "source": "component:identity-access-controls",
+      "target": "troubleshooting:rules-approval-or-exception-refused",
+      "type": "recovers_with"
     },
     {
       "derivation": {
@@ -37224,6 +37696,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:92a641299f52ebea",
+      "source": "component:identity-access-controls",
+      "target": "threat-model:control-api",
+      "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:92b84fdf52cee6cf",
@@ -37239,7 +37725,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:92c8d8fea24afc36",
@@ -37344,6 +37832,24 @@
       "source": "reason:webauthn_counter_replay",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:93d450eb9508b4c9",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -38987,7 +39493,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:9dab77f8a30fe57e",
@@ -39162,6 +39670,20 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_security_store.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:9ebbfbe82c58c80f",
+      "source": "component:identity-access-controls",
+      "target": "boundary:control-api",
+      "type": "protected_by"
     },
     {
       "derivation": {
@@ -39747,6 +40269,20 @@
       "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
+      "id": "rel:a3067144d4c06820",
+      "source": "component:identity-access-controls",
+      "target": "table:webauthn_credentials",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
       "id": "rel:a30ddaaf47a4ce71",
       "source": "component:api-guards",
       "target": "boundary:control-api",
@@ -39848,6 +40384,20 @@
       "id": "rel:a3c9ad6d6075624d",
       "source": "component:release-staging",
       "target": "troubleshooting:missing-release-tag",
+      "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:a3d8af746af92e51",
+      "source": "component:api-domain-surfaces",
+      "target": "troubleshooting:rules-policy-readiness-failed",
       "type": "recovers_with"
     },
     {
@@ -40377,7 +40927,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:a674a975acb845f2",
@@ -40786,6 +41338,20 @@
       "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
+      "id": "rel:a8ce92daf97cb135",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_runtime_state",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
       "id": "rel:a8db7157d716db69",
       "source": "component:github-repository",
       "target": "threat-model:external-release",
@@ -41027,6 +41593,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:aaa7974cd78acbb7",
+      "source": "component:identity-access-controls",
+      "target": "table:auth_session_assurance",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_identity_rules_authorization.py"
       ],
       "id": "rel:aaadd6b6e4425470",
@@ -41154,7 +41734,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:ab3b87d4590f0cc9",
@@ -41806,6 +42388,20 @@
       "source": "domain:devices",
       "target": "ui:litedevices",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:af04222e672d910b",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_revisions",
+      "type": "depends_on"
     },
     {
       "derivation": {
@@ -44970,6 +45566,24 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:c46221e7d05f5821",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/registration/options",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:c46e6ce01f93a42a",
@@ -46836,6 +47450,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:cfec5a79192d43fc",
+      "source": "component:identity-access-controls",
+      "target": "table:enterprise_configuration",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:cffc100157635694",
@@ -48208,6 +48836,20 @@
       "source": "journey:enterprise-identity",
       "target": "component:lite-api",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:d89c565944d51ed6",
+      "source": "component:identity-access-controls",
+      "target": "troubleshooting:enterprise-membership-protected",
+      "type": "recovers_with"
     },
     {
       "derivation": {
@@ -50106,7 +50748,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:e376d9c731dae931",
@@ -50739,6 +51383,25 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:e69a869a079c05cd",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/activations",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:e6affeefa2fccd14",
@@ -50815,6 +51478,20 @@
       "source": "domain:system",
       "target": "api:get:/api/lite/system/supervisor",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e7befc51376e60a9",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -51141,6 +51818,24 @@
       "source": "reason:policy_recovery_unproved",
       "target": "test:tests/backend/test_lite_policy_uncertain_resolution.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:e983b98c44769ea3",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -51597,6 +52292,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:ec73bf9a0811b099",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_continuation_events",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_f9_etag_contract.py"
       ],
       "id": "rel:ec8e9a98915a6ba5",
@@ -51631,6 +52340,20 @@
       "source": "component:lite-api",
       "target": "test:tests/docs/mkdocs.spec.ts",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:ecb2be21858ac163",
+      "source": "component:api-guards",
+      "target": "component:identity-access-controls",
+      "type": "depends_on"
     },
     {
       "derivation": {
@@ -51752,6 +52475,24 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:ed7caa6297878c4c",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/step-up/options",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
       ],
       "id": "rel:ed9341324734f6de",
@@ -51772,6 +52513,20 @@
       "source": "component:api-domain-surfaces",
       "target": "api:get:/api/lite/release",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:edb2f7166735286b",
+      "source": "component:identity-access-controls",
+      "target": "component:sqlite",
+      "type": "depends_on"
     },
     {
       "derivation": {
@@ -52543,6 +53298,24 @@
       "source": "reason:protected_server_host",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:f1fe363326415654",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -53370,6 +54143,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:f6e6c7ef2332b29b",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_approvals",
+      "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_database_restore_reconciliation.py"
       ],
       "id": "rel:f70291a979e209ce",
@@ -53987,7 +54774,9 @@
       },
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:fa1b7c293b1f9805",

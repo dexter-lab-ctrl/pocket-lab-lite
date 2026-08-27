@@ -85,6 +85,10 @@
       ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "domain:identity",
           "type": "owns"
         }
@@ -312,6 +316,10 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/analysis": [
+        {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
         {
           "source": "ui:literulesenterprise",
           "type": "calls"
@@ -1047,17 +1055,29 @@
       ],
       "api:post:/api/lite/enterprise/rules/activations": [
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve": [
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
+        {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
         {
           "source": "ui:literulesenterprise",
           "type": "calls"
@@ -1102,6 +1122,10 @@
         }
       ],
       "api:post:/api/lite/enterprise/rules/rollbacks": [
+        {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -1243,6 +1267,10 @@
       ],
       "api:post:/api/lite/identity/owner-claim/passkey/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -1252,6 +1280,10 @@
         }
       ],
       "api:post:/api/lite/identity/owner-claim/passkey/verify": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -1263,6 +1295,10 @@
       ],
       "api:post:/api/lite/identity/passkeys/login/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -1272,6 +1308,10 @@
         }
       ],
       "api:post:/api/lite/identity/passkeys/login/verify": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -1283,6 +1323,10 @@
       ],
       "api:post:/api/lite/identity/passkeys/registration/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -1292,6 +1336,10 @@
         }
       ],
       "api:post:/api/lite/identity/passkeys/registration/verify": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -1375,6 +1423,10 @@
       ],
       "api:post:/api/lite/identity/step-up/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -1389,6 +1441,10 @@
       ],
       "api:post:/api/lite/identity/step-up/verify": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -1399,6 +1455,10 @@
         {
           "source": "domain:identity",
           "type": "owns"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "uses"
         }
       ],
       "api:post:/api/lite/policy/apply": [
@@ -1653,6 +1713,10 @@
       ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -1704,6 +1768,10 @@
         },
         {
           "source": "component:app-catalog",
+          "type": "protected_by"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "protected_by"
         },
         {
@@ -2221,6 +2289,12 @@
           "type": "depends_on"
         }
       ],
+      "component:identity-access-controls": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        }
+      ],
       "component:invite-state": [
         {
           "source": "component:api-guards",
@@ -2650,6 +2724,10 @@
         },
         {
           "source": "component:device-state",
+          "type": "depends_on"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "depends_on"
         },
         {
@@ -5881,6 +5959,14 @@
       ],
       "table:auth_session_assurance": [
         {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
@@ -6205,11 +6291,19 @@
       ],
       "table:enterprise_configuration": [
         {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:enterprise_memberships": [
+        {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -6238,6 +6332,10 @@
       "table:identity_audit_events": [
         {
           "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "depends_on"
         },
         {
@@ -6307,11 +6405,19 @@
       ],
       "table:policy_approvals": [
         {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:policy_continuation_events": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -6335,11 +6441,19 @@
       ],
       "table:policy_recovery_resolutions": [
         {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:policy_revisions": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -6347,11 +6461,19 @@
       ],
       "table:policy_runtime_state": [
         {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:policy_temporary_exceptions": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -6672,6 +6794,10 @@
         }
       ],
       "table:webauthn_credentials": [
+        {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -9615,6 +9741,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "verified_by"
+        },
+        {
           "source": "component:invite-state",
           "type": "verified_by"
         },
@@ -10109,6 +10239,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "verified_by"
+        },
+        {
           "source": "component:invite-state",
           "type": "verified_by"
         },
@@ -10407,6 +10541,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "verified_by"
+        },
+        {
           "source": "component:invite-state",
           "type": "verified_by"
         },
@@ -10544,6 +10682,10 @@
         },
         {
           "source": "domain:documentation",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
           "type": "verified_by"
         },
         {
@@ -10716,6 +10858,10 @@
         },
         {
           "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "verified_by"
         },
         {
@@ -13139,6 +13285,10 @@
           "type": "protected_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "protected_by"
+        },
+        {
           "source": "component:lite-api",
           "type": "protected_by"
         },
@@ -13437,6 +13587,26 @@
           "type": "recovers_with"
         }
       ],
+      "troubleshooting:enterprise-membership-protected": [
+        {
+          "source": "component:api-guards",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "recovers_with"
+        }
+      ],
+      "troubleshooting:identity-passkey-or-step-up-refused": [
+        {
+          "source": "component:api-guards",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "recovers_with"
+        }
+      ],
       "troubleshooting:missing-release-tag": [
         {
           "source": "component:github-repository",
@@ -13544,6 +13714,26 @@
         },
         {
           "source": "component:restore-preview",
+          "type": "recovers_with"
+        }
+      ],
+      "troubleshooting:rules-approval-or-exception-refused": [
+        {
+          "source": "component:identity-access-controls",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:opa-policy-engine",
+          "type": "recovers_with"
+        }
+      ],
+      "troubleshooting:rules-policy-readiness-failed": [
+        {
+          "source": "component:api-domain-surfaces",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:opa-policy-engine",
           "type": "recovers_with"
         }
       ],
@@ -15981,6 +16171,10 @@
           "type": "protected_by"
         },
         {
+          "target": "troubleshooting:rules-policy-readiness-failed",
+          "type": "recovers_with"
+        },
+        {
           "target": "api:get:/api/lite/catalog",
           "type": "uses"
         },
@@ -16023,11 +16217,19 @@
           "type": "affected_by"
         },
         {
+          "target": "component:identity-access-controls",
+          "type": "depends_on"
+        },
+        {
           "target": "component:invite-state",
           "type": "depends_on"
         },
         {
           "target": "component:node-agent",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:auth_session_assurance",
           "type": "depends_on"
         },
         {
@@ -16073,6 +16275,14 @@
         {
           "target": "subject:pocketlab.events.fleet.invite_created",
           "type": "publishes"
+        },
+        {
+          "target": "troubleshooting:enterprise-membership-protected",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:identity-passkey-or-step-up-refused",
+          "type": "recovers_with"
         },
         {
           "target": "subject:pocketlab.events.fleet.bootstrap_blocked",
@@ -17177,6 +17387,72 @@
           "type": "verified_by"
         }
       ],
+      "component:identity-access-controls": [
+        {
+          "target": "component:sqlite",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:auth_session_assurance",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:enterprise_configuration",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:enterprise_memberships",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:identity_audit_events",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:webauthn_credentials",
+          "type": "depends_on"
+        },
+        {
+          "target": "boundary:control-api",
+          "type": "protected_by"
+        },
+        {
+          "target": "threat-model:control-api",
+          "type": "protected_by"
+        },
+        {
+          "target": "troubleshooting:enterprise-membership-protected",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:identity-passkey-or-step-up-refused",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:rules-approval-or-exception-refused",
+          "type": "recovers_with"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/verify",
+          "type": "uses"
+        },
+        {
+          "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        }
+      ],
       "component:invite-state": [
         {
           "target": "adr:adr-backend-generated-bootstrap",
@@ -17723,7 +17999,31 @@
           "type": "depends_on"
         },
         {
+          "target": "table:policy_approvals",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_continuation_events",
+          "type": "depends_on"
+        },
+        {
           "target": "table:policy_decisions",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_recovery_resolutions",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_revisions",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_runtime_state",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_temporary_exceptions",
           "type": "depends_on"
         },
         {
@@ -17733,6 +18033,14 @@
         {
           "target": "threat-model:control-api",
           "type": "protected_by"
+        },
+        {
+          "target": "troubleshooting:rules-approval-or-exception-refused",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:rules-policy-readiness-failed",
+          "type": "recovers_with"
         },
         {
           "target": "api:get:/api/lite/policy",
@@ -20597,6 +20905,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -22529,11 +22841,39 @@
       ],
       "journey:change-password": [
         {
+          "target": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/identity/login",
           "type": "calls"
         },
         {
           "target": "api:post:/api/lite/identity/logout",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/verify",
           "type": "calls"
         },
         {
@@ -22550,6 +22890,18 @@
         },
         {
           "target": "api:post:/api/lite/identity/setup",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "calls"
         },
         {
@@ -23111,6 +23463,10 @@
       ],
       "journey:rules-authorization": [
         {
+          "target": "api:get:/api/lite/enterprise/rules/analysis",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/rules/approvals",
           "type": "calls"
         },
@@ -23131,11 +23487,27 @@
           "type": "calls"
         },
         {
+          "target": "api:post:/api/lite/enterprise/rules/activations",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/enterprise/rules/exceptions",
           "type": "calls"
         },
         {
           "target": "api:post:/api/lite/enterprise/rules/revisions",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/rollbacks",
           "type": "calls"
         },
         {
@@ -26629,6 +27001,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
+    "source_fingerprint": "4406f0ebcd546f6d2bf98cc6235ac3e9f8f7ee1506f055af3170ad64c6162114"
   }
 }

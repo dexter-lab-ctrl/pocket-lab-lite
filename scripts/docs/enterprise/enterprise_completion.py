@@ -767,7 +767,16 @@ def configuration_intelligence(config:list[dict[str,Any]])->list[dict[str,Any]]:
 
 def api_ui_traces(root:Path)->list[dict[str,Any]]:
     openapi=read_json(root/"contracts/generated/lite-openapi.json",{}) or {}; asyncapi=read_json(root/"contracts/generated/lite-asyncapi.json",{}) or {}; trace=read_json(root/"contracts/generated/knowledge/traceability.json",{}) or {}; trace_items=trace.get("items",[]) if isinstance(trace.get("items"),list) else []
-    actions={"Add Device":["invite","bootstrap"],"Restart Agent":["restart"],"Install App":["/apps/","install"],"Open App":["catalog","/apps/"],"Run Security Check":["security/check"],"Back Up":["recovery/backup"],"Preview Restore":["restore/preview","preview"],"Restore":["restore"],"Remove Old Device":["remove","retire"]}
+    actions={
+        "Add Device":["invite","bootstrap"], "Restart Agent":["restart"], "Install App":["/apps/","install"],
+        "Open App":["catalog","/apps/"], "Run Security Check":["security/check"], "Back Up":["recovery/backup"],
+        "Preview Restore":["restore/preview","preview"], "Restore":["restore"], "Remove Old Device":["remove","retire"],
+        "Passkey registration":["identity/passkeys/registration"], "Passkey sign-in":["identity/passkeys/login"],
+        "Passkey step-up":["identity/step-up"], "Passkey rename or revoke":["identity/passkeys/{credential_id}"],
+        "Enterprise membership":["enterprise/identity"], "Rules revision lifecycle":["enterprise/rules/revisions","enterprise/rules/activations","enterprise/rules/rollbacks"],
+        "Rules analysis and simulation":["enterprise/rules/analysis","enterprise/rules/simulations"],
+        "Rules approval review":["enterprise/rules/approvals"], "Rules temporary exception":["enterprise/rules/exceptions"],
+    }
     source_files=list((root/"pocket-lab-final-structure/runtime/api_fastapi").rglob("*.py")); source_text={p:p.read_text(encoding="utf-8",errors="ignore") for p in source_files}
     frontend_files=list((root/"src").rglob("*.js"))+list((root/"src").rglob("*.jsx")); frontend_text={p:p.read_text(encoding="utf-8",errors="ignore") for p in frontend_files}
     subjects=list((asyncapi.get("channels") or {}).keys())
@@ -795,7 +804,11 @@ def api_ui_traces(root:Path)->list[dict[str,Any]]:
         event_bindings=ev or ["no exact channel binding source-derived for this action"]
         owner="FastAPI/Caddy read path" if action == "Open App" else "FastAPI → NATS/JetStream → worker"
         if action in {"Add Device","Restart Agent","Remove Old Device"}: owner="FastAPI → NATS/JetStream → node agent/supervisor"
-        rows.append({"action":action,"ui_component":frontend,"frontend":frontend,"api":endpoints or [{"method":"unvalidated","path":"unvalidated","operation_id":None}],"fastapi_handler":handler,"backend_handler":handler,"nats_or_event":event_bindings,"events":event_bindings,"worker_agent_supervisor":"worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific","execution_owner":owner,"result_event":"canonical lifecycle/event projection when declared","frontend_projection":"FastAPI/TanStack safe read projection","error_reason_codes":"contracts/generated/reason-codes.json","related_reason_codes":"contracts/generated/reason-codes.json","tests":tests or ["tests/backend/test_lite_api.py","tests/parity/test_api_contract_fences.py"],"evidence":"backend-owned sanitized evidence/projection","failure_states":["request rejected or backend unavailable","command undeliverable/timeout where asynchronous","backend result failed/blocked where operation is guarded"],"source_files":sorted(set(frontend+handler)),"implementation_status":"implemented"})
+        control_plane_only = action in {"Passkey registration", "Passkey sign-in", "Passkey step-up", "Passkey rename or revoke", "Enterprise membership", "Rules revision lifecycle", "Rules analysis and simulation", "Rules approval review", "Rules temporary exception"}
+        if control_plane_only:
+            owner = "FastAPI control-plane service; no worker, agent, supervisor, or NATS execution relationship is inferred"
+            event_bindings = ["no exact event channel relationship is emitted for this control-plane operation"]
+        rows.append({"action":action,"ui_component":frontend,"frontend":frontend,"api":endpoints or [{"method":"unvalidated","path":"unvalidated","operation_id":None}],"fastapi_handler":handler,"backend_handler":handler,"nats_or_event":event_bindings,"events":event_bindings,"worker_agent_supervisor":"FastAPI control-plane service" if control_plane_only else "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific","execution_owner":owner,"result_event":"backend-owned durable state or sanitized API projection" if control_plane_only else "canonical lifecycle/event projection when declared","frontend_projection":"FastAPI/TanStack safe read projection","error_reason_codes":"contracts/generated/reason-codes.json","related_reason_codes":"contracts/generated/reason-codes.json","tests":tests or ["tests/backend/test_lite_api.py","tests/parity/test_api_contract_fences.py"],"evidence":"backend-owned durable control-plane state and sanitized API projection" if control_plane_only else "backend-owned sanitized evidence/projection","failure_states":["request rejected or backend unavailable","authorization or invariant guard refuses the request"] if control_plane_only else ["request rejected or backend unavailable","command undeliverable/timeout where asynchronous","backend result failed/blocked where operation is guarded"],"source_files":sorted(set(frontend+handler)),"implementation_status":"implemented"})
     return rows
 
 

@@ -79,9 +79,17 @@ Evaluates only registered protected actions after FastAPI hard invariants and be
 ## Depends on / uses
 
 - depends_on: `Fleet, Apps, Security, Recovery, and Release APIs`
+- depends_on: `policy_approvals`
+- depends_on: `policy_continuation_events`
 - depends_on: `policy_decisions`
+- depends_on: `policy_recovery_resolutions`
+- depends_on: `policy_revisions`
+- depends_on: `policy_runtime_state`
+- depends_on: `policy_temporary_exceptions`
 - protected_by: `Control API boundary`
 - protected_by: `Control API boundary`
+- recovers_with: `Rules approval, continuation, or exception refused`
+- recovers_with: `Rules policy readiness failed`
 - uses: `GET /api/lite/policy`
 - verified_by: `tests/backend/test_lite_identity_passkeys_rules_p1.py`
 - verified_by: `tests/backend/test_lite_identity_rules_authorization.py`
@@ -109,5 +117,7 @@ No canonical component introduction/fix release is recorded, so release history 
 
 - `architecture/metadata/pocket-lab-architecture.json`
 - `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py`
 - `pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py`
 - `security/policies/opa/pocketlab/pocketlab.rego`

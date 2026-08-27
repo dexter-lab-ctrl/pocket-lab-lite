@@ -113,6 +113,8 @@ HUBS: dict[str, dict[str, Any]] = {
             ("Backup & Restore", "generated/production/recovery.md", "Back up, verify, preview restore, and recover with confirmation."),
             ("Identity", "generated/production/identity.md", "Identity and password-change behavior currently exposed by Lite."),
             ("Rules", "generated/production/rules.md", "Current Rules surface and its documented limitations."),
+            ("Identity journey", "generated/enterprise/journeys/identity.md", "Source-derived identity, passkey, session, and enterprise-membership relationships."),
+            ("Rules journey", "generated/enterprise/journeys/rules.md", "Source-derived Rules admission, lifecycle, analysis, approval, continuation, and exception relationships."),
             ("Common journeys", "generated/enterprise/journeys/devices.md", "Start with a feature journey and follow canonical technical truth."),
         ],
         "search_terms": ["add device", "restart agent", "app install", "security scan", "backup restore"],
@@ -294,7 +296,15 @@ JOURNEYS: dict[str, dict[str, Any]] = {
         "audience": "user",
         "guide": "generated/production/identity.md",
         "architecture": "generated/production/architecture/components/api-guards.md",
-        "journey_ids": ["journey:change-password"],
+        "journey_ids": ["journey:change-password", "journey:enterprise-identity"],
+    },
+    "rules": {
+        "title": "Rules Feature Journey",
+        "domain": "rules",
+        "audience": "user",
+        "guide": "generated/production/rules.md",
+        "architecture": "generated/production/architecture/components/opa-policy-engine.md",
+        "journey_ids": ["journey:rules-authorization"],
     },
     "release": {
         "title": "Release Feature Journey",
@@ -330,6 +340,8 @@ SEARCH_ALIASES = {
     "event nats": ["nats event", "jetstream event", "event encyclopedia"],
     "why do we believe this": ["evidence", "evidence coverage", "provenance", "confidence"],
     "documentation generator": ["docs generator", "documentation platform", "generation lifecycle"],
+    "identity passkey": ["passkey", "webauthn", "step-up", "enterprise membership", "final owner"],
+    "rules authorization": ["opa", "policy revision", "approval", "continuation", "temporary exception"],
 }
 
 SEARCH_DESTINATIONS = {
@@ -344,6 +356,8 @@ SEARCH_DESTINATIONS = {
     "event nats": ["generated/enterprise/engineering/events.md", "generated/development/knowledge/events-nats.md"],
     "why do we believe this": ["generated/enterprise/hubs/security-assurance.md", "generated/production/intelligence/why-we-believe-this.md"],
     "documentation generator": ["generated/enterprise/documentation-platform/generation-pipeline.md", "generated/enterprise/documentation-platform/architecture.md"],
+    "identity passkey": ["generated/enterprise/journeys/identity.md", "generated/production/identity.md"],
+    "rules authorization": ["generated/enterprise/journeys/rules.md", "generated/production/rules.md", "generated/enterprise/reference/api-ui-trace.md"],
 }
 
 
