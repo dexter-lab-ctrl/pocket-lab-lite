@@ -206,6 +206,161 @@
         "Repudiation",
         "Tampering"
       ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "human or browser-session impersonation",
+        "privileged mutation without intended purpose-bound assurance",
+        "unauthorized passkey or step-up assurance use"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "id": "AP-09",
+      "name": "Human identity and WebAuthn assurance misuse",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Spoofing",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "audit attribution failure",
+        "loss of final-Owner recovery authority",
+        "unauthorized enterprise role elevation"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+      ],
+      "id": "AP-10",
+      "name": "Enterprise membership and final-Owner privilege escalation",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Repudiation",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "control-plane availability impact",
+        "policy decision ambiguity",
+        "protected mutation proceeds without valid policy admission"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "id": "AP-11",
+      "name": "OPA authorization decision integrity failure",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "governance availability locked in uncertain state",
+        "loss of known-good recovery integrity",
+        "wrong policy revision observed or activated"
+      ],
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "id": "AP-12",
+      "name": "Policy revision activation and recovery integrity",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Denial of Service",
+        "Repudiation",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "approved continuation replay or double-use",
+        "exact action, target, or revision binding bypass",
+        "requester self-approval or ineligible review"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "id": "AP-13",
+      "name": "Approval and continuation integrity",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ]
+    },
+    {
+      "confirmed_exploit": false,
+      "consequences": [
+        "exception widened beyond approved scope",
+        "expired or revoked exception reused",
+        "unauthorized catalog install admission"
+      ],
+      "controls": [
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "id": "AP-14",
+      "name": "Temporary-exception scope and expiry bypass",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "review_status": "human-review-required",
+      "stride": [
+        "Elevation of Privilege",
+        "Tampering"
+      ]
     }
   ],
   "controls": [
@@ -268,6 +423,26 @@
       ],
       "x": 255,
       "y": 405
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+      "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "short_label": "FINAL OWNER",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 445,
+      "y": 475
     },
     {
       "boundaries": [
@@ -355,6 +530,27 @@
     },
     {
       "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+      "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "short_label": "APPROVAL",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 625,
+      "y": 475
+    },
+    {
+      "boundaries": [
         "control-api",
         "messaging-execution"
       ],
@@ -375,6 +571,27 @@
     },
     {
       "boundaries": [
+        "control-api",
+        "durable-state",
+        "server-host"
+      ],
+      "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+      "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "short_label": "POLICY REV",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 535,
+      "y": 475
+    },
+    {
+      "boundaries": [
         "application-container",
         "external-release"
       ],
@@ -392,6 +609,48 @@
       ],
       "x": 285,
       "y": 180
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+      "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "short_label": "EXCEPTION",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 715,
+      "y": 475
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+      "id": "CTRL-WEBAUTHN-ASSURANCE",
+      "short_label": "WEBAUTHN",
+      "status": "mitigation-source-derived",
+      "stride": [
+        "Denial of Service",
+        "Elevation of Privilege",
+        "Information Disclosure",
+        "Repudiation",
+        "Spoofing",
+        "Tampering"
+      ],
+      "x": 355,
+      "y": 475
     }
   ],
   "evidence_lineage": [
@@ -718,7 +977,10 @@
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
         "CTRL-BROWSER-SHELL",
-        "CTRL-HUMAN-SESSION-CSRF"
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "icon": "react.svg",
       "id": "browser",
@@ -747,7 +1009,8 @@
       "controls": [
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-POLICY-REVISION-LIFECYCLE"
       ],
       "icon": "caddy.svg",
       "id": "caddy",
@@ -774,9 +1037,14 @@
       ],
       "boundary": "durable-state",
       "controls": [
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXPLICIT-PROMOTION",
-        "CTRL-HUMAN-SESSION-CSRF"
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "icon": "docs.svg",
       "id": "documentation",
@@ -833,8 +1101,13 @@
       "boundary": "control-api",
       "controls": [
         "CTRL-API-CONTROL",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-HUMAN-SESSION-CSRF",
-        "CTRL-OPA-FAIL-CLOSED"
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "icon": "fastapi.svg",
       "id": "lite-api",
@@ -995,9 +1268,14 @@
       ],
       "boundary": "durable-state",
       "controls": [
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXPLICIT-PROMOTION",
-        "CTRL-HUMAN-SESSION-CSRF"
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "icon": "evidence.svg",
       "id": "promoted-evidence",
@@ -1024,9 +1302,14 @@
       ],
       "boundary": "durable-state",
       "controls": [
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXPLICIT-PROMOTION",
-        "CTRL-HUMAN-SESSION-CSRF"
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "icon": "recovery.svg",
       "id": "recovery-state",
@@ -1115,7 +1398,8 @@
       "controls": [
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
-        "CTRL-EXPLICIT-PROMOTION"
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-POLICY-REVISION-LIFECYCLE"
       ],
       "icon": "terminal.svg",
       "id": "server-host",
@@ -1142,9 +1426,14 @@
       ],
       "boundary": "durable-state",
       "controls": [
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXPLICIT-PROMOTION",
-        "CTRL-HUMAN-SESSION-CSRF"
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "icon": "sqlite.svg",
       "id": "sqlite",

@@ -13,7 +13,7 @@ confidence: generated
 
 <div class="pl-page-lede pl-threat-boundary-lede"><strong>Control API boundary in the saved security model.</strong><p>This page keeps assets, actors, flows, threats, controls and evidence together so the boundary can be reviewed without leaving the canonical Threat Model context.</p></div>
 
-<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Canonical trust boundary</strong></article><article><span>Assets</span><strong>2</strong></article><article><span>Controls</span><strong>3</strong></article><article><span>Review</span><strong>human-review-required</strong></article></div>
+<div class="pl-threat-boundary-summary" aria-label="Threat Model detail summary"><article><span>Type</span><strong>Canonical trust boundary</strong></article><article><span>Assets</span><strong>2</strong></article><article><span>Controls</span><strong>8</strong></article><article><span>Review</span><strong>human-review-required</strong></article></div>
 
 ## Boundary
 
@@ -65,6 +65,11 @@ confidence: generated
 - `CTRL-API-CONTROL`
 - `CTRL-HUMAN-SESSION-CSRF`
 - `CTRL-OPA-FAIL-CLOSED`
+- `CTRL-WEBAUTHN-ASSURANCE`
+- `CTRL-ENTERPRISE-ROLE-FINAL-OWNER`
+- `CTRL-POLICY-REVISION-LIFECYCLE`
+- `CTRL-INDEPENDENT-APPROVAL-CONTINUATION`
+- `CTRL-TEMPORARY-EXCEPTION-SCOPE`
 
 ## Runtime evidence & provenance
 

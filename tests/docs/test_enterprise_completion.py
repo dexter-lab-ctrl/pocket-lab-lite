@@ -160,7 +160,21 @@ def test_threat_model_is_canonical_stride_and_production_posture_is_promoted_not
         "evidence-stale", "not-applicable",
     }
     assert threat["framework"]["primary"] == "STRIDE"
-    assert len(threat["attack_paths"]) == 8
+
+    attack_paths = {path["id"]: path for path in threat["attack_paths"]}
+    assert set(attack_paths) == {f"AP-{index:02d}" for index in range(1, 15)}
+
+    # AP-01..AP-08 are the original platform threat families.
+    # AP-09..AP-14 add the bounded Identity + Rules D3 model.
+    assert {
+        attack_paths[path_id]["status"]
+        for path_id in (f"AP-{index:02d}" for index in range(9, 15))
+    } == {"modeled"}
+    assert {
+        attack_paths[path_id]["review_status"]
+        for path_id in (f"AP-{index:02d}" for index in range(9, 15))
+    } == {"human-review-required"}
+
     assert all(path["confirmed_exploit"] is False for path in threat["attack_paths"])
     assert all(path["controls"] and path["boundaries"] and path["consequences"] for path in threat["attack_paths"])
     assert all(control["effect"] == "mitigates" and control["prevention_claim"] is False for control in threat["controls"])

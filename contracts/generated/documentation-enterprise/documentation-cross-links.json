@@ -1697,6 +1697,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:apps:control:CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:apps:control:CTRL-EXECUTION-OWNERS",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1719,10 +1730,54 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:apps:control:CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:apps:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/apps",
       "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:control:CTRL-POLICY-REVISION-LIFECYCLE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:control:CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:control:CTRL-WEBAUTHN-ASSURANCE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
     },
     {
@@ -4877,6 +4932,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:recovery:control:CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:recovery:control:CTRL-EVIDENCE-SANITIZE",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/recovery",
@@ -4921,10 +4987,54 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:recovery:control:CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:recovery:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:control:CTRL-POLICY-REVISION-LIFECYCLE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:control:CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:control:CTRL-WEBAUTHN-ASSURANCE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
     },
     {
@@ -5957,6 +6067,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:release:control:CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:release:control:CTRL-EVIDENCE-SANITIZE",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/release",
@@ -6001,6 +6122,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:release:control:CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:release:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/release",
@@ -6012,10 +6144,43 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:release:control:CTRL-POLICY-REVISION-LIFECYCLE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:release:control:CTRL-SUPPLY-CHAIN",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/release",
       "target": "CTRL-SUPPLY-CHAIN",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:release:control:CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:release:control:CTRL-WEBAUTHN-ASSURANCE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
     },
     {
@@ -6958,6 +7123,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:remote-access:control:CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:remote-access:control:CTRL-EVIDENCE-SANITIZE",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/remote-access",
@@ -7002,10 +7178,54 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:remote-access:control:CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:remote-access:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/remote-access",
       "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:control:CTRL-POLICY-REVISION-LIFECYCLE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:control:CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:control:CTRL-WEBAUTHN-ASSURANCE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
     },
     {
@@ -7947,6 +8167,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:rules:control:CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:rules:control:CTRL-HUMAN-SESSION-CSRF",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/rules",
@@ -7958,10 +8189,54 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:rules:control:CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:rules:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/rules",
       "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:rules:control:CTRL-POLICY-REVISION-LIFECYCLE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:rules:control:CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:rules:control:CTRL-WEBAUTHN-ASSURANCE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
     },
     {
@@ -9198,6 +9473,17 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:security:control:CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:security:control:CTRL-EVIDENCE-SANITIZE",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/security",
@@ -9231,10 +9517,54 @@
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:security:control:CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:security:control:CTRL-OPA-FAIL-CLOSED",
       "relation_type": "protected-by",
       "source": "page:generated/enterprise/journeys/security",
       "target": "CTRL-OPA-FAIL-CLOSED",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:control:CTRL-POLICY-REVISION-LIFECYCLE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:control:CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "target_type": "control"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/security-controls.json",
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:control:CTRL-WEBAUTHN-ASSURANCE",
+      "relation_type": "protected-by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
     },
     {

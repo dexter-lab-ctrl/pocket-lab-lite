@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="556" viewBox="0 0 1080 556" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="826" viewBox="0 0 1080 826" role="img">
 <style>.t{font-family:system-ui,sans-serif;fill:#101828}.h{font-size:17px;font-weight:700}.s{font-size:12px}.b{fill:#f8fafc;stroke:#98a2b3}.e{stroke:#667085;stroke-width:1.5}</style>
 <text class="t h" x="24" y="30">Threat/control coverage</text>
 <rect class="b" x="24" y="50" width="420" height="36" rx="7"/>
@@ -56,4 +56,34 @@
 <polygon points="610,500 600,494 600,506" fill="#667085"/>
 <rect class="b" x="620" y="482" width="430" height="36" rx="7"/>
 <text class="t s" x="632" y="505">external-release,application-container → control-observed</text>
+<rect class="b" x="24" y="536" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="559">CTRL-WEBAUTHN-ASSURANCE</text>
+<line class="e" x1="444" y1="554" x2="610" y2="554"/>
+<polygon points="610,554 600,548 600,560" fill="#667085"/>
+<rect class="b" x="620" y="536" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="559">browser,control-api,durable-state → mitigation-source-derived</text>
+<rect class="b" x="24" y="590" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="613">CTRL-ENTERPRISE-ROLE-FINAL-OWNER</text>
+<line class="e" x1="444" y1="608" x2="610" y2="608"/>
+<polygon points="610,608 600,602 600,614" fill="#667085"/>
+<rect class="b" x="620" y="590" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="613">control-api,durable-state → mitigation-source-derived</text>
+<rect class="b" x="24" y="644" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="667">CTRL-POLICY-REVISION-LIFECYCLE</text>
+<line class="e" x1="444" y1="662" x2="610" y2="662"/>
+<polygon points="610,662 600,656 600,668" fill="#667085"/>
+<rect class="b" x="620" y="644" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="667">control-api,durable-state,server-host → mitigation-source-derived</text>
+<rect class="b" x="24" y="698" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="721">CTRL-INDEPENDENT-APPROVAL-CONTINUATION</text>
+<line class="e" x1="444" y1="716" x2="610" y2="716"/>
+<polygon points="610,716 600,710 600,722" fill="#667085"/>
+<rect class="b" x="620" y="698" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="721">browser,control-api,durable-state → mitigation-source-derived</text>
+<rect class="b" x="24" y="752" width="420" height="36" rx="7"/>
+<text class="t s" x="36" y="775">CTRL-TEMPORARY-EXCEPTION-SCOPE</text>
+<line class="e" x1="444" y1="770" x2="610" y2="770"/>
+<polygon points="610,770 600,764 600,776" fill="#667085"/>
+<rect class="b" x="620" y="752" width="430" height="36" rx="7"/>
+<text class="t s" x="632" y="775">browser,control-api,durable-state → mitigation-source-derived</text>
 </svg>

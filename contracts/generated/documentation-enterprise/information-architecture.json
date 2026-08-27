@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 866,
+  "cross_link_count": 896,
   "feature_journeys": [
     {
       "api_entities": [
@@ -563,9 +563,14 @@
       "security_controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EXECUTION-OWNERS",
         "CTRL-HUMAN-SESSION-CSRF",
-        "CTRL-OPA-FAIL-CLOSED"
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "slug": "apps",
       "source_journeys": [
@@ -2307,11 +2312,16 @@
       "security_controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
         "CTRL-EXPLICIT-PROMOTION",
         "CTRL-HUMAN-SESSION-CSRF",
-        "CTRL-OPA-FAIL-CLOSED"
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "slug": "recovery",
       "source_journeys": [
@@ -2879,12 +2889,17 @@
       "security_controls": [
         "CTRL-API-CONTROL",
         "CTRL-BROWSER-NATS",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
         "CTRL-EXPLICIT-PROMOTION",
         "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
         "CTRL-OPA-FAIL-CLOSED",
-        "CTRL-SUPPLY-CHAIN"
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "slug": "release",
       "source_journeys": [
@@ -3383,11 +3398,16 @@
       "id": "feature-journey:remote-access",
       "security_controls": [
         "CTRL-API-CONTROL",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXECUTION-OWNERS",
         "CTRL-EXPLICIT-PROMOTION",
         "CTRL-HUMAN-SESSION-CSRF",
-        "CTRL-OPA-FAIL-CLOSED"
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "slug": "remote-access",
       "source_journeys": [
@@ -3985,8 +4005,13 @@
       "id": "feature-journey:rules",
       "security_controls": [
         "CTRL-API-CONTROL",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-HUMAN-SESSION-CSRF",
-        "CTRL-OPA-FAIL-CLOSED"
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "slug": "rules",
       "source_journeys": [
@@ -4552,10 +4577,15 @@
       "id": "feature-journey:security",
       "security_controls": [
         "CTRL-API-CONTROL",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
         "CTRL-EVIDENCE-SANITIZE",
         "CTRL-EXPLICIT-PROMOTION",
         "CTRL-HUMAN-SESSION-CSRF",
-        "CTRL-OPA-FAIL-CLOSED"
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-WEBAUTHN-ASSURANCE"
       ],
       "slug": "security",
       "source_journeys": [
@@ -15913,7 +15943,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9d7990359c3501f471dc15f5858b0f8b6c9bb608fba8cef7171c282000564306",
+  "source_fingerprint": "f84774701c3138d5d1dd397cc172516fbb5527e8e52e97ab34de6bb0aae373d2",
   "top_level": [
     "start-here",
     "use",

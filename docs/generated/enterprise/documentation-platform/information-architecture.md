@@ -18,7 +18,7 @@ confidence: generated
 - Pages: **422**
 - Top-level hubs: **9**
 - Feature Journeys: **8**
-- Cross-links: **866**
+- Cross-links: **896**
 
 Every canonical page has one primary navigation owner. Other hubs may link contextually without duplicating the canonical destination.
 

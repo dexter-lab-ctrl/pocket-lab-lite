@@ -106,6 +106,84 @@
       "view": "attack-surface"
     },
     {
+      "catalog_id": "AP-09",
+      "kind": "attack-path",
+      "meta": "STRIDE: Spoofing · Tampering · Elevation of Privilege; controls: CTRL-HUMAN-SESSION-CSRF, CTRL-WEBAUTHN-ASSURANCE",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Human identity and WebAuthn assurance misuse",
+      "target_id": "AP-09",
+      "title": "Attack path AP-09",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-10",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Repudiation · Elevation of Privilege; controls: CTRL-WEBAUTHN-ASSURANCE, CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Enterprise membership and final-Owner privilege escalation",
+      "target_id": "AP-10",
+      "title": "Attack path AP-10",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-11",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Elevation of Privilege · Denial of Service; controls: CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "OPA authorization decision integrity failure",
+      "target_id": "AP-11",
+      "title": "Attack path AP-11",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-12",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Repudiation · Denial of Service; controls: CTRL-POLICY-REVISION-LIFECYCLE, CTRL-OPA-FAIL-CLOSED",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Policy revision activation and recovery integrity",
+      "target_id": "AP-12",
+      "title": "Attack path AP-12",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-13",
+      "kind": "attack-path",
+      "meta": "STRIDE: Spoofing · Tampering · Repudiation · Elevation of Privilege; controls: CTRL-WEBAUTHN-ASSURANCE, CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Approval and continuation integrity",
+      "target_id": "AP-13",
+      "title": "Attack path AP-13",
+      "view": "attack-surface"
+    },
+    {
+      "catalog_id": "AP-14",
+      "kind": "attack-path",
+      "meta": "STRIDE: Tampering · Elevation of Privilege; controls: CTRL-TEMPORARY-EXCEPTION-SCOPE, CTRL-OPA-FAIL-CLOSED",
+      "source_refs": [
+        "security/threat-model-scenarios.json",
+        "contracts/security/threat-model.json"
+      ],
+      "summary": "Temporary-exception scope and expiry bypass",
+      "target_id": "AP-14",
+      "title": "Attack path AP-14",
+      "view": "attack-surface"
+    },
+    {
       "catalog_id": "boundary:application-container",
       "kind": "boundary",
       "meta": "Forbidden flows: frontend → NATS, frontend → shell, documentation generator → live runtime, raw scanner output → MkDocs",
@@ -262,6 +340,19 @@
       "view": "controls"
     },
     {
+      "catalog_id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "kind": "control",
+      "meta": "Coverage: control-api, durable-state. If it fails: enterprise membership could be elevated or the final active Owner could be removed without server-authoritative governance protection",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+      "target_id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "title": "Control CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "view": "controls"
+    },
+    {
       "catalog_id": "CTRL-EVIDENCE-SANITIZE",
       "kind": "control",
       "meta": "Coverage: durable-state, external-release, server-host. If it fails: secret-bearing or private-path evidence could enter canonical documentation or mislead security posture",
@@ -314,6 +405,19 @@
       "view": "controls"
     },
     {
+      "catalog_id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "kind": "control",
+      "meta": "Coverage: browser, control-api, durable-state. If it fails: a requester could bypass independent review, substitute action/target/revision context, or replay an already-consumed continuation",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+      "target_id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "title": "Control CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "view": "controls"
+    },
+    {
       "catalog_id": "CTRL-OPA-FAIL-CLOSED",
       "kind": "control",
       "meta": "Coverage: control-api, messaging-execution. If it fails: a protected mutation could proceed without a valid authorization decision or while policy state is unavailable or ambiguous",
@@ -327,6 +431,19 @@
       "view": "controls"
     },
     {
+      "catalog_id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "kind": "control",
+      "meta": "Coverage: control-api, durable-state, server-host. If it fails: the running policy could diverge from the intended active/known-good revision or remain ambiguous after activation/rollback uncertainty",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+      "target_id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "title": "Control CTRL-POLICY-REVISION-LIFECYCLE",
+      "view": "controls"
+    },
+    {
       "catalog_id": "CTRL-SUPPLY-CHAIN",
       "kind": "control",
       "meta": "Coverage: external-release, application-container. If it fails: unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence",
@@ -337,6 +454,32 @@
       "summary": "Pinned WSL2/CI tooling produces sanitized normalized SBOM/security evidence before docs consumption.",
       "target_id": "CTRL-SUPPLY-CHAIN",
       "title": "Control CTRL-SUPPLY-CHAIN",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "kind": "control",
+      "meta": "Coverage: browser, control-api, durable-state. If it fails: a temporary catalog-install exception could be widened, reused after expiry/revoke, or applied outside its exact human/app/device/revision scope",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+      "target_id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "title": "Control CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "view": "controls"
+    },
+    {
+      "catalog_id": "CTRL-WEBAUTHN-ASSURANCE",
+      "kind": "control",
+      "meta": "Coverage: browser, control-api, durable-state. If it fails: a human session could gain privileged assurance without the intended short-lived, origin/RP-bound WebAuthn ceremony",
+      "source_refs": [
+        "contracts/security/threat-model.json",
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "summary": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+      "target_id": "CTRL-WEBAUTHN-ASSURANCE",
+      "title": "Control CTRL-WEBAUTHN-ASSURANCE",
       "view": "controls"
     },
     {
@@ -1960,13 +2103,13 @@
     },
     {
       "description": "Entry surfaces, trust boundaries and reviewed modeled attack paths.",
-      "entry_count": 17,
+      "entry_count": 23,
       "id": "attack-surface",
       "label": "Attack Surface Atlas"
     },
     {
       "description": "Controls, coverage, threat relationships and consequences if controls fail.",
-      "entry_count": 9,
+      "entry_count": 14,
       "id": "controls",
       "label": "Control Atlas"
     },

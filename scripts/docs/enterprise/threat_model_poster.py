@@ -116,6 +116,14 @@ CONTROL_LAYOUT = {
     "CTRL-EVIDENCE-SANITIZE": (465, 745, "SANITIZE"),
     "CTRL-EXPLICIT-PROMOTION": (610, 745, "PROMOTE"),
     "CTRL-SUPPLY-CHAIN": (285, 180, "SUPPLY"),
+
+    # Identity + Rules D3 controls. These coordinates are bounded poster
+    # metadata; the responsive renderer owns final wide/stacked geometry.
+    "CTRL-WEBAUTHN-ASSURANCE": (355, 475, "WEBAUTHN"),
+    "CTRL-ENTERPRISE-ROLE-FINAL-OWNER": (445, 475, "FINAL OWNER"),
+    "CTRL-POLICY-REVISION-LIFECYCLE": (535, 475, "POLICY REV"),
+    "CTRL-INDEPENDENT-APPROVAL-CONTINUATION": (625, 475, "APPROVAL"),
+    "CTRL-TEMPORARY-EXCEPTION-SCOPE": (715, 475, "EXCEPTION"),
 }
 
 
