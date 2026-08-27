@@ -142,6 +142,34 @@ Bring review findings or failing output back to Chat for short targeted fix/rete
 
 Use Chat/GitHub deliberately for PR inspection, CI diagnosis and explicit write actions. Do not merge merely because local checks pass; CI and required evidence must agree.
 
+## Codex primary and named subagents
+
+The primary Codex thread normally runs at Terra / medium and owns the final
+candidate state. It may delegate bounded work to repository-owned named
+subagents, but delegation is selective rather than automatic.
+
+Preferred lifecycle:
+
+```text
+Work read-only investigation/design
+→ bounded engineering handoff
+→ Chat source verification + execution contract
+→ Codex Terra/medium primary
+→ 1–3 narrow Codex subagents as needed
+→ focused validation
+→ pl_final_reviewer independent candidate review
+→ optional Work independent review
+→ Chat reconciliation + GitHub qualification
+→ explicit human merge/release decision
+```
+
+Use the lowest-cost specialist that can solve the bounded problem. Keep
+write-heavy implementation serialized unless ownership/files are demonstrably
+independent. Never use the four-thread ceiling as a target.
+
+See `codex-subagent-examples.md` for the complete named-agent routing table,
+usage boundaries and practical Pocket Lab Lite prompts.
+
 ## Useful starting prompts
 
 ### Work — parallel investigation
@@ -217,6 +245,7 @@ Do not fix generated drift by excluding legitimate tracked inputs or hand-editin
 - `architecture-contract.md` — invariants that changes must preserve.
 - `agent-roles.md` — specialist role definitions.
 - `operating-workflow.md` — feature/debug/CI/maintenance workflows.
+- `codex-subagent-examples.md` — named Codex subagent routing, boundaries and prompts.
 - `validation-matrix.md` — which validation gates apply.
 - `handoff-template.md` — portable Work↔Chat/session handoff.
 - `maintenance-release.md` — recurring maintenance and release readiness.
