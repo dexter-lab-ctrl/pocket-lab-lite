@@ -85,8 +85,54 @@ def _reachable(graph: dict[str, set[str]], start: str, target: str) -> bool:
     return False
 
 
+def _merge_scenario_controls(threat: dict[str, Any], scenarios: dict[str, Any], root: Path) -> None:
+    """Merge source-owned Identity/Rules controls into the generated threat projection."""
+    boundary_rows = {row["id"]: row for row in threat.get("boundaries", [])}
+    control_rows = {row["id"]: row for row in threat.get("controls", [])}
+
+    for raw in scenarios.get("controls", []) or []:
+        row = dict(raw)
+        control_id = str(row.get("id") or "")
+        if not control_id:
+            raise ValueError("scenario control is missing an id")
+        unresolved_boundaries = [item for item in row.get("boundaries", []) if item not in boundary_rows]
+        if unresolved_boundaries:
+            raise ValueError(f"scenario control {control_id} references unknown boundaries: {unresolved_boundaries}")
+        source_paths = [
+            *list(row.get("implementation") or []),
+            *list(row.get("source_refs") or []),
+            *list(row.get("tests") or []),
+        ]
+        missing_sources = [item for item in source_paths if not (root / item).exists()]
+        if missing_sources:
+            raise ValueError(f"scenario control {control_id} has missing source proof: {missing_sources}")
+
+        existing = control_rows.get(control_id)
+        if existing is not None:
+            # Idempotent enrichment is permitted only for the same source-owned control.
+            if list(existing.get("implementation") or []) != list(row.get("implementation") or []):
+                raise ValueError(f"scenario control {control_id} collides with a different control definition")
+            continue
+
+        row["boundary"] = list(row.get("boundaries") or [])
+        row["threats_mitigated"] = list(row.get("threats") or [])
+        row["mitigation_adequacy"] = "human-review-required"
+        row.setdefault("runtime_evidence", [])
+        threat.setdefault("controls", []).append(row)
+        control_rows[control_id] = row
+        for boundary_id in row.get("boundaries", []):
+            boundary_controls = boundary_rows[boundary_id].setdefault("controls", [])
+            if control_id not in boundary_controls:
+                boundary_controls.append(control_id)
+
+    posture = threat.setdefault("production_posture", {})
+    posture["controls_verified"] = sum(1 for row in threat.get("controls", []) if row.get("status") == "control-observed")
+    posture["controls_source_derived"] = sum(1 for row in threat.get("controls", []) if row.get("status") == "mitigation-source-derived")
+
+
 def enrich(threat: dict[str, Any], root: Path) -> dict[str, Any]:
     scenarios = read_json(root / SCENARIOS, {}) or {}
+    _merge_scenario_controls(threat, scenarios, root)
     controls = {x["id"]: x for x in threat.get("controls", [])}
     boundaries = {x["id"]: x for x in threat.get("boundaries", [])}
     architecture = read_json(root / "architecture/metadata/pocket-lab-architecture.json", {}) or {}
@@ -119,7 +165,12 @@ def enrich(threat: dict[str, Any], root: Path) -> dict[str, Any]:
         "CTRL-EXECUTION-OWNERS": ["commands or recovery could execute outside worker/agent/supervisor ownership and lose delivery/recovery guarantees"],
         "CTRL-EVIDENCE-SANITIZE": ["secret-bearing or private-path evidence could enter canonical documentation or mislead security posture"],
         "CTRL-EXPLICIT-PROMOTION": ["transient/unreviewed capture could be mistaken for canonical release/runtime evidence"],
-        "CTRL-SUPPLY-CHAIN": ["unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence"]
+        "CTRL-SUPPLY-CHAIN": ["unqualified dependencies or release artifacts could enter runtime without normalized SBOM/scanner evidence"],
+        "CTRL-WEBAUTHN-ASSURANCE": ["a human session could gain privileged assurance without the intended short-lived, origin/RP-bound WebAuthn ceremony"],
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER": ["enterprise membership could be elevated or the final active Owner could be removed without server-authoritative governance protection"],
+        "CTRL-POLICY-REVISION-LIFECYCLE": ["the running policy could diverge from the intended active/known-good revision or remain ambiguous after activation/rollback uncertainty"],
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION": ["a requester could bypass independent review, substitute action/target/revision context, or replay an already-consumed continuation"],
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE": ["a temporary catalog-install exception could be widened, reused after expiry/revoke, or applied outside its exact human/app/device/revision scope"]
     }
     for control in threat.get("controls", []):
         control["effect"] = "mitigates"
