@@ -385,6 +385,13 @@ ${String(error)}`
   }));
   expect(['auto', 'scroll', 'overlay'], JSON.stringify(tableOverflow)).toContain(tableOverflow.overflowX);
   expect(tableOverflow.scrollWidth).toBeGreaterThanOrEqual(tableOverflow.clientWidth);
+  await expect(catalogTable).toHaveAttribute('data-pl-scrollable', 'true');
+  await expect(catalogTable).toHaveAttribute('role', 'region');
+  await expect(catalogTable).toHaveAttribute('tabindex', '0');
+  await expect(catalogTable).toHaveAttribute('aria-label', /^Scrollable table/);
+  if (testInfo.project.name === 'docs-mobile') {
+    await expect(catalogTable).toHaveCSS('touch-action', /pan-x/);
+  }
 
   await liteApiCatalogLink.click();
   await expect(page.getByRole('heading', { name: 'FastAPI /api/lite/*' })).toBeVisible();

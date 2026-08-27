@@ -28,7 +28,23 @@
 .md-typeset pre > code { border-radius: var(--pl-radius-md); }
 .md-typeset code { border-radius: 0.3rem; }
 .md-typeset .admonition, .md-typeset details { border-width: 0 0 0 0.24rem; border-radius: var(--pl-radius-md); box-shadow: none; }
+.md-typeset details > summary {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-block: 0.35rem;
+}
 .md-typeset .md-button { border-radius: var(--pl-radius-md); font-weight: 700; }
+.md-typeset [data-pl-scrollable="true"] {
+  position: relative;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--md-accent-fg-color) transparent;
+}
+.md-typeset [data-pl-scrollable="true"]:focus-visible {
+  outline: 0.15rem solid var(--md-accent-fg-color);
+  outline-offset: 0.18rem;
+}
 @media screen and (max-width: 44.9844em) {
   .md-content__inner { box-sizing: border-box; width: 100%; padding-inline: 0.25rem; }
   .pl-hero, .pl-card, .pl-announcement { overflow-wrap: anywhere; }
@@ -44,6 +60,9 @@
     margin-inline: 0;
   }
   .md-typeset .highlight pre { margin: 0; }
+  .md-typeset [data-pl-scrollable="true"] {
+    box-shadow: inset -1.1rem 0 0 color-mix(in srgb, var(--md-default-bg-color) 18%, transparent);
+  }
 }
 
 /* Dark-mode semantic badges use lighter foregrounds to preserve status meaning

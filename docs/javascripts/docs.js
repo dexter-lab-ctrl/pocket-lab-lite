@@ -58,6 +58,29 @@
     });
   };
 
+  const enhanceScrollableTables = () => document.querySelectorAll('.md-typeset__scrollwrap,.md-typeset__table,.pl-architecture-table,.pl-kg-domain-table').forEach((region) => {
+    const update = () => {
+      const scrollable = region.scrollWidth > region.clientWidth + 1;
+      region.dataset.plScrollable = scrollable;
+      if (scrollable) {
+        region.tabIndex = 0;
+        region.setAttribute('role', 'region');
+        region.setAttribute('aria-label', 'Scrollable table');
+      }
+    };
+    if (!region.dataset.plScrollBound) {
+      region.dataset.plScrollBound = 'true';
+      region.addEventListener('scroll', update, { passive: true });
+      region.addEventListener('keydown', (event) => {
+        const key = event.key;
+        if (!/^(ArrowLeft|ArrowRight)$/.test(key)) return;
+        region.scrollBy({ left: (key === 'ArrowLeft' ? -1 : 1) * Math.max(48, region.clientWidth * .7), behavior: 'smooth' });
+        event.preventDefault();
+      });
+    }
+    update();
+  });
+
   let progressObserver;
   const observeProgressBars = () => {
     if (progressObserver || !document.body) return;
@@ -440,6 +463,7 @@ render();
     observeProgressBars();
     enhanceAccessibility();
     enhanceIntentNavigation();
+    enhanceScrollableTables();
     enhanceAudienceIdentity();
     enhanceKnowledgeGraph();
   };

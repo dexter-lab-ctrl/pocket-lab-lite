@@ -36100,8 +36100,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "a25405dacf895f4dbecba0287dd60d6abefb3807",
-          "head_tree": "c52cb3002a3c0121eafb383e3dfa23af92300b0f",
+          "head": "a667110e0544e9f381e5fd3bd8b0aa1e4fc0452f",
+          "head_tree": "39c4a0162bea8177babda7f14b28cfc80e62630b",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -37950,7 +37950,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "5555ed42191e0d7e32c704d6276289ab1cd8a2d39d1c45399a8ce2da8a8047b2",
+        "documentation": "dd9464cc0e35fc42980b518e0adabc524a1470b0c7ef35252b4bec19bfd64a83",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2c85a340734f3e4bcc1f6a382111a8bb79ad327e22bec7366673252513f77457"
       },
@@ -40269,8 +40269,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "a25405dacf895f4dbecba0287dd60d6abefb3807",
-        "head_tree": "c52cb3002a3c0121eafb383e3dfa23af92300b0f",
+        "head": "a667110e0544e9f381e5fd3bd8b0aa1e4fc0452f",
+        "head_tree": "39c4a0162bea8177babda7f14b28cfc80e62630b",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -92986,5 +92986,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "89a218fda1987d6b9b7cb1bbc9cb62e8b364236076ff4a412db267501f234748"
+  "source_fingerprint": "73a7c75ade9f648106c0e573ad5ef5cc5278dbc1030c9597e1b5ed5b6d71478f"
 }
