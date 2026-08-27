@@ -19,6 +19,8 @@ confidence: generated
 <article class="pl-card"><span class="pl-card-kicker">Backup &amp; Restore</span><p>Back up, verify, preview restore, and recover with confirmation.</p><a class="pl-intent-link" href="../../../production/recovery/">Open Backup &amp; Restore</a></article>
 <article class="pl-card"><span class="pl-card-kicker">Identity</span><p>Identity and password-change behavior currently exposed by Lite.</p><a class="pl-intent-link" href="../../../production/identity/">Open Identity</a></article>
 <article class="pl-card"><span class="pl-card-kicker">Rules</span><p>Current Rules surface and its documented limitations.</p><a class="pl-intent-link" href="../../../production/rules/">Open Rules</a></article>
+<article class="pl-card"><span class="pl-card-kicker">Identity journey</span><p>Source-derived identity, passkey, session, and enterprise-membership relationships.</p><a class="pl-intent-link" href="../../journeys/identity/">Open Identity journey</a></article>
+<article class="pl-card"><span class="pl-card-kicker">Rules journey</span><p>Source-derived Rules admission, lifecycle, analysis, approval, continuation, and exception relationships.</p><a class="pl-intent-link" href="../../journeys/rules/">Open Rules journey</a></article>
 <article class="pl-card"><span class="pl-card-kicker">Common journeys</span><p>Start with a feature journey and follow canonical technical truth.</p><a class="pl-intent-link" href="../../journeys/devices/">Open Common journeys</a></article>
 </div>
 

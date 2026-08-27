@@ -17,11 +17,12 @@ Canonical user guide: [Identity guide](../../production/identity.md).
 
 ## What the user sees
 
-Source-derived journeys in the canonical Knowledge Graph: Local owner, passkey, recovery, and session lifecycle.
+Source-derived journeys in the canonical Knowledge Graph: Local owner, passkey, recovery, and session lifecycle, Opt-in Enterprise membership and authoritative roles.
 
 ## Typical user journey
 
 - `journey:change-password`
+- `journey:enterprise-identity`
 
 ## Architecture
 
@@ -29,12 +30,9 @@ Primary architecture: [open architecture](../../production/architecture/componen
 
 ### Components
 
-- `component:api-domain-surfaces`
 - `component:api-guards`
-- `component:api-read-surfaces`
-- `component:invite-state`
 - `component:lite-api`
-- `component:node-agent`
+- `component:opa-policy-engine`
 - `component:sqlite`
 
 ## Frontend and FastAPI ownership
@@ -42,19 +40,35 @@ Primary architecture: [open architecture](../../production/architecture/componen
 ### Source ownership
 
 - `pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py`
 - `pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py`
 - `src/lite/LiteIdentity.jsx`
 
 ### API relationships
 
-- `api:get:/api/lite/status`
-- `api:post:/api/lite/fleet/add-device`
+- `api:delete:/api/lite/identity/passkeys/{credential_id}`
+- `api:get:/api/lite/enterprise/identity`
+- `api:get:/api/lite/enterprise/identity/members`
 - `api:post:/api/lite/identity/login`
 - `api:post:/api/lite/identity/logout`
+- `api:post:/api/lite/identity/owner-claim/passkey/options`
+- `api:post:/api/lite/identity/owner-claim/passkey/verify`
+- `api:post:/api/lite/identity/passkeys/login/options`
+- `api:post:/api/lite/identity/passkeys/login/verify`
+- `api:post:/api/lite/identity/passkeys/registration/options`
+- `api:post:/api/lite/identity/passkeys/registration/verify`
 - `api:post:/api/lite/identity/password`
 - `api:post:/api/lite/identity/recover`
 - `api:post:/api/lite/identity/recovery/regenerate`
 - `api:post:/api/lite/identity/setup`
+- `api:post:/api/lite/identity/step-up/options`
+- `api:post:/api/lite/identity/step-up/verify`
+- `api:put:/api/lite/enterprise/identity/members/{human_id}`
+- `api:put:/api/lite/enterprise/identity/mode`
+- `api:put:/api/lite/identity/passkeys/{credential_id}`
 
 ## Events and execution
 
@@ -74,13 +88,11 @@ Execution ownership: use the component/API ownership links above; no additional 
 
 ### Boundaries
 
-- `control-api`
+- No boundary relation was emitted.
 
 ### Controls
 
-- `CTRL-API-CONTROL`
-- `CTRL-HUMAN-SESSION-CSRF`
-- `CTRL-OPA-FAIL-CLOSED`
+- No control was joined without a proven boundary relationship.
 
 ## Tests and validation
 
@@ -102,16 +114,11 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_security_p2b_reboot_generation.py`
 - `test:tests/backend/test_lite_security_s6_retention.py`
 - `test:tests/backend/test_lite_security_s8_recovery.py`
-- `test:tests/backend/test_lite_termux_runtime_documentation.py`
-- `test:tests/docs/test_documentation_presentation_polish.py`
-- `test:tests/docs/test_enterprise_completion.py`
-- `test:tests/docs/test_living_knowledgebase.py`
 - `test:tests/parity/test_api_contract_fences.py`
 
 ## Failure modes and recovery
 
-- `troubleshooting:api-unavailable`
-- `troubleshooting:caddy-unavailable`
+- No feature-specific troubleshooting entity was emitted; use the general Operate → Troubleshooting entry point.
 
 ## Source and bounded expansion
 

@@ -401,9 +401,9 @@
   "evidence_status": "source-and-canonical-evidence",
   "exact_tag": "lite-2026.08.12.2",
   "fingerprints": {
-    "architecture": "17bcd08602eee9a37de03b8793f604f7e561d78b4170a92b3f2a4ab20ffda94f",
+    "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
     "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-    "documentation": "6b185d789fc46b22fff8c01c96e6e3cde6f360189847ea5d1bd35d7642834bb4",
+    "documentation": "74092b41b2df87c6518ee6c99b589942e3376e85d557a54735225f0caaae5532",
     "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
     "operational_health": "2c85a340734f3e4bcc1f6a382111a8bb79ad327e22bec7366673252513f77457"
   },

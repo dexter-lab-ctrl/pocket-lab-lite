@@ -74,7 +74,7 @@ Use scenarios when you want to understand **what happens**, **who owns execution
 
 | Routes | Source refs |
 | --- | --- |
-| POST /api/lite/identity/setup, POST /api/lite/identity/login, POST /api/lite/identity/password, POST /api/lite/identity/logout, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/recover | src/lite/LiteIdentity.jsx, pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py, pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
+| POST /api/lite/identity/setup, POST /api/lite/identity/login, POST /api/lite/identity/password, POST /api/lite/identity/logout, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/recover, POST /api/lite/identity/owner-claim/passkey/options, POST /api/lite/identity/owner-claim/passkey/verify, POST /api/lite/identity/passkeys/login/options, POST /api/lite/identity/passkeys/login/verify, POST /api/lite/identity/passkeys/registration/options, POST /api/lite/identity/passkeys/registration/verify, POST /api/lite/identity/passkeys/step-up/options, POST /api/lite/identity/passkeys/step-up/verify, PUT /api/lite/identity/passkeys/{credential_id}, DELETE /api/lite/identity/passkeys/{credential_id} | src/lite/LiteIdentity.jsx, pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py, pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py, pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py |
 
 </details>
 
@@ -329,7 +329,7 @@ Use scenarios when you want to understand **what happens**, **who owns execution
 
 | Routes | Source refs |
 | --- | --- |
-| GET /api/lite/policy, POST /api/lite/catalog/install, POST /api/lite/fleet/remove-device, GET /api/lite/enterprise/rules/revisions, POST /api/lite/enterprise/rules/revisions, GET /api/lite/enterprise/rules/health, POST /api/lite/enterprise/rules/simulations, GET /api/lite/enterprise/rules/approvals, POST /api/lite/enterprise/rules/exceptions | src/lite/LiteRules.jsx, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py, security/policies/opa/pocketlab/pocketlab.rego |
+| GET /api/lite/policy, POST /api/lite/catalog/install, POST /api/lite/fleet/remove-device, GET /api/lite/enterprise/rules/revisions, POST /api/lite/enterprise/rules/revisions, POST /api/lite/enterprise/rules/activations, POST /api/lite/enterprise/rules/activations/{operation_id}/resolve, POST /api/lite/enterprise/rules/rollbacks, GET /api/lite/enterprise/rules/health, GET /api/lite/enterprise/rules/analysis, POST /api/lite/enterprise/rules/simulations, GET /api/lite/enterprise/rules/approvals, POST /api/lite/enterprise/rules/approvals/{approval_id}, POST /api/lite/enterprise/rules/exceptions | src/lite/LiteRules.jsx, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py, security/policies/opa/pocketlab/pocketlab.rego |
 
 </details>
 

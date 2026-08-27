@@ -468,12 +468,24 @@
         "POST /api/lite/identity/password",
         "POST /api/lite/identity/logout",
         "POST /api/lite/identity/recovery/regenerate",
-        "POST /api/lite/identity/recover"
+        "POST /api/lite/identity/recover",
+        "POST /api/lite/identity/owner-claim/passkey/options",
+        "POST /api/lite/identity/owner-claim/passkey/verify",
+        "POST /api/lite/identity/passkeys/login/options",
+        "POST /api/lite/identity/passkeys/login/verify",
+        "POST /api/lite/identity/passkeys/registration/options",
+        "POST /api/lite/identity/passkeys/registration/verify",
+        "POST /api/lite/identity/step-up/options",
+        "POST /api/lite/identity/step-up/verify",
+        "PUT /api/lite/identity/passkeys/{credential_id}",
+        "DELETE /api/lite/identity/passkeys/{credential_id}"
       ],
       "source_refs": [
         "src/lite/LiteIdentity.jsx",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
       ],
       "title": "Local owner, passkey, recovery, and session lifecycle"
     },
@@ -737,9 +749,14 @@
         "POST /api/lite/fleet/remove-device",
         "GET /api/lite/enterprise/rules/revisions",
         "POST /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/activations",
+        "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
+        "POST /api/lite/enterprise/rules/rollbacks",
         "GET /api/lite/enterprise/rules/health",
+        "GET /api/lite/enterprise/rules/analysis",
         "POST /api/lite/enterprise/rules/simulations",
         "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/approvals/{approval_id}",
         "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
@@ -1209,6 +1226,66 @@
         "Use the existing supervisor/PM2 recovery path; do not queue commands from the browser."
       ],
       "title": "Worker stopped"
+    },
+    {
+      "checks": [
+        "Confirm the browser origin and relying-party settings through the Identity API response.",
+        "Request a fresh passkey or purpose-bound step-up challenge; do not reuse a prior challenge."
+      ],
+      "components": [
+        "identity-access-controls",
+        "api-guards"
+      ],
+      "id": "identity-passkey-or-step-up-refused",
+      "recovery": [
+        "Use the normal sign-in, recovery, or passkey enrollment flow; expired or refused challenges fail closed."
+      ],
+      "title": "Passkey or step-up refused"
+    },
+    {
+      "checks": [
+        "Review the authoritative Enterprise membership projection and requested role/status change.",
+        "Confirm that the operation would not remove or demote the final Owner."
+      ],
+      "components": [
+        "identity-access-controls",
+        "api-guards"
+      ],
+      "id": "enterprise-membership-protected",
+      "recovery": [
+        "Use a permitted Owner or Admin membership change; final-Owner protection is not bypassed."
+      ],
+      "title": "Enterprise membership change protected"
+    },
+    {
+      "checks": [
+        "Inspect the Rules health and revision projection through FastAPI.",
+        "Confirm readiness or recovery state before another activation attempt."
+      ],
+      "components": [
+        "opa-policy-engine",
+        "api-domain-surfaces"
+      ],
+      "id": "rules-policy-readiness-failed",
+      "recovery": [
+        "Use the existing validated rollback or uncertain-recovery resolution path; OPA admission remains fail closed."
+      ],
+      "title": "Rules policy readiness failed"
+    },
+    {
+      "checks": [
+        "Review the approval, continuation, or exception status through the Rules API projection.",
+        "Confirm that the reviewer is independent and that any exception remains exact, active, and in scope."
+      ],
+      "components": [
+        "opa-policy-engine",
+        "identity-access-controls"
+      ],
+      "id": "rules-approval-or-exception-refused",
+      "recovery": [
+        "Request an eligible independent review or create a new in-scope exception where authorized; retry is explicit and a consumed continuation is not replayed."
+      ],
+      "title": "Rules approval, continuation, or exception refused"
     }
   ],
   "vocabulary_overrides": {

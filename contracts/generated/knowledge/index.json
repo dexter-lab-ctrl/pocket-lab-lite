@@ -5872,6 +5872,7 @@
       "domain": null,
       "durable_state_dependencies": [
         "auth_sessions",
+        "auth_session_assurance",
         "device_identity_guards",
         "device_invite_lifecycle",
         "human_credentials",
@@ -5929,7 +5930,9 @@
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
       ],
       "status_dimensions": {
         "capability_status": "implemented",
@@ -7115,6 +7118,86 @@
     },
     {
       "confidence": "verified",
+      "data_owner": "SQLite passkey, session-assurance, Enterprise configuration, and membership state",
+      "description": "Verifies passkeys, records purpose-bound session assurance, and resolves server-owned Enterprise memberships and final-Owner protection; it does not create a browser-held authority.",
+      "documentation_links": [
+        "docs/generated/production/identity.md"
+      ],
+      "domain": null,
+      "durable_state_dependencies": [
+        "webauthn_credentials",
+        "auth_session_assurance",
+        "enterprise_configuration",
+        "enterprise_memberships",
+        "identity_audit_events"
+      ],
+      "evidence": [
+        "identity audit events"
+      ],
+      "execution_owner": "FastAPI",
+      "failure_modes": [
+        "passkey verification refused",
+        "step-up expired",
+        "final Owner protection"
+      ],
+      "health_signals": [
+        "authenticated human context",
+        "Enterprise Mode state"
+      ],
+      "icon": "semantic-api-guard",
+      "id": "component:identity-access-controls",
+      "inputs": [
+        "authenticated human context",
+        "WebAuthn assertion",
+        "membership update request"
+      ],
+      "name": "Passkey, step-up, and Enterprise identity controls",
+      "outputs": [
+        "purpose-bound assurance",
+        "authoritative membership context",
+        "sanitized identity projection"
+      ],
+      "owner": "Lite API Identity",
+      "protocols": [
+        "HTTP JSON",
+        "WebAuthn"
+      ],
+      "recovery_behavior": [
+        "fail closed",
+        "explicit recovery"
+      ],
+      "recovery_owner": "FastAPI Identity",
+      "runtime_owner": "pocket-api",
+      "runtime_platform": "FastAPI process",
+      "runtime_process": "FastAPI",
+      "security_boundary": "control-api",
+      "source_refs": [
+        "architecture/metadata/pocket-lab-architecture.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+      ],
+      "status_dimensions": {
+        "capability_status": "implemented",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "implemented",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "type": "component"
+    },
+    {
+      "confidence": "verified",
       "data_owner": "SQLite",
       "description": "Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.",
       "documentation_links": [
@@ -7666,7 +7749,13 @@
       ],
       "domain": null,
       "durable_state_dependencies": [
-        "policy_decisions"
+        "policy_decisions",
+        "policy_revisions",
+        "policy_runtime_state",
+        "policy_approvals",
+        "policy_continuation_events",
+        "policy_temporary_exceptions",
+        "policy_recovery_resolutions"
       ],
       "evidence": [
         "bounded authorization decision metadata"
@@ -7711,6 +7800,8 @@
       "source_refs": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
         "security/policies/opa/pocketlab/pocketlab.rego"
       ],
@@ -10922,11 +11013,23 @@
         "POST /api/lite/identity/password",
         "POST /api/lite/identity/logout",
         "POST /api/lite/identity/recovery/regenerate",
-        "POST /api/lite/identity/recover"
+        "POST /api/lite/identity/recover",
+        "POST /api/lite/identity/owner-claim/passkey/options",
+        "POST /api/lite/identity/owner-claim/passkey/verify",
+        "POST /api/lite/identity/passkeys/login/options",
+        "POST /api/lite/identity/passkeys/login/verify",
+        "POST /api/lite/identity/passkeys/registration/options",
+        "POST /api/lite/identity/passkeys/registration/verify",
+        "POST /api/lite/identity/step-up/options",
+        "POST /api/lite/identity/step-up/verify",
+        "PUT /api/lite/identity/passkeys/{credential_id}",
+        "DELETE /api/lite/identity/passkeys/{credential_id}"
       ],
       "source_refs": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "type": "journey"
@@ -11219,9 +11322,14 @@
         "POST /api/lite/fleet/remove-device",
         "GET /api/lite/enterprise/rules/revisions",
         "POST /api/lite/enterprise/rules/revisions",
+        "POST /api/lite/enterprise/rules/activations",
+        "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
+        "POST /api/lite/enterprise/rules/rollbacks",
         "GET /api/lite/enterprise/rules/health",
+        "GET /api/lite/enterprise/rules/analysis",
         "POST /api/lite/enterprise/rules/simulations",
         "GET /api/lite/enterprise/rules/approvals",
+        "POST /api/lite/enterprise/rules/approvals/{approval_id}",
         "POST /api/lite/enterprise/rules/exceptions"
       ],
       "source_refs": [
@@ -24280,6 +24388,7 @@
         "App Catalog",
         "FastAPI /api/lite/*",
         "Media readiness and app health probes",
+        "Passkey, step-up, and Enterprise identity controls",
         "OPA Safety Rules policy engine",
         "Remote-access readiness checks",
         "Security scan coordinator"
@@ -24294,13 +24403,15 @@
         "Loopback HTTP JSON",
         "NATS",
         "Rego",
-        "SQLite"
+        "SQLite",
+        "WebAuthn"
       ],
       "fail_behavior": "fail-closed where the owning component declares guarded write/admission behavior; otherwise unvalidated",
       "id": "threat-model:control-api",
       "mitigations": [
         "connect media safely",
         "consumer recovery",
+        "explicit recovery",
         "explicit repair/rejoin",
         "explicit retry",
         "fail closed",
@@ -24333,9 +24444,11 @@
         "command undeliverable",
         "domain stale",
         "duplicate device",
+        "final Owner protection",
         "identity mismatch",
         "invalid decision",
         "media not connected",
+        "passkey verification refused",
         "policy activation validation failure",
         "remote unavailable",
         "route not ready",
@@ -24343,6 +24456,7 @@
         "scanner timeout",
         "session expired",
         "stale projection",
+        "step-up expired",
         "worker start timeout"
       ],
       "type": "threat-model"
@@ -24853,6 +24967,48 @@
     },
     {
       "checks": [
+        "Review the authoritative Enterprise membership projection and requested role/status change.",
+        "Confirm that the operation would not remove or demote the final Owner."
+      ],
+      "components": [
+        "identity-access-controls",
+        "api-guards"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:enterprise-membership-protected",
+      "name": "Enterprise membership change protected",
+      "recovery": [
+        "Use a permitted Owner or Admin membership change; final-Owner protection is not bypassed."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Confirm the browser origin and relying-party settings through the Identity API response.",
+        "Request a fresh passkey or purpose-bound step-up challenge; do not reuse a prior challenge."
+      ],
+      "components": [
+        "identity-access-controls",
+        "api-guards"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:identity-passkey-or-step-up-refused",
+      "name": "Passkey or step-up refused",
+      "recovery": [
+        "Use the normal sign-in, recovery, or passkey enrollment flow; expired or refused challenges fail closed."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
         "Compare the promoted release binding with local Git tag availability.",
         "Confirm the tag exists in verified remote/session metadata before fetching it."
       ],
@@ -25018,6 +25174,48 @@
       "name": "Restore blocked or preview stale",
       "recovery": [
         "Refresh Recovery state and create a fresh preview before destructive restore"
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Review the approval, continuation, or exception status through the Rules API projection.",
+        "Confirm that the reviewer is independent and that any exception remains exact, active, and in scope."
+      ],
+      "components": [
+        "opa-policy-engine",
+        "identity-access-controls"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:rules-approval-or-exception-refused",
+      "name": "Rules approval, continuation, or exception refused",
+      "recovery": [
+        "Request an eligible independent review or create a new in-scope exception where authorized; retry is explicit and a consumed continuation is not replayed."
+      ],
+      "source_refs": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "type": "troubleshooting"
+    },
+    {
+      "checks": [
+        "Inspect the Rules health and revision projection through FastAPI.",
+        "Confirm readiness or recovery state before another activation attempt."
+      ],
+      "components": [
+        "opa-policy-engine",
+        "api-domain-surfaces"
+      ],
+      "confidence": "source-derived",
+      "domain": "operations",
+      "id": "troubleshooting:rules-policy-readiness-failed",
+      "name": "Rules policy readiness failed",
+      "recovery": [
+        "Use the existing validated rollback or uncertain-recovery resolution path; OPA admission remains fail closed."
       ],
       "source_refs": [
         "contracts/metadata/knowledge-base.json"
@@ -26539,6 +26737,8 @@
         "troubleshooting:device-joining-waiting",
         "troubleshooting:device-offline",
         "troubleshooting:documentation-drift",
+        "troubleshooting:enterprise-membership-protected",
+        "troubleshooting:identity-passkey-or-step-up-refused",
         "troubleshooting:missing-release-tag",
         "troubleshooting:nats-unavailable",
         "troubleshooting:parity-capture-failure",
@@ -26547,6 +26747,8 @@
         "troubleshooting:release-failure",
         "troubleshooting:remote-access-not-ready",
         "troubleshooting:restore-blocked",
+        "troubleshooting:rules-approval-or-exception-refused",
+        "troubleshooting:rules-policy-readiness-failed",
         "troubleshooting:runtime-evidence-mismatch",
         "troubleshooting:security-scan-failure",
         "troubleshooting:stale-evidence",
@@ -27374,6 +27576,7 @@
         "component:frontend-state",
         "component:github-release",
         "component:github-repository",
+        "component:identity-access-controls",
         "component:invite-state",
         "component:lan",
         "component:last-known-good",
@@ -28217,6 +28420,8 @@
         "troubleshooting:device-joining-waiting",
         "troubleshooting:device-offline",
         "troubleshooting:documentation-drift",
+        "troubleshooting:enterprise-membership-protected",
+        "troubleshooting:identity-passkey-or-step-up-refused",
         "troubleshooting:missing-release-tag",
         "troubleshooting:nats-unavailable",
         "troubleshooting:parity-capture-failure",
@@ -28225,6 +28430,8 @@
         "troubleshooting:release-failure",
         "troubleshooting:remote-access-not-ready",
         "troubleshooting:restore-blocked",
+        "troubleshooting:rules-approval-or-exception-refused",
+        "troubleshooting:rules-policy-readiness-failed",
         "troubleshooting:runtime-evidence-mismatch",
         "troubleshooting:security-scan-failure",
         "troubleshooting:stale-evidence",
@@ -28371,6 +28578,10 @@
         }
       ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "domain:identity",
           "type": "owns"
@@ -28599,6 +28810,10 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/analysis": [
+        {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
         {
           "source": "ui:literulesenterprise",
           "type": "calls"
@@ -29334,17 +29549,29 @@
       ],
       "api:post:/api/lite/enterprise/rules/activations": [
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve": [
         {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
+        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
+        {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
         {
           "source": "ui:literulesenterprise",
           "type": "calls"
@@ -29389,6 +29616,10 @@
         }
       ],
       "api:post:/api/lite/enterprise/rules/rollbacks": [
+        {
+          "source": "journey:rules-authorization",
+          "type": "calls"
+        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -29530,6 +29761,10 @@
       ],
       "api:post:/api/lite/identity/owner-claim/passkey/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -29539,6 +29774,10 @@
         }
       ],
       "api:post:/api/lite/identity/owner-claim/passkey/verify": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -29550,6 +29789,10 @@
       ],
       "api:post:/api/lite/identity/passkeys/login/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -29559,6 +29802,10 @@
         }
       ],
       "api:post:/api/lite/identity/passkeys/login/verify": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -29570,6 +29817,10 @@
       ],
       "api:post:/api/lite/identity/passkeys/registration/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -29579,6 +29830,10 @@
         }
       ],
       "api:post:/api/lite/identity/passkeys/registration/verify": [
+        {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
         {
           "source": "ui:liteidentity",
           "type": "calls"
@@ -29662,6 +29917,10 @@
       ],
       "api:post:/api/lite/identity/step-up/options": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -29676,6 +29935,10 @@
       ],
       "api:post:/api/lite/identity/step-up/verify": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -29686,6 +29949,10 @@
         {
           "source": "domain:identity",
           "type": "owns"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "uses"
         }
       ],
       "api:post:/api/lite/policy/apply": [
@@ -29940,6 +30207,10 @@
       ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         {
+          "source": "journey:change-password",
+          "type": "calls"
+        },
+        {
           "source": "ui:liteidentity",
           "type": "calls"
         },
@@ -29991,6 +30262,10 @@
         },
         {
           "source": "component:app-catalog",
+          "type": "protected_by"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "protected_by"
         },
         {
@@ -30508,6 +30783,12 @@
           "type": "depends_on"
         }
       ],
+      "component:identity-access-controls": [
+        {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        }
+      ],
       "component:invite-state": [
         {
           "source": "component:api-guards",
@@ -30937,6 +31218,10 @@
         },
         {
           "source": "component:device-state",
+          "type": "depends_on"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "depends_on"
         },
         {
@@ -34168,6 +34453,14 @@
       ],
       "table:auth_session_assurance": [
         {
+          "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
@@ -34492,11 +34785,19 @@
       ],
       "table:enterprise_configuration": [
         {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:enterprise_memberships": [
+        {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -34525,6 +34826,10 @@
       "table:identity_audit_events": [
         {
           "source": "component:api-guards",
+          "type": "depends_on"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "depends_on"
         },
         {
@@ -34594,11 +34899,19 @@
       ],
       "table:policy_approvals": [
         {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:policy_continuation_events": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -34622,11 +34935,19 @@
       ],
       "table:policy_recovery_resolutions": [
         {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:policy_revisions": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -34634,11 +34955,19 @@
       ],
       "table:policy_runtime_state": [
         {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
+        {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
       "table:policy_temporary_exceptions": [
+        {
+          "source": "component:opa-policy-engine",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -34959,6 +35288,10 @@
         }
       ],
       "table:webauthn_credentials": [
+        {
+          "source": "component:identity-access-controls",
+          "type": "depends_on"
+        },
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -37902,6 +38235,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "verified_by"
+        },
+        {
           "source": "component:invite-state",
           "type": "verified_by"
         },
@@ -38396,6 +38733,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "verified_by"
+        },
+        {
           "source": "component:invite-state",
           "type": "verified_by"
         },
@@ -38691,6 +39032,10 @@
         },
         {
           "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "verified_by"
         },
         {
@@ -39003,6 +39348,10 @@
         },
         {
           "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:identity-access-controls",
           "type": "verified_by"
         },
         {
@@ -41426,6 +41775,10 @@
           "type": "protected_by"
         },
         {
+          "source": "component:identity-access-controls",
+          "type": "protected_by"
+        },
+        {
           "source": "component:lite-api",
           "type": "protected_by"
         },
@@ -41724,6 +42077,26 @@
           "type": "recovers_with"
         }
       ],
+      "troubleshooting:enterprise-membership-protected": [
+        {
+          "source": "component:api-guards",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "recovers_with"
+        }
+      ],
+      "troubleshooting:identity-passkey-or-step-up-refused": [
+        {
+          "source": "component:api-guards",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:identity-access-controls",
+          "type": "recovers_with"
+        }
+      ],
       "troubleshooting:missing-release-tag": [
         {
           "source": "component:github-repository",
@@ -41831,6 +42204,26 @@
         },
         {
           "source": "component:restore-preview",
+          "type": "recovers_with"
+        }
+      ],
+      "troubleshooting:rules-approval-or-exception-refused": [
+        {
+          "source": "component:identity-access-controls",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:opa-policy-engine",
+          "type": "recovers_with"
+        }
+      ],
+      "troubleshooting:rules-policy-readiness-failed": [
+        {
+          "source": "component:api-domain-surfaces",
+          "type": "recovers_with"
+        },
+        {
+          "source": "component:opa-policy-engine",
           "type": "recovers_with"
         }
       ],
@@ -44268,6 +44661,10 @@
           "type": "protected_by"
         },
         {
+          "target": "troubleshooting:rules-policy-readiness-failed",
+          "type": "recovers_with"
+        },
+        {
           "target": "api:get:/api/lite/catalog",
           "type": "uses"
         },
@@ -44310,11 +44707,19 @@
           "type": "affected_by"
         },
         {
+          "target": "component:identity-access-controls",
+          "type": "depends_on"
+        },
+        {
           "target": "component:invite-state",
           "type": "depends_on"
         },
         {
           "target": "component:node-agent",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:auth_session_assurance",
           "type": "depends_on"
         },
         {
@@ -44360,6 +44765,14 @@
         {
           "target": "subject:pocketlab.events.fleet.invite_created",
           "type": "publishes"
+        },
+        {
+          "target": "troubleshooting:enterprise-membership-protected",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:identity-passkey-or-step-up-refused",
+          "type": "recovers_with"
         },
         {
           "target": "subject:pocketlab.events.fleet.bootstrap_blocked",
@@ -45464,6 +45877,72 @@
           "type": "verified_by"
         }
       ],
+      "component:identity-access-controls": [
+        {
+          "target": "component:sqlite",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:auth_session_assurance",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:enterprise_configuration",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:enterprise_memberships",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:identity_audit_events",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:webauthn_credentials",
+          "type": "depends_on"
+        },
+        {
+          "target": "boundary:control-api",
+          "type": "protected_by"
+        },
+        {
+          "target": "threat-model:control-api",
+          "type": "protected_by"
+        },
+        {
+          "target": "troubleshooting:enterprise-membership-protected",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:identity-passkey-or-step-up-refused",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:rules-approval-or-exception-refused",
+          "type": "recovers_with"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/verify",
+          "type": "uses"
+        },
+        {
+          "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_presentation_polish.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        }
+      ],
       "component:invite-state": [
         {
           "target": "adr:adr-backend-generated-bootstrap",
@@ -46010,7 +46489,31 @@
           "type": "depends_on"
         },
         {
+          "target": "table:policy_approvals",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_continuation_events",
+          "type": "depends_on"
+        },
+        {
           "target": "table:policy_decisions",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_recovery_resolutions",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_revisions",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_runtime_state",
+          "type": "depends_on"
+        },
+        {
+          "target": "table:policy_temporary_exceptions",
           "type": "depends_on"
         },
         {
@@ -46020,6 +46523,14 @@
         {
           "target": "threat-model:control-api",
           "type": "protected_by"
+        },
+        {
+          "target": "troubleshooting:rules-approval-or-exception-refused",
+          "type": "recovers_with"
+        },
+        {
+          "target": "troubleshooting:rules-policy-readiness-failed",
+          "type": "recovers_with"
         },
         {
           "target": "api:get:/api/lite/policy",
@@ -50816,11 +51327,39 @@
       ],
       "journey:change-password": [
         {
+          "target": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/identity/login",
           "type": "calls"
         },
         {
           "target": "api:post:/api/lite/identity/logout",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/login/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/passkeys/registration/verify",
           "type": "calls"
         },
         {
@@ -50837,6 +51376,18 @@
         },
         {
           "target": "api:post:/api/lite/identity/setup",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/options",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/identity/step-up/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "calls"
         },
         {
@@ -51398,6 +51949,10 @@
       ],
       "journey:rules-authorization": [
         {
+          "target": "api:get:/api/lite/enterprise/rules/analysis",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/rules/approvals",
           "type": "calls"
         },
@@ -51418,11 +51973,27 @@
           "type": "calls"
         },
         {
+          "target": "api:post:/api/lite/enterprise/rules/activations",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/enterprise/rules/exceptions",
           "type": "calls"
         },
         {
           "target": "api:post:/api/lite/enterprise/rules/revisions",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/rules/rollbacks",
           "type": "calls"
         },
         {
@@ -56399,6 +56970,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:0d6937ad729c47e8",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:0da6c5997e53f7d3",
@@ -56477,6 +57057,19 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.commands.lite.app.media",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0e5abe83db439bf9",
+      "source": "journey:change-password",
+      "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -56729,6 +57322,15 @@
       "source": "journey:security-review",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:109dae5eac4eebd4",
+      "source": "component:opa-policy-engine",
+      "target": "troubleshooting:rules-approval-or-exception-refused",
+      "type": "recovers_with"
     },
     {
       "evidence": [
@@ -56999,6 +57601,15 @@
       "source": "api:get:/api/lite/security/summary",
       "target": "table:security_database_restores",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:12b001fcd8bc176c",
+      "source": "component:api-guards",
+      "target": "troubleshooting:enterprise-membership-protected",
+      "type": "recovers_with"
     },
     {
       "evidence": [
@@ -57609,7 +58220,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:1830854467cb667e",
@@ -57942,6 +58555,19 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:1ab7e9f79f010381",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/login/options",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:1ac30d5091f8d9ec",
@@ -58102,6 +58728,15 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.commands.lite.maintenance.retention",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:1c35f47175f353cb",
+      "source": "component:api-guards",
+      "target": "table:auth_session_assurance",
+      "type": "depends_on"
     },
     {
       "evidence": [
@@ -58438,6 +59073,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:1f06104f5699f278",
+      "source": "component:identity-access-controls",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "uses"
+    },
+    {
+      "evidence": [
         "runbooks/backup_restore_verify.yaml",
         "src/lite/LiteRecovery.jsx"
       ],
@@ -58485,7 +59129,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:1feb512e274ea3fb",
@@ -58756,6 +59402,19 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:2351ecc60289863e",
+      "source": "journey:change-password",
+      "target": "api:delete:/api/lite/identity/passkeys/{credential_id}",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:23a11a886051680e",
@@ -58861,6 +59520,15 @@
       "source": "component:security-coordinator",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:242d157cf50773e4",
+      "source": "component:api-guards",
+      "target": "troubleshooting:identity-passkey-or-step-up-refused",
+      "type": "recovers_with"
     },
     {
       "evidence": [
@@ -59866,6 +60534,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:2d4aa2c45c021c6d",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_recovery_resolutions",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:2d5eadfe6756709d",
@@ -60620,6 +61297,15 @@
       "id": "rel:3414fa1411bd471d",
       "source": "reason:policy_simulation_revision_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_termux_runtime_documentation.py"
+      ],
+      "id": "rel:342254cdd708ca97",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
     },
     {
@@ -61758,6 +62444,20 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:3cd82ad3b74b6ae2",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:3ce3266257ff5ee7",
@@ -62106,6 +62806,15 @@
       "source": "reason:approval_continuation_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:40b4b9aca2fe19be",
+      "source": "component:identity-access-controls",
+      "target": "table:enterprise_memberships",
+      "type": "depends_on"
     },
     {
       "evidence": [
@@ -62690,7 +63399,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:450cc5802deb214a",
@@ -62814,6 +63525,20 @@
       "source": "domain:platform",
       "target": "ui:liteapp",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:468eadf0cda305f2",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/rollbacks",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -64284,6 +65009,20 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:55b954c48fd1ccc8",
+      "source": "journey:rules-authorization",
+      "target": "api:get:/api/lite/enterprise/rules/analysis",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:55cfee3ffb3045ea",
@@ -64614,6 +65353,15 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_security_progress_projection_cutover.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:58bd393f5d8f82ef",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_temporary_exceptions",
+      "type": "depends_on"
     },
     {
       "evidence": [
@@ -65569,6 +66317,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:628c9ce62d47a0c7",
+      "source": "component:identity-access-controls",
+      "target": "table:identity_audit_events",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:629d17e637b15099",
@@ -65620,6 +66377,19 @@
       "source": "journey:recovery-reconciliation",
       "target": "component:sqlite",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:63818a9c171feb8c",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -66255,7 +67025,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:69125029459d7f13",
@@ -66370,6 +67142,19 @@
       "source": "journey:app-installation",
       "target": "component:app-catalog",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:6a5c48ccc1f7a87c",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/login/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -67506,6 +68291,15 @@
     },
     {
       "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:73613f1b3cd3ca30",
+      "source": "component:opa-policy-engine",
+      "target": "troubleshooting:rules-policy-readiness-failed",
+      "type": "recovers_with"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:7371c7c06112eb37",
@@ -68312,6 +69106,15 @@
       "id": "rel:7c054ff88e6ec5ea",
       "source": "reason:webauthn_assertion_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_documentation_presentation_polish.py"
+      ],
+      "id": "rel:7c5a3f58983499f3",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/docs/test_documentation_presentation_polish.py",
       "type": "verified_by"
     },
     {
@@ -69578,6 +70381,15 @@
     },
     {
       "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:87b2cd40a179bbea",
+      "source": "component:identity-access-controls",
+      "target": "troubleshooting:identity-passkey-or-step-up-refused",
+      "type": "recovers_with"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_identity_rules_authorization.py"
       ],
       "id": "rel:87c23b0b3f13cef9",
@@ -69740,6 +70552,20 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:894b51de33862ade",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
       ],
       "id": "rel:894e3f760e77af7e",
@@ -69836,6 +70662,15 @@
       "source": "reason:approval_step_up_required",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:89e1d0dec7387b85",
+      "source": "component:identity-access-controls",
+      "target": "troubleshooting:rules-approval-or-exception-refused",
+      "type": "recovers_with"
     },
     {
       "evidence": [
@@ -70769,6 +71604,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:92a641299f52ebea",
+      "source": "component:identity-access-controls",
+      "target": "threat-model:control-api",
+      "type": "protected_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:92b84fdf52cee6cf",
@@ -70779,7 +71623,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:92c8d8fea24afc36",
@@ -70849,6 +71695,19 @@
       "source": "reason:webauthn_counter_replay",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:93d450eb9508b4c9",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/registration/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -71907,7 +72766,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:9dab77f8a30fe57e",
@@ -72022,6 +72883,15 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_security_store.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:9ebbfbe82c58c80f",
+      "source": "component:identity-access-controls",
+      "target": "boundary:control-api",
+      "type": "protected_by"
     },
     {
       "evidence": [
@@ -72397,6 +73267,15 @@
       "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
+      "id": "rel:a3067144d4c06820",
+      "source": "component:identity-access-controls",
+      "target": "table:webauthn_credentials",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
       "id": "rel:a30ddaaf47a4ce71",
       "source": "component:api-guards",
       "target": "boundary:control-api",
@@ -72463,6 +73342,15 @@
       "id": "rel:a3c9ad6d6075624d",
       "source": "component:release-staging",
       "target": "troubleshooting:missing-release-tag",
+      "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:a3d8af746af92e51",
+      "source": "component:api-domain-surfaces",
+      "target": "troubleshooting:rules-policy-readiness-failed",
       "type": "recovers_with"
     },
     {
@@ -72802,7 +73690,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:a674a975acb845f2",
@@ -73066,6 +73956,15 @@
       "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
+      "id": "rel:a8ce92daf97cb135",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_runtime_state",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
       "id": "rel:a8db7157d716db69",
       "source": "component:github-repository",
       "target": "threat-model:external-release",
@@ -73222,6 +74121,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:aaa7974cd78acbb7",
+      "source": "component:identity-access-controls",
+      "target": "table:auth_session_assurance",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_identity_rules_authorization.py"
       ],
       "id": "rel:aaadd6b6e4425470",
@@ -73304,7 +74212,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:ab3b87d4590f0cc9",
@@ -73726,6 +74636,15 @@
       "source": "domain:devices",
       "target": "ui:litedevices",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:af04222e672d910b",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_revisions",
+      "type": "depends_on"
     },
     {
       "evidence": [
@@ -75765,6 +76684,19 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:c46221e7d05f5821",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/passkeys/registration/options",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:c46e6ce01f93a42a",
@@ -76966,6 +77898,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:cfec5a79192d43fc",
+      "source": "component:identity-access-controls",
+      "target": "table:enterprise_configuration",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:cffc100157635694",
@@ -77853,6 +78794,15 @@
       "source": "journey:enterprise-identity",
       "target": "component:lite-api",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "contracts/metadata/knowledge-base.json"
+      ],
+      "id": "rel:d89c565944d51ed6",
+      "source": "component:identity-access-controls",
+      "target": "troubleshooting:enterprise-membership-protected",
+      "type": "recovers_with"
     },
     {
       "evidence": [
@@ -79076,7 +80026,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:e376d9c731dae931",
@@ -79484,6 +80436,20 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "security/policies/opa/pocketlab/pocketlab.rego",
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:e69a869a079c05cd",
+      "source": "journey:rules-authorization",
+      "target": "api:post:/api/lite/enterprise/rules/activations",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:e6affeefa2fccd14",
@@ -79535,6 +80501,15 @@
       "source": "domain:system",
       "target": "api:get:/api/lite/system/supervisor",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e7befc51376e60a9",
+      "source": "component:identity-access-controls",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -79746,6 +80721,19 @@
       "source": "reason:policy_recovery_unproved",
       "target": "test:tests/backend/test_lite_policy_uncertain_resolution.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:e983b98c44769ea3",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -80037,6 +81025,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:ec73bf9a0811b099",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_continuation_events",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_f9_etag_contract.py"
       ],
       "id": "rel:ec8e9a98915a6ba5",
@@ -80061,6 +81058,15 @@
       "source": "component:lite-api",
       "target": "test:tests/docs/mkdocs.spec.ts",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:ecb2be21858ac163",
+      "source": "component:api-guards",
+      "target": "component:identity-access-controls",
+      "type": "depends_on"
     },
     {
       "evidence": [
@@ -80137,6 +81143,19 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:ed7caa6297878c4c",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/step-up/options",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
       ],
       "id": "rel:ed9341324734f6de",
@@ -80152,6 +81171,15 @@
       "source": "component:api-domain-surfaces",
       "target": "api:get:/api/lite/release",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:edb2f7166735286b",
+      "source": "component:identity-access-controls",
+      "target": "component:sqlite",
+      "type": "depends_on"
     },
     {
       "evidence": [
@@ -80648,6 +81676,19 @@
       "source": "reason:protected_server_host",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:f1fe363326415654",
+      "source": "journey:change-password",
+      "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -81180,6 +82221,15 @@
     },
     {
       "evidence": [
+        "architecture/metadata/pocket-lab-architecture.json"
+      ],
+      "id": "rel:f6e6c7ef2332b29b",
+      "source": "component:opa-policy-engine",
+      "target": "table:policy_approvals",
+      "type": "depends_on"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_database_restore_reconciliation.py"
       ],
       "id": "rel:f70291a979e209ce",
@@ -81577,7 +82627,9 @@
     {
       "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:fa1b7c293b1f9805",
@@ -82078,14 +83130,14 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30",
+  "source_fingerprint": "03968ba096ca6d794d4f9219f9faf7c33edf03b4d913e70a4014abeb6197ac18",
   "statistics": {
-    "entity_count": 1075,
+    "entity_count": 1080,
     "entity_type_counts": {
       "adr": 6,
       "api": 164,
       "capability": 5,
-      "component": 57,
+      "component": 58,
       "domain": 47,
       "glossary": 16,
       "journey": 24,
@@ -82100,11 +83152,11 @@
       "test": 191,
       "threat-boundary": 9,
       "threat-model": 9,
-      "troubleshooting": 23,
+      "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 2997,
+    "relation_count": 3041,
     "source_count": 228
   }
 }

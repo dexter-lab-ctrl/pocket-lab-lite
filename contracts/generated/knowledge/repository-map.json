@@ -38,6 +38,7 @@
         "component:frontend-state",
         "component:github-release",
         "component:github-repository",
+        "component:identity-access-controls",
         "component:invite-state",
         "component:lan",
         "component:last-known-good",
@@ -1130,6 +1131,8 @@
         "troubleshooting:device-joining-waiting",
         "troubleshooting:device-offline",
         "troubleshooting:documentation-drift",
+        "troubleshooting:enterprise-membership-protected",
+        "troubleshooting:identity-passkey-or-step-up-refused",
         "troubleshooting:missing-release-tag",
         "troubleshooting:nats-unavailable",
         "troubleshooting:parity-capture-failure",
@@ -1138,6 +1141,8 @@
         "troubleshooting:release-failure",
         "troubleshooting:remote-access-not-ready",
         "troubleshooting:restore-blocked",
+        "troubleshooting:rules-approval-or-exception-refused",
+        "troubleshooting:rules-policy-readiness-failed",
         "troubleshooting:runtime-evidence-mismatch",
         "troubleshooting:security-scan-failure",
         "troubleshooting:stale-evidence",
@@ -1643,6 +1648,12 @@
     },
     {
       "entities": [
+        "journey:change-password"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
+    },
+    {
+      "entities": [
         "subject:pocketlab.commands.drift.scan",
         "subject:pocketlab.commands.fleet.join",
         "subject:pocketlab.commands.vault.dynamic_secret",
@@ -1883,6 +1894,8 @@
     },
     {
       "entities": [
+        "component:api-guards",
+        "component:identity-access-controls",
         "journey:enterprise-identity"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py"
@@ -1926,12 +1939,14 @@
     },
     {
       "entities": [
+        "component:opa-policy-engine",
         "journey:rules-authorization"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py"
     },
     {
       "entities": [
+        "component:opa-policy-engine",
         "journey:rules-authorization"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py"
@@ -1974,6 +1989,14 @@
         "component:remote-readiness"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py"
+    },
+    {
+      "entities": [
+        "component:api-guards",
+        "component:identity-access-controls",
+        "journey:change-password"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
     },
     {
       "entities": [
@@ -3497,6 +3520,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e73e73cba352e61049ced5548cb8777c5b50bd6d20d0e6e9c2efdb127f58ba30"
+    "source_fingerprint": "03968ba096ca6d794d4f9219f9faf7c33edf03b4d913e70a4014abeb6197ac18"
   }
 }

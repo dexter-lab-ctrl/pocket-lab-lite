@@ -37,6 +37,7 @@ generator_version: 3
 | Frontend state ownership | Lite UI | React | FastAPI; Dexie is safe read-only fallback | TanStack revalidation and UI workflows | Browser |
 | GitHub Release | Release workflow | release-dist workflow | Release assets | Release workflow rerun/fix | GitHub Actions |
 | GitHub repository | Repository maintainers | GitHub Actions | Git repository | Repository maintainers | GitHub |
+| Passkey, step-up, and Enterprise identity controls | Lite API Identity | FastAPI | SQLite passkey, session-assurance, Enterprise configuration, and membership state | FastAPI Identity | pocket-api |
 | Invite and identity lifecycle | Fleet onboarding | FastAPI | SQLite | Explicit repair/rejoin | Lite API |
 | Local LAN | Private network | Network stack | None | Network owner | Network |
 | Last-known-good state and rollback | Release recovery | rollback stage | Release SQLite state and prior PWA | Self | release subprocess |
@@ -111,6 +112,7 @@ generator_version: 3
 | data_owner:SQLite evidence index and sanitized files | component:completion-evidence |
 | data_owner:SQLite human identity/session state plus device identity and invite state | component:api-guards |
 | data_owner:SQLite lifecycle state | component:bounded-reconciliation |
+| data_owner:SQLite passkey, session-assurance, Enterprise configuration, and membership state | component:identity-access-controls |
 | data_owner:SQLite prepared projections | component:projection-subprocesses |
 | data_owner:SQLite prepared reads | component:lite-api |
 | data_owner:SQLite release state and staging area | component:release-subprocess |
@@ -123,7 +125,7 @@ generator_version: 3
 | data_owner:Staging directory and release SQLite state | component:release-staging |
 | data_owner:Tailscale local state | component:tailscale |
 | execution_owner:Browser | component:browser, component:user |
-| execution_owner:FastAPI | component:api-domain-surfaces, component:api-guards, component:api-read-surfaces, component:invite-state, component:remote-readiness |
+| execution_owner:FastAPI | component:api-domain-surfaces, component:api-guards, component:api-read-surfaces, component:identity-access-controls, component:invite-state, component:remote-readiness |
 | execution_owner:FastAPI / worker | component:device-state |
 | execution_owner:FastAPI and worker | component:command-lifecycle |
 | execution_owner:GitHub Actions | component:github-repository, component:release-artifacts |
@@ -183,6 +185,7 @@ generator_version: 3
 | owner:Fleet domain | component:device-state |
 | owner:Fleet onboarding | component:invite-state |
 | owner:Lite API | component:api-guards, component:api-read-surfaces, component:lite-api, component:remote-readiness |
+| owner:Lite API Identity | component:identity-access-controls |
 | owner:Lite API domains | component:api-domain-surfaces |
 | owner:Lite UI | component:frontend-state, component:pwa |
 | owner:Lite control plane store | component:sqlite |
@@ -229,6 +232,7 @@ generator_version: 3
 | recovery_owner:Explicit repair/rejoin or database restore | component:retirement-database-recovery |
 | recovery_owner:Explicit retirement / repair | component:device-state |
 | recovery_owner:Explicit retry | component:security-profiles |
+| recovery_owner:FastAPI Identity | component:identity-access-controls |
 | recovery_owner:Last-known-good rollback | component:release-subprocess |
 | recovery_owner:Network owner | component:lan |
 | recovery_owner:Owning domain | component:completion-evidence |
@@ -278,7 +282,7 @@ generator_version: 3
 | runtime_owner:agent and supervisor | component:agent-recovery |
 | runtime_owner:lite_control_plane_store | component:device-state |
 | runtime_owner:node agent | component:agent-command-executor, component:agent-signals |
-| runtime_owner:pocket-api | component:api-domain-surfaces, component:api-guards, component:api-read-surfaces, component:remote-readiness |
+| runtime_owner:pocket-api | component:api-domain-surfaces, component:api-guards, component:api-read-surfaces, component:identity-access-controls, component:remote-readiness |
 | runtime_owner:pocket-api / pocket-worker | component:bounded-reconciliation, component:command-lifecycle, component:retirement-database-recovery, component:security-coordinator |
 | runtime_owner:pocket-api and subprocesses | component:projection-subprocesses |
 | runtime_owner:pocket-nats | component:nats-listeners |

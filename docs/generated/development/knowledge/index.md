@@ -21,7 +21,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | adr | 6 |
 | api | 164 |
 | capability | 5 |
-| component | 57 |
+| component | 58 |
 | domain | 47 |
 | glossary | 16 |
 | journey | 24 |
@@ -36,7 +36,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | test | 191 |
 | threat-boundary | 9 |
 | threat-model | 9 |
-| troubleshooting | 23 |
+| troubleshooting | 27 |
 | ui | 10 |
 | vocabulary | 39 |
 

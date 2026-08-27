@@ -291,6 +291,7 @@
         ],
         "durable_state_dependencies": [
           "auth_sessions",
+          "auth_session_assurance",
           "device_identity_guards",
           "device_invite_lifecycle",
           "human_credentials",
@@ -1026,6 +1027,54 @@
         "verification_status": "verified"
       },
       {
+        "category": "service",
+        "data_owner": "SQLite passkey, session-assurance, Enterprise configuration, and membership state",
+        "documentation_links": [
+          "docs/generated/production/identity.md"
+        ],
+        "durable_state_dependencies": [
+          "webauthn_credentials",
+          "auth_session_assurance",
+          "enterprise_configuration",
+          "enterprise_memberships",
+          "identity_audit_events"
+        ],
+        "evidence_produced": [
+          "identity audit events"
+        ],
+        "generated_page": "docs/generated/production/architecture/components/identity-access-controls.md",
+        "health_signals": [
+          "authenticated human context",
+          "Enterprise Mode state"
+        ],
+        "icon": "semantic-api-guard",
+        "id": "identity-access-controls",
+        "mini_diagram": true,
+        "name": "Passkey, step-up, and Enterprise identity controls",
+        "owner": "Lite API Identity",
+        "platforms": [
+          "Android/Termux",
+          "ARM64",
+          "Ubuntu",
+          "WSL2 development"
+        ],
+        "process_owner": "FastAPI",
+        "protocols": [
+          "HTTP JSON",
+          "WebAuthn"
+        ],
+        "recovery_owner": "FastAPI Identity",
+        "responsibility": "Verifies passkeys, records purpose-bound session assurance, and resolves server-owned Enterprise memberships and final-Owner protection; it does not create a browser-held authority.",
+        "runtime_location": "FastAPI process",
+        "runtime_owner": "pocket-api",
+        "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python",
+          "semantic-api-guard"
+        ],
+        "verification_status": "verified"
+      },
+      {
         "category": "database",
         "data_owner": "SQLite",
         "documentation_links": [
@@ -1350,7 +1399,13 @@
           "docs/generated/production/security-boundaries.md"
         ],
         "durable_state_dependencies": [
-          "policy_decisions"
+          "policy_decisions",
+          "policy_revisions",
+          "policy_runtime_state",
+          "policy_approvals",
+          "policy_continuation_events",
+          "policy_temporary_exceptions",
+          "policy_recovery_resolutions"
         ],
         "evidence_produced": [
           "bounded authorization decision metadata"
@@ -2740,6 +2795,26 @@
       },
       {
         "evidence": false,
+        "id": "identity-access-controls",
+        "kind": "control",
+        "label": "applies passkey, step-up, and membership controls",
+        "protocol": "Python",
+        "recovery": false,
+        "source": "api-guards",
+        "target": "identity-access-controls"
+      },
+      {
+        "evidence": true,
+        "id": "identity-access-state",
+        "kind": "data",
+        "label": "stores assurance, membership, and audit state",
+        "protocol": "SQLite",
+        "recovery": false,
+        "source": "identity-access-controls",
+        "target": "sqlite"
+      },
+      {
+        "evidence": false,
         "id": "invite-device",
         "kind": "data",
         "label": "accepted enrollment",
@@ -3351,8 +3426,8 @@
     ],
     "counts": {
       "boundaries": 9,
-      "components": 57,
-      "connections": 95,
+      "components": 58,
+      "connections": 97,
       "views": 15
     },
     "description": "Canonical production architecture model generated into diagrams, pages, catalogs, and drift manifests.",
@@ -3526,6 +3601,8 @@
           "api-domain-surfaces",
           "api-read-surfaces",
           "api-guards",
+          "identity-access-controls",
+          "opa-policy-engine",
           "app-catalog",
           "security-coordinator",
           "nats-jetstream",
@@ -3779,6 +3856,8 @@
                 "api-domain-surfaces",
                 "api-read-surfaces",
                 "api-guards",
+                "identity-access-controls",
+                "opa-policy-engine",
                 "app-catalog",
                 "security-coordinator"
               ],
@@ -3998,6 +4077,8 @@
           "caddy",
           "lite-api",
           "api-guards",
+          "identity-access-controls",
+          "opa-policy-engine",
           "api-domain-surfaces",
           "nats-jetstream",
           "worker",
@@ -4060,7 +4141,7 @@
     ]
   },
   "metadata": {
-    "architecture_source_fingerprint": "765d187cae484a494c7f2602216f3c7ab49cafc2bdffd1ea1b8900f7d1e8e672",
+    "architecture_source_fingerprint": "f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5",
     "generated": true,
     "generated_at": "uncommitted",
     "generator": "scripts/docs/graphviz/generate_lite_architecture.py",

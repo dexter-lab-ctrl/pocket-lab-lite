@@ -170,8 +170,10 @@ def test_development_and_production_docs_are_independent_and_mark_partial_surfac
         assert manifest["generated_files"]
         assert manifest["source_fingerprints"]
     production = "\n".join(path.read_text() for path in (ROOT / "docs/generated/production").glob("*.md"))
-    assert "advanced roles are not claimed" in production
-    assert "advanced execution is not claimed" in production
+    assert "advanced roles are not claimed" not in production
+    assert "advanced execution is not claimed" not in production
+    assert "Opt-in Enterprise Mode uses server-owned memberships and roles" in production
+    assert "Approval never auto-executes an action" in production
 
 
 def test_browser_resolver_and_playwright_config_fail_closed_on_wsl2():

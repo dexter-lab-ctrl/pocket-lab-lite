@@ -84,6 +84,24 @@ generator_version: 3
 **Recovery**
 - Regenerate from canonical sources; do not hand-edit generated truth
 
+## Enterprise membership change protected
+
+**Check**
+- Review the authoritative Enterprise membership projection and requested role/status change.
+- Confirm that the operation would not remove or demote the final Owner.
+
+**Recovery**
+- Use a permitted Owner or Admin membership change; final-Owner protection is not bypassed.
+
+## Passkey or step-up refused
+
+**Check**
+- Confirm the browser origin and relying-party settings through the Identity API response.
+- Request a fresh passkey or purpose-bound step-up challenge; do not reuse a prior challenge.
+
+**Recovery**
+- Use the normal sign-in, recovery, or passkey enrollment flow; expired or refused challenges fail closed.
+
 ## Release tag missing locally
 
 **Check**
@@ -153,6 +171,24 @@ generator_version: 3
 
 **Recovery**
 - Refresh Recovery state and create a fresh preview before destructive restore
+
+## Rules approval, continuation, or exception refused
+
+**Check**
+- Review the approval, continuation, or exception status through the Rules API projection.
+- Confirm that the reviewer is independent and that any exception remains exact, active, and in scope.
+
+**Recovery**
+- Request an eligible independent review or create a new in-scope exception where authorized; retry is explicit and a consumed continuation is not replayed.
+
+## Rules policy readiness failed
+
+**Check**
+- Inspect the Rules health and revision projection through FastAPI.
+- Confirm readiness or recovery state before another activation attempt.
+
+**Recovery**
+- Use the existing validated rollback or uncertain-recovery resolution path; OPA admission remains fail closed.
 
 ## Runtime evidence or release binding mismatch
 

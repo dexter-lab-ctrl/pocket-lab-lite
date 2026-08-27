@@ -37,6 +37,7 @@ generator_version: 3
 | [Frontend state ownership](./frontend-state.md) | Lite UI | Browser / installed PWA | browser | verified |
 | [GitHub Release](./github-release.md) | Release workflow | GitHub | external-release | verified |
 | [GitHub repository](./github-repository.md) | Repository maintainers | External source hosting | external-release | verified |
+| [Passkey, step-up, and Enterprise identity controls](./identity-access-controls.md) | Lite API Identity | FastAPI process | control-api | verified |
 | [Invite and identity lifecycle](./invite-state.md) | Fleet onboarding | SQLite | durable-state | verified |
 | [Local LAN](./lan.md) | Private network | Private local network | tailnet | verified |
 | [Last-known-good state and rollback](./last-known-good.md) | Release recovery | Server host / release subprocess | server-host | verified |

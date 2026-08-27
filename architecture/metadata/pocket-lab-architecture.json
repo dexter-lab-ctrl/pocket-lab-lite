@@ -435,6 +435,7 @@
       ],
       "durable_state_dependencies": [
         "auth_sessions",
+        "auth_session_assurance",
         "device_identity_guards",
         "device_invite_lifecycle",
         "human_credentials",
@@ -519,6 +520,26 @@
         {
           "kind": "sqlite_table",
           "value": "auth_sessions"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "webauthn_credentials"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "auth_session_assurance"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "enterprise_memberships"
         }
       ],
       "supported_platforms": [
@@ -2192,6 +2213,91 @@
       ],
       "verification_status": "verified"
     },
+    "identity-access-controls": {
+      "category": "service",
+      "data_owner": "SQLite passkey, session-assurance, Enterprise configuration, and membership state",
+      "documentation_links": [
+        "docs/generated/production/identity.md"
+      ],
+      "durable_state_dependencies": [
+        "webauthn_credentials",
+        "auth_session_assurance",
+        "enterprise_configuration",
+        "enterprise_memberships",
+        "identity_audit_events"
+      ],
+      "evidence_produced": [
+        "identity audit events"
+      ],
+      "failure_paths": [
+        "passkey verification refused",
+        "step-up expired",
+        "final Owner protection"
+      ],
+      "health_signals": [
+        "authenticated human context",
+        "Enterprise Mode state"
+      ],
+      "icon": "semantic-api-guard",
+      "id": "identity-access-controls",
+      "inputs": [
+        "authenticated human context",
+        "WebAuthn assertion",
+        "membership update request"
+      ],
+      "mini_diagram": true,
+      "name": "Passkey, step-up, and Enterprise identity controls",
+      "orphan_exempt": false,
+      "outputs": [
+        "purpose-bound assurance",
+        "authoritative membership context",
+        "sanitized identity projection"
+      ],
+      "owner": "Lite API Identity",
+      "process_owner": "FastAPI",
+      "protocols": [
+        "HTTP JSON",
+        "WebAuthn"
+      ],
+      "recovery_owner": "FastAPI Identity",
+      "recovery_paths": [
+        "fail closed",
+        "explicit recovery"
+      ],
+      "responsibility": "Verifies passkeys, records purpose-bound session assurance, and resolves server-owned Enterprise memberships and final-Owner protection; it does not create a browser-held authority.",
+      "runtime_location": "FastAPI process",
+      "runtime_owner": "pocket-api",
+      "security_boundary": "control-api",
+      "source_verification": [
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py"
+        },
+        {
+          "kind": "route",
+          "value": "POST /api/lite/identity/step-up/verify"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "enterprise_memberships"
+        }
+      ],
+      "supported_platforms": [
+        "Android/Termux",
+        "ARM64",
+        "Ubuntu",
+        "WSL2 development"
+      ],
+      "technology_icons": [
+        "brand-python",
+        "semantic-api-guard"
+      ],
+      "verification_status": "verified"
+    },
     "opa-policy-engine": {
       "category": "decision",
       "data_owner": "Repository Rego source and bounded SQLite policy decision metadata",
@@ -2200,7 +2306,13 @@
         "docs/generated/production/security-boundaries.md"
       ],
       "durable_state_dependencies": [
-        "policy_decisions"
+        "policy_decisions",
+        "policy_revisions",
+        "policy_runtime_state",
+        "policy_approvals",
+        "policy_continuation_events",
+        "policy_temporary_exceptions",
+        "policy_recovery_resolutions"
       ],
       "evidence_produced": [
         "bounded authorization decision metadata"
@@ -2268,6 +2380,22 @@
         {
           "kind": "sqlite_table",
           "value": "policy_decisions"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py"
+        },
+        {
+          "kind": "path",
+          "value": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "policy_approvals"
+        },
+        {
+          "kind": "sqlite_table",
+          "value": "policy_temporary_exceptions"
         }
       ],
       "supported_platforms": [
@@ -3969,6 +4097,26 @@
     },
     {
       "evidence": false,
+      "id": "identity-access-controls",
+      "kind": "control",
+      "label": "applies passkey, step-up, and membership controls",
+      "protocol": "Python",
+      "recovery": false,
+      "source": "api-guards",
+      "target": "identity-access-controls"
+    },
+    {
+      "evidence": true,
+      "id": "identity-access-state",
+      "kind": "data",
+      "label": "stores assurance, membership, and audit state",
+      "protocol": "SQLite",
+      "recovery": false,
+      "source": "identity-access-controls",
+      "target": "sqlite"
+    },
+    {
+      "evidence": false,
       "id": "api-nats",
       "kind": "control",
       "label": "publishes validated command",
@@ -4994,6 +5142,8 @@
         "api-domain-surfaces",
         "api-read-surfaces",
         "api-guards",
+        "identity-access-controls",
+        "opa-policy-engine",
         "app-catalog",
         "security-coordinator",
         "nats-jetstream",
@@ -5247,6 +5397,8 @@
               "api-domain-surfaces",
               "api-read-surfaces",
               "api-guards",
+              "identity-access-controls",
+              "opa-policy-engine",
               "app-catalog",
               "security-coordinator"
             ],
@@ -5466,6 +5618,8 @@
         "caddy",
         "lite-api",
         "api-guards",
+        "identity-access-controls",
+        "opa-policy-engine",
         "api-domain-surfaces",
         "nats-jetstream",
         "worker",

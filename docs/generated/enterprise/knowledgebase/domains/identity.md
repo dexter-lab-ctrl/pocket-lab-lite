@@ -40,3 +40,7 @@ Use canonical Recovery/Incident Runbooks; this page does not infer repair comman
 ## Provenance
 
 `contracts/generated/runtime/domain-operational-health.json` and canonical Documentation Platform metadata.
+
+## Identity relationships
+
+[Identity Feature Journey](../../journeys/identity.md) links the verified passkey, purpose-bound step-up, session, and Enterprise membership relationships. [API-to-UI Trace](../../reference/api-ui-trace.md) remains FastAPI control-plane owned; browser authority is not inferred.

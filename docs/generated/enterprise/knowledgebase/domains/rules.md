@@ -40,3 +40,7 @@ Use canonical Recovery/Incident Runbooks; this page does not infer repair comman
 ## Provenance
 
 `contracts/generated/runtime/domain-operational-health.json` and canonical Documentation Platform metadata.
+
+## Rules relationships
+
+[Rules Feature Journey](../../journeys/rules.md) links protected-action admission, lifecycle, analysis, approval, continuation, and narrow exceptions. [API-to-UI Trace](../../reference/api-ui-trace.md) does not infer NATS or worker execution for these governance operations.

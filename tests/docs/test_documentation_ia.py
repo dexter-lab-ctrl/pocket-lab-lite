@@ -59,11 +59,12 @@ def test_documentation_ia_contract_is_complete_and_question_oriented():
         "recovery",
         "remote-access",
         "identity",
+        "rules",
         "release",
     }
-    # No canonical Rules journey exists in the source Knowledge Graph today;
-    # the IA must not fabricate one just to make the catalog look symmetric.
-    assert "rules" not in {row["slug"] for row in contract["feature_journeys"]}
+    rules = next(row for row in contract["feature_journeys"] if row["slug"] == "rules")
+    assert rules["source_journeys"] == ["journey:rules-authorization"]
+    assert rules["guide"] == "generated/production/rules.md"
     assert contract["audiences"] == list(ia.AUDIENCES)
     assert contract["intents"] == list(ia.INTENTS)
     assert contract["page_types"] == list(ia.PAGE_TYPES)
@@ -189,7 +190,31 @@ def test_cross_link_and_search_contracts_are_static_deterministic_and_safe():
         "event nats",
         "why do we believe this",
         "documentation generator",
+        "identity passkey",
+        "rules authorization",
     } <= aliases
+
+
+def test_identity_and_rules_traces_remain_fastapi_control_plane_owned():
+    traces = json.loads(
+        (ROOT / "contracts/generated/documentation-enterprise/api-ui-trace.json").read_text()
+    )
+    by_action = {row["action"]: row for row in traces["items"]}
+    required = {
+        "Passkey registration",
+        "Passkey sign-in",
+        "Passkey step-up",
+        "Enterprise membership",
+        "Rules revision lifecycle",
+        "Rules analysis and simulation",
+        "Rules approval review",
+        "Rules temporary exception",
+    }
+    assert required <= set(by_action)
+    for action in required:
+        row = by_action[action]
+        assert row["execution_owner"].startswith("FastAPI control-plane service")
+        assert all("NATS" not in value for value in row["nats_or_event"])
 
 
 def test_documentation_platform_is_self_documenting_and_security_bounded():
@@ -281,4 +306,3 @@ def test_generated_ia_links_use_correct_markdown_and_browser_bases():
 
     assert 'href="use/"' not in start_here
     assert 'href="operate/"' not in start_here
-

@@ -86,8 +86,10 @@ Applies human authentication/session/CSRF guards plus device identity, duplicate
 ## Depends on / uses
 
 - affected_by: `Bootstrap artifacts are backend-generated and identity-guarded`
+- depends_on: `Passkey, step-up, and Enterprise identity controls`
 - depends_on: `Invite and identity lifecycle`
 - depends_on: `Lite node agent`
+- depends_on: `auth_session_assurance`
 - depends_on: `auth_sessions`
 - depends_on: `device_identity_guards`
 - depends_on: `device_invite_lifecycle`
@@ -99,6 +101,8 @@ Applies human authentication/session/CSRF guards plus device identity, duplicate
 - protected_by: `Control API boundary`
 - protected_by: `Control API boundary`
 - publishes: `pocketlab.events.fleet.invite_created`
+- recovers_with: `Enterprise membership change protected`
+- recovers_with: `Passkey or step-up refused`
 - related_to: `pocketlab.events.fleet.bootstrap_blocked`
 - related_to: `pocketlab.events.fleet.invite_accepted`
 - uses: `POST /api/lite/fleet/add-device`
@@ -129,4 +133,6 @@ No canonical component introduction/fix release is recorded, so release history 
 
 - `architecture/metadata/pocket-lab-architecture.json`
 - `pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py`
 - `pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py`
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py`
