@@ -49,7 +49,7 @@ body {
 code, kbd, pre, samp { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
 .md-grid { max-width: 92rem; }
 .md-main__inner { margin-top: 1.5rem; }
-.md-main, .md-main__inner, .md-content, .md-content__inner { min-width: 0; max-width: 100%; }
+.md-main, .md-main__inner, .md-content, .md-content__inner { min-width: 0; max-width: 100%; overflow-x: clip; }
 .md-content__inner { max-width: 72rem; margin-inline: auto; }
 .md-typeset h1 { margin-bottom: 1.25rem; font-weight: 750; letter-spacing: -0.035em; }
 .md-typeset h2 { margin-top: 2.5rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--pl-border); font-weight: 700; letter-spacing: -0.02em; }

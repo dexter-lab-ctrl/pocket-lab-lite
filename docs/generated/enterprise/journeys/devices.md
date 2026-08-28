@@ -19,6 +19,10 @@ Canonical user guide: [Devices guide](../../production/devices.md).
 
 Source-derived journeys in the canonical Knowledge Graph: Add Device, Device bootstrap and enrollment, Device offline and reconnect recovery, Remove Old Device, Restart Agent.
 
+## User-oriented sequence
+
+<ol class="pl-journey-stepper" aria-label="User-oriented sequence"><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">01</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Start</span><p>A device to join.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">02</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Request</span><p>Add Device and use the generated invite.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">03</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Check</span><p>Name, role, expiry, duplicate identity, and safe acceptance.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">04</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Execute</span><p>FastAPI, then the generated bootstrap, node agent, and supervisor.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">05</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Evidence</span><p>Audit evidence and heartbeats.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">06</span><div class="pl-journey-step-content"><span class="pl-journey-stage">See</span><p>An accurate Devices state.</p></div></li></ol>
+
 ## Typical user journey
 
 - `journey:add-device`
@@ -119,6 +123,7 @@ Execution ownership: FastAPI → NATS/JetStream → node agent/supervisor.
 - `test:tests/backend/test_lite_devices_durable_enrollment.py`
 - `test:tests/backend/test_lite_devices_production_readiness.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
+- `test:tests/docs/test_documentation_ia.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`

@@ -7,7 +7,7 @@ page_type: journey
 confidence: generated
 ---
 
-# Identity Feature Journey
+# Identity & Access Feature Journey
 
 <div class="pl-page-lede"><strong>One feature journey, many canonical authorities.</strong><p>This page orchestrates existing repository knowledge. It does not duplicate or override the linked architecture, API, event, data, security, test, evidence, or runbook sources.</p></div>
 
@@ -18,6 +18,10 @@ Canonical user guide: [Identity guide](../../production/identity.md).
 ## What the user sees
 
 Source-derived journeys in the canonical Knowledge Graph: Local owner, passkey, recovery, and session lifecycle, Opt-in Enterprise membership and authoritative roles.
+
+## User-oriented sequence
+
+<ol class="pl-journey-stepper" aria-label="User-oriented sequence"><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">01</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Start</span><p>Owner claim, sign-in, passkey, session, or recovery need.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">02</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Request</span><p>The relevant Identity &amp; Access control.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">03</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Check</span><p>Server-side authorization and WebAuthn/session constraints.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">04</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Execute</span><p>FastAPI-owned identity services.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">05</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Evidence</span><p>Bounded audit and verified access state.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">06</span><div class="pl-journey-step-content"><span class="pl-journey-stage">See</span><p>An accurate Identity &amp; Access state.</p></div></li></ol>
 
 ## Typical user journey
 

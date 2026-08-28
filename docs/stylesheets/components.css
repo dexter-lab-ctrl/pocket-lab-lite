@@ -12,6 +12,8 @@
 .pl-hero h1 { max-width: 18ch; margin-top: 0; }
 .pl-hero p { max-width: 65ch; font-size: 1.05rem; }
 .pl-card-grid { width: 100%; max-width: 100%; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; margin: 1.25rem 0 2rem; }
+.md-content__inner:has(.pl-use-grid) { max-width: none; margin-inline: 0; }
+.pl-use-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .pl-card { box-sizing: border-box; min-width: 0; max-width: 100%; padding: 1.15rem 1.2rem; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-lg); background: var(--md-default-bg-color); box-shadow: var(--pl-shadow); }
 .pl-card > :first-child { margin-top: 0; }
 .pl-card > :last-child { margin-bottom: 0; }
@@ -65,8 +67,11 @@
   }
 }
 
-/* Dark-mode semantic badges use lighter foregrounds to preserve status meaning
-   while meeting WCAG AA on the Pocket Lab dark surfaces. */
+@media screen and (min-width: 45em) and (max-width: 76.2344em) {
+  .pl-use-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Dark-mode badges retain semantic contrast. */
 [data-md-color-scheme="pocketlab-dark"] .pl-status--verified {
   color: #86efac;
   background: rgba(134, 239, 172, 0.1);
@@ -84,12 +89,7 @@
   background: rgba(252, 165, 165, 0.1);
 }
 
-/* pocketlab-mobile-nav-title-contrast:start */
-/*
- * Material uses the primary palette as the background for nested mobile
- * navigation titles. The previous slate background (#64748b) provided only
- * 3.94:1 contrast with the dark-theme foreground.
- */
+/* Keep dark mobile navigation titles above Material's low-contrast default. */
 [data-md-color-scheme="pocketlab-dark"] .md-nav__title {
   background-color: #334155;
   color: #f8fafc;
@@ -98,9 +98,6 @@
 [data-md-color-scheme="pocketlab-dark"] .md-nav__title .md-ellipsis {
   color: inherit;
 }
-/* pocketlab-mobile-nav-title-contrast:end */
-
-
 /* Search metadata must meet WCAG AA in the dark documentation palette. */
 [data-md-color-scheme="pocketlab-dark"] .md-search-result__meta {
   background-color: #334155;
@@ -331,10 +328,7 @@
 .pl-architecture-legend__mark--dashed { height: 0; border-width: 0 0 2px; border-style: dashed; border-radius: 0; }
 .pl-architecture-legend__mark--dotted { height: 0; border-width: 0 0 2px; border-style: dotted; border-radius: 0; }
 .pl-architecture-legend__mark--boundary { border-style: dashed; background: color-mix(in srgb, var(--md-default-bg-color) 90%, var(--md-primary-fg-color)); }
-/* Do not apply inline-size containment to the poster figure. The figure uses
- * percentage sizing; inline-size containment makes that percentage resolve
- * against a zero intrinsic inline size, collapsing the content box to zero
- * while leaving only padding and borders visible. */
+/* Poster percentage sizing must not use inline-size containment. */
 .pl-architecture-diagram--poster {
   inline-size: 100%;
   max-inline-size: 100%;
@@ -369,11 +363,7 @@
   .pl-architecture-diagram--poster .pl-architecture-diagram__image { max-width: 100%; }
 }
 
-/* Material hides fragment-selected theme images until one of its built-in
- * palettes reveals them. Pocket Lab uses custom palette names, so use explicit
- * generated classes and an !important override. Default to the light image
- * when the palette attribute is absent or temporarily unresolved during page
- * navigation, then switch deterministically for pocketlab-dark. */
+/* Custom palettes select generated light/dark diagram variants explicitly. */
 .pl-architecture-diagram__image--light {
   display: block !important;
 }
@@ -393,9 +383,10 @@
   display: none !important;
 }
 
-/* Static promoted release shown beneath the repository identity. */
 .md-source__repository .pl-source-release {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
   margin-top: 0.08rem;
   font-size: 0.56rem;
   line-height: 1.25;
@@ -404,12 +395,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.md-source__repository .pl-source-release {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
 }
 
 .md-source__repository .pl-source-release__icon {

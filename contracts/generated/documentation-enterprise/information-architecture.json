@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 896,
+  "cross_link_count": 893,
   "feature_journeys": [
     {
       "api_entities": [
@@ -738,6 +738,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:add-device",
+          "target": "test:tests/docs/test_documentation_ia.py"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:device-enrollment",
           "target": "api:get:/api/lite/fleet"
@@ -1137,12 +1143,6 @@
           "relation_type": "verified_by",
           "source": "component:agent-supervisor",
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:agent-supervisor",
-          "target": "test:tests/backend/test_lite_devices_production_readiness.py"
         }
       ],
       "expansion": {
@@ -1181,6 +1181,7 @@
         "test:tests/backend/test_lite_devices_durable_enrollment.py",
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
@@ -4639,7 +4640,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 422,
+  "page_count": 423,
   "page_types": [
     "overview",
     "guide",
@@ -10243,9 +10244,7 @@
         "scripts/docs/enterprise/documentation_ia.py"
       ],
       "confidence": "generated",
-      "contextual_navigation_owners": [
-        "use"
-      ],
+      "contextual_navigation_owners": [],
       "domain": "devices",
       "generated": true,
       "id": "page:generated/enterprise/journeys/devices",
@@ -10257,9 +10256,7 @@
       "path": "generated/enterprise/journeys/devices.md",
       "primary_audience": "user",
       "primary_navigation_owner": "use",
-      "related_pages": [
-        "page:generated/enterprise/hubs/use"
-      ],
+      "related_pages": [],
       "source_or_generator": "scripts/docs/enterprise/documentation_ia.py",
       "title": "Devices Feature Journey",
       "url": "/generated/enterprise/journeys/devices/"
@@ -10273,9 +10270,7 @@
         "scripts/docs/enterprise/documentation_ia.py"
       ],
       "confidence": "generated",
-      "contextual_navigation_owners": [
-        "use"
-      ],
+      "contextual_navigation_owners": [],
       "domain": "identity",
       "generated": true,
       "id": "page:generated/enterprise/journeys/identity",
@@ -10287,9 +10282,7 @@
       "path": "generated/enterprise/journeys/identity.md",
       "primary_audience": "user",
       "primary_navigation_owner": "use",
-      "related_pages": [
-        "page:generated/enterprise/hubs/use"
-      ],
+      "related_pages": [],
       "source_or_generator": "scripts/docs/enterprise/documentation_ia.py",
       "title": "Identity Feature Journey",
       "url": "/generated/enterprise/journeys/identity/"
@@ -10383,9 +10376,7 @@
         "scripts/docs/enterprise/documentation_ia.py"
       ],
       "confidence": "generated",
-      "contextual_navigation_owners": [
-        "use"
-      ],
+      "contextual_navigation_owners": [],
       "domain": "rules",
       "generated": true,
       "id": "page:generated/enterprise/journeys/rules",
@@ -10397,9 +10388,7 @@
       "path": "generated/enterprise/journeys/rules.md",
       "primary_audience": "user",
       "primary_navigation_owner": "use",
-      "related_pages": [
-        "page:generated/enterprise/hubs/use"
-      ],
+      "related_pages": [],
       "source_or_generator": "scripts/docs/enterprise/documentation_ia.py",
       "title": "Rules Feature Journey",
       "url": "/generated/enterprise/journeys/rules/"
@@ -12391,7 +12380,7 @@
         "page:generated/enterprise/hubs/use"
       ],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
-      "title": "Apps and PhotoPrism",
+      "title": "Apps",
       "url": "/generated/production/apps/"
     },
     {
@@ -14586,7 +14575,7 @@
         "page:generated/enterprise/hubs/use"
       ],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
-      "title": "Devices and onboarding",
+      "title": "Devices",
       "url": "/generated/production/devices/"
     },
     {
@@ -14631,6 +14620,36 @@
       "contextual_navigation_owners": [
         "use"
       ],
+      "domain": "documentation",
+      "generated": true,
+      "id": "page:generated/production/home",
+      "intents": [
+        "learn",
+        "use"
+      ],
+      "page_type": "reference",
+      "path": "generated/production/home.md",
+      "primary_audience": "user",
+      "primary_navigation_owner": "use",
+      "related_pages": [
+        "page:generated/enterprise/hubs/use"
+      ],
+      "source_or_generator": "scripts/docs/lite/generate_docs.py",
+      "title": "Home",
+      "url": "/generated/production/home/"
+    },
+    {
+      "additional_audiences": [
+        "operator"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/lite/generate_docs.py"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [
+        "use"
+      ],
       "domain": "identity",
       "generated": true,
       "id": "page:generated/production/identity",
@@ -14646,7 +14665,7 @@
         "page:generated/enterprise/hubs/use"
       ],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
-      "title": "Identity",
+      "title": "Identity & Access",
       "url": "/generated/production/identity/"
     },
     {
@@ -15352,7 +15371,7 @@
         "page:generated/enterprise/hubs/use"
       ],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
-      "title": "Backup and restore",
+      "title": "Backup & Restore",
       "url": "/generated/production/recovery/"
     },
     {
@@ -15552,7 +15571,7 @@
         "page:generated/enterprise/hubs/use"
       ],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
-      "title": "Security and Safety",
+      "title": "Security & Safety",
       "url": "/generated/production/security/"
     },
     {
@@ -15620,9 +15639,7 @@
         "scripts/docs/lite/generate_docs.py"
       ],
       "confidence": "generated",
-      "contextual_navigation_owners": [
-        "use"
-      ],
+      "contextual_navigation_owners": [],
       "domain": "documentation",
       "generated": true,
       "id": "page:generated/production/tabs",
@@ -15634,9 +15651,7 @@
       "path": "generated/production/tabs.md",
       "primary_audience": "user",
       "primary_navigation_owner": "use",
-      "related_pages": [
-        "page:generated/enterprise/hubs/use"
-      ],
+      "related_pages": [],
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
       "title": "Current Lite tabs",
       "url": "/generated/production/tabs/"
@@ -15943,7 +15958,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "f84774701c3138d5d1dd397cc172516fbb5527e8e52e97ab34de6bb0aae373d2",
+  "source_fingerprint": "86ede907a465763c34880177a896e17cdd525d79884774925190a0eb15651959",
   "top_level": [
     "start-here",
     "use",
