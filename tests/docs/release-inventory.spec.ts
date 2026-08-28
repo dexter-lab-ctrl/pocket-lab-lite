@@ -12,19 +12,22 @@ async function expectNoDocumentOverflow(page) {
 test('Release Inventory renders promoted evidence as a responsive enterprise catalog', async ({ page }) => {
   await page.goto(`${DOCS_PREFIX}generated/development/release-inventory/`);
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Release inventory' })).toBeVisible();
-  await expect(page.getByText('Promoted releases', { exact: true })).toBeVisible();
-  await expect(page.getByText('lite-2026.08.19.2', { exact: true }).first()).toBeVisible();
-  await expect(page.getByText('lite-2026.08.12.2', { exact: true }).first()).toBeVisible();
-  await expect(page.getByText('3/3 verified', { exact: true }).first()).toBeVisible();
+  const content = page.locator('.md-content');
+  const releaseKpis = content.locator('.pl-kpi-grid').first();
 
-  const disclosure = page.getByText('Artifact integrity and full digests', { exact: true }).first();
+  await expect(content.getByRole('heading', { level: 1, name: 'Release inventory' })).toBeVisible();
+  await expect(releaseKpis.getByText('Promoted releases', { exact: true })).toBeVisible();
+  await expect(content.getByText('lite-2026.08.19.2', { exact: true }).first()).toBeVisible();
+  await expect(content.getByText('lite-2026.08.12.2', { exact: true }).first()).toBeVisible();
+  await expect(content.getByText('3/3 verified', { exact: true }).first()).toBeVisible();
+
+  const disclosure = content.getByText('Artifact integrity and full digests', { exact: true }).first();
   await expect(disclosure).toBeVisible();
   await disclosure.click();
-  await expect(page.getByRole('columnheader', { name: 'SHA-256' }).first()).toBeVisible();
-  await expect(page.getByRole('rowheader', { name: 'dist.zip' }).first()).toBeVisible();
+  await expect(content.getByRole('columnheader', { name: 'SHA-256' }).first()).toBeVisible();
+  await expect(content.getByRole('rowheader', { name: 'dist.zip' }).first()).toBeVisible();
 
-  const procedure = page.getByRole('link', { name: 'Open Evidence & Promotion' });
+  const procedure = content.getByRole('link', { name: 'Open Evidence & Promotion' });
   await expect(procedure).toHaveAttribute('href', /release\/evidence-promotion\/$/);
   await expectNoDocumentOverflow(page);
 });
