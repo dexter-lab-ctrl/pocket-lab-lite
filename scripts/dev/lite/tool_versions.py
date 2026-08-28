@@ -37,7 +37,7 @@ EXPECTED = {
     "node": "24.16.0",
     "npm": "11.13.0",
     "python": "3.14.4",
-    "java": "17.0.19",
+    "java": "17.0.20",
     "task": "3.50.0",
     "chrome": "149.0.7827.102",
     "playwright": "1.60.0",
@@ -106,7 +106,7 @@ def main() -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schema_version": 2,
-        "baseline_verified_at": "2026-08-01",
+        "baseline_verified_at": "2026-08-28",
         "baseline_environment": "Ubuntu 26.04 under WSL2",
         "strictly_enforced": enforce,
         "protected_tools": results,

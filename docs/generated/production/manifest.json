@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "1e5f5d670709b6324dce94d69b2ded047b1f786d63494cb256639742a6f6112d",
+  "source_fingerprint": "ae852e970e2385b9f84509e4a446d978365eb0e16ee80c312f96ab8f18ee8983",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "47fe82dbfe9c84df2118beb09d7956ddc9863432120a6bb9e19da5f4770bc38f",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -69,7 +69,7 @@
     "scripts/dev/lite/setup-parity-tools.sh": "d12489a63a578e8cf6a06ba0cf73b354bf78ff8acec60a4c103eef312ab75ac4",
     "scripts/dev/lite/setup-system.sh": "508e775c78b4c328b65b303e9e0989e315b2f1d23f76f53c656252c2ac1942c2",
     "scripts/dev/lite/setup.sh": "db9a106eb4889bed57b68e0d19e651ef9d55c243b2507518f91abd30115a34a5",
-    "scripts/dev/lite/tool_versions.py": "c63de3193be4152f2c696e85e3d7fc108d483da7c0e4192f01e00aea67b0114d",
+    "scripts/dev/lite/tool_versions.py": "fd41f2e2a2e2ccd309d3cdd0b4372cc0438bdd3a318500e21ae63ecb1b136403",
     "scripts/dev/lite/validation_evidence.py": "bbca414f1a3fa1a505c2c36db88874eb728d146e03f87d0d2649e4791d2d98b8",
     "scripts/docs/lite/capture-storybook.mjs": "8f23bf560451088cdb0f456d444913ca6ea620108eee764b9d421cc372b9b2c8",
     "scripts/docs/lite/generate_contracts.py": "2c7cfb29237e3aaf587bda422b9ac1b2e3088cd01b825bcf277c52aef31fd73e",
