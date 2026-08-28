@@ -15,10 +15,10 @@ confidence: generated
 
 ## Inventory
 
-- Pages: **422**
+- Pages: **423**
 - Top-level hubs: **9**
 - Feature Journeys: **8**
-- Cross-links: **896**
+- Cross-links: **893**
 
 Every canonical page has one primary navigation owner. Other hubs may link contextually without duplicating the canonical destination.
 

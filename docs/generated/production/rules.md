@@ -1,13 +1,13 @@
 ---
 title: "Rules"
-description: "Rules is the operator view of loopback-only Open Policy Agent admission and bounded policy governance. FastAPI remains authoritative and preserves hard domain invariants before any policy call or continuation."
+description: "Rules presents bounded policy governance for registered protected actions. FastAPI keeps authority and applies domain invariants before its loopback-only OPA consultation; the browser never calls OPA."
 status: verified
 generated: true
 audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 3bd1846004fa5a873680d41dd98c02813d700c3d91507c781e5de3b5baa151ca
+source_fingerprint: f550711dc74aee58192a2de538c36f44f39585a42364cb9b53930ee3c78398d2
 schema_revision: 1
 validation_status: generated
 ---
@@ -19,23 +19,64 @@ validation_status: generated
 <span class="pl-status pl-status--patch-provided">Production guidance</span>
 </div>
 
-Rules is the operator view of loopback-only Open Policy Agent admission and bounded policy governance. FastAPI remains authoritative and preserves hard domain invariants before any policy call or continuation.
+Rules presents bounded policy governance for registered protected actions. FastAPI keeps authority and applies domain invariants before its loopback-only OPA consultation; the browser never calls OPA.
 
-## Runtime model
+## What this tab is for
 
-- OPA is installed as a pinned ARM64 runtime dependency and is not packaged in `dist.zip`.
-- Startup validates repository Rego with `opa fmt`, `opa check --strict`, and `opa test --fail-on-empty` before atomically activating a revision and starting `pocket-opa` on `127.0.0.1:8181`. OPA is not routed through Caddy and is not called by the browser or NATS.
-- FastAPI constructs bounded authorization input from server-owned actor/session and target state, asks loopback OPA, reuses existing domain invariants/revision checks, and only then reaches the existing execution path. Unavailable, timed-out, malformed, or unknown decisions fail closed.
+Rules presents bounded policy governance for registered protected actions. FastAPI keeps authority and applies domain invariants before its loopback-only OPA consultation; the browser never calls OPA.
 
-## Policy lifecycle and evaluation
+## What you see at a glance
 
-- Typed policy candidates become immutable revisions. Validation, activation/readiness, active and known-good state, rollback, and uncertain-recovery resolution remain explicit and auditable.
-- Analysis reports only direct registered-action coverage that current templates can prove. Simulation uses bounded real-derived or synthetic input and never executes an action.
-- Decision evidence stores bounded identifiers, allow/block state, stable reason code, policy revision, and evaluation duration; raw policy input, credentials, command payloads, and secrets are excluded.
+- `Personal Safety Rules posture, protections, safe templates, active/available rules, diagnostics and sanitized recent decisions`
+- `Enterprise tabs: Active Rules, Simulate, Decisions, Approvals, Exceptions, Health`
+- `Readiness, active/known-good/runtime-observed revision, degraded state and uncertain recovery where exposed`
 
-## Approval and exception bounds
+## Main cards and sections
 
-- A policy may require independent approval. An eligible Owner or Admin other than the initiator must complete purpose-bound passkey step-up for the exact action, target, and policy revision before an expiring approval is recorded. The initiator must retry; the matching continuation is atomic, one-use, and refuses replay. Approval never auto-executes an action.
-- Temporary exceptions are limited to exact `catalog.install` app/device/human/revision scope, must be revoked or expire within 60 minutes, and do not bypass hard domain invariants.
+<div class="pl-card-grid">
+<article class="pl-card"><span class="pl-card-kicker">At a glance</span><p>Personal Safety Rules posture, protections, safe templates, active/available rules, diagnostics and sanitized recent decisions</p></article>
+<article class="pl-card"><span class="pl-card-kicker">At a glance</span><p>Enterprise tabs: Active Rules, Simulate, Decisions, Approvals, Exceptions, Health</p></article>
+<article class="pl-card"><span class="pl-card-kicker">At a glance</span><p>Readiness, active/known-good/runtime-observed revision, degraded state and uncertain recovery where exposed</p></article>
+</div>
 
-The registered enforcement surface remains deliberately bounded; broader authorization coverage is not implied.
+## Buttons, controls and options
+
+<section class="pl-card-grid" aria-label="Buttons, controls and options">
+<article class="pl-card"><details class="pl-disclosure--compact pl-control-card"><summary><span class="pl-card-kicker">Control</span><h3>Copy revision</h3><span class="pl-control-card__purpose">Copies the displayed revision</span><span class="pl-control-card__availability"><span class="pl-control-card__availability-label">Available when</span><span class="pl-control-card__availability-value">When a revision is visible</span></span><span class="pl-control-card__toggle" aria-hidden="true"></span></summary><dl class="pl-detail-list pl-control-card__facts"><div><dt>Where</dt><dd>Active Rules</dd></div><div><dt>What happens next</dt><dd>Copies display text only</dd></div><div><dt>Success looks like</dt><dd>Copied feedback</dd></div><div><dt>May be blocked when</dt><dd>No revision present</dd></div></dl></details></article>
+<article class="pl-card"><details class="pl-disclosure--compact pl-control-card"><summary><span class="pl-card-kicker">Control</span><h3>Run Simulation</h3><span class="pl-control-card__purpose">Requests a non-executing evaluation</span><span class="pl-control-card__availability"><span class="pl-control-card__availability-label">Available when</span><span class="pl-control-card__availability-value">With revision, action, target and mode</span></span><span class="pl-control-card__toggle" aria-hidden="true"></span></summary><dl class="pl-detail-list pl-control-card__facts"><div><dt>Where</dt><dd>Simulate</dd></div><div><dt>What happens next</dt><dd>Returns allow/block/step-up, constraints and technical reason</dd></div><div><dt>Success looks like</dt><dd>Simulation result</dd></div><div><dt>May be blocked when</dt><dd>Invalid scenario or unavailable policy</dd></div></dl></details></article>
+<article class="pl-card"><details class="pl-disclosure--compact pl-control-card"><summary><span class="pl-card-kicker">Control</span><h3>Approve / Reject / Cancel</h3><span class="pl-control-card__purpose">Reviews a bounded approval request</span><span class="pl-control-card__availability"><span class="pl-control-card__availability-label">Available when</span><span class="pl-control-card__availability-value">For an eligible independent reviewer</span></span><span class="pl-control-card__toggle" aria-hidden="true"></span></summary><dl class="pl-detail-list pl-control-card__facts"><div><dt>Where</dt><dd>Approvals</dd></div><div><dt>What happens next</dt><dd>Passkey step-up and approval status change</dd></div><div><dt>Success looks like</dt><dd>Recorded approval outcome</dd></div><div><dt>May be blocked when</dt><dd>Initiator cannot self-approve, step-up fails, expiry, or cancellation</dd></div></dl></details></article>
+<article class="pl-card"><details class="pl-disclosure--compact pl-control-card"><summary><span class="pl-card-kicker">Control</span><h3>Create exception / Revoke</h3><span class="pl-control-card__purpose">Requests an exact temporary exception or its revocation</span><span class="pl-control-card__availability"><span class="pl-control-card__availability-label">Available when</span><span class="pl-control-card__availability-value">For allowed app/device/human/revision scope</span></span><span class="pl-control-card__toggle" aria-hidden="true"></span></summary><dl class="pl-detail-list pl-control-card__facts"><div><dt>Where</dt><dd>Exceptions</dd></div><div><dt>What happens next</dt><dd>Server records expiry and revision binding</dd></div><div><dt>Success looks like</dt><dd>Visible exception status</dd></div><div><dt>May be blocked when</dt><dd>Role restriction, unsupported scope, or expiry</dd></div></dl></details></article>
+<article class="pl-card"><details class="pl-disclosure--compact pl-control-card"><summary><span class="pl-card-kicker">Control</span><h3>Decision filters / details</h3><span class="pl-control-card__purpose">Filters and expands bounded decision evidence</span><span class="pl-control-card__availability"><span class="pl-control-card__availability-label">Available when</span><span class="pl-control-card__availability-value">When decisions exist</span></span><span class="pl-control-card__toggle" aria-hidden="true"></span></summary><dl class="pl-detail-list pl-control-card__facts"><div><dt>Where</dt><dd>Decisions</dd></div><div><dt>What happens next</dt><dd>Shows action, target, reason, time and sanitized metadata</dd></div><div><dt>Success looks like</dt><dd>Visible decision row</dd></div><div><dt>May be blocked when</dt><dd>No matching evidence</dd></div></dl></details></article>
+</section>
+
+## What happens when you use them
+
+Controls request supported FastAPI actions or navigate to another tab. The browser does not execute shell commands, directly contact NATS or OPA, or hold backend secrets. Progress and prepared reads are rendered after backend-owned work returns bounded evidence.
+
+## Statuses and messages
+
+Treat **Ready**, **Completed**, and visible verified evidence as distinct from **Waiting**, **Working**, **Needs attention**, **Blocked**, **Failed**, saved, or degraded states. A saved projection explains what was last known; it does not authorize a write or prove a fresh action succeeded. Approval never auto-executes an action.
+
+<section class="pl-status-panel" aria-label="Status matrix"><div class="pl-status-panel__header"><span class="pl-card-kicker">Status matrix</span><h3>Rules states at a glance</h3><p>Read the state before retrying or taking a related action.</p></div><div class="pl-table-wrap"><table class="pl-status-matrix"><caption>Rules status matrix</caption><thead><tr><th scope="col">Status</th><th scope="col">What it means</th><th scope="col">What to do</th></tr></thead><tbody><tr><th scope="row"><span class="pl-status-pill pl-status-pill--ready">Ready / available</span></th><td data-label="What it means">The displayed control can accept a supported request.</td><td data-label="What to do">Select it, then follow the returned progress and evidence.</td></tr><tr><th scope="row"><span class="pl-status-pill pl-status-pill--working">Working / waiting</span></th><td data-label="What it means">A request is in progress or is awaiting a stated prerequisite.</td><td data-label="What to do">Wait for a fresh state; resolve the named prerequisite before retrying.</td></tr><tr><th scope="row"><span class="pl-status-pill pl-status-pill--complete">Completed / verified</span></th><td data-label="What it means">The backend returned a bounded result or verification evidence.</td><td data-label="What to do">Review the visible outcome before taking a related action.</td></tr><tr><th scope="row"><span class="pl-status-pill pl-status-pill--attention">Needs attention / blocked</span></th><td data-label="What it means">Rules cannot safely continue. Examples: No revision present; Invalid scenario or unavailable policy; Initiator cannot self-approve, step-up fails, expiry, or cancellation.</td><td data-label="What to do">Read the specific message and use the stated recovery path; do not infer success.</td></tr><tr><th scope="row"><span class="pl-status-pill pl-status-pill--saved">Saved / degraded / failed</span></th><td data-label="What it means">The view is historical, incomplete, or the request did not complete.</td><td data-label="What to do">Refresh prepared state or investigate the bounded evidence; a saved view does not authorize a write.</td></tr></tbody></table></div></section>
+
+## Common workflows
+
+- `Personal Mode: review protections, diagnostics (engine, runtime, network boundary, package/revision, reason code), and recent allowed/blocked decisions.`
+- `Enterprise: inspect revisions, use non-executing simulation, review decisions/approvals/exceptions/health.`
+- `After a valid one-use approval continuation, the requester retries the exact protected action.`
+
+## When something is unavailable
+
+Degraded, uncertain recovery, unavailable policy, insufficient role/assurance, and blocked decisions fail closed. Approval does not execute the protected action.
+
+## Safety / trust boundaries
+
+OPA is loopback-only and additive to FastAPI domain invariants. Evidence excludes raw policy input, command payloads, credentials, secrets, and private paths.
+
+## Related Feature Journey
+
+[Rules Feature Journey](../enterprise/journeys/rules.md)
+
+## Related technical references
+
+[OPA policy-engine architecture](architecture/components/opa-policy-engine.md) · [Security boundaries](security-boundaries.md)

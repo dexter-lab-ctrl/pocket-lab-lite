@@ -19,6 +19,10 @@ Canonical user guide: [Recovery guide](../../production/recovery.md).
 
 Source-derived journeys in the canonical Knowledge Graph: Backup creation and verification, Recovery reconciliation, Restore preview, Confirmed restore.
 
+## User-oriented sequence
+
+<ol class="pl-journey-stepper" aria-label="User-oriented sequence"><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">01</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Start</span><p>Data to protect or a restore point.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">02</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Request</span><p>Backup, verify, preview, then confirmed restore.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">03</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Check</span><p>Freshness, locks, confirmation, and restore guards.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">04</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Execute</span><p>Backend/worker recovery services.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">05</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Evidence</span><p>Verification and health evidence.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">06</span><div class="pl-journey-step-content"><span class="pl-journey-stage">See</span><p>A truthful recovery status.</p></div></li></ol>
+
 ## Typical user journey
 
 - `journey:backup-create`

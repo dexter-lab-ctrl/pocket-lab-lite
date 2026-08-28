@@ -136,6 +136,7 @@ nav:
           - Security & Safety: generated/enterprise/journeys/security.md
           - Backup & Restore: generated/enterprise/journeys/recovery.md
           - Identity: generated/enterprise/journeys/identity.md
+          - Rules: generated/enterprise/journeys/rules.md
   - Operate:
       - Overview: generated/enterprise/hubs/operate.md
       - Current health: generated/production/intelligence/current-health.md

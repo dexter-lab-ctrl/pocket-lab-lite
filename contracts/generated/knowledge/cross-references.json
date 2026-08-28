@@ -10045,6 +10045,10 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:platform",
           "type": "verified_by"
         },
@@ -10087,11 +10091,23 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:platform",
           "type": "verified_by"
         },
         {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:add-device",
           "type": "verified_by"
         }
       ],
@@ -20901,6 +20917,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_ia.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_intelligence.py",
           "type": "verified_by"
         },
@@ -21612,6 +21636,10 @@
         },
         {
           "target": "test:tests/docs/mkdocs.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
         {
@@ -22764,6 +22792,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         }
       ],
@@ -27001,6 +27033,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ff2bde25cf6bda0b2e79607080d85750e4c0d09abdbca731721b38e121d4827f"
+    "source_fingerprint": "1f16d0248fc0a41231eb920a324574648a79b638573ce31f7b3f848383a0b6b2"
   }
 }

@@ -272,6 +272,72 @@ def test_documentation_ia_build_is_deterministic_without_runtime_access():
     ):
         assert forbidden not in source
 
+
+def test_use_hub_and_production_guides_are_sectioned_and_stable():
+    use = (ROOT / "docs/generated/enterprise/hubs/use.md").read_text(encoding="utf-8")
+    assert "Use Pocket Lab Lite" in use
+    assert "## Choose a tab" in use
+    assert "## Tab at a glance" in use
+    assert "## Feature Journeys" in use
+    for label in ("Home", "Devices", "Apps", "Security & Safety", "Backup & Restore", "Identity & Access", "Rules"):
+        assert label in use
+
+    home = ROOT / "docs/generated/production/home.md"
+    identity = ROOT / "docs/generated/production/identity.md"
+    assert home.exists()
+    assert identity.exists()
+    assert "# Identity & Access" in identity.read_text(encoding="utf-8")
+    assert (ROOT / "docs/generated/enterprise/journeys/identity.md").exists()
+    assert (ROOT / "docs/generated/enterprise/journeys/rules.md").exists()
+    expected_controls = {
+        "home": "Workspace summary",
+        "devices": "Add Device",
+        "apps": "Open",
+        "security": "Choose scan",
+        "recovery": "Backup Now",
+        "identity": "Create your passkey / Add passkey",
+        "rules": "Run Simulation",
+    }
+    old_controls_header = (
+        "| Control | Where it appears | What it does | When it is available | "
+        "What happens next | What success looks like | Why it may be unavailable |"
+    )
+    for guide, expected_control in expected_controls.items():
+        page = (ROOT / f"docs/generated/production/{guide}.md").read_text(encoding="utf-8")
+        assert "## Buttons, controls and options" in page
+        controls = page.split("## Buttons, controls and options\n", 1)[1].split("\n## ", 1)[0]
+        assert '<section class="pl-card-grid" aria-label="Buttons, controls and options">' in controls
+        assert controls.count('<article class="pl-card">') >= 2
+        assert f"<h3>{expected_control}</h3>" in controls
+        assert old_controls_header not in controls
+        assert "## Related Feature Journey" in page
+
+
+def test_generated_feature_journeys_use_a_semantic_six_step_stepper():
+    journey_pages = sorted((ROOT / "docs/generated/enterprise/journeys").glob("*.md"))
+    assert {page.stem for page in journey_pages} == set(ia.JOURNEYS)
+
+    for page in journey_pages:
+        content = page.read_text(encoding="utf-8")
+        sequence = content.split("## User-oriented sequence\n", 1)[1].split("\n## ", 1)[0]
+
+        assert '<ol class="pl-journey-stepper" aria-label="User-oriented sequence">' in sequence
+        assert sequence.count('<li class="pl-journey-step">') == 6
+        assert sequence.count('<div class="pl-journey-step-content">') == 6
+        assert sequence.count('<span class="pl-journey-stage">') == 6
+        markers = [
+            f'<span class="pl-journey-marker" aria-hidden="true">{index:02d}</span>'
+            for index in range(1, 7)
+        ]
+        assert all(sequence.count(marker) == 1 for marker in markers)
+        assert [sequence.index(marker) for marker in markers] == sorted(
+            sequence.index(marker) for marker in markers
+        )
+        assert "pl-journey-flow" not in sequence
+        assert "pl-journey-arrow" not in sequence
+        assert "→" not in sequence
+
+
 def test_generated_ia_links_use_correct_markdown_and_browser_bases():
     start_here = (
         ROOT / "docs/generated/enterprise/hubs/start-here.md"

@@ -2869,6 +2869,8 @@
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+        "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
@@ -2975,6 +2977,7 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
@@ -3196,7 +3199,8 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_d2_d3.py",
-        "test:tests/backend/test_lite_devices_durable_enrollment.py"
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/docs/test_documentation_ia.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3644,6 +3648,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ff2bde25cf6bda0b2e79607080d85750e4c0d09abdbca731721b38e121d4827f"
+    "source_fingerprint": "1f16d0248fc0a41231eb920a324574648a79b638573ce31f7b3f848383a0b6b2"
   }
 }

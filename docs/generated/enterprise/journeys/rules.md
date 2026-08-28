@@ -19,6 +19,10 @@ Canonical user guide: [Rules guide](../../production/rules.md).
 
 Source-derived journeys in the canonical Knowledge Graph: Typed Safety Rules authorization, lifecycle, simulation, and continuations.
 
+## User-oriented sequence
+
+<ol class="pl-journey-stepper" aria-label="User-oriented sequence"><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">01</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Start</span><p>A protected action.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">02</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Request</span><p>The requested action or a Rules review control.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">03</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Check</span><p>FastAPI domain invariants and loopback-only OPA for registered actions.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">04</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Execute</span><p>FastAPI keeps authority; approval is only a gate.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">05</span><div class="pl-journey-step-content"><span class="pl-journey-stage">Evidence</span><p>Sanitized allow, block, step-up, approval, continuation, or exception evidence.</p></div></li><li class="pl-journey-step"><span class="pl-journey-marker" aria-hidden="true">06</span><div class="pl-journey-step-content"><span class="pl-journey-stage">See</span><p>A truthful decision; retry after a valid approval continuation.</p></div></li></ol>
+
 ## Typical user journey
 
 - `journey:rules-authorization`

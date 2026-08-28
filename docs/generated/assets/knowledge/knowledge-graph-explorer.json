@@ -16243,6 +16243,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:13e76c8257e6457b",
+      "source": "domain:recovery",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_device_system_profile.py"
       ],
       "id": "rel:141277cd50c7cdee",
@@ -26302,6 +26316,20 @@
       "id": "rel:4de5e7ad232474fa",
       "source": "reason:actor_not_authenticated",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:4dfef145b9d20018",
+      "source": "journey:add-device",
+      "target": "test:tests/docs/test_documentation_ia.py",
       "type": "verified_by"
     },
     {
@@ -42775,6 +42803,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_documentation_ia.py"
+      ],
+      "id": "rel:b1e1fde11635f8f9",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
@@ -46487,6 +46529,20 @@
       "id": "rel:ca7f7d58ad620d6a",
       "source": "reason:owner_claim_reused",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/mkdocs.spec.ts"
+      ],
+      "id": "rel:ca8023891118ad3a",
+      "source": "domain:identity",
+      "target": "test:tests/docs/mkdocs.spec.ts",
       "type": "verified_by"
     },
     {

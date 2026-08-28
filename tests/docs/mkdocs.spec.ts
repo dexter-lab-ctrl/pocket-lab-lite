@@ -458,6 +458,93 @@ ${String(error)}`
   expect(consoleFailures).toEqual([]);
 });
 
+test('Identity and Rules journeys use a responsive semantic six-step stepper', async ({ page }, testInfo) => {
+  const viewport = testInfo.project.name === 'docs-mobile'
+    ? { width: 390, height: 844 }
+    : { width: 1440, height: 1000 };
+  await page.setViewportSize(viewport);
+
+  for (const [slug, heading] of [
+    ['identity', 'Identity & Access Feature Journey'],
+    ['rules', 'Rules Feature Journey'],
+  ] as const) {
+    await page.goto(`${DOCS_PREFIX}generated/enterprise/journeys/${slug}/`);
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+
+    const stepper = page.locator('ol.pl-journey-stepper');
+    const steps = stepper.locator(':scope > li.pl-journey-step');
+    const markers = steps.locator('.pl-journey-marker');
+    await expect(stepper).toHaveAttribute('aria-label', 'User-oriented sequence');
+    await expect(steps).toHaveCount(6);
+    await expect(markers).toHaveText(['01', '02', '03', '04', '05', '06']);
+    expect(await markers.evaluateAll((elements) =>
+      elements.every((marker) => marker.getAttribute('aria-hidden') === 'true'),
+    )).toBe(true);
+    await expect(steps.locator('.pl-journey-step-content')).toHaveCount(6);
+    await expect(steps.locator('.pl-journey-stage')).toHaveCount(6);
+    await expect(stepper.locator('.pl-journey-arrow')).toHaveCount(0);
+
+    const layout = await stepper.evaluate((element) => {
+      const steps = Array.from(element.querySelectorAll<HTMLElement>(':scope > li.pl-journey-step'));
+      const viewportWidth = document.documentElement.clientWidth;
+      const body = document.body;
+      const connector = steps.length > 1
+        ? getComputedStyle(steps[0], '::after')
+        : null;
+
+      return {
+        stepperDisplay: getComputedStyle(element).display,
+        viewportWidth,
+        bodyScrollWidth: body.scrollWidth,
+        documentScrollWidth: document.documentElement.scrollWidth,
+        steps: steps.map((step) => {
+          const rect = step.getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+        }),
+        connector: connector && {
+          content: connector.content,
+          display: connector.display,
+          position: connector.position,
+          width: connector.width,
+          height: connector.height,
+        },
+      };
+    });
+
+    expect(layout.bodyScrollWidth, `${slug} body horizontal overflow`).toBeLessThanOrEqual(layout.viewportWidth + 1);
+    expect(layout.documentScrollWidth, `${slug} document horizontal overflow`).toBeLessThanOrEqual(layout.viewportWidth + 1);
+
+    if (testInfo.project.name === 'docs-mobile') {
+      expect(layout.steps.map((step) => step.left).every((left, index, values) =>
+        index === 0 || Math.abs(left - values[0]) <= 1,
+      ), `${slug} steps should form one vertical column on mobile`).toBe(true);
+      expect(layout.steps.every((step, index, values) =>
+        index === 0 || step.top > values[index - 1].top,
+      ), `${slug} steps should progress vertically on mobile`).toBe(true);
+      expect(layout.steps.every((step, index, values) =>
+        index === 0 || step.top >= values[index - 1].bottom - 1,
+      ), `${slug} mobile step cards must not overlap vertically`).toBe(true);
+    } else {
+      expect(layout.stepperDisplay, `${slug} stepper should use desktop grid layout`).toBe('grid');
+      expect(layout.steps.map((step) => step.top).every((top, index, values) =>
+        index === 0 || Math.abs(top - values[0]) <= 1,
+      ), `${slug} desktop steps should share a grid row`).toBe(true);
+      expect(layout.steps.every((step, index, values) =>
+        index === 0 || values[index - 1].right <= step.left + 1,
+      ), `${slug} desktop step cards must not overlap horizontally`).toBe(true);
+    }
+
+    if (layout.connector && !['none', 'normal'].includes(layout.connector.content)) {
+      expect(layout.connector.display, `${slug} connector pseudo-element should render`).not.toBe('none');
+      expect(layout.connector.position, `${slug} connector pseudo-element should be positioned`).toBe('absolute');
+    }
+  }
+
+  expectNoExternalRuntimeRequests();
+  expect(consoleFailures, consoleFailures.join('\n')).toEqual([]);
+  expect(failedRequests, failedRequests.join('\n')).toEqual([]);
+});
+
 test('documentation intelligence dashboard is responsive, progressive, and evidence-aware', async ({ page }, testInfo) => {
   await page.goto(DOCS_PREFIX);
   await expect(page.locator('[data-pl-dashboard="true"]')).toBeVisible();

@@ -621,7 +621,103 @@
 }
 
 .pl-disclosure--compact { margin: 1rem 0 0; }
-.pl-disclosure--compact > summary { padding-block: .65rem; }
+section[aria-label="Buttons, controls and options"] > .pl-card {
+  padding: 0;
+  overflow: hidden;
+}
+.md-typeset details.pl-control-card {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.md-typeset details.pl-control-card > summary {
+  display: block;
+  min-height: 0;
+  padding: var(--pl-space-4);
+  cursor: pointer;
+  list-style: none;
+}
+.md-typeset details.pl-control-card > summary::-webkit-details-marker { display: none; }
+.pl-control-card summary > * { display: block; }
+.pl-control-card .pl-card-kicker {
+  margin-bottom: .2rem;
+  font-size: .68rem;
+  font-weight: 600;
+}
+.pl-control-card summary h3 {
+  margin: .2rem 0 0;
+  padding: 0;
+  border: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pl-control-card__purpose {
+  margin-top: .45rem;
+  color: var(--md-default-fg-color--light);
+  font-size: .9rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.pl-control-card__availability {
+  display: block;
+  width: auto;
+  margin-top: .8rem;
+  padding: .5rem .65rem;
+  border-inline-start: .2rem solid var(--md-accent-fg-color);
+  border-radius: var(--pl-radius-sm);
+  background: var(--pl-surface-muted);
+  color: var(--md-default-fg-color);
+  line-height: 1.45;
+}
+.pl-control-card__availability-label {
+  display: block;
+  color: var(--md-default-fg-color--light);
+  font-size: .72rem;
+  font-weight: 600;
+}
+.pl-control-card__availability-value {
+  display: block;
+  margin-top: .08rem;
+  font-size: .84rem;
+  font-weight: 400;
+}
+.pl-control-card__toggle {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: .8rem;
+  color: var(--md-accent-fg-color);
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pl-control-card__toggle::after { content: "Show details"; }
+.pl-control-card[open] .pl-control-card__toggle::after { content: "Hide details"; }
+.pl-control-card .pl-detail-list { margin: 0; border-top: 1px solid var(--pl-border); }
+.pl-control-card__facts > div { display: grid; grid-template-columns: minmax(7rem, .4fr) minmax(0, 1fr); gap: var(--pl-space-3); padding: .65rem .75rem; background: var(--md-default-bg-color); }
+.pl-control-card__facts > div + div { border-top: 1px solid var(--pl-border); }
+.pl-control-card__facts dt { color: var(--md-default-fg-color--light); font-size: .68rem; font-weight: 700; }
+.pl-control-card__facts dd { margin: 0; overflow-wrap: anywhere; }
+section[aria-label="Buttons, controls and options"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pl-table-wrap { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }
+.pl-status-panel { margin: 1rem 0 1.5rem; overflow: hidden; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-md); background: var(--pl-surface-raised); }
+.pl-status-panel__header { padding: var(--pl-space-3); border-bottom: 1px solid var(--pl-border); background: var(--pl-surface-muted); }
+.pl-status-panel__header h3 { margin: .2rem 0; font-size: .95rem; }
+.pl-status-panel__header p { margin: 0; color: var(--md-default-fg-color--light); font-size: .76rem; }
+.pl-status-matrix { width: 100%; min-width: 42rem; margin: 0; border: 0; }
+.pl-status-matrix caption { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.pl-status-matrix th, .pl-status-matrix td { padding: .75rem; vertical-align: top; }
+.pl-status-matrix th[scope="row"] { width: 11rem; white-space: normal; }
+.pl-status-pill { display: inline-block; padding: .2rem .45rem; border: 1px solid currentColor; border-radius: 999px; font-size: .68rem; font-weight: 700; line-height: 1.25; }
+.pl-status-pill--ready, .pl-status-pill--complete { color: var(--pl-success); background: color-mix(in srgb, var(--pl-success) 8%, transparent); }
+.pl-status-pill--working { color: var(--md-accent-fg-color); background: color-mix(in srgb, var(--md-accent-fg-color) 8%, transparent); }
+.pl-status-pill--attention { color: var(--pl-danger); background: color-mix(in srgb, var(--pl-danger) 8%, transparent); }
+.pl-status-pill--saved { color: var(--pl-warning); background: color-mix(in srgb, var(--pl-warning) 8%, transparent); }
+.pl-tab-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+.pl-tab-card { display: flex; flex-direction: column; min-height: 10rem; }
+.pl-tab-card h3 { margin: .25rem 0 .6rem; padding: 0; border: 0; font-size: 1rem; }
+.pl-tab-card p { margin: 0; color: var(--md-default-fg-color--light); font-size: .8rem; }
 .pl-detail-list { display: grid; gap: 1px; background: var(--pl-border); }
 .pl-detail-row {
   display: grid;
@@ -632,9 +728,7 @@
 }
 .pl-detail-row > div { min-width: 0; overflow-wrap: anywhere; }
 
-.pl-trace-flow,
-.pl-journey-flow,
-.pl-anatomy-flow {
+.pl-trace-flow {
   display: flex;
   gap: .5rem;
   max-width: 100%;
@@ -643,9 +737,7 @@
   scrollbar-width: thin;
   overscroll-behavior-inline: contain;
 }
-.pl-trace-flow > div,
-.pl-journey-flow > div,
-.pl-anatomy-flow > span {
+.pl-trace-flow > div {
   position: relative;
   flex: 1 0 9rem;
   min-width: 0;
@@ -654,8 +746,7 @@
   border-radius: var(--pl-radius-md);
   background: var(--pl-surface-muted);
 }
-.pl-trace-flow > div:not(:last-child)::after,
-.pl-journey-flow > div:not(:last-child)::after {
+.pl-trace-flow > div:not(:last-child)::after {
   content: "→";
   position: absolute;
   right: -.48rem;
@@ -665,13 +756,71 @@
   color: var(--md-default-fg-color--light);
   font-weight: 800;
 }
-.pl-trace-flow span,
-.pl-journey-flow span,
-.pl-anatomy-flow > span { color: var(--md-default-fg-color--light); font-size: .63rem; text-transform: uppercase; letter-spacing: .04em; }
-.pl-trace-flow strong,
-.pl-journey-flow strong,
-.pl-anatomy-flow strong { display: block; margin-top: .2rem; color: var(--md-default-fg-color); font-size: .72rem; text-transform: none; letter-spacing: 0; overflow-wrap: anywhere; }
-.pl-anatomy-flow > span { flex-basis: 7.5rem; }
+.pl-trace-flow span { color: var(--md-default-fg-color--light); font-size: .63rem; text-transform: uppercase; letter-spacing: .04em; }
+.pl-trace-flow strong { display: block; margin-top: .2rem; color: var(--md-default-fg-color); font-size: .72rem; text-transform: none; letter-spacing: 0; overflow-wrap: anywhere; }
+
+/* Feature journeys remain semantic ordered lists while presenting a static stepper. */
+.md-typeset ol.pl-journey-stepper {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  margin: 1.25rem 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+.md-typeset .pl-journey-step {
+  position: relative;
+  min-width: 0;
+  padding-inline-end: .7rem;
+}
+.pl-journey-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid var(--pl-info);
+  border-radius: 50%;
+  background: var(--pl-info);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.pl-journey-step:not(:last-child)::after {
+  position: absolute;
+  z-index: 0;
+  top: .8125rem;
+  right: 0;
+  left: 1.75rem;
+  height: 2px;
+  background: color-mix(in srgb, var(--md-accent-fg-color) 45%, var(--pl-border));
+  content: "";
+}
+.pl-journey-step-content { min-width: 0; margin-top: .55rem; }
+.pl-journey-stage {
+  display: block;
+  color: var(--md-default-fg-color--light);
+  font-size: .68rem;
+  font-weight: 650;
+  letter-spacing: .06em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+.pl-journey-step-content p {
+  margin: .25rem 0 0;
+  color: var(--md-default-fg-color);
+  font-size: .84rem;
+  font-weight: 400;
+  line-height: 1.45;
+  overflow-wrap: normal;
+}
+[data-md-color-scheme="pocketlab-dark"] .pl-journey-marker {
+  border-color: var(--pl-accent-400);
+  background: var(--pl-accent-400);
+  color: var(--pl-brand-950);
+}
 
 .pl-generated-diagram--contained { margin: 1rem 0 1.75rem; padding: var(--pl-space-3); }
 .pl-generated-diagram--contained img,
@@ -827,17 +976,48 @@
   .pl-repository-grid { grid-template-columns: 1fr; }
   .pl-card-head { flex-direction: column; }
   .pl-detail-row { grid-template-columns: 1fr; }
-  .pl-trace-flow,
-  .pl-journey-flow,
-  .pl-anatomy-flow { scroll-snap-type: x proximity; }
-  .pl-trace-flow > div,
-  .pl-journey-flow > div,
-  .pl-anatomy-flow > span { flex-basis: 78vw; scroll-snap-align: start; }
+  section[aria-label="Buttons, controls and options"] { grid-template-columns: 1fr; }
+  .pl-control-card__facts > div { grid-template-columns: 1fr; gap: .2rem; }
+  .pl-status-panel { border-radius: var(--pl-radius-sm); }
+  .pl-status-matrix { min-width: 0; }
+  .pl-status-matrix thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  .pl-status-matrix tbody, .pl-status-matrix tr { display: block; }
+  .pl-status-matrix tr { padding: .75rem; border-bottom: 1px solid var(--pl-border); }
+  .pl-status-matrix tr:last-child { border-bottom: 0; }
+  .pl-status-matrix th, .pl-status-matrix td { display: block; width: auto; padding: .2rem 0; border: 0; }
+  .pl-status-matrix td::before { content: attr(data-label); display: block; margin-bottom: .12rem; color: var(--md-default-fg-color--light); font-size: .65rem; font-weight: 700; }
+  .pl-tab-grid { grid-template-columns: 1fr; }
+  .pl-trace-flow { scroll-snap-type: x proximity; }
+  .pl-trace-flow > div { flex-basis: 78vw; scroll-snap-align: start; }
   .pl-technical-panel > summary { display: block; }
   .pl-technical-panel > summary small { display: block; margin-top: .15rem; }
   .pl-technical-delta__head { flex-direction: column; }
   .pl-technical-delta__metrics { grid-template-columns: 1fr 1fr; }
   .pl-delta-grid { grid-template-columns: 1fr; }
+}
+
+@media screen and (min-width: 45em) and (max-width: 76.2344em) {
+  .pl-tab-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media screen and (max-width: 83.9844em) {
+  .md-typeset ol.pl-journey-stepper { grid-template-columns: 1fr; gap: 1rem; }
+  .md-typeset .pl-journey-step {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    column-gap: .7rem;
+    padding: 0;
+  }
+  .pl-journey-marker { grid-column: 1; grid-row: 1; }
+  .pl-journey-step-content { grid-column: 2; grid-row: 1; margin-top: .05rem; }
+  .pl-journey-step:not(:last-child)::after {
+    top: 1.75rem;
+    right: auto;
+    bottom: -1rem;
+    left: .8125rem;
+    width: 2px;
+    height: auto;
+  }
 }
 
 @media print {
@@ -852,8 +1032,6 @@
   .pl-technical-delta,
   .pl-delta-card { box-shadow: none; break-inside: avoid; }
   .pl-trace-flow,
-  .pl-journey-flow,
-  .pl-anatomy-flow,
   .pl-generated-diagram--contained { overflow: visible; }
 }
 
@@ -1080,14 +1258,7 @@
   .pl-kg-relation-card { break-inside: avoid; }
 }
 
-/* --------------------------------------------------------------------------
- * Knowledge Graph WCAG AA text-contrast fence
- *
- * Keep this after the shared Material/Documentation Intelligence typography
- * rules. Knowledge Graph compact metadata is meaningful text, not decorative
- * secondary chrome, so it must retain normal foreground contrast on both
- * light and dark Pocket Lab palettes.
- * -------------------------------------------------------------------------- */
+/* Knowledge Graph metadata retains normal foreground contrast. */
 
 .md-content .pl-kg-kpis .pl-kpi > small,
 .md-content .pl-kg-taxonomy-card > small,
@@ -1099,11 +1270,7 @@
   opacity: 1;
 }
 
-/*
- * Explicitly retain adequate contrast for Knowledge Graph card kickers too.
- * The earlier stabilization already covers these, but the stronger
- * md-content scope prevents future shared-theme rules from overriding them.
- */
+/* Keep Knowledge Graph card kickers above shared-theme overrides. */
 .md-content .pl-kg-taxonomy-card > .pl-card-kicker,
 .md-content .pl-kg-specialist-card > .pl-card-kicker,
 .md-content .pl-kg-inspector > .pl-card-kicker {
@@ -1111,14 +1278,7 @@
   opacity: 1;
 }
 
-/* --------------------------------------------------------------------------
- * Knowledge Graph mobile table containment fence
- *
- * The Domain connectivity table is intentionally wider than narrow mobile
- * viewports. Keep that width inside one explicitly keyboard-accessible
- * Knowledge Graph scroll region rather than allowing Material's table
- * wrappers to increase the document scroll width.
- * -------------------------------------------------------------------------- */
+/* The wide domain table owns its horizontal overflow. */
 
 .md-content .pl-kg-domain-table {
   display: block;
@@ -1131,19 +1291,10 @@
   overscroll-behavior-inline: contain;
   scrollbar-gutter: auto;
 
-  /*
-   * Keep the intentionally wide table's intrinsic inline size isolated from
-   * document layout. The scroll region owns horizontal overflow; its contents
-   * must never contribute width to the MkDocs page itself.
-   */
   contain: inline-size;
 }
 
-/*
- * Material's generated table wrappers normally provide their own horizontal
- * scrolling and spacing. The Knowledge Graph already supplies the accessible
- * outer scroll region, so neutralize nested width/margin behavior here.
- */
+/* The outer region, not Material wrappers, owns scrolling and spacing. */
 .md-content .pl-kg-domain-table > .md-typeset__scrollwrap,
 .md-content .pl-kg-domain-table .md-typeset__scrollwrap {
   display: block;
@@ -1174,32 +1325,20 @@
   margin-inline: 0;
 }
 
-/*
- * Long canonical identifiers and domain names may wrap inside cells, but they
- * must never force the page itself beyond the viewport.
- */
+/* Identifiers may wrap without widening the page. */
 .md-content .pl-kg-domain-table th,
 .md-content .pl-kg-domain-table td {
   overflow-wrap: anywhere;
   word-break: normal;
 }
 
-/*
- * Preserve a visible keyboard focus indicator on the sole horizontal
- * scrolling owner.
- */
+/* Keep a visible focus ring on the scrolling owner. */
 .md-content .pl-kg-domain-table:focus-visible {
   outline: 2px solid var(--md-accent-fg-color);
   outline-offset: 2px;
 }
 
-/* Knowledge Graph page inline-size containment
- *
- * The Knowledge Graph contains an intentionally wide, independently
- * scrollable domain table. Prevent Material page wrappers from acquiring
- * residual inline overflow from scroll-container geometry while preserving
- * the table's own horizontal scrollbar.
- */
+/* Prevent table geometry from widening Material page wrappers. */
 .md-content__inner:has(.pl-kg-domain-table) {
   min-width: 0;
   max-width: 100%;

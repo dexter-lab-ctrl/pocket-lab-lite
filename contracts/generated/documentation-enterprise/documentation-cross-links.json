@@ -848,39 +848,6 @@
       "evidence": [
         "scripts/docs/enterprise/documentation_ia.py"
       ],
-      "id": "link:hub:use:page:generated/enterprise/journeys/devices",
-      "label": "Common journeys",
-      "relation_type": "contextual-link",
-      "source": "page:generated/enterprise/hubs/use",
-      "target": "page:generated/enterprise/journeys/devices",
-      "target_type": "page"
-    },
-    {
-      "evidence": [
-        "scripts/docs/enterprise/documentation_ia.py"
-      ],
-      "id": "link:hub:use:page:generated/enterprise/journeys/identity",
-      "label": "Identity journey",
-      "relation_type": "contextual-link",
-      "source": "page:generated/enterprise/hubs/use",
-      "target": "page:generated/enterprise/journeys/identity",
-      "target_type": "page"
-    },
-    {
-      "evidence": [
-        "scripts/docs/enterprise/documentation_ia.py"
-      ],
-      "id": "link:hub:use:page:generated/enterprise/journeys/rules",
-      "label": "Rules journey",
-      "relation_type": "contextual-link",
-      "source": "page:generated/enterprise/hubs/use",
-      "target": "page:generated/enterprise/journeys/rules",
-      "target_type": "page"
-    },
-    {
-      "evidence": [
-        "scripts/docs/enterprise/documentation_ia.py"
-      ],
       "id": "link:hub:use:page:generated/production/apps",
       "label": "Apps",
       "relation_type": "contextual-link",
@@ -903,8 +870,19 @@
       "evidence": [
         "scripts/docs/enterprise/documentation_ia.py"
       ],
+      "id": "link:hub:use:page:generated/production/home",
+      "label": "Home",
+      "relation_type": "contextual-link",
+      "source": "page:generated/enterprise/hubs/use",
+      "target": "page:generated/production/home",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/documentation_ia.py"
+      ],
       "id": "link:hub:use:page:generated/production/identity",
-      "label": "Identity",
+      "label": "Identity & Access",
       "relation_type": "contextual-link",
       "source": "page:generated/enterprise/hubs/use",
       "target": "page:generated/production/identity",
@@ -941,17 +919,6 @@
       "relation_type": "contextual-link",
       "source": "page:generated/enterprise/hubs/use",
       "target": "page:generated/production/security",
-      "target_type": "page"
-    },
-    {
-      "evidence": [
-        "scripts/docs/enterprise/documentation_ia.py"
-      ],
-      "id": "link:hub:use:page:generated/production/tabs",
-      "label": "Overview",
-      "relation_type": "contextual-link",
-      "source": "page:generated/enterprise/hubs/use",
-      "target": "page:generated/production/tabs",
       "target_type": "page"
     },
     {
@@ -2180,6 +2147,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:devices:28f308348774ac60",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "test:tests/docs/test_documentation_ia.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:devices:2b8c1e835080bd8f",
       "relation_type": "uses",
       "source": "page:generated/enterprise/journeys/devices",
@@ -2537,17 +2515,6 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "component:agent-supervisor",
       "target_type": "component"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:98734b557d906896",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "test:tests/backend/test_lite_devices_production_readiness.py",
-      "target_type": "test"
     },
     {
       "depth": 2,

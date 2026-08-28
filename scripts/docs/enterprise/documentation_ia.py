@@ -104,18 +104,15 @@ HUBS: dict[str, dict[str, Any]] = {
         "path": "generated/enterprise/hubs/use.md",
         "audience": "user",
         "intents": ["use", "learn"],
-        "description": "User-facing Pocket Lab Lite capabilities and common journeys.",
+        "description": "Use Pocket Lab Lite to understand each tab, its visible controls, truthful states, and the end-to-end journey behind a request.",
         "links": [
-            ("Overview", "generated/production/tabs.md", "Current Lite tabs and user-facing surfaces."),
+            ("Home", "generated/production/home.md", "Workspace readiness, saved/current information, and system update status."),
             ("Devices", "generated/production/devices.md", "Add, reconnect, restart, and retire devices safely."),
             ("Apps", "generated/production/apps.md", "Use the App Catalog and PhotoPrism through backend-owned actions."),
             ("Security & Safety", "generated/production/security.md", "Run bounded safety checks and review sanitized findings."),
             ("Backup & Restore", "generated/production/recovery.md", "Back up, verify, preview restore, and recover with confirmation."),
-            ("Identity", "generated/production/identity.md", "Identity and password-change behavior currently exposed by Lite."),
+            ("Identity & Access", "generated/production/identity.md", "Local human access, passkeys, sessions, recovery, and Enterprise memberships."),
             ("Rules", "generated/production/rules.md", "Current Rules surface and its documented limitations."),
-            ("Identity journey", "generated/enterprise/journeys/identity.md", "Source-derived identity, passkey, session, and enterprise-membership relationships."),
-            ("Rules journey", "generated/enterprise/journeys/rules.md", "Source-derived Rules admission, lifecycle, analysis, approval, continuation, and exception relationships."),
-            ("Common journeys", "generated/enterprise/journeys/devices.md", "Start with a feature journey and follow canonical technical truth."),
         ],
         "search_terms": ["add device", "restart agent", "app install", "security scan", "backup restore"],
     },
@@ -492,6 +489,36 @@ def _card(source_path: str, label: str, path: str, description: str) -> str:
 
 
 def render_hub(slug: str, spec: dict[str, Any]) -> str:
+    if slug == "use":
+        tabs = spec["links"]
+        journeys = [
+            ("Devices", "generated/enterprise/journeys/devices.md", "From invite through identity guard, supervision, and a visible heartbeat."),
+            ("Apps", "generated/enterprise/journeys/apps.md", "From a supported action request to backend-owned progress and evidence."),
+            ("Security & Safety", "generated/enterprise/journeys/security.md", "From a scan choice to normalized, sanitized findings."),
+            ("Backup & Restore", "generated/enterprise/journeys/recovery.md", "From backup through verification, preview, confirmation, checkpoint, and health validation."),
+            ("Identity & Access", "generated/enterprise/journeys/identity.md", "From claim, sign-in, passkey, session, or recovery to verified access state."),
+            ("Rules", "generated/enterprise/journeys/rules.md", "From protected action through FastAPI and loopback policy to an observable decision."),
+        ]
+        body = [
+            "# Use", "",
+            '<div class="pl-page-lede"><strong>Use Pocket Lab Lite</strong><p>Learn what every tab, card, and control is for; what it requests; what happens next; which success, degraded, or blocked states mean; and where to follow the complete feature journey.</p></div>',
+            "", "## Choose a tab", "", '<div class="pl-card-grid pl-use-grid">',
+        ]
+        body.extend(_card(spec["path"], label, path, description) for label, path, description in tabs)
+        body += ["</div>", "", "## Tab at a glance", "", "| Tab | What it is for | Main actions | When to use it |", "| --- | --- | --- | --- |"]
+        body += [
+            "| Home | Workspace and update summary | Refresh, navigate to shortcuts, check update | Start here for current or saved workspace information |",
+            "| Devices | Enrollment and device health | Add, reconnect, restart, retire | Manage the server host and joined devices |",
+            "| Apps | Supported app lifecycle | Open, manage, connect, import, back up, repair | Work with an installed app through FastAPI requests |",
+            "| Security & Safety | Bounded local checks | Choose a scan and review evidence | Review security posture without raw scanner output |",
+            "| Backup & Restore | Recovery workflow | Back up, verify, preview, restore | Protect or recover data with explicit confirmation |",
+            "| Identity & Access | Human access and memberships | Sign in, passkeys, recovery, sessions | Set up or manage local human access |",
+            "| Rules | Protected-action governance | Review, simulate, approve, exception | Understand policy decisions and their limits |",
+            "", "## Feature Journeys", "", "Follow these user-oriented paths when you need the whole request, checking, execution, evidence, and visible result rather than one tab in isolation.", "", '<div class="pl-card-grid pl-use-grid">',
+        ]
+        body.extend(_card(spec["path"], label, path, description) for label, path, description in journeys)
+        body += ["</div>", "", "## Search terms", "", "Use local documentation search for: " + ", ".join(f"`{x}`" for x in spec.get("search_terms", [])) + ".", "", "## Authority", "", "This hub is a derived navigation projection. Linked canonical source, contracts, and promoted evidence retain their own authority."]
+        return frontmatter(spec["title"], spec["description"], spec["audience"], "overview") + "\n".join(body).rstrip() + "\n"
     body = [
         f"# {spec['title']}",
         "",
@@ -634,6 +661,33 @@ def _journey_model(root: Path, slug: str, spec: dict[str, Any], sources: dict[st
     }
 
 
+def _journey_sequence(slug: str) -> list[tuple[str, str]]:
+    """Return a concise user view without replacing source-derived relations."""
+    sequences = {
+        "devices": [("Start", "A device to join."), ("Request", "Add Device and use the generated invite."), ("Check", "Name, role, expiry, duplicate identity, and safe acceptance."), ("Execute", "FastAPI, then the generated bootstrap, node agent, and supervisor."), ("Evidence", "Audit evidence and heartbeats."), ("See", "An accurate Devices state.")],
+        "apps": [("Start", "A supported catalog app."), ("Request", "A supported app action."), ("Check", "The action prerequisites and current state."), ("Execute", "FastAPI and backend-owned services."), ("Evidence", "Bounded progress and evidence."), ("See", "An updated app state.")],
+        "security": [("Start", "A safety question."), ("Request", "A scan profile."), ("Check", "Profile scope and availability."), ("Execute", "FastAPI, NATS/JetStream, and the worker."), ("Evidence", "Normalized, sanitized findings."), ("See", "A Security & Safety result or truthful failure state.")],
+        "recovery": [("Start", "Data to protect or a restore point."), ("Request", "Backup, verify, preview, then confirmed restore."), ("Check", "Freshness, locks, confirmation, and restore guards."), ("Execute", "Backend/worker recovery services."), ("Evidence", "Verification and health evidence."), ("See", "A truthful recovery status.")],
+        "identity": [("Start", "Owner claim, sign-in, passkey, session, or recovery need."), ("Request", "The relevant Identity & Access control."), ("Check", "Server-side authorization and WebAuthn/session constraints."), ("Execute", "FastAPI-owned identity services."), ("Evidence", "Bounded audit and verified access state."), ("See", "An accurate Identity & Access state.")],
+        "rules": [("Start", "A protected action."), ("Request", "The requested action or a Rules review control."), ("Check", "FastAPI domain invariants and loopback-only OPA for registered actions."), ("Execute", "FastAPI keeps authority; approval is only a gate."), ("Evidence", "Sanitized allow, block, step-up, approval, continuation, or exception evidence."), ("See", "A truthful decision; retry after a valid approval continuation.")],
+    }
+    return sequences.get(slug, [("Start", "What you start with."), ("Request", "What you click."), ("Check", "What Pocket Lab checks."), ("Execute", "Where execution happens."), ("Evidence", "What comes back."), ("See", "What you see when complete. This sequence is limited to linked source-derived relationships.")])
+
+
+def _render_journey_sequence(slug: str) -> str:
+    steps = _journey_sequence(slug)
+    items = "".join(
+        '<li class="pl-journey-step">'
+        f'<span class="pl-journey-marker" aria-hidden="true">{index:02d}</span>'
+        '<div class="pl-journey-step-content">'
+        f'<span class="pl-journey-stage">{html.escape(label)}</span>'
+        f'<p>{html.escape(description)}</p>'
+        '</div></li>'
+        for index, (label, description) in enumerate(steps, start=1)
+    )
+    return f'<ol class="pl-journey-stepper" aria-label="User-oriented sequence">{items}</ol>'
+
+
 def render_journey(model: dict[str, Any]) -> str:
     def chips(values: Iterable[str], empty: str) -> str:
         vals = list(values)
@@ -643,7 +697,7 @@ def render_journey(model: dict[str, Any]) -> str:
 
     source_names = [str(x) for x in model.get("user_journeys") or []]
     body = [
-        f"# {model['title']}",
+        f"# {('Identity & Access Feature Journey' if model['slug'] == 'identity' else model['title'])}",
         "",
         '<div class="pl-page-lede"><strong>One feature journey, many canonical authorities.</strong><p>This page orchestrates existing repository knowledge. It does not duplicate or override the linked architecture, API, event, data, security, test, evidence, or runbook sources.</p></div>',
         "",
@@ -654,6 +708,10 @@ def render_journey(model: dict[str, Any]) -> str:
         "## What the user sees",
         "",
         "Source-derived journeys in the canonical Knowledge Graph: " + (", ".join(source_names) if source_names else "none emitted") + ".",
+        "",
+        "## User-oriented sequence",
+        "",
+        _render_journey_sequence(model["slug"]),
         "",
         "## Typical user journey",
         "",
@@ -748,6 +806,7 @@ def _owner(path: str) -> str:
         "generated/production/knowledge/vocabulary.md": "start-here",
         "generated/production/knowledge/glossary.md": "start-here",
         "generated/production/tabs.md": "use",
+        "generated/production/home.md": "use",
         "generated/production/devices.md": "use",
         "generated/production/apps.md": "use",
         "generated/production/security.md": "use",
