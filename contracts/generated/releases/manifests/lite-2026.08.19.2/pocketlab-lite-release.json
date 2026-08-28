@@ -1,0 +1,35 @@
+{
+  "artifact_contract": [
+    "dist.zip",
+    "checksums.txt",
+    "pocketlab-lite-release.json"
+  ],
+  "artifacts": {
+    "checksums.txt": "ddb185e3d79e4bdb4e13f57f8f5c64b7972a1f7b60fef5693fc827db57f05fa5",
+    "dist.zip": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+    "pocketlab-lite-release.json": "9e83c4dfbc845995f4bceef8e2ac1349ee972b3e8017add464f81eabf93fc6b8"
+  },
+  "checksums_sha256": "ddb185e3d79e4bdb4e13f57f8f5c64b7972a1f7b60fef5693fc827db57f05fa5",
+  "dist_zip_sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+  "exclusions": [
+    "raw release URLs",
+    "credentials",
+    "secrets"
+  ],
+  "generated_from": "contracts/generated/releases/promoted-release-evidence.json",
+  "promotion_rule": "explicit-only; immutable per release tag",
+  "published_at": "2026-08-19T20:57:40Z",
+  "release_tag": "lite-2026.08.19.2",
+  "repository": "dexter-lab-ctrl/pocket-lab-lite",
+  "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+  "supported_architecture": [
+    "ARM64"
+  ],
+  "validation_evidence": [
+    "GitHub Release tag and source commit bound",
+    "required release assets present",
+    "dist.zip SHA-256 verified against checksums.txt",
+    "release manifest tag, source commit, and artifact digest verified"
+  ],
+  "verification_status": "promoted"
+}
