@@ -1483,6 +1483,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/release-inventory.spec.ts",
+      "name": "tests/docs/release-inventory.spec.ts",
+      "source_refs": [
+        "tests/docs/release-inventory.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_codebase_map.py",
       "name": "tests/docs/test_codebase_map.py",
       "source_refs": [
@@ -1577,6 +1587,16 @@
       "name": "tests/docs/test_operational_health_bridge.py",
       "source_refs": [
         "tests/docs/test_operational_health_bridge.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_release_inventory_experience.py",
+      "name": "tests/docs/test_release_inventory_experience.py",
+      "source_refs": [
+        "tests/docs/test_release_inventory_experience.py"
       ],
       "type": "test"
     },
@@ -1927,6 +1947,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f16d0248fc0a41231eb920a324574648a79b638573ce31f7b3f848383a0b6b2"
+    "source_fingerprint": "47f3a702834015929f62bbaeb5cbe87ad540a5f516348ad352622a7e0c5a24db"
   }
 }

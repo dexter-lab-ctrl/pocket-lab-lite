@@ -11245,6 +11245,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/release-inventory.spec.ts",
+      "name": "tests/docs/release-inventory.spec.ts",
+      "source_refs": [
+        "tests/docs/release-inventory.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_codebase_map.py",
       "name": "tests/docs/test_codebase_map.py",
       "source_refs": [
@@ -11348,6 +11359,17 @@
       "name": "tests/docs/test_operational_health_bridge.py",
       "source_refs": [
         "tests/docs/test_operational_health_bridge.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/test_release_inventory_experience.py",
+      "name": "tests/docs/test_release_inventory_experience.py",
+      "source_refs": [
+        "tests/docs/test_release_inventory_experience.py"
       ],
       "type": "test"
     },
@@ -23370,6 +23392,20 @@
       "id": "rel:3bf2df55016781be",
       "source": "api:post:/api/lite/identity/step-up/verify",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_release_inventory_experience.py"
+      ],
+      "id": "rel:3bfddae45c12f49f",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_release_inventory_experience.py",
       "type": "verified_by"
     },
     {
@@ -55418,6 +55454,20 @@
       "source": "domain:recovery",
       "target": "api:get:/api/lite/recovery/details",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_release_inventory_experience.py"
+      ],
+      "id": "rel:fe59ab617737ecc7",
+      "source": "component:github-repository",
+      "target": "test:tests/docs/test_release_inventory_experience.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

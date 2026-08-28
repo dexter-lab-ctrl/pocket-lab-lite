@@ -71,6 +71,7 @@ Hosts source and release workflow definitions; it is not a Lite runtime apply ow
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
+- verified_by: `tests/docs/test_release_inventory_experience.py`
 
 ## Used by / backlinks
 

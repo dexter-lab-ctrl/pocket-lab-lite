@@ -62,6 +62,9 @@ theme:
 plugins:
   - search
 
+hooks:
+  - scripts/docs/hooks/release_inventory.py
+
 markdown_extensions:
   - abbr
   - admonition

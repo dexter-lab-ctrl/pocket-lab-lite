@@ -22,6 +22,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 TRANSIENT = ROOT / ".pocketlab-dev/release-evidence"
 CANONICAL = ROOT / "contracts/generated/releases/promoted-release-evidence.json"
+MANIFEST_ROOT = ROOT / "contracts/generated/releases/manifests"
 REQUIRED = ("dist.zip", "checksums.txt", "pocketlab-lite-release.json")
 TAG_RE = re.compile(r"^lite-[A-Za-z0-9._-]+$")
 SHA_RE = re.compile(r"^[a-f0-9]{64}$")
@@ -43,8 +44,6 @@ def run(*args: str) -> str:
 def fail(message: str, code: int = 2) -> None:
     print(f"ERROR: {message}", file=sys.stderr)
     raise SystemExit(code)
-
-
 
 
 def ensure_dev_host() -> None:
@@ -83,6 +82,66 @@ def validate_capture(payload: dict[str, Any]) -> list[str]:
     if payload.get("sanitized") is not True: errors.append("capture is not marked sanitized")
     if payload.get("verification_status") not in {"verified", "promoted"}: errors.append("verification_status is not verified/promoted")
     return errors
+
+
+def release_manifest_snapshot(payload: dict[str, Any]) -> dict[str, Any]:
+    """Project promoted evidence into the manifest shape used by the Lite release catalog.
+
+    The snapshot contains only already-promoted, sanitized identity/integrity evidence.
+    It is deterministic and immutable per release tag so documentation generation can
+    discover verified releases without polling GitHub or reading transient captures.
+    """
+    artifacts = {
+        str(item["name"]): str(item["sha256"])
+        for item in payload.get("artifacts", [])
+        if isinstance(item, dict) and item.get("name") in REQUIRED and item.get("sha256")
+    }
+    missing = [name for name in REQUIRED if name not in artifacts]
+    if missing:
+        fail("cannot project release manifest; missing promoted artifact digest(s): " + ", ".join(missing))
+    binding = payload.get("manifest_binding") if isinstance(payload.get("manifest_binding"), dict) else {}
+    dist_digest = str(binding.get("dist_zip_sha256") or artifacts["dist.zip"])
+    if dist_digest != artifacts["dist.zip"]:
+        fail("cannot project release manifest; promoted dist.zip binding does not match artifact digest")
+    return {
+        "artifact_contract": list(REQUIRED),
+        "artifacts": artifacts,
+        "checksums_sha256": artifacts["checksums.txt"],
+        "dist_zip_sha256": dist_digest,
+        "exclusions": ["raw release URLs", "credentials", "secrets"],
+        "generated_from": "contracts/generated/releases/promoted-release-evidence.json",
+        "promotion_rule": str(payload.get("promotion_rule") or "explicit-only; immutable per release tag"),
+        "published_at": str(payload.get("published_at") or "unobserved"),
+        "release_tag": str(payload.get("release_tag") or ""),
+        "repository": str(payload.get("repository") or ""),
+        "source_commit": str(payload.get("source_commit") or ""),
+        "supported_architecture": ["ARM64"],
+        "validation_evidence": [
+            "GitHub Release tag and source commit bound",
+            "required release assets present",
+            "dist.zip SHA-256 verified against checksums.txt",
+            "release manifest tag, source commit, and artifact digest verified",
+        ],
+        "verification_status": "promoted",
+    }
+
+
+def write_manifest_snapshot(payload: dict[str, Any]) -> Path:
+    tag = str(payload.get("release_tag") or "")
+    if not TAG_RE.fullmatch(tag):
+        fail("cannot write release manifest snapshot with invalid tag")
+    target = MANIFEST_ROOT / tag / "pocketlab-lite-release.json"
+    expected = stable(release_manifest_snapshot(payload))
+    if target.exists():
+        current = target.read_text(encoding="utf-8")
+        if current != expected:
+            fail(f"refusing to rewrite historical release manifest snapshot for {tag}", 4)
+        return target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_suffix(".json.tmp")
+    tmp.write_text(expected, encoding="utf-8")
+    tmp.replace(target)
+    return target
 
 
 def capture(repo: str, tag: str) -> Path:
@@ -176,13 +235,17 @@ def promote(tag: str) -> None:
         comparable_new = {k:v for k,v in promoted.items() if k not in {"verification_status","promotion_rule"}}
         if comparable_existing != comparable_new:
             fail(f"refusing to rewrite historical promoted evidence for {tag}", 4)
+        manifest_path = write_manifest_snapshot(existing)
         print(f"PASS release evidence already promoted and unchanged: {tag}")
+        print(f"PASS release manifest snapshot current: {manifest_path.relative_to(ROOT)}")
         return
     rows.append(promoted)
     rows.sort(key=lambda x: (str(x.get("published_at") or ""), str(x.get("release_tag") or "")))
     CANONICAL.parent.mkdir(parents=True, exist_ok=True)
     tmp = CANONICAL.with_suffix(".json.tmp"); tmp.write_text(stable({"schema_version":"1.0.0","releases":rows}), encoding="utf-8"); tmp.replace(CANONICAL)
+    manifest_path = write_manifest_snapshot(promoted)
     print(f"PASS promoted release evidence: {CANONICAL.relative_to(ROOT)}")
+    print(f"PASS release manifest snapshot: {manifest_path.relative_to(ROOT)}")
 
 
 def check() -> None:
@@ -197,7 +260,14 @@ def check() -> None:
         tag=row["release_tag"]
         if tag in seen: fail(f"duplicate promoted release tag: {tag}")
         seen.add(tag)
+        snapshot_path = MANIFEST_ROOT / tag / "pocketlab-lite-release.json"
+        expected = stable(release_manifest_snapshot(row))
+        if not snapshot_path.exists():
+            fail(f"missing release manifest snapshot for promoted release: {tag}")
+        if snapshot_path.read_text(encoding="utf-8") != expected:
+            fail(f"release manifest snapshot drift for promoted release: {tag}")
     print(f"PASS promoted release evidence validated: {len(seen)} release(s)")
+    print(f"PASS immutable release manifest snapshots validated: {len(seen)} release(s)")
 
 
 def main() -> int:

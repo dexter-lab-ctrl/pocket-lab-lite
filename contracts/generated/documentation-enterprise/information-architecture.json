@@ -4640,7 +4640,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 423,
+  "page_count": 426,
   "page_types": [
     "overview",
     "guide",
@@ -15911,6 +15911,81 @@
       "url": "/reference/api/lite-api/"
     },
     {
+      "additional_audiences": [
+        "tester"
+      ],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "release/evidence-promotion.md"
+      ],
+      "confidence": "source-owned",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": false,
+      "id": "page:release/evidence-promotion",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "release/evidence-promotion.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "release/evidence-promotion.md",
+      "title": "Evidence & Promotion",
+      "url": "/release/evidence-promotion/"
+    },
+    {
+      "additional_audiences": [
+        "tester"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:releases/lite-2026.08.12.2",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "releases/lite-2026.08.12.2.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Release lite-2026.08.12.2",
+      "url": "/releases/lite-2026.08.12.2/"
+    },
+    {
+      "additional_audiences": [
+        "tester"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:releases/lite-2026.08.19.2",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "releases/lite-2026.08.19.2.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Release lite-2026.08.19.2",
+      "url": "/releases/lite-2026.08.19.2/"
+    },
+    {
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
@@ -15958,7 +16033,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "86ede907a465763c34880177a896e17cdd525d79884774925190a0eb15651959",
+  "source_fingerprint": "5208273b5cc36abd76ea5da9335482322f9dcb3e5a3b7af5782cc10d79e76b3a",
   "top_level": [
     "start-here",
     "use",

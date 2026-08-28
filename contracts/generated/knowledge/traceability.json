@@ -2148,7 +2148,8 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
-        "test:tests/docs/test_living_knowledgebase.py"
+        "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/docs/test_release_inventory_experience.py"
       ],
       "type": "component",
       "verification_status": "test-linked"
@@ -3291,7 +3292,8 @@
         "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_enterprise_completion.py",
-        "test:tests/docs/test_operational_health_bridge.py"
+        "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_release_inventory_experience.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3648,6 +3650,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f16d0248fc0a41231eb920a324574648a79b638573ce31f7b3f848383a0b6b2"
+    "source_fingerprint": "47f3a702834015929f62bbaeb5cbe87ad540a5f516348ad352622a7e0c5a24db"
   }
 }
