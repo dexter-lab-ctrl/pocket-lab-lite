@@ -14,14 +14,14 @@
 .pl-card-grid { width: 100%; max-width: 100%; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; margin: 1.25rem 0 2rem; }
 .md-content__inner:has(.pl-use-grid) { max-width: none; margin-inline: 0; }
 .pl-use-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.pl-card { box-sizing: border-box; min-width: 0; max-width: 100%; padding: 1.15rem 1.2rem; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-lg); background: var(--md-default-bg-color); box-shadow: var(--pl-shadow); }
+.pl-card { box-sizing: border-box; min-width: 0; max-width: 100%; padding: 1.15rem 1.2rem; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-lg); background: var(--pl-surface-raised); box-shadow: var(--pl-shadow); }
 .pl-card > :first-child { margin-top: 0; }
 .pl-card > :last-child { margin-bottom: 0; }
 .pl-status { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.55rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.72rem; font-weight: 700; line-height: 1.25; letter-spacing: 0.02em; }
 .pl-status::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
-.pl-status--verified { color: var(--pl-success); background: color-mix(in srgb, var(--pl-success) 8%, transparent); }
-.pl-status--inferred, .pl-status--patch-provided, .pl-status--planned, .pl-status--unvalidated { color: var(--pl-warning); background: color-mix(in srgb, var(--pl-warning) 8%, transparent); }
-.pl-status--missing, .pl-status--blocked { color: var(--pl-danger); background: color-mix(in srgb, var(--pl-danger) 8%, transparent); }
+.pl-status--verified { color: var(--pl-status-positive); background: var(--pl-status-positive-bg); }
+.pl-status--inferred, .pl-status--patch-provided, .pl-status--planned, .pl-status--unvalidated { color: var(--pl-status-warning); background: var(--pl-status-warning-bg); }
+.pl-status--missing, .pl-status--blocked { color: var(--pl-status-critical); background: var(--pl-status-critical-bg); }
 .pl-page-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: -0.5rem 0 1.5rem; }
 .md-typeset img, .md-typeset svg, .md-typeset pre { max-width: 100%; }
 .md-typeset table:not([class]) { max-width: 100%; display: table; width: 100%; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-md); overflow: hidden; box-shadow: none; }
@@ -71,40 +71,9 @@
   .pl-use-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Dark-mode badges retain semantic contrast. */
-[data-md-color-scheme="pocketlab-dark"] .pl-status--verified {
-  color: #86efac;
-  background: rgba(134, 239, 172, 0.1);
-}
-[data-md-color-scheme="pocketlab-dark"] .pl-status--inferred,
-[data-md-color-scheme="pocketlab-dark"] .pl-status--patch-provided,
-[data-md-color-scheme="pocketlab-dark"] .pl-status--planned,
-[data-md-color-scheme="pocketlab-dark"] .pl-status--unvalidated {
-  color: #fcd34d;
-  background: rgba(252, 211, 77, 0.1);
-}
-[data-md-color-scheme="pocketlab-dark"] .pl-status--missing,
-[data-md-color-scheme="pocketlab-dark"] .pl-status--blocked {
-  color: #fca5a5;
-  background: rgba(252, 165, 165, 0.1);
-}
+.md-nav__title, .md-search-result__meta { background-color: var(--pl-surface-elevated); color: var(--pl-text-primary); }
+.md-nav__title .md-ellipsis { color: inherit; }
 
-/* Keep dark mobile navigation titles above Material's low-contrast default. */
-[data-md-color-scheme="pocketlab-dark"] .md-nav__title {
-  background-color: #334155;
-  color: #f8fafc;
-}
-
-[data-md-color-scheme="pocketlab-dark"] .md-nav__title .md-ellipsis {
-  color: inherit;
-}
-/* Search metadata must meet WCAG AA in the dark documentation palette. */
-[data-md-color-scheme="pocketlab-dark"] .md-search-result__meta {
-  background-color: #334155;
-  color: #f8fafc;
-}
-
-/* Generated Production architecture diagrams and ownership catalog. */
 .pl-architecture-diagram {
   box-sizing: border-box;
   width: 100%;
@@ -115,7 +84,7 @@
   padding: clamp(0.5rem, 1.2vw, 0.9rem);
   border: 1px solid var(--pl-border);
   border-radius: var(--pl-radius-lg);
-  background: var(--md-default-bg-color);
+  background: var(--pl-surface-raised);
   box-shadow: var(--pl-shadow);
 }
 .pl-architecture-diagram--system { max-width: 72rem; }
@@ -129,7 +98,7 @@
   overflow: hidden;
   isolation: isolate;
   border-radius: calc(var(--pl-radius-lg) - 0.25rem);
-  background: color-mix(in srgb, var(--md-default-bg-color) 96%, var(--md-default-fg-color));
+  background: var(--pl-surface-code);
 }
 .pl-architecture-diagram__link { display: block; width: 100%; }
 .pl-architecture-diagram--wide .pl-architecture-diagram__viewport {
@@ -231,7 +200,6 @@
   .pl-architecture-diagram__viewport { scroll-behavior: auto; }
 }
 
-/* Executive Production architecture poster and hybrid icon taxonomy. */
 .pl-architecture-summary-grid,
 .pl-architecture-zone-grid,
 .pl-architecture-callout-grid {
@@ -247,7 +215,7 @@
   padding: clamp(0.8rem, 1.5vw, 1.1rem);
   border: 1px solid var(--pl-border);
   border-radius: var(--pl-radius-md);
-  background: color-mix(in srgb, var(--md-default-bg-color) 94%, var(--md-primary-fg-color));
+  background: var(--pl-surface-raised);
   box-shadow: 0 0.35rem 1rem rgb(15 23 42 / 0.08);
   contain: content;
 }
@@ -280,7 +248,7 @@
   padding: 0.25rem 0.45rem;
   border: 1px solid var(--pl-border);
   border-radius: 999px;
-  background: var(--md-default-bg-color);
+  background: var(--pl-surface-raised);
   color: var(--md-default-fg-color);
   font-size: 0.72rem;
   line-height: 1.2;
@@ -292,7 +260,7 @@
   height: 1rem;
   padding: 0.12rem;
   border-radius: 0.22rem;
-  background: #fff;
+  background: var(--pl-text-inverse);
   object-fit: contain;
 }
 .pl-architecture-icon--summary {
@@ -322,13 +290,12 @@
   border-radius: 0.25rem;
   background: transparent;
 }
-.pl-architecture-legend__mark--brand { border-style: solid; background: #fff; }
+.pl-architecture-legend__mark--brand { border-style: solid; background: var(--pl-text-inverse); }
 .pl-architecture-legend__mark--semantic { border-style: dashed; }
 .pl-architecture-legend__mark--solid { height: 0; border-width: 0 0 3px; border-radius: 0; }
 .pl-architecture-legend__mark--dashed { height: 0; border-width: 0 0 2px; border-style: dashed; border-radius: 0; }
 .pl-architecture-legend__mark--dotted { height: 0; border-width: 0 0 2px; border-style: dotted; border-radius: 0; }
 .pl-architecture-legend__mark--boundary { border-style: dashed; background: color-mix(in srgb, var(--md-default-bg-color) 90%, var(--md-primary-fg-color)); }
-/* Poster percentage sizing must not use inline-size containment. */
 .pl-architecture-diagram--poster {
   inline-size: 100%;
   max-inline-size: 100%;
@@ -363,7 +330,6 @@
   .pl-architecture-diagram--poster .pl-architecture-diagram__image { max-width: 100%; }
 }
 
-/* Custom palettes select generated light/dark diagram variants explicitly. */
 .pl-architecture-diagram__image--light {
   display: block !important;
 }

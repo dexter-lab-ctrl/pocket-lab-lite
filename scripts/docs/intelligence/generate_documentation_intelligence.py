@@ -945,7 +945,7 @@ def render_platform_page(rows: list[dict[str, Any]], audience: str, experience: 
     out += '</div>\n\n'
 
     out += '<div class="pl-matrix-legend" aria-label="Capability status legend">' + ''.join(status_chip(x, experience) for x in ("verified", "partial", "unvalidated", "not-applicable")) + '</div>\n\n'
-    out += '<div class="pl-capability-matrix-wrap"><table class="pl-capability-matrix"><thead><tr><th scope="col">Capability</th>'
+    out += '<div class="pl-capability-matrix-wrap" role="region" aria-label="Scrollable capability matrix" tabindex="0"><table class="pl-capability-matrix"><thead><tr><th scope="col">Capability</th>'
     for platform in platforms:
         out += f'<th scope="col"><span>{html.escape(platform)}</span></th>'
     out += '</tr></thead><tbody>'

@@ -362,10 +362,17 @@ def test_docs_browser_gate_uses_visible_material_controls_and_site_prefix():
     assert "label.md-header__button[for=\"__search\"]" in spec
     assert "label.md-header__button[for=\"__drawer\"]" in spec
     assert "Search documentation" in (ROOT / "docs/javascripts/docs.js").read_text(encoding="utf-8")
-    assert "--md-default-fg-color--light: #cbd5e1" in brand
-    assert "--md-code-fg-color: #e2e8f0" in brand
-    assert "color: #86efac" in components
-    assert "color: #fcd34d" in components
+    # Theme colors are owned by semantic Pocket Lab tokens. Protect both
+    # the accessible dark-scheme values and their Material/component wiring
+    # without forcing components back to duplicated literal colors.
+    assert "--pl-text-secondary: #c5d0df" in brand
+    assert "--pl-text-primary: #edf3fb" in brand
+    assert "--md-default-fg-color--light: var(--pl-text-secondary)" in brand
+    assert "--md-code-fg-color: var(--pl-text-primary)" in brand
+    assert "--pl-status-positive: #86efac" in brand
+    assert "--pl-status-warning: #fcd34d" in brand
+    assert ".pl-status--verified { color: var(--pl-status-positive);" in components
+    assert "color: var(--pl-status-warning);" in components
     assert "await expect(searchInput).toBeVisible()" in spec
     assert "element.focus()" in spec
     assert "page.keyboard.type('Devices'" in spec

@@ -112,19 +112,13 @@
   line-height: 1.25;
 }
 .pl-intel-status--healthy,
-.pl-intel-status--verified { color: var(--pl-success); }
+.pl-intel-status--verified { color: var(--pl-status-positive); }
 .pl-intel-status--degraded,
 .pl-intel-status--stale,
-.pl-intel-status--partial { color: var(--pl-warning); }
-.pl-intel-status--unavailable { color: var(--pl-danger); }
+.pl-intel-status--partial { color: var(--pl-status-warning); }
+.pl-intel-status--unavailable { color: var(--pl-status-critical); }
 .pl-intel-status--unvalidated,
 .pl-intel-status--not-applicable { color: var(--md-default-fg-color--light); }
-[data-md-color-scheme="pocketlab-dark"] .pl-intel-status--healthy,
-[data-md-color-scheme="pocketlab-dark"] .pl-intel-status--verified { color: #86efac; }
-[data-md-color-scheme="pocketlab-dark"] .pl-intel-status--degraded,
-[data-md-color-scheme="pocketlab-dark"] .pl-intel-status--stale,
-[data-md-color-scheme="pocketlab-dark"] .pl-intel-status--partial { color: #fcd34d; }
-[data-md-color-scheme="pocketlab-dark"] .pl-intel-status--unavailable { color: #fca5a5; }
 
 .pl-status-strip {
   display: grid;
@@ -265,7 +259,7 @@
 .pl-evidence-summary span:first-child,
 .pl-capability-summary span:first-child {
   display: block;
-  color: var(--md-default-fg-color--light);
+  color: var(--pl-text-secondary);
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.05em;
@@ -340,7 +334,7 @@
   top: 0;
   z-index: 2;
   background: var(--pl-surface-muted);
-  color: var(--md-default-fg-color--light);
+  color: var(--pl-text-secondary);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -470,21 +464,14 @@
   background: var(--pl-surface-muted);
   font-size: .72rem;
 }
-.pl-audience-banner {
-  /* Keep this identity strip independent from Material palette state.
-     Instant navigation can briefly mix persisted palette attributes/tokens; a
-     self-contained high-contrast surface prevents that transition from
-     producing light-on-light or dark-on-dark text. */
-  background: #111a2e;
-  color: #f8fafc;
-}
+.pl-audience-banner { background:var(--md-primary-fg-color); color:var(--pl-text-inverse); }
 .pl-audience-banner > strong {
-  color: #ffffff !important;
+  color: inherit !important;
   font-size: .75rem;
   letter-spacing: .02em;
 }
 .pl-audience-banner > small {
-  color: #dbe4f0 !important;
+  color: inherit !important;
 }
 .pl-audience-banner--production { border-inline-start: .22rem solid var(--pl-success); }
 .pl-audience-banner--development { border-inline-start: .22rem solid var(--md-accent-fg-color); }
@@ -780,10 +767,10 @@ section[aria-label="Buttons, controls and options"] { grid-template-columns: rep
   width: 1.75rem;
   height: 1.75rem;
   place-items: center;
-  border: 1px solid var(--pl-info);
+  border: 1px solid var(--pl-brand-700);
   border-radius: 50%;
-  background: var(--pl-info);
-  color: #fff;
+  background: var(--pl-brand-700);
+  color: var(--pl-text-inverse);
   font-size: .68rem;
   font-weight: 700;
   line-height: 1;
@@ -815,11 +802,6 @@ section[aria-label="Buttons, controls and options"] { grid-template-columns: rep
   font-weight: 400;
   line-height: 1.45;
   overflow-wrap: normal;
-}
-[data-md-color-scheme="pocketlab-dark"] .pl-journey-marker {
-  border-color: var(--pl-accent-400);
-  background: var(--pl-accent-400);
-  color: var(--pl-brand-950);
 }
 
 .pl-generated-diagram--contained { margin: 1rem 0 1.75rem; padding: var(--pl-space-3); }

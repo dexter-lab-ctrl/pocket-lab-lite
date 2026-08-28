@@ -458,6 +458,87 @@ ${String(error)}`
   expect(consoleFailures).toEqual([]);
 });
 
+test('light and dark palettes keep semantic surfaces, status evidence, and specialist assets aligned', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto(`${DOCS_PREFIX}generated/production/architecture/`);
+
+  for (const scheme of ['pocketlab-light', 'pocketlab-dark'] as const) {
+    await page.goto(`${DOCS_PREFIX}generated/production/architecture/`);
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const current = await page.locator('body').getAttribute('data-md-color-scheme');
+      if (current === scheme) break;
+      await page.locator('[data-md-component="palette"] label:visible').first().click();
+    }
+    await expect(page.locator('body')).toHaveAttribute('data-md-color-scheme', scheme);
+
+    const tokenState = await page.locator('body').evaluate((element) => {
+      const style = getComputedStyle(element);
+      const token = (name: string) => style.getPropertyValue(name).trim();
+      return {
+        canvas: token('--pl-bg-canvas'),
+        surface: token('--pl-surface-raised'),
+        code: token('--pl-surface-code'),
+        text: token('--pl-text-primary'),
+        focus: token('--pl-focus'),
+        positive: token('--pl-status-positive'),
+        warning: token('--pl-status-warning'),
+        critical: token('--pl-status-critical'),
+      };
+    });
+    expect(tokenState.canvas).not.toBe(tokenState.surface);
+    expect(tokenState.code).not.toBe(tokenState.canvas);
+    expect(tokenState.text).toBeTruthy();
+    expect(tokenState.focus).toBeTruthy();
+    expect(tokenState.positive).toBeTruthy();
+    expect(tokenState.warning).toBeTruthy();
+    expect(tokenState.critical).toBeTruthy();
+
+    const expectedAsset = scheme === 'pocketlab-dark' ? '.pl-architecture-diagram__image--dark' : '.pl-architecture-diagram__image--light';
+    await expect(page.locator(expectedAsset).first()).toBeVisible();
+    expect(await page.locator('.pl-architecture-diagram__image').evaluateAll((images) =>
+      images.filter((image) => getComputedStyle(image).display !== 'none').length,
+    )).toBe(1);
+
+    await page.goto(`${DOCS_PREFIX}generated/enterprise/threat-model/`);
+    const threatCanvas = page.locator('.pl-threat-poster-canvas').first();
+    await expect(threatCanvas).toBeVisible();
+    const threatSurface = await threatCanvas.evaluate((element) => getComputedStyle(element).backgroundColor);
+    expect(threatSurface).not.toBe('rgba(0, 0, 0, 0)');
+
+    await page.goto(`${DOCS_PREFIX}generated/development/intelligence/platform-matrix/`);
+    await expect(page.locator('.pl-intel-status--verified').first()).toBeVisible();
+    await expect(page.locator('.pl-intel-status--unvalidated').first()).toBeVisible();
+    const statusColors = await page.locator('.pl-intel-status--verified, .pl-intel-status--unvalidated').evaluateAll((elements) =>
+      elements.map((element) => getComputedStyle(element).color),
+    );
+    expect(new Set(statusColors).size).toBeGreaterThan(1);
+
+    const search = page.locator('input[data-md-component="search-query"]');
+    if (!(await search.isVisible())) await page.locator('label.md-header__button[for="__search"]').click();
+    await search.focus();
+    await expect(search).toHaveCSS('outline-style', 'solid');
+
+    const axe = await new AxeBuilder({ page }).include('.pl-matrix-legend').analyze();
+    expect(axe.violations.filter((item) => ['serious', 'critical'].includes(item.impact || ''))).toEqual([]);
+
+    await page.goto(`${DOCS_PREFIX}generated/enterprise/journeys/identity/`);
+    const markerContrast = await page.locator('.pl-journey-marker').first().evaluate((element) => {
+      const channels = (value: string) => value.match(/\d+/g)?.slice(0, 3).map(Number) || [];
+      const luminance = (channels: number[]) => channels.map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+      }).reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0);
+      const style = getComputedStyle(element);
+      const [foreground, background] = [luminance(channels(style.color)), luminance(channels(style.backgroundColor))];
+      return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+    });
+    expect(markerContrast).toBeGreaterThanOrEqual(4.5);
+
+    await page.goto(`${DOCS_PREFIX}generated/development/release-inventory/`);
+    await expect(page.locator('body')).toHaveAttribute('data-md-color-scheme', scheme);
+  }
+});
+
 test('Identity and Rules journeys use a responsive semantic six-step stepper', async ({ page }, testInfo) => {
   const viewport = testInfo.project.name === 'docs-mobile'
     ? { width: 390, height: 844 }
