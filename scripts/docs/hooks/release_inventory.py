@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Render the Release Inventory from promoted, sanitized release evidence.
+"""Render promoted-release documentation experiences without network access.
 
 The tracked platform catalog remains source-generated and deterministic. This MkDocs hook
-adds a richer human-facing projection at render time from the same committed release
-authority. It never polls GitHub, reads transient captures, or infers a release identity.
+adds richer human-facing release projections from the same committed promoted evidence.
+It never polls GitHub, reads transient captures, or infers a release identity.
 """
 from __future__ import annotations
 
@@ -14,7 +14,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 PROMOTED = ROOT / "contracts/generated/releases/promoted-release-evidence.json"
-TARGET = "generated/development/release-inventory.md"
+INVENTORY_TARGET = "generated/development/release-inventory.md"
+RELEASE_HUB_TARGET = "generated/enterprise/hubs/release-change.md"
 REQUIRED_ASSETS = ("dist.zip", "checksums.txt", "pocketlab-lite-release.json")
 
 
@@ -128,7 +129,7 @@ def _release_card(release: dict[str, Any], *, latest: bool) -> str:
     )
 
 
-def _render() -> str:
+def _render_inventory() -> str:
     releases = _load_releases()
     if not releases:
         return (
@@ -204,10 +205,24 @@ def _render() -> str:
 """
 
 
+def _release_hub_addendum() -> str:
+    return """
+
+## Release procedure
+
+<div class="pl-card-grid">
+<article class="pl-card"><span class="pl-card-kicker">Evidence & Promotion</span><h3>From qualified main to promoted evidence</h3><p>Follow the exact Pocket Lab Lite release gate, dry-run, UTC date-based tag allocation, GitHub Release asset verification, sanitized capture, explicit promotion, offline check, and documentation regeneration process.</p><a class="pl-intent-link" href="../../../../release/evidence-promotion/">Open Evidence & Promotion</a></article>
+</div>
+"""
+
+
 def on_page_markdown(markdown: str, *, page: Any, config: Any, files: Any) -> str | None:
-    if getattr(getattr(page, "file", None), "src_uri", None) != TARGET:
-        return None
-    releases = _load_releases()
-    page.meta["status"] = "verified" if releases else "unvalidated"
-    page.meta["description"] = "Promoted Pocket Lab Lite release identities, required artifacts, integrity evidence, and promotion boundaries."
-    return _render()
+    src_uri = getattr(getattr(page, "file", None), "src_uri", None)
+    if src_uri == INVENTORY_TARGET:
+        releases = _load_releases()
+        page.meta["status"] = "verified" if releases else "unvalidated"
+        page.meta["description"] = "Promoted Pocket Lab Lite release identities, required artifacts, integrity evidence, and promotion boundaries."
+        return _render_inventory()
+    if src_uri == RELEASE_HUB_TARGET:
+        return markdown.rstrip() + _release_hub_addendum() + "\n"
+    return None
