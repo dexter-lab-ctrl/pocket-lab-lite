@@ -475,11 +475,14 @@ def render_security_projection_svg(
         unknown = [node_id for node_id in ids if node_id not in boxes]
         if unknown:
             raise ValueError(f"security layout attack path references unknown nodes: {path.get('id')} {unknown}")
-        points = " ".join(f'{boxes[node_id].cx:.1f},{boxes[node_id].cy:.1f}' for node_id in ids)
-        parts.append(
-            f'<polyline class="attack" data-attack-path="{_esc(path.get("id"))}" data-stride="{_esc("|".join(path.get("stride") or []))}" '
-            f'data-nodes="{_esc(" ".join(ids))}" data-controls="{_esc(" ".join(path.get("controls") or []))}" points="{points}"/>'
-        )
+        for stage, (source_id, target_id) in enumerate(zip(ids, ids[1:]), 1):
+            route, _, _ = _route(boxes[source_id], boxes[target_id])
+            parts.append(
+                f'<path class="attack attack-segment" data-attack-path="{_esc(path.get("id"))}" data-stage="{stage}" tabindex="0" role="button" '
+                f'data-stride="{_esc("|".join(path.get("stride") or []))}" data-from="{_esc(source_id)}" data-to="{_esc(target_id)}" '
+                f'data-nodes="{_esc(" ".join(ids))}" data-controls="{_esc(" ".join(path.get("controls") or []))}" '
+                f'aria-label="Modeled attack path {_esc(path.get("id"))}, stage {stage}: {_esc(source_id)} to {_esc(target_id)}" d="{route}"/>'
+            )
 
     for row in poster.get("nodes") or []:
         parts.append(_node_svg(row, boxes[str(row.get("id"))], layout=layout))
@@ -651,4 +654,15 @@ def render_security_projection_svg(
     )
     for old, new, label in replacements:
         rendered = _enterprise_replace_once(rendered, old, new, label)
+    enterprise_states = (
+        '.enterprise-muted{opacity:.12!important}.enterprise-focus rect{stroke:#245f9c;stroke-width:4!important}'
+        '.enterprise-direct rect{stroke:#8a651b;stroke-width:3!important}.enterprise-transitive{opacity:.48}'
+        '.enterprise-gap rect,.enterprise-gap .shield{stroke:#9b3f58!important;stroke-width:3!important;stroke-dasharray:5 3}'
+        '.enterprise-stage{opacity:1!important}.enterprise-stage .shield{stroke-width:4!important}'
+        '.enterprise-story-past{opacity:.48!important;stroke-width:3!important}.enterprise-story-future{opacity:.16!important}'
+        '.enterprise-isolated{opacity:1}.enterprise-consequence rect{stroke:#743f96;stroke-width:3!important}'
+    )
+    if rendered.count("</style>") != 1:
+        raise ValueError("security SVG enterprise-state style fence drifted")
+    rendered = rendered.replace("</style>", enterprise_states + "</style>")
     return rendered

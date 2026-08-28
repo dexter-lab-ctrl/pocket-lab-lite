@@ -86,3 +86,33 @@ test('Threat Model enterprise labels drill into detail pages and remain mobile-s
     await popup.close();
   }
 });
+
+test('enterprise security console preserves one saved-model state through lenses and story controls', async ({ page }, testInfo) => {
+  await page.goto(OVERVIEW);
+  const console = page.locator('[data-pl-security-console="true"]');
+  await expect(console).toBeVisible();
+  await expect(console.getByRole('tab', { name: 'Architecture' })).toHaveAttribute('aria-selected', 'true');
+  await console.getByRole('tab', { name: 'Attack Paths' }).click();
+  await expect(console.getByRole('tab', { name: 'Attack Paths' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page).toHaveURL(/security-lens=attack-paths/);
+
+  const path = console.locator('[data-pl-enterprise-pick="path"]').first();
+  await expect(path).toBeVisible();
+  await path.click();
+  const story = console.locator('.pl-security-story');
+  await expect(story).toBeVisible();
+  await expect(story.getByText(/Stage 1 of/)).toBeVisible();
+  await story.getByRole('button', { name: 'Next' }).click();
+  await expect(story.getByText(/Stage 2 of|Stage 1 of/)).toBeVisible();
+
+  await console.getByRole('button', { name: 'Show blast radius' }).click();
+  await console.getByRole('tab', { name: 'Evidence' }).click();
+  await expect(console.getByText('Observed / promoted')).toBeVisible();
+  await console.getByRole('button', { name: 'Show evidence gaps' }).click();
+  await expect(console.getByRole('button', { name: 'Show evidence gaps' })).toHaveAttribute('aria-pressed', 'true');
+  await console.getByRole('button', { name: 'Security review workspace' }).click();
+  await expect(console.getByRole('heading', { name: 'Security Review Workspace' })).toBeVisible();
+  await console.getByRole('button', { name: 'Engineer view' }).click();
+  await expect(console.getByRole('button', { name: 'Engineer view' })).toHaveAttribute('aria-pressed', 'true');
+  if (testInfo.project.name === 'docs-mobile') await noHorizontalOverflow(page);
+});

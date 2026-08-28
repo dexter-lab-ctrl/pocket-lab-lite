@@ -3094,8 +3094,10 @@
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
         "test:tests/docs/test_threat_model_atlas.py",
+        "test:tests/docs/test_threat_model_enterprise_console.py",
         "test:tests/docs/test_threat_model_layout.py",
         "test:tests/docs/test_threat_model_poster.py",
+        "test:tests/docs/threat-model-enterprise-ux.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
@@ -3650,6 +3652,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57ffc3b91b60814128c9af620304b5b089f08e5b2383f1584109807af6a2698a"
+    "source_fingerprint": "c8ab823c3199b12c2296fb1aba8a14e01e527ba7f4db2e646b01887d1aee718d"
   }
 }

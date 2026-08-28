@@ -11421,6 +11421,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_enterprise_console.py",
+      "name": "tests/docs/test_threat_model_enterprise_console.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_enterprise_console.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_enterprise_ux.py",
       "name": "tests/docs/test_threat_model_enterprise_ux.py",
       "source_refs": [
@@ -44235,6 +44246,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/threat-model-enterprise-ux.spec.ts"
+      ],
+      "id": "rel:ba7882188ee360c1",
+      "source": "domain:security",
+      "target": "test:tests/docs/threat-model-enterprise-ux.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:bab108851438d5d2",
@@ -51797,6 +51822,20 @@
       "id": "rel:e8717a5dc1df8388",
       "source": "api:get:/api/lite/enterprise/rules/decisions",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_threat_model_enterprise_console.py"
+      ],
+      "id": "rel:e8723c35bb3daefc",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_threat_model_enterprise_console.py",
       "type": "verified_by"
     },
     {
