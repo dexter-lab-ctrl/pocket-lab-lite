@@ -23894,6 +23894,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/release-inventory.spec.ts",
+      "name": "tests/docs/release-inventory.spec.ts",
+      "source_refs": [
+        "tests/docs/release-inventory.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_codebase_map.py",
       "name": "tests/docs/test_codebase_map.py",
       "source_refs": [
@@ -23988,6 +23998,16 @@
       "name": "tests/docs/test_operational_health_bridge.py",
       "source_refs": [
         "tests/docs/test_operational_health_bridge.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_release_inventory_experience.py",
+      "name": "tests/docs/test_release_inventory_experience.py",
+      "source_refs": [
+        "tests/docs/test_release_inventory_experience.py"
       ],
       "type": "test"
     },
@@ -27251,6 +27271,7 @@
         "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/release-inventory.spec.ts",
         "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_ia.py",
@@ -27261,6 +27282,7 @@
         "test:tests/docs/test_identity_rules_threat_model_d3.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_release_inventory_experience.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
@@ -28363,6 +28385,7 @@
         "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/release-inventory.spec.ts",
         "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
         "test:tests/docs/test_documentation_ia.py",
@@ -28373,6 +28396,7 @@
         "test:tests/docs/test_identity_rules_threat_model_d3.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_release_inventory_experience.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
@@ -40980,6 +41004,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_release_inventory_experience.py": [
+        {
+          "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_supply_chain_runner_hardening.py": [
         {
           "source": "reason:disabled",
@@ -45913,6 +45947,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_release_inventory_experience.py",
           "type": "verified_by"
         }
       ],
@@ -51645,6 +51683,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_release_inventory_experience.py",
           "type": "verified_by"
         }
       ],
@@ -62436,6 +62478,15 @@
       "id": "rel:3bf2df55016781be",
       "source": "api:post:/api/lite/identity/step-up/verify",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_release_inventory_experience.py"
+      ],
+      "id": "rel:3bfddae45c12f49f",
+      "source": "journey:documentation-generation",
+      "target": "test:tests/docs/test_release_inventory_experience.py",
       "type": "verified_by"
     },
     {
@@ -83117,6 +83168,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_release_inventory_experience.py"
+      ],
+      "id": "rel:fe59ab617737ecc7",
+      "source": "component:github-repository",
+      "target": "test:tests/docs/test_release_inventory_experience.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:fe5ef8229b9b4e0d",
@@ -83234,9 +83294,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "1f16d0248fc0a41231eb920a324574648a79b638573ce31f7b3f848383a0b6b2",
+  "source_fingerprint": "47f3a702834015929f62bbaeb5cbe87ad540a5f516348ad352622a7e0c5a24db",
   "statistics": {
-    "entity_count": 1081,
+    "entity_count": 1083,
     "entity_type_counts": {
       "adr": 6,
       "api": 164,
@@ -83253,14 +83313,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 66,
-      "test": 192,
+      "test": 194,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3046,
-    "source_count": 229
+    "relation_count": 3048,
+    "source_count": 231
   }
 }

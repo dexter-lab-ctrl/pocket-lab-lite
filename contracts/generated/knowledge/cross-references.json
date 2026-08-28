@@ -12467,6 +12467,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_release_inventory_experience.py": [
+        {
+          "source": "component:github-repository",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:documentation-generation",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_supply_chain_runner_hardening.py": [
         {
           "source": "reason:disabled",
@@ -17400,6 +17410,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_release_inventory_experience.py",
           "type": "verified_by"
         }
       ],
@@ -23133,6 +23147,10 @@
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_release_inventory_experience.py",
+          "type": "verified_by"
         }
       ],
       "journey:enterprise-identity": [
@@ -27033,6 +27051,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f16d0248fc0a41231eb920a324574648a79b638573ce31f7b3f848383a0b6b2"
+    "source_fingerprint": "47f3a702834015929f62bbaeb5cbe87ad540a5f516348ad352622a7e0c5a24db"
   }
 }
