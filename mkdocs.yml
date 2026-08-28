@@ -62,6 +62,9 @@ theme:
 plugins:
   - search
 
+hooks:
+  - scripts/docs/hooks/release_inventory.py
+
 markdown_extensions:
   - abbr
   - admonition
@@ -247,6 +250,7 @@ nav:
       - Overview: generated/enterprise/hubs/release-change.md
       - What changed: generated/production/intelligence/what-changed.md
       - Release assurance: generated/enterprise/engineering/release-evidence.md
+      - Evidence & Promotion: release/evidence-promotion.md
       - Upgrade & migration: generated/enterprise/reference/upgrade-migration.md
       - API compatibility: generated/development/api-compatibility.md
       - Supply-chain changes: generated/enterprise/reference/supply-chain-change.md
