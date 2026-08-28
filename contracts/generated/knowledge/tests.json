@@ -1643,6 +1643,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_threat_model_enterprise_console.py",
+      "name": "tests/docs/test_threat_model_enterprise_console.py",
+      "source_refs": [
+        "tests/docs/test_threat_model_enterprise_console.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_threat_model_enterprise_ux.py",
       "name": "tests/docs/test_threat_model_enterprise_ux.py",
       "source_refs": [
@@ -1947,6 +1957,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57ffc3b91b60814128c9af620304b5b089f08e5b2383f1584109807af6a2698a"
+    "source_fingerprint": "c8ab823c3199b12c2296fb1aba8a14e01e527ba7f4db2e646b01887d1aee718d"
   }
 }

@@ -85,6 +85,224 @@ def _reachable(graph: dict[str, set[str]], start: str, target: str) -> bool:
     return False
 
 
+EVIDENCE_STATES = {
+    "control-observed": {"symbol": "✓", "label": "Observed / promoted", "kind": "observed"},
+    "mitigation-source-derived": {"symbol": "◇", "label": "Source-derived", "kind": "source-derived"},
+    "control-partial": {"symbol": "◐", "label": "Partial or stale", "kind": "partial"},
+    "evidence-stale": {"symbol": "◐", "label": "Partial or stale", "kind": "partial"},
+    "control-unvalidated": {"symbol": "○", "label": "Unvalidated", "kind": "unvalidated"},
+    "not-applicable": {"symbol": "—", "label": "Not applicable", "kind": "not-applicable"},
+}
+
+
+def _evidence_state(value: Any) -> dict[str, str]:
+    """Normalize canonical evidence wording without upgrading its confidence."""
+    state = str(value or "control-unvalidated")
+    return {"id": state, **EVIDENCE_STATES.get(state, EVIDENCE_STATES["control-unvalidated"])}
+
+
+def _unique(values: Any) -> list[str]:
+    return list(dict.fromkeys(str(value) for value in values if str(value)))
+
+
+def _story_title(source: dict[str, Any], target: dict[str, Any], *, first: bool, last: bool) -> str:
+    if first:
+        return "Entry"
+    if last:
+        return "Consequence"
+    if source.get("boundary") != target.get("boundary"):
+        return "Boundary crossing"
+    if target.get("id") in {"nats-jetstream", "worker"}:
+        return "Transport"
+    if target.get("id") in {"node-agent", "agent-supervisor", "server-host"}:
+        return "Execution ownership"
+    return "Authority transition"
+
+
+def _enterprise_projection(
+    threat: dict[str, Any],
+    *,
+    nodes: list[dict[str, Any]],
+    edges: list[dict[str, Any]],
+    attack_paths: list[dict[str, Any]],
+    controls: dict[str, dict[str, Any]],
+    boundaries: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Create deterministic review lenses from the one canonical topology.
+
+    This is deliberately an index/projection, not a risk engine. Every relationship
+    below is a source-owned node, allowed flow, modeled path, control or posture state.
+    """
+    node_index = {str(row["id"]): row for row in nodes}
+    adjacency: dict[str, set[str]] = defaultdict(set)
+    edge_ids_by_node: dict[str, list[str]] = defaultdict(list)
+    for edge in edges:
+        source, target = str(edge["from"]), str(edge["to"])
+        adjacency[source].add(target)
+        adjacency[target].add(source)
+        edge_ids_by_node[source].append(str(edge["id"]))
+        edge_ids_by_node[target].append(str(edge["id"]))
+
+    path_rows: list[dict[str, Any]] = []
+    interceptions: list[dict[str, Any]] = []
+    for path in attack_paths:
+        path_id = str(path["id"])
+        path_nodes = [str(value) for value in path.get("path_nodes") or []]
+        stages = []
+        for index, (source_id, target_id) in enumerate(zip(path_nodes, path_nodes[1:]), 1):
+            source, target = node_index[source_id], node_index[target_id]
+            stage_controls = [
+                control_id for control_id in path.get("controls") or []
+                if set(controls[control_id].get("boundaries") or []) & {source["boundary"], target["boundary"]}
+            ]
+            if not stage_controls and index == 1:
+                stage_controls = list(path.get("controls") or [])
+            stage = {
+                "number": index,
+                "title": _story_title(source, target, first=index == 1, last=index == len(path_nodes) - 1),
+                "source": source_id,
+                "destination": target_id,
+                "boundary": target["boundary"] if source["boundary"] != target["boundary"] else source["boundary"],
+                "stride": list(path.get("stride") or []),
+                "controls": stage_controls,
+                "evidence": _evidence_state("mitigation-source-derived"),
+                "consequences": list(path.get("consequences") or []),
+                "truth": "Modeled source-derived path; this stage does not claim exploitation or live traffic.",
+            }
+            stages.append(stage)
+            for control_id in stage_controls:
+                control = controls[control_id]
+                interceptions.append({
+                    "id": f"{path_id}:{index}:{control_id}", "attack_path": path_id, "stage": index,
+                    "control": control_id, "boundary": stage["boundary"],
+                    "status": _evidence_state(control.get("status")),
+                    "threats": list(control.get("threats") or control.get("threats_mitigated") or []),
+                    "effect": str(control.get("effect") or "mitigates"),
+                    "prevention_claim": bool(control.get("prevention_claim", False)),
+                    "failure_consequences": list(control.get("failure_consequences") or []),
+                    "source_refs": list(control.get("source_refs") or []),
+                })
+        path_rows.append({
+            "id": path_id, "name": str(path.get("name") or path_id), "stages": stages,
+            "evidence": _evidence_state(path.get("confidence")),
+            "review_status": str(path.get("review_status") or "human-review-required"),
+            "confirmed_exploit": False,
+        })
+
+    coverage: list[dict[str, Any]] = []
+    for boundary_id, boundary in sorted(boundaries.items()):
+        relevant = [control for control in controls.values() if boundary_id in (control.get("boundaries") or [])]
+        states = Counter(str(control.get("status") or "control-unvalidated") for control in relevant)
+        coverage.append({
+            "boundary": boundary_id, "label": str(boundary.get("label") or boundary_id),
+            "controls": [str(control["id"]) for control in relevant],
+            "counts": dict(sorted(states.items())),
+            "markers": "".join(_evidence_state(control.get("status"))["symbol"] for control in relevant) or "○",
+            "truth": "Modeled relevant controls and evidence states; not a security, compliance or risk score.",
+        })
+
+    boundary_summaries: list[dict[str, Any]] = []
+    for boundary_id, boundary in sorted(boundaries.items()):
+        members = sorted(node["id"] for node in nodes if node["boundary"] == boundary_id)
+        ingress = [edge["id"] for edge in edges if edge["to"] in members and edge["from"] not in members]
+        egress = [edge["id"] for edge in edges if edge["from"] in members and edge["to"] not in members]
+        boundary_summaries.append({
+            "id": boundary_id, "label": str(boundary.get("label") or boundary_id), "members": members,
+            "ingress": ingress, "egress": egress, "controls": list(boundary.get("controls") or []),
+            "threats": [str(row.get("id")) for row in threat.get("threats") or [] if row.get("boundary") == boundary_id],
+            "stride": sorted({str(row.get("stride")) for row in threat.get("threats") or [] if row.get("boundary") == boundary_id}),
+            "evidence": _evidence_state(_boundary_state(threat, boundary_id)),
+        })
+
+    blast_radius: list[dict[str, Any]] = []
+    for selected in sorted(node_index):
+        distances = {selected: 0}
+        queue = deque([selected])
+        while queue:
+            current = queue.popleft()
+            for next_node in sorted(adjacency[current]):
+                if next_node not in distances:
+                    distances[next_node] = distances[current] + 1
+                    queue.append(next_node)
+        direct = sorted(node for node, distance in distances.items() if distance == 1)
+        transitive = sorted(node for node, distance in distances.items() if distance > 1)
+        affected = {selected, *direct, *transitive}
+        path_matches = [row["id"] for row in attack_paths if affected & set(row.get("path_nodes") or [])]
+        boundary_matches = sorted({node_index[node]["boundary"] for node in affected})
+        control_matches = sorted({
+            str(control_id) for boundary in boundary_matches
+            for control_id in (boundaries.get(boundary, {}).get("controls") or [])
+        })
+        consequences = _unique(consequence for row in attack_paths if row["id"] in path_matches for consequence in (row.get("consequences") or []))
+        blast_radius.append({
+            "subject": f"system:{selected}", "entity": selected, "selected": [selected], "direct": direct, "transitive": transitive,
+            "flows": sorted({flow_id for node in affected for flow_id in edge_ids_by_node[node]}),
+            "boundaries": boundary_matches, "controls": control_matches, "attack_paths": path_matches,
+            "consequences": consequences,
+            "truth": "Modeled blast radius from canonical graph reachability and modeled consequence relationships; not live runtime state or exploitability prediction.",
+        })
+
+    def aggregate_blast(subject: str, seed_nodes: list[str]) -> dict[str, Any]:
+        """Merge source-derived node reachability for another canonical entity scope."""
+        seeds = sorted(set(seed_nodes))
+        rows = [row for row in blast_radius if row["entity"] in seeds]
+        direct = sorted({item for row in rows for item in row["direct"]} - set(seeds))
+        transitive = sorted({item for row in rows for item in row["transitive"]} - set(seeds) - set(direct))
+        affected = set(seeds) | set(direct) | set(transitive)
+        matched_paths = [row["id"] for row in attack_paths if affected & set(row.get("path_nodes") or [])]
+        matched_boundaries = sorted({node_index[node]["boundary"] for node in affected})
+        return {
+            "subject": subject, "entity": subject, "selected": seeds, "direct": direct, "transitive": transitive,
+            "flows": sorted({flow_id for node in affected for flow_id in edge_ids_by_node[node]}),
+            "boundaries": matched_boundaries,
+            "controls": sorted({str(control_id) for boundary in matched_boundaries for control_id in (boundaries.get(boundary, {}).get("controls") or [])}),
+            "attack_paths": matched_paths,
+            "consequences": _unique(consequence for row in attack_paths if row["id"] in matched_paths for consequence in (row.get("consequences") or [])),
+            "truth": "Modeled blast radius from canonical graph reachability and modeled consequence relationships; not live runtime state or exploitability prediction.",
+        }
+
+    for control_id, control in sorted(controls.items()):
+        seeds = [node["id"] for node in nodes if node["boundary"] in (control.get("boundaries") or [])]
+        blast_radius.append(aggregate_blast(f"control:{control_id}", seeds))
+    for boundary_id, summary in sorted(((row["id"], row) for row in boundary_summaries), key=lambda item: item[0]):
+        blast_radius.append(aggregate_blast(f"boundary:{boundary_id}", list(summary["members"])))
+    for path in attack_paths:
+        blast_radius.append(aggregate_blast(f"path:{path['id']}", list(path.get("path_nodes") or [])))
+
+    gaps = []
+    for control_id, control in sorted(controls.items()):
+        state = _evidence_state(control.get("status"))
+        if state["kind"] in {"partial", "unvalidated"}:
+            gaps.append({"kind": "control", "id": control_id, "boundaries": list(control.get("boundaries") or []), "state": state})
+    for signal in threat.get("production_posture", {}).get("signals", []) or []:
+        state = _evidence_state(signal.get("state"))
+        if state["kind"] in {"partial", "unvalidated"}:
+            gaps.append({"kind": "posture", "id": str(signal.get("signal") or "posture-signal"), "boundaries": [str(signal.get("boundary") or "unvalidated")], "state": state})
+
+    return {
+        "schema_version": "2.0.0", "canonical_topology": True, "live_monitoring": False,
+        "lenses": ["architecture", "trust-boundaries", "attack-paths", "stride", "controls", "evidence", "consequences"],
+        "evidence_states": [{"id": key, **value} for key, value in EVIDENCE_STATES.items()],
+        "evidence_lineage": list((threat.get("visualization") or {}).get("evidence_lineage") or []),
+        "story_paths": path_rows, "control_interceptions": interceptions, "blast_radius": blast_radius,
+        "boundary_summaries": boundary_summaries, "control_coverage": coverage, "evidence_gaps": gaps,
+        "scenario_comparison": {
+            "baseline": "Baseline modeled posture", "alternative": "Selected control unavailable",
+            "truth": "Comparison removes one modeled control relationship for review. It is not a runtime simulator, breach simulation or exploitability prediction.",
+        },
+        "review_workspace": {"storage": "local browser session only", "fields": ["scope", "finding", "evidence", "decision", "rationale"], "shareable_state": "semantic URL parameters"},
+        "architecture_navigation": [
+            {"system": node["id"], "architecture_component": node["architecture_component"], "href": "../../production/architecture/"}
+            for node in nodes
+        ],
+        "views": {
+            "executive": "Grouped saved-model scope, evidence posture and human-review prompts.",
+            "engineer": "Canonical IDs, bindings, sources and modeled relationships.",
+        },
+        "truth": "All overlays are deterministic saved-model projections. They do not represent live compromise, active attacks or risk scores.",
+    }
+
+
 def _merge_scenario_controls(threat: dict[str, Any], scenarios: dict[str, Any], root: Path) -> None:
     """Merge source-owned Identity/Rules controls into the generated threat projection."""
     boundary_rows = {row["id"]: row for row in threat.get("boundaries", [])}
@@ -223,6 +441,14 @@ def enrich(threat: dict[str, Any], root: Path) -> dict[str, Any]:
             "human_review_required": True,
         }
     }
+    threat["visualization"]["enterprise"] = _enterprise_projection(
+        threat,
+        nodes=nodes,
+        edges=edge_rows,
+        attack_paths=attack_paths,
+        controls=controls,
+        boundaries=boundaries,
+    )
     return threat
 
 

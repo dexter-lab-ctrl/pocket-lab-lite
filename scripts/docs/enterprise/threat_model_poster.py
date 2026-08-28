@@ -180,6 +180,7 @@ def build_security_poster(threat: dict[str, Any], atlas: dict[str, Any]) -> dict
     attack_paths = list(threat.get("attack_paths") or viz.get("attack_paths") or [])
     boundaries = {str(row.get("id")): row for row in threat.get("boundaries") or []}
     controls = {str(row.get("id")): row for row in threat.get("controls") or []}
+    enterprise = dict(viz.get("enterprise") or {})
 
     node_ids = [str(row.get("id")) for row in source_nodes]
     if len(node_ids) != len(set(node_ids)):
@@ -224,6 +225,16 @@ def build_security_poster(threat: dict[str, Any], atlas: dict[str, Any]) -> dict
         )
 
     node_set = set(node_ids)
+    for row in enterprise.get("story_paths") or []:
+        for stage in row.get("stages") or []:
+            if str(stage.get("source")) not in node_set or str(stage.get("destination")) not in node_set:
+                raise ValueError(f"Security Poster story stage has unresolved node for {row.get('id')}")
+            unresolved = set(stage.get("controls") or []) - set(controls)
+            if unresolved:
+                raise ValueError(f"Security Poster story stage has unresolved controls for {row.get('id')}: {sorted(unresolved)}")
+    for row in enterprise.get("control_interceptions") or []:
+        if str(row.get("control")) not in controls or str(row.get("attack_path")) not in {str(item.get("id")) for item in attack_paths}:
+            raise ValueError("Security Poster interception binding has unresolved references")
     edges = []
     for row in sorted(source_edges, key=lambda item: str(item.get("id"))):
         source = str(row.get("from") or "")
@@ -331,6 +342,7 @@ def build_security_poster(threat: dict[str, Any], atlas: dict[str, Any]) -> dict
         "forbidden_flows": forbidden,
         "controls": poster_controls,
         "attack_paths": normalized_paths,
+        "enterprise": enterprise,
         "evidence_lineage": list(viz.get("evidence_lineage") or []),
         "atlas_contract": str(atlas.get("source_model") or "contracts/security/threat-model.json"),
         "guardrails": {
@@ -698,13 +710,70 @@ _render_threat_model_overview_enterprise_base = render_threat_model_overview
 _render_threat_model_subpages_enterprise_base = render_threat_model_subpages
 
 
+def _enterprise_console_markup(poster: dict[str, Any]) -> str:
+    """Static semantic shell for the local-only enterprise exploration state."""
+    enterprise = dict(poster.get("enterprise") or {})
+    serialized = json.dumps(enterprise, sort_keys=True, separators=(",", ":")).replace("<", "\\u003c")
+    lenses = [
+        ("architecture", "Architecture"), ("trust-boundaries", "Trust Boundaries"),
+        ("attack-paths", "Attack Paths"), ("stride", "STRIDE"), ("controls", "Controls"),
+        ("evidence", "Evidence"), ("consequences", "Consequences"),
+    ]
+    lens_buttons = "".join(
+        f'<button type="button" role="tab" data-pl-security-lens="{key}" aria-selected="{str(index == 0).lower()}" tabindex="{0 if index == 0 else -1}">{label}</button>'
+        for index, (key, label) in enumerate(lenses)
+    )
+    stride = [
+        ("all", "All"), ("Spoofing", "S Spoofing"), ("Tampering", "T Tampering"),
+        ("Repudiation", "R Repudiation"), ("Information Disclosure", "I Information Disclosure"),
+        ("Denial of Service", "D Denial of Service"), ("Elevation of Privilege", "E Elevation of Privilege"),
+    ]
+    stride_buttons = "".join(
+        f'<button type="button" data-pl-enterprise-stride="{_esc(key)}" aria-pressed="{str(index == 0).lower()}" aria-label="{_esc(label if key != "all" else "All STRIDE threats")}">{_esc(label)}</button>'
+        for index, (key, label) in enumerate(stride)
+    )
+    return (
+        '<section class="pl-security-console" data-pl-security-console="true" aria-labelledby="security-console-title">'
+        '<div class="pl-security-console-head"><div><span class="pl-card-kicker">Enterprise security exploration</span>'
+        '<h2 id="security-console-title">One topology, many security lenses</h2>'
+        '<p>Every view is a deterministic projection of the saved canonical model. It is not live monitoring, exploitability prediction or a risk score.</p></div>'
+        '<div class="pl-security-view-toggle" role="group" aria-label="Security review detail level">'
+        '<button type="button" data-pl-security-view="executive" aria-pressed="true">Executive view</button>'
+        '<button type="button" data-pl-security-view="engineer" aria-pressed="false">Engineer view</button></div></div>'
+        f'<div class="pl-security-lenses" role="tablist" aria-label="Security lenses">{lens_buttons}</div>'
+        '<div class="pl-security-actions" role="group" aria-label="Security exploration actions">'
+        '<button type="button" data-pl-security-action="blast" aria-pressed="false">Show blast radius</button>'
+        '<button type="button" data-pl-security-action="isolate" aria-pressed="false">Isolate boundary</button>'
+        '<button type="button" data-pl-security-action="gaps" aria-pressed="false">Show evidence gaps</button>'
+        '<button type="button" data-pl-security-action="coverage" aria-pressed="false">Control coverage</button>'
+        '<button type="button" data-pl-security-action="compare" aria-pressed="false">Compare modeled posture</button>'
+        '<button type="button" data-pl-security-action="workspace" aria-expanded="false">Security review workspace</button></div>'
+        '<div class="pl-security-stride" role="group" aria-label="STRIDE threat-class filter"><span>Threat class</span>' + stride_buttons + '</div>'
+        '<div class="pl-security-console-grid"><section class="pl-security-summary" aria-live="polite" aria-label="Security lens summary"></section>'
+        '<aside class="pl-security-detail" aria-label="Selected security-model detail"><span class="pl-card-kicker">Saved model detail</span>'
+        '<p>Select a system, control, boundary or modeled attack path in the poster. The console will preserve the source-derived truth language.</p></aside></div>'
+        '<section class="pl-security-story" hidden aria-label="Attack Path Story Mode"><div class="pl-security-story-head"><span class="pl-card-kicker">Attack Path Story Mode</span><strong>Choose a modeled path to begin</strong></div>'
+        '<div class="pl-security-story-stage" aria-live="polite"></div><div class="pl-security-story-actions" role="group" aria-label="Attack story controls">'
+        '<button type="button" data-pl-story="start">Start</button><button type="button" data-pl-story="previous">Previous</button><button type="button" data-pl-story="next">Next</button><button type="button" data-pl-story="replay">Replay</button><button type="button" data-pl-story="exit">Exit Story</button></div></section>'
+        '<section class="pl-security-workspace" hidden aria-label="Security Review Workspace"><h3>Security Review Workspace</h3><p>Local browser notes only; no evidence is promoted and no runtime system is contacted.</p>'
+        '<label>Scope <input data-pl-review="scope" type="text" autocomplete="off"></label><label>Finding <textarea data-pl-review="finding"></textarea></label><label>Evidence <textarea data-pl-review="evidence"></textarea></label>'
+        '<label>Decision <select data-pl-review="decision"><option>Human review required</option><option>Accept modeled scope</option><option>Follow up</option></select></label><label>Rationale <textarea data-pl-review="rationale"></textarea></label>'
+        '<button type="button" data-pl-security-action="share">Copy exploration deep link</button></section>'
+        f'<script id="pl-threat-enterprise-data" type="application/json">{serialized}</script></section>\n\n'
+    )
+
+
 def render_threat_model_overview(threat: dict[str, Any], poster: dict[str, Any]) -> str:
     body = _render_threat_model_overview_enterprise_base(threat, poster)
     old = '<button type="button" class="md-button" data-threat-motion="toggle">Pause animation</button></div>'
     new = '<button type="button" class="md-button" data-threat-motion="toggle">Pause animation</button><a class="md-button" data-threat-fullscreen="open" href="?poster-fullscreen=1#security-atlas" target="_blank" rel="noopener noreferrer">Full screen</a></div>'
     if body.count(old) != 1:
         raise ValueError("Threat Model poster action fence drifted")
-    return body.replace(old, new, 1)
+    body = body.replace(old, new, 1)
+    marker = '</section>\n\n## How Pocket Lab protects control'
+    if body.count(marker) != 1:
+        raise ValueError("Threat Model enterprise console insertion fence drifted")
+    return body.replace(marker, '</section>\n\n' + _enterprise_console_markup(poster) + '\n## How Pocket Lab protects control', 1)
 
 
 def render_threat_model_subpages(threat: dict[str, Any], poster: dict[str, Any]) -> dict[str, dict[str, str]]:
