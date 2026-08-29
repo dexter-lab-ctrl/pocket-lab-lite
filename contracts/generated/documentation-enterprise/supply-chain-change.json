@@ -1,18 +1,18 @@
 {
   "baseline_readiness": {
     "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
-    "candidate_count": 2,
-    "head": "eed4fa75d3f2d8c62ed62d1538e041f8d3f3abbf",
-    "head_tree": "ab84dd39ac2e69d2505df957a02c1b79236d777e",
+    "candidate_count": 3,
+    "head": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+    "head_tree": "f8db7257a2df027aeba876e8ebd8af1a884c9947",
     "reason": "comparable verified prior release selected",
     "selected_baseline": {
       "artifacts": [
         {
-          "bytes": 474904,
+          "bytes": 478705,
           "github_asset_presence": "verified",
           "github_digest_status": "verified",
           "name": "dist.zip",
-          "sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
+          "sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
           "status": "verified",
           "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
         },
@@ -21,7 +21,7 @@
           "github_asset_presence": "verified",
           "github_digest_status": "verified",
           "name": "checksums.txt",
-          "sha256": "8d844044fdb11ed0327245d65776f1a5be52407dd697ba7aa4a2f8087a0275d7",
+          "sha256": "ddb185e3d79e4bdb4e13f57f8f5c64b7972a1f7b60fef5693fc827db57f05fa5",
           "status": "verified",
           "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
         },
@@ -30,7 +30,7 @@
           "github_asset_presence": "verified",
           "github_digest_status": "verified",
           "name": "pocketlab-lite-release.json",
-          "sha256": "b7ad6b50ec127e951efe66002ab83d83ce1a0b16943f944e1b014c533d91590b",
+          "sha256": "9e83c4dfbc845995f4bceef8e2ac1349ee972b3e8017add464f81eabf93fc6b8",
           "status": "verified",
           "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
         }
@@ -39,29 +39,29 @@
       "canonical_sources": [
         "contracts/generated/releases/promoted-release-evidence.json"
       ],
-      "commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+      "commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
       "local_tag_available": true,
       "local_tag_matches": true,
       "manifest_binding": {
-        "dist_zip_sha256": "7e8acdf60ff087f5cb3a2e1c6c00126ee03b28cb0c2e50255b5f32323a5755d1",
-        "release_tag": "lite-2026.08.12.2",
-        "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
+        "dist_zip_sha256": "0a75b5231c60b88e5eae7d1427d14e4121a66e3fa70f3eb7b0556577770a4c8f",
+        "release_tag": "lite-2026.08.19.2",
+        "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
         "status": "verified"
       },
-      "observed_at": "2026-08-12T15:12:08Z",
+      "observed_at": "2026-08-19T20:57:40Z",
       "promotion_rule": "explicit-only; immutable per release tag",
-      "published_at": "2026-08-12T15:12:08Z",
+      "published_at": "2026-08-19T20:57:40Z",
       "raw_urls_included": false,
-      "release_tag": "lite-2026.08.12.2",
+      "release_tag": "lite-2026.08.19.2",
       "repository": "dexter-lab-ctrl/pocket-lab-lite",
       "sanitized": true,
       "schema_version": "1.0.0",
       "source": "explicit-gh-release-capture",
-      "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
-      "tag": "lite-2026.08.12.2",
-      "tagged_at": "2026-08-12T16:12:12+02:00",
-      "tree": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
-      "tree_hash": "51fd1137e45dfe160a551c6a2cc7c0d99e22e560",
+      "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
+      "tag": "lite-2026.08.19.2",
+      "tagged_at": "2026-08-19T22:40:16+02:00",
+      "tree": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
+      "tree_hash": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
       "verification_status": "promoted"
     },
     "status": "ready"
@@ -88,11 +88,11 @@
           "trivy"
         ],
         "status": "observed",
-        "syft_component_count": 2366,
-        "trivy_license_finding_count": 31,
+        "syft_component_count": 2379,
+        "trivy_license_finding_count": 26,
         "trivy_license_scanner": "executed-standard"
       },
-      "package_rows": 2366,
+      "package_rows": 2379,
       "trivy_license_rows": 26
     },
     "live_capture_performed": false,
@@ -148,19 +148,19 @@
       "provider_unavailable_count": 3,
       "status": "observed-with-provider-limitations"
     },
-    "run_id": "scorecard-compatible-20260811T100353Z",
+    "run_id": "local-20260829T193652Z-2392471",
     "sbom": {
-      "dev_components": 2366,
-      "release_components": 7,
+      "dev_components": 2379,
+      "release_components": 0,
       "runtime_components": 0
     },
     "schema_version": "1.0.0",
     "security": {
-      "gitleaks_finding_count": 1035,
+      "gitleaks_finding_count": 7068,
       "semgrep_finding_count": 0,
       "trivy_counts": {}
     },
-    "source_commit": "19d54e0bb84226f355865c32c6decee8ce010083",
+    "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
     "source_refs": [
       "contracts/generated/supply-chain/automation-summary.json",
       "contracts/generated/supply-chain/sbom-dev.cdx.json",
@@ -173,63 +173,63 @@
     ],
     "tool_coverage": [
       {
-        "duration_seconds": 0.671,
+        "duration_seconds": 0.724,
         "exit_code": 0,
         "status": "completed",
         "step_id": "gitleaks-release",
         "tool": "gitleaks"
       },
       {
-        "duration_seconds": 13.184,
+        "duration_seconds": 472.482,
         "exit_code": 1,
         "status": "findings-or-tool-nonzero",
         "step_id": "gitleaks-worktree",
         "tool": "gitleaks"
       },
       {
-        "duration_seconds": 5.45,
+        "duration_seconds": 84.639,
         "exit_code": 0,
         "status": "completed",
         "step_id": "grype-sbom-dev",
         "tool": "grype"
       },
       {
-        "duration_seconds": 5.133,
+        "duration_seconds": 4.33,
         "exit_code": 1,
         "status": "findings-or-tool-nonzero",
         "step_id": "osv-sbom-dev",
         "tool": "osv-scanner"
       },
       {
-        "duration_seconds": 70.248,
+        "duration_seconds": 28.184,
         "exit_code": 1,
         "status": "findings-or-tool-nonzero",
         "step_id": "osv-source",
         "tool": "osv-scanner"
       },
       {
-        "duration_seconds": 7.34,
+        "duration_seconds": 7.538,
         "exit_code": 0,
         "status": "completed",
         "step_id": "scorecard",
         "tool": "scorecard"
       },
       {
-        "duration_seconds": 4.932,
+        "duration_seconds": 20.575,
         "exit_code": 0,
         "status": "completed",
         "step_id": "semgrep",
         "tool": "semgrep"
       },
       {
-        "duration_seconds": 129.844,
+        "duration_seconds": 327.535,
         "exit_code": 0,
         "status": "completed",
         "step_id": "syft-dev",
         "tool": "syft"
       },
       {
-        "duration_seconds": 2.173,
+        "duration_seconds": 1.571,
         "exit_code": 0,
         "status": "completed",
         "step_id": "syft-release",
@@ -243,7 +243,7 @@
         "tool": "trivy"
       },
       {
-        "duration_seconds": 73.047,
+        "duration_seconds": 30.893,
         "exit_code": 0,
         "status": "completed",
         "step_id": "trivy-source",
@@ -252,7 +252,7 @@
     ],
     "vulnerabilities": {
       "evidence_status": "observed",
-      "finding_count": 580,
+      "finding_count": 622,
       "scanner_disagreement_is_failure": false
     }
   },
@@ -266,9 +266,9 @@
     }
   ],
   "evidence_status": "source-comparable; normalized scanner/license/upstream deltas only when historical canonical artifacts exist",
-  "from": "lite-2026.08.12.2",
+  "from": "lite-2026.08.19.2",
   "historical_comparison": {
-    "from": "lite-2026.08.12.2",
+    "from": "lite-2026.08.19.2",
     "reason": "verified canonical prior-release baseline selected",
     "status": "comparable",
     "to": "current-source"
@@ -276,9 +276,223 @@
   "implementation_status": "implemented",
   "license_classification_changes": [],
   "new_licenses": [],
-  "new_vulnerabilities": [],
+  "new_vulnerabilities": [
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-15806"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-17084"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-18503"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-19672"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-33818"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56853"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56854"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56858"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56859"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56860"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56862"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56864"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-56865"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-61711"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-61712"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-73502"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-76905"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "CVE-2026-77354"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-7236-3392-c5c6"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-72x6-4j93-7w86"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-jmr9-qjv8-65gv"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-m42h-3232-vpv3"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-mmfr-pmjx-hw9w"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-w4pp-8pjf-rmxw"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GHSA-xhj3-7xw9-vr34"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-5972"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6088"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6089"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6090"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6091"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6095"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6112"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6179"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6180"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6213"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6214"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6218"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6225"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6255"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6256"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6274"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6275"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "GO-2026-6303"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "PYSEC-2026-3721"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "PYSEC-2026-3722"
+    },
+    {
+      "classification": "new-vulnerability",
+      "id": "PYSEC-2026-3723"
+    }
+  ],
   "removed_licenses": [],
-  "resolved_vulnerabilities": [],
+  "resolved_vulnerabilities": [
+    {
+      "classification": "resolved-vulnerability",
+      "id": "CVE-2026-34040"
+    },
+    {
+      "classification": "resolved-vulnerability",
+      "id": "GHSA-2v8p-3f2j-5mp7"
+    },
+    {
+      "classification": "resolved-vulnerability",
+      "id": "GHSA-3rrr-jr9j-h3q3"
+    },
+    {
+      "classification": "resolved-vulnerability",
+      "id": "GHSA-6x64-9x62-f2gx"
+    },
+    {
+      "classification": "resolved-vulnerability",
+      "id": "GHSA-c4c3-pg64-4m4v"
+    },
+    {
+      "classification": "resolved-vulnerability",
+      "id": "GHSA-rhh3-jpg6-66xh"
+    },
+    {
+      "classification": "resolved-vulnerability",
+      "id": "GHSA-x744-4wpc-v9h2"
+    }
+  ],
   "rule": "scanner disagreement is represented, never converted automatically into a release failure; historical deltas require verified canonical evidence",
   "scanner_history_comparable": true,
   "schema_version": "1.1.0",
@@ -516,13 +730,6 @@
       "from": "0.3.31",
       "name": "@jridgewell/trace-mapping",
       "to": "0.3.9"
-    },
-    {
-      "classification": "dependency-updated",
-      "ecosystem": "npm",
-      "from": "1.1.1",
-      "name": "@mermaid-js/parser",
-      "to": "1.2.0"
     },
     {
       "classification": "dependency-updated",
@@ -971,13 +1178,6 @@
       "from": "1.0.3",
       "name": "merge-descriptors",
       "to": "2.0.0"
-    },
-    {
-      "classification": "dependency-updated",
-      "ecosystem": "npm",
-      "from": "11.15.0",
-      "name": "mermaid",
-      "to": "11.16.1"
     },
     {
       "classification": "dependency-updated",

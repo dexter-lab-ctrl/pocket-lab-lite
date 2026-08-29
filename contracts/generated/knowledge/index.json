@@ -15029,6 +15029,26 @@
       "verification_status": "promoted"
     },
     {
+      "artifact": "dist.zip",
+      "artifact_checksum": "654f5d67e7de647269f7c09559c3c355f318574383450adcf33252c38a1430d4",
+      "confidence": "release-promoted",
+      "domain": "release",
+      "id": "release:lite-2026.08.29.1",
+      "name": "lite-2026.08.29.1",
+      "promoted_at": "2026-08-29T15:57:57Z",
+      "published_at": "2026-08-29T15:57:57Z",
+      "release_manifest_status": "verified",
+      "runtime_parity_status": null,
+      "sanitized": true,
+      "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+      "source_refs": [
+        "contracts/generated/releases/promoted-release-evidence.json"
+      ],
+      "tree_hash": "f8db7257a2df027aeba876e8ebd8af1a884c9947",
+      "type": "release",
+      "verification_status": "promoted"
+    },
+    {
       "confidence": "source-derived",
       "description": "Frontend never talks directly to NATS.",
       "domain": "architecture",
@@ -16013,9 +16033,9 @@
             "expected_source_match": "matched",
             "id": "lite-api",
             "logical_role": "FastAPI control API",
-            "memory_bucket": "under-64-mib",
+            "memory_bucket": "64-191-mib",
             "presence": "present",
-            "restart_bucket": "none",
+            "restart_bucket": "low",
             "runtime_type": "python",
             "status": "online"
           },
@@ -26910,6 +26930,7 @@
         "reason:release_projection_unavailable",
         "release:lite-2026.08.12.2",
         "release:lite-2026.08.19.2",
+        "release:lite-2026.08.29.1",
         "subject:pocketlab.commands.release.apply",
         "subject:pocketlab.commands.release.check",
         "subject:pocketlab.events.release.applied",
@@ -27944,7 +27965,8 @@
       ],
       "release": [
         "release:lite-2026.08.12.2",
-        "release:lite-2026.08.19.2"
+        "release:lite-2026.08.19.2",
+        "release:lite-2026.08.29.1"
       ],
       "requirement": [
         "requirement:architecture-01",
@@ -83361,9 +83383,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "650bdf14f69c5419508fe093b6f4a3d9b82f1818dad0f215c4414d70d5fd7fb3",
+  "source_fingerprint": "a119ade4fea4be2ae20ca5b5bd1f2af37d281a80940e694c0ba0814ae4e648ae",
   "statistics": {
-    "entity_count": 1084,
+    "entity_count": 1085,
     "entity_type_counts": {
       "adr": 6,
       "api": 164,
@@ -83374,7 +83396,7 @@
       "journey": 24,
       "limitation": 18,
       "reason-code": 164,
-      "release": 2,
+      "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,

@@ -27,7 +27,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | journey | 24 |
 | limitation | 18 |
 | reason-code | 164 |
-| release | 2 |
+| release | 3 |
 | requirement | 10 |
 | runbook | 5 |
 | runtime-topology | 9 |

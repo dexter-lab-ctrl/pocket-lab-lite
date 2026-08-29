@@ -17,7 +17,7 @@
       },
       {
         "name": "pocketlab:source-digest",
-        "value": "3f30f7973f91e436726d9de90ca3c2dff933acddfe676f6789681e31b6b11257"
+        "value": "3b68e5790d4e6e2604dfdf0f859bed718be1eb97f98c058a491af891c7e99b04"
       },
       {
         "name": "pocketlab:sanitized",
@@ -25,7 +25,7 @@
       },
       {
         "name": "pocketlab:release-binding",
-        "value": "lite-2026.08.07.3"
+        "value": "lite-2026.08.12.2"
       }
     ]
   },

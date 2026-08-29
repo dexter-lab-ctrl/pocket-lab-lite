@@ -16,18 +16,18 @@ Current promoted evidence and historical change are intentionally separate autho
 | Signal | Value |
 | --- | --- |
 | Capture status | complete |
-| Run ID | scorecard-compatible-20260811T100353Z |
-| Source commit | 19d54e0bb84226f355865c32c6decee8ce010083 |
+| Run ID | local-20260829T193652Z-2392471 |
+| Source commit | 9cf5e2fcff9179d3c97199ff04f48c0031375e67 |
 | Qualification surface | local-or-ci-diagnostic |
-| Development SBOM components | 2366 |
-| Release SBOM components | 7 |
+| Development SBOM components | 2379 |
+| Release SBOM components | 0 |
 | Runtime SBOM components | 0 |
-| Vulnerability evidence | observed (580 normalized findings) |
+| Vulnerability evidence | observed (622 normalized findings) |
 | Package-license coverage | observed via syft+trivy |
-| Package rows | 2366 |
+| Package rows | 2379 |
 | Trivy license rows | 26 |
 | Deep source-license coverage | not-run |
-| Gitleaks findings | 1035 |
+| Gitleaks findings | 7068 |
 | Semgrep findings | 0 |
 | Scorecard posture | observed-with-provider-limitations |
 
@@ -35,17 +35,17 @@ Current promoted evidence and historical change are intentionally separate autho
 
 | Step | Status | Exit | Duration (s) |
 | --- | --- | --- | --- |
-| gitleaks-release | completed | 0 | 0.671 |
-| gitleaks-worktree | findings-or-tool-nonzero | 1 | 13.184 |
-| grype-sbom-dev | completed | 0 | 5.45 |
-| osv-sbom-dev | findings-or-tool-nonzero | 1 | 5.133 |
-| osv-source | findings-or-tool-nonzero | 1 | 70.248 |
-| scorecard | completed | 0 | 7.34 |
-| semgrep | completed | 0 | 4.932 |
-| syft-dev | completed | 0 | 129.844 |
-| syft-release | completed | 0 | 2.173 |
+| gitleaks-release | completed | 0 | 0.724 |
+| gitleaks-worktree | findings-or-tool-nonzero | 1 | 472.482 |
+| grype-sbom-dev | completed | 0 | 84.639 |
+| osv-sbom-dev | findings-or-tool-nonzero | 1 | 4.33 |
+| osv-source | findings-or-tool-nonzero | 1 | 28.184 |
+| scorecard | completed | 0 | 7.538 |
+| semgrep | completed | 0 | 20.575 |
+| syft-dev | completed | 0 | 327.535 |
+| syft-release | completed | 0 | 1.571 |
 | trivy-sbom-dev | completed | 0 | 0.419 |
-| trivy-source | completed | 0 | 73.047 |
+| trivy-source | completed | 0 | 30.893 |
 
 ### Repository posture
 
@@ -63,15 +63,15 @@ Current promoted evidence and historical change are intentionally separate autho
 | Signal | Value |
 | --- | --- |
 | Readiness | ready |
-| Verified candidates | 2 |
-| Selected baseline | lite-2026.08.12.2 |
-| Selected commit | a6e4abc37ee9cca62c27286c556607ff3e740561 |
+| Verified candidates | 3 |
+| Selected baseline | lite-2026.08.19.2 |
+| Selected commit | 950cee9e89febf1feb5d1072eecb8aa30a4026ad |
 | Policy | two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden |
 | Reason | comparable verified prior release selected |
 
 ## Historical comparison
 
-Compared **lite-2026.08.12.2** → **current-source** using verified canonical evidence.
+Compared **lite-2026.08.19.2** → **current-source** using verified canonical evidence.
 
 ### Dependencies added
 
@@ -120,7 +120,6 @@ No dependency additions observed.
 | npm | @inquirer/select | 2.5.0 | 4.4.2 |
 | npm | @inquirer/type | 1.5.5 | 4.0.7 |
 | npm | @jridgewell/trace-mapping | 0.3.31 | 0.3.9 |
-| npm | @mermaid-js/parser | 1.1.1 | 1.2.0 |
 | npm | @npmcli/config | 10.10.0 | 8.3.4 |
 | npm | @npmcli/run-script | 10.0.4 | 4.2.1 |
 | npm | @opentelemetry/api-logs | 0.214.0 | 0.57.2 |
@@ -185,7 +184,6 @@ No dependency additions observed.
 | npm | marked | 16.4.2 | 4.3.0 |
 | npm | media-typer | 0.3.0 | 1.1.0 |
 | npm | merge-descriptors | 1.0.3 | 2.0.0 |
-| npm | mermaid | 11.15.0 | 11.16.1 |
 | npm | mime-db | 1.52.0 | 1.54.0 |
 | npm | mime-types | 2.1.35 | 3.0.2 |
 | npm | minimatch | 10.2.5 | 9.0.9 |
@@ -247,7 +245,61 @@ No dependency additions observed.
 
 ### Vulnerability changes
 
-No comparable vulnerability changes observed, or the historical canonical vulnerability artifact is unavailable.
+| Direction | ID |
+| --- | --- |
+| new | CVE-2026-15806 |
+| new | CVE-2026-17084 |
+| new | CVE-2026-18503 |
+| new | CVE-2026-19672 |
+| new | CVE-2026-33818 |
+| new | CVE-2026-56853 |
+| new | CVE-2026-56854 |
+| new | CVE-2026-56858 |
+| new | CVE-2026-56859 |
+| new | CVE-2026-56860 |
+| new | CVE-2026-56862 |
+| new | CVE-2026-56864 |
+| new | CVE-2026-56865 |
+| new | CVE-2026-61711 |
+| new | CVE-2026-61712 |
+| new | CVE-2026-73502 |
+| new | CVE-2026-76905 |
+| new | CVE-2026-77354 |
+| new | GHSA-7236-3392-c5c6 |
+| new | GHSA-72x6-4j93-7w86 |
+| new | GHSA-jmr9-qjv8-65gv |
+| new | GHSA-m42h-3232-vpv3 |
+| new | GHSA-mmfr-pmjx-hw9w |
+| new | GHSA-w4pp-8pjf-rmxw |
+| new | GHSA-xhj3-7xw9-vr34 |
+| new | GO-2026-5972 |
+| new | GO-2026-6088 |
+| new | GO-2026-6089 |
+| new | GO-2026-6090 |
+| new | GO-2026-6091 |
+| new | GO-2026-6095 |
+| new | GO-2026-6112 |
+| new | GO-2026-6179 |
+| new | GO-2026-6180 |
+| new | GO-2026-6213 |
+| new | GO-2026-6214 |
+| new | GO-2026-6218 |
+| new | GO-2026-6225 |
+| new | GO-2026-6255 |
+| new | GO-2026-6256 |
+| new | GO-2026-6274 |
+| new | GO-2026-6275 |
+| new | GO-2026-6303 |
+| new | PYSEC-2026-3721 |
+| new | PYSEC-2026-3722 |
+| new | PYSEC-2026-3723 |
+| resolved | CVE-2026-34040 |
+| resolved | GHSA-2v8p-3f2j-5mp7 |
+| resolved | GHSA-3rrr-jr9j-h3q3 |
+| resolved | GHSA-6x64-9x62-f2gx |
+| resolved | GHSA-c4c3-pg64-4m4v |
+| resolved | GHSA-rhh3-jpg6-66xh |
+| resolved | GHSA-x744-4wpc-v9h2 |
 
 ### License changes
 

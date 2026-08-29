@@ -97,6 +97,55 @@
       "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
       "tree_hash": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
       "verification_status": "promoted"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 497774,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "dist.zip",
+          "sha256": "654f5d67e7de647269f7c09559c3c355f318574383450adcf33252c38a1430d4",
+          "status": "verified",
+          "verification": "SHA-256 verified against checksums.txt and GitHub asset digest where provided"
+        },
+        {
+          "bytes": 75,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "checksums.txt",
+          "sha256": "c861821a09002bd87be7e884a19add35926633089f9654e88bd3c41f8527c568",
+          "status": "verified",
+          "verification": "parsed and used to verify dist.zip; GitHub asset digest verified where provided"
+        },
+        {
+          "bytes": 362,
+          "github_asset_presence": "verified",
+          "github_digest_status": "verified",
+          "name": "pocketlab-lite-release.json",
+          "sha256": "38dd6040ca3acb32365f30a5c671beb20fd94d9a597d0942d878991d0deb3076",
+          "status": "verified",
+          "verification": "JSON parsed and tag + source commit bound; GitHub asset digest verified where provided"
+        }
+      ],
+      "manifest_binding": {
+        "dist_zip_sha256": "654f5d67e7de647269f7c09559c3c355f318574383450adcf33252c38a1430d4",
+        "release_tag": "lite-2026.08.29.1",
+        "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+        "status": "verified"
+      },
+      "observed_at": "2026-08-29T15:57:57Z",
+      "promotion_rule": "explicit-only; immutable per release tag",
+      "published_at": "2026-08-29T15:57:57Z",
+      "raw_urls_included": false,
+      "release_tag": "lite-2026.08.29.1",
+      "repository": "dexter-lab-ctrl/pocket-lab-lite",
+      "sanitized": true,
+      "schema_version": "1.0.0",
+      "source": "explicit-gh-release-capture",
+      "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+      "tree_hash": "f8db7257a2df027aeba876e8ebd8af1a884c9947",
+      "verification_status": "promoted"
     }
   ],
   "schema_version": "1.0.0"

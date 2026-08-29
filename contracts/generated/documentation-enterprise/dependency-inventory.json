@@ -24673,7 +24673,7 @@
       "license": "MIT",
       "name": "mermaid",
       "purpose": "development/tooling dependency",
-      "release_introduced": "version-changed-since-baseline",
+      "release_introduced": "present-in-baseline",
       "runtime_or_dev": "development",
       "transitive": false,
       "upstream_posture": "OpenSSF/normalized evidence when promoted",

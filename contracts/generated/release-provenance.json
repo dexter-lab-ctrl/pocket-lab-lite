@@ -18,30 +18,35 @@
     "workflow": "cosign sign-blob --yes --bundle <bundle> <artifact>"
   },
   "source": {
-    "commit": "cd25e655a3bd5e3d55b671f9fb15f0b9f38275a1",
-    "exact_tag": null,
-    "tree": "107da68fa2792084224a406aa913503b0be8f4e6"
+    "commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+    "exact_tag": "lite-2026.08.29.1",
+    "tree": "f8db7257a2df027aeba876e8ebd8af1a884c9947"
   },
   "subjects": [
     {
-      "bytes": 1719519,
+      "bytes": 497372,
       "path": "dist.zip",
-      "sha256": "a33d470458a2d4d394af644f652597f0d2e15773bc70b33b08d89bf3c6c4f24f"
+      "sha256": "132bfbf778528ac910af2d589a31996c2cb6b73cf97ce5cf88eec840dfcea0d5"
     },
     {
-      "bytes": 445352,
+      "bytes": 75,
+      "path": "checksums.txt",
+      "sha256": "008f14b9efb37bd860e52f512c131dfc43f14d47d078291667384c71c2a81086"
+    },
+    {
+      "bytes": 447186,
       "path": "contracts/generated/supply-chain/sbom-dev.cdx.json",
-      "sha256": "98d75e33fe9baba608a4cbc808e6274ac75a832e1c38b9cc005ac3361cf4e168"
+      "sha256": "d0db802e7e76c90603781724ef8f178d90000010fd1b6b3cedd498d6f942636d"
     },
     {
-      "bytes": 2284,
+      "bytes": 734,
       "path": "contracts/generated/supply-chain/sbom-release.cdx.json",
-      "sha256": "42f6b79bf3bf0f55572b0c17145b3943f8dd2d576af217ebdc155524609fa461"
+      "sha256": "dde6c4d6e92a29845c88080cfb585deaec0b5c7f017620b9236d5796bb890fad"
     },
     {
       "bytes": 791,
       "path": "contracts/generated/supply-chain/sbom-runtime.cdx.json",
-      "sha256": "aa5df952b7c831f9570df6121d17041b32ae5f3a651aa4646206d4c3cb26947a"
+      "sha256": "738ef3e6773594bcd96d04a41528c39e24396633b498163ce35192e1e35f451a"
     }
   ]
 }
