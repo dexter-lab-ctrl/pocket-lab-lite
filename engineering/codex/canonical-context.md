@@ -2,7 +2,7 @@
 
 ## Repository
 
-- Canonical checkout: `/home/dj/pocket-lab-lite`
+- Canonical checkout: `/home/$USER/pocket-lab-lite`
 - Use native WSL tooling and native WSL Git only.
 - Root `AGENTS.md` is the controlling policy.
 
@@ -53,10 +53,10 @@ Before mutation, verify branch, `HEAD`, `origin/main`, merge base and status:
 
 ```bash
 wsl.exe -d Ubuntu -- bash -lc \
-  "cd /home/dj/pocket-lab-lite && git status --short --branch && git rev-parse HEAD && git rev-parse origin/main && git merge-base HEAD origin/main"
+  "cd /home/$USER/pocket-lab-lite && git status --short --branch && git rev-parse HEAD && git rev-parse origin/main && git merge-base HEAD origin/main"
 ```
 
-Do not trust Windows Git status over `\\wsl$\ubuntu\home\dj\pocket-lab-lite`; this repository has verified false mode-only reports there. See `engineering/codex/README.md` for the evidence and handling.
+Do not trust Windows Git status over `\\wsl$\ubuntu\home\$USER\pocket-lab-lite`; this repository has verified false mode-only reports there. See `engineering/codex/README.md` for the evidence and handling.
 
 ## Status vocabulary
 
