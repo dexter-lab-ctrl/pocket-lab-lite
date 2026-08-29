@@ -29,7 +29,7 @@ Ordinary local, non-destructive implementation and validation are allowed when t
 ## Codex must
 
 - use native WSL tooling for Pocket Lab Lite;
-- treat `/home/dj/pocket-lab-lite` as the canonical checkout;
+- treat `/home/$USER/pocket-lab-lite` as the canonical checkout;
 - read root `AGENTS.md` first;
 - verify branch, `HEAD`, `origin/main` and status before mutation;
 - inspect relevant source and tests before editing;
@@ -57,10 +57,10 @@ Inspecting local Git state is allowed. Remote or live actions require separate a
 
 ## Native WSL Git is canonical
 
-Use native WSL Git from `/home/dj/pocket-lab-lite`. Do not use Windows Git through:
+Use native WSL Git from `/home/$USER/pocket-lab-lite`. Do not use Windows Git through:
 
 ```text
-\\wsl$\ubuntu\home\dj\pocket-lab-lite
+\\wsl$\ubuntu\home\$USER\pocket-lab-lite
 ```
 
 Verified repository behavior on 2026-08-20:
@@ -87,7 +87,7 @@ Canonical verification:
 
 ```bash
 wsl.exe -d Ubuntu -- bash -lc \
-  "cd /home/dj/pocket-lab-lite && git status --short --branch"
+  "cd /home/$USER/pocket-lab-lite && git status --short --branch"
 ```
 
 ## Normal Codex lifecycle
