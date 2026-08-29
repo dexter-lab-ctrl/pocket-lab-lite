@@ -16178,7 +16178,7 @@
             "journal_mode": "wal",
             "presence": "present",
             "role": "control-plane-state",
-            "schema_revision": 24,
+            "schema_revision": 29,
             "service_id": "sqlite"
           }
         ],
@@ -39286,6 +39286,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "requirement:architecture-01",
           "type": "verified_by"
         },
@@ -54322,6 +54326,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -60671,6 +60679,15 @@
       "id": "rel:2cbe9d14e3a0f557",
       "source": "component:sqlite",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2cf42f40d8bfa7a0",
+      "source": "reason:policy_unavailable",
+      "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
     },
     {
@@ -83344,7 +83361,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "c8ab823c3199b12c2296fb1aba8a14e01e527ba7f4db2e646b01887d1aee718d",
+  "source_fingerprint": "650bdf14f69c5419508fe093b6f4a3d9b82f1818dad0f215c4414d70d5fd7fb3",
   "statistics": {
     "entity_count": 1084,
     "entity_type_counts": {
@@ -83370,7 +83387,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3050,
+    "relation_count": 3051,
     "source_count": 232
   }
 }

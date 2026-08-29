@@ -118,6 +118,15 @@ def test_current_promoted_domain_health_is_evidence_backed_and_independent():
         domains["recovery"]["freshness_age_seconds"]
         > domains["recovery"]["freshness_threshold_seconds"]
     )
+    # Identity and Rules are intentionally partial: retain canonical dependencies without
+    # elevating their aggregate operational health to a runtime claim.
+    assert domains["identity"]["dependencies"] == [
+        "FastAPI", "SQLite", "WebAuthn assurance", "Enterprise membership controls"
+    ]
+    assert domains["rules"]["dependencies"] == [
+        "FastAPI", "SQLite", "OPA policy engine", "Policy lifecycle",
+        "Independent approvals", "Temporary exceptions"
+    ]
 
 
 @pytest.mark.parametrize(

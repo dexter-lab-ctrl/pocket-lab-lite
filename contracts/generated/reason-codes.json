@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "bd6e26409e00cd9896523bd84c28a3e891de5ab1ec93d227d85fcd6af4f135da",
+    "aggregate_fingerprint": "6cc945278d8a07a6be73bb352977ab0c028a60bfd9a1cc5b9bbc1d07a2146d42",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,7 +10,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "0a889bcdadd48600f2fa362a0e528c7b5066bdfe03406c0b4019ca54bc2ae554",
+      "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
       "pocket-lab-final-structure/runtime/api_fastapi/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/__init__.py": "526884a92d46e87f3a6c5ece60852976c4bf968476cf5e37767a345540fea946",
       "pocket-lab-final-structure/runtime/api_fastapi/db/connection.py": "22f27cd617d3c322dff1c6ab05614d090759f74de7c81660b9d9cfbc36abf7fb",

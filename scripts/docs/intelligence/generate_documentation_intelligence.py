@@ -77,7 +77,7 @@ DOMAIN_LABELS = {
     "devices": "Devices",
     "security": "Security",
     "recovery": "Backup & Restore",
-    "identity": "Identity",
+    "identity": "Identity & Access",
     "rules": "Rules",
 }
 

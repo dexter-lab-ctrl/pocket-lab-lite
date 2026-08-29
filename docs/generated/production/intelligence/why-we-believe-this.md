@@ -34,7 +34,7 @@ Every claim keeps its evidence provenance. Raw secrets and private runtime ident
 <details class="pl-disclosure pl-technical-panel"><summary><span>Technical provenance</span><small>Release-bound evidence lineage</small></summary>
 <div class="pl-provenance-grid"><div><span>Source commit</span><strong><code>a6e4abc37ee9cca62c27286c556607ff3e740561</code></strong></div><div><span>Promoted at</span><strong>2026-08-12T16:00:40Z</strong></div><div><span>Generator</span><strong><code>scripts/docs/runtime/generate_domain_operational_health.py</code></strong></div><div><span>Evidence comparisons</span><strong>[&#x27;home-termux-overall_status&#x27;, &#x27;home-termux-read_degraded&#x27;]</strong></div></div></details>
 
-## Identity
+## Identity & Access
 
 <div class="pl-lineage">
 <div><strong>Promoted runtime baseline</strong><span>lite-2026.08.12.2</span></div><span aria-hidden="true">→</span><div><strong>Operational-health projection</strong><span>unvalidated</span></div><span aria-hidden="true">→</span><div><strong>Documentation intelligence</strong><span>deterministic view</span></div></div>

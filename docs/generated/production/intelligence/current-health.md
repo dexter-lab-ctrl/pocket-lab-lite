@@ -13,7 +13,7 @@ confidence: release-promoted
 | Apps | healthy | — | ready-with-guardrails |
 | Devices | healthy | — | ready-with-guardrails |
 | Home | degraded | read_degraded | degraded |
-| Identity | unvalidated | — | partial |
+| Identity & Access | unvalidated | — | partial |
 | Backup & Restore | degraded | projection_too_old | degraded |
 | Rules | unvalidated | — | partial |
 | Security | healthy | — | ready-with-guardrails |

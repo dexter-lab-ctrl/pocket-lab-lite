@@ -50,6 +50,11 @@ def test_dependency_health_never_inherits_domain_health_without_dependency_evide
     assert next(x for x in rows["apps"]["dependencies"] if x["name"] == "PhotoPrism runtime")["state"] == "healthy"
     assert next(x for x in rows["security"]["dependencies"] if x["name"] == "Lynis")["state"] == "unvalidated"
     assert next(x for x in rows["recovery"]["dependencies"] if x["name"] == "restic")["state"] == "unvalidated"
+    assert rows["identity"]["label"] == "Identity & Access"
+    assert rows["identity"]["operational_health"] == "unvalidated"
+    assert next(x for x in rows["identity"]["dependencies"] if x["name"] == "WebAuthn assurance")["evidence_status"] == "source-derived"
+    assert rows["rules"]["operational_health"] == "unvalidated"
+    assert next(x for x in rows["rules"]["dependencies"] if x["name"] == "OPA policy engine")["state"] == "unvalidated"
 
 
 def test_release_impact_is_future_ready_but_does_not_fabricate_history():

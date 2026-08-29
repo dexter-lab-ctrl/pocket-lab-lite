@@ -562,8 +562,8 @@
         },
         {
           "observed": {
-            "healthy": 22,
-            "unvalidated": 4
+            "healthy": 26,
+            "unvalidated": 10
           },
           "signal": "dependency health",
           "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -843,8 +843,8 @@
         },
         {
           "observed": {
-            "healthy": 22,
-            "unvalidated": 4
+            "healthy": 26,
+            "unvalidated": 10
           },
           "signal": "dependency health",
           "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -1035,8 +1035,8 @@
         },
         {
           "observed": {
-            "healthy": 22,
-            "unvalidated": 4
+            "healthy": 26,
+            "unvalidated": 10
           },
           "signal": "dependency health",
           "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -1988,8 +1988,8 @@
       {
         "boundary": "application-container",
         "observed": {
-          "healthy": 22,
-          "unvalidated": 4
+          "healthy": 26,
+          "unvalidated": 10
         },
         "signal": "dependency health",
         "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -2056,8 +2056,8 @@
       {
         "boundary": "external-release",
         "observed": {
-          "healthy": 22,
-          "unvalidated": 4
+          "healthy": 26,
+          "unvalidated": 10
         },
         "signal": "dependency health",
         "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -2157,8 +2157,8 @@
       {
         "boundary": "messaging-execution",
         "observed": {
-          "healthy": 22,
-          "unvalidated": 4
+          "healthy": 26,
+          "unvalidated": 10
         },
         "signal": "dependency health",
         "source": "contracts/generated/documentation-intelligence/dependency-health.json",

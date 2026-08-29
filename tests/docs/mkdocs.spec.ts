@@ -803,6 +803,26 @@ test('documentation intelligence dashboard is responsive, progressive, and evide
   expect(failedRequests, failedRequests.join('\n')).toEqual([]);
 });
 
+test('Enterprise Dependency Health renders semantic, responsive evidence detail', async ({ page }) => {
+  await page.goto(`${DOCS_PREFIX}generated/enterprise/reference/dependency-health/`);
+  const content = page.locator('.md-content__inner.md-typeset').first();
+
+  await expect(content.getByRole('heading', { name: 'Dependency Health' })).toBeVisible();
+  await expect(content.getByText('Trace degradation without overstating runtime proof')).toBeVisible();
+  await expect(content.locator('.pl-kpi').getByRole('heading', { name: 'Identity & Access' })).toBeVisible();
+  await expect(content.locator('.pl-kpi').getByRole('heading', { name: 'Rules' })).toBeVisible();
+  await expect(content.locator('.pl-wide-data table')).toBeVisible();
+  await expect(content.locator('.pl-wide-data table caption')).toContainText('Dependency state and evidence authority');
+  await expect(content.locator('.pl-wide-data')).toHaveAttribute('role', 'region');
+  await expect(content).not.toContainText('| Domain | Dependency | State |');
+
+  const overflow = await content.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+});
+
 test('Security Atlas is a responsive catalog with deterministic deep links and no runtime polling', async ({ page }) => {
   await page.goto(`${DOCS_PREFIX}generated/enterprise/threat-model/catalog/?atlas-attack-path=AP-04#security-atlas`);
 

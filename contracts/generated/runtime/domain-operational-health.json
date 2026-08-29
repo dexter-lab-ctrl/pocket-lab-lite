@@ -162,7 +162,12 @@
     },
     "identity": {
       "confidence": "partial",
-      "dependencies": [],
+      "dependencies": [
+        "FastAPI",
+        "SQLite",
+        "WebAuthn assurance",
+        "Enterprise membership controls"
+      ],
       "evidence": [],
       "evidence_status": "release-promoted",
       "freshness": "promoted-observation",
@@ -246,7 +251,14 @@
     },
     "rules": {
       "confidence": "partial",
-      "dependencies": [],
+      "dependencies": [
+        "FastAPI",
+        "SQLite",
+        "OPA policy engine",
+        "Policy lifecycle",
+        "Independent approvals",
+        "Temporary exceptions"
+      ],
       "evidence": [],
       "evidence_status": "release-promoted",
       "freshness": "promoted-observation",
@@ -891,5 +903,5 @@
   "schema_revision": 1,
   "schema_version": "1.0.0",
   "source_commit": "a6e4abc37ee9cca62c27286c556607ff3e740561",
-  "source_fingerprint": "004997dc4ba6f7e9bc5688159ed9f25d4dbf938885686a6fe1d93ebe2a206af6"
+  "source_fingerprint": "b5bd38db0fb9368df462980eea7062a07a15c9b0bb66d562e86db62d309dee09"
 }

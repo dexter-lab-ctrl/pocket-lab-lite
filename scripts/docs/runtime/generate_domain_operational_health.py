@@ -312,7 +312,9 @@ def _domain_record(
         freshness = "promoted-observation" if observed else "unvalidated"
         readiness = "partial" if implementation == PARTIAL else "unvalidated"
         write_safety = "unvalidated"
-        dependencies = []
+        # Partial domains retain their canonical dependency model without promoting an
+        # aggregate health conclusion from incomplete implementation/runtime coverage.
+        dependencies = list((policy or {}).get("dependencies", []))
 
     comparison_ids = [item["comparison_id"] for item in evidence]
     return {

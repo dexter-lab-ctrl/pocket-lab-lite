@@ -827,7 +827,31 @@ def privacy_map(root:Path)->list[dict[str,Any]]:
 
 
 def fmea(root:Path,deps:list[dict[str,Any]])->list[dict[str,Any]]:
-    reason_data=read_json(root/"contracts/generated/reason-codes.json",{}) or {}; reasons=reason_data.get("reason_codes",[]) or []
+    reason_data=read_json(root/"contracts/generated/reason-codes.json",{}) or {}
+    reason_body=reason_data.get("reason_codes",{})
+    reasons=reason_body.get("reason_codes",[]) if isinstance(reason_body,dict) else reason_body or []
+    health=read_json(root/"contracts/generated/runtime/domain-operational-health.json",{}) or {}
+    domain_health=health.get("domains",{}) if isinstance(health.get("domains"),dict) else {}
+    domain_ids={"identity & access":"identity","backup & restore":"recovery"}
+    canonical_reason_codes={"opa policy engine": {"policy_unavailable"}}
+    canonical_reason_prefixes={"temporary exceptions": ("exception_",)}
+
+    def reason_codes_for(dependency:str)->list[str]:
+        key=dependency.lower()
+        words=re.findall(r"[a-z]+",key)
+        exact=canonical_reason_codes.get(key,set())
+        prefixes=canonical_reason_prefixes.get(key,())
+        prioritized=[]; keyword_matches=[]
+        for reason in reasons:
+            if not isinstance(reason,dict): continue
+            code=str(reason.get("code") or reason.get("id") or "")
+            if not code: continue
+            if code in exact or any(code.startswith(prefix) for prefix in prefixes):
+                prioritized.append(code)
+            elif any(word in stable(reason).lower() for word in words):
+                keyword_matches.append(code)
+        return list(dict.fromkeys(prioritized+keyword_matches))[:8]
+
     out=[]; seen=set()
     severity_definitions={
       "critical":"control-plane safety, durable state, or recovery ownership can be lost; immediate operator attention is warranted",
@@ -841,7 +865,10 @@ def fmea(root:Path,deps:list[dict[str,Any]])->list[dict[str,Any]]:
         seen.add(key); dep=str(d.get("dependency")); low=dep.lower()
         automatic="reconnect/retry" if "nats" in low else "supervisor recovery" if "agent" in low or "supervisor" in low else "backend-owned retry/readiness guard where implemented"
         severity="high" if d.get("blocking") else "moderate"
-        out.append({"component":dep,"failure_mode":f"{dep} unavailable, stale or disconnected","detection":d.get("evidence_authority"),"reason_codes":[str(x.get("code") or x.get("id")) for x in reasons if isinstance(x,dict) and any(w in stable(x).lower() for w in re.findall(r"[a-z]+",low))][:8],"user_impact":f"{d.get('domain')} may degrade, block writes or become unavailable","automatic_recovery":automatic,"manual_recovery":"follow the matching production incident runbook; do not infer destructive commands","evidence":d.get("root_cause"),"severity":severity,"severity_definition":severity_definitions[severity],"occurrence":"not numerically scored without canonical incident frequency evidence","detectability":"evidence-dependent","residual_risk":"human review; no arbitrary RPN","human_review_required":True,"input_evidence":["contracts/generated/documentation-intelligence/dependency-health.json","contracts/generated/reason-codes.json","pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py","contracts/generated/lite-asyncapi.json","contracts/generated/lite-openapi.json","contracts/generated/recovery-contract.json"],"implementation_status":"implemented"})
+        domain_name=str(d.get("domain") or "")
+        domain_id=domain_ids.get(domain_name.lower(),domain_name.lower())
+        implementation_status=str((domain_health.get(domain_id) or {}).get("implementation_status") or "unvalidated")
+        out.append({"component":dep,"failure_mode":f"{dep} unavailable, stale or disconnected","detection":d.get("evidence_authority"),"reason_codes":reason_codes_for(dep),"user_impact":f"{d.get('domain')} may degrade, block writes or become unavailable","automatic_recovery":automatic,"manual_recovery":"follow the matching production incident runbook; do not infer destructive commands","evidence":d.get("root_cause"),"severity":severity,"severity_definition":severity_definitions[severity],"occurrence":"not numerically scored without canonical incident frequency evidence","detectability":"evidence-dependent","residual_risk":"human review; no arbitrary RPN","human_review_required":True,"input_evidence":["contracts/generated/documentation-intelligence/dependency-health.json","contracts/generated/reason-codes.json","pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py","contracts/generated/lite-asyncapi.json","contracts/generated/lite-openapi.json","contracts/generated/recovery-contract.json"],"implementation_status":implementation_status})
     return out
 
 def reliability(root:Path)->list[dict[str,Any]]:

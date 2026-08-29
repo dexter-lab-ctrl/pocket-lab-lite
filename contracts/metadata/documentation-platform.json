@@ -285,6 +285,15 @@
         },
         "write_safety": "not-applicable"
       },
+      "identity": {
+        "dependencies": [
+          "FastAPI",
+          "SQLite",
+          "WebAuthn assurance",
+          "Enterprise membership controls"
+        ],
+        "write_safety": "fail-closed"
+      },
       "recovery": {
         "dependencies": [
           "FastAPI",
@@ -326,6 +335,17 @@
           }
         },
         "write_safety": "blocked-when-read-degraded"
+      },
+      "rules": {
+        "dependencies": [
+          "FastAPI",
+          "SQLite",
+          "OPA policy engine",
+          "Policy lifecycle",
+          "Independent approvals",
+          "Temporary exceptions"
+        ],
+        "write_safety": "fail-closed"
       },
       "security": {
         "dependencies": [

@@ -23,7 +23,14 @@ No canonical per-domain capability list is present; see Platform Capability Matr
 
 ## Dependencies
 
-No dedicated dependency rows are available; dependency state is unvalidated.
+| Dependency | State | Evidence |
+| --- | --- | --- |
+| FastAPI | healthy | verified-runtime-baseline |
+| SQLite | healthy | verified-runtime-baseline |
+| OPA policy engine | unvalidated | source-derived |
+| Policy lifecycle | unvalidated | source-derived |
+| Independent approvals | unvalidated | source-derived |
+| Temporary exceptions | unvalidated | source-derived |
 
 ## Evidence
 
