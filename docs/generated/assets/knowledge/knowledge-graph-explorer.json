@@ -20558,6 +20558,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_enterprise_completion.py"
+      ],
+      "id": "rel:2cf42f40d8bfa7a0",
+      "source": "reason:policy_unavailable",
+      "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "runbooks/backup_restore_verify.yaml",
         "src/lite/LiteRecovery.jsx"
       ],

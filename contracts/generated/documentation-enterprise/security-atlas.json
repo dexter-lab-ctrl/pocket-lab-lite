@@ -597,7 +597,7 @@
       "source_refs": [
         "contracts/generated/documentation-intelligence/dependency-health.json"
       ],
-      "summary": "Boundary: application-container. State: control-observed. Observed: {\"healthy\":22,\"unvalidated\":4}.",
+      "summary": "Boundary: application-container. State: control-observed. Observed: {\"healthy\":26,\"unvalidated\":10}.",
       "target_id": "posture:04",
       "title": "dependency health",
       "view": "evidence"
@@ -705,7 +705,7 @@
       "source_refs": [
         "contracts/generated/documentation-intelligence/dependency-health.json"
       ],
-      "summary": "Boundary: external-release. State: control-observed. Observed: {\"healthy\":22,\"unvalidated\":4}.",
+      "summary": "Boundary: external-release. State: control-observed. Observed: {\"healthy\":26,\"unvalidated\":10}.",
       "target_id": "posture:13",
       "title": "dependency health",
       "view": "evidence"
@@ -849,7 +849,7 @@
       "source_refs": [
         "contracts/generated/documentation-intelligence/dependency-health.json"
       ],
-      "summary": "Boundary: messaging-execution. State: control-observed. Observed: {\"healthy\":22,\"unvalidated\":4}.",
+      "summary": "Boundary: messaging-execution. State: control-observed. Observed: {\"healthy\":26,\"unvalidated\":10}.",
       "target_id": "posture:25",
       "title": "dependency health",
       "view": "evidence"

@@ -2554,7 +2554,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "d7aef5950ec2abb49f7a808437ef92c16b66593ea5c9e69c668acd9c1fe6629e",
+    "aggregate_fingerprint": "125596a7864afeee4303daa96772c4eff11e3b98d3caa3478017fb72884f415e",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2565,7 +2565,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
-      "contracts/metadata/documentation-platform.json": "0a889bcdadd48600f2fa362a0e528c7b5066bdfe03406c0b4019ca54bc2ae554",
+      "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",

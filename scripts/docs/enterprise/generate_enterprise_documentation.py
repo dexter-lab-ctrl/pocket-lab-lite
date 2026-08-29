@@ -258,6 +258,79 @@ def dependency_rows() -> list[dict[str, Any]]:
     return output
 
 
+def dependency_state_badge(state: Any) -> str:
+    """Render textual/symbolic state so dependency status is never color-only."""
+    normalized_state = str(state or "unvalidated")
+    state_symbol = {
+        "healthy": "●",
+        "degraded": "▲",
+        "unavailable": "!",
+        "stale": "◐",
+        "unvalidated": "○",
+    }.get(normalized_state, "○")
+    state_class = re.sub(r"[^a-z0-9-]+", "-", normalized_state.lower())
+    return (
+        f'<span class="pl-intel-status pl-intel-status--{state_class}">'
+        f'<span aria-hidden="true">{state_symbol}</span> {html.escape(normalized_state)}</span>'
+    )
+
+
+def dependency_evidence_badge(evidence: Any) -> str:
+    normalized_evidence = str(evidence or "unvalidated")
+    evidence_symbol = "●" if normalized_evidence == "verified-runtime-baseline" else "◇"
+    status_class = "healthy" if normalized_evidence == "verified-runtime-baseline" else "unvalidated"
+    return (
+        f'<span class="pl-intel-status pl-intel-status--{status_class}">'
+        f'<span aria-hidden="true">{evidence_symbol}</span> {html.escape(normalized_evidence)}</span>'
+    )
+
+
+def dependency_status_badge(state: Any, evidence: Any) -> str:
+    return dependency_state_badge(state) + " " + dependency_evidence_badge(evidence)
+
+
+def dependency_health_table(rows: list[dict[str, Any]]) -> str:
+    cells = []
+    for row in rows:
+        cells.append(
+            "<tr>"
+            f'<th scope="row">{html.escape(str(row["domain"]))}</th>'
+            f'<td>{html.escape(str(row["dependency"]))}</td>'
+            f'<td>{dependency_state_badge(row["state"])}</td>'
+            f'<td>{dependency_evidence_badge(row["evidence_authority"])}</td>'
+            f'<td>{"Yes" if row["blocking"] else "No"}</td>'
+            f'<td>{html.escape(str(row["root_cause"]))}</td>'
+            "</tr>"
+        )
+    return (
+        '<div class="pl-wide-data" role="region" aria-label="Dependency health details" tabindex="0">'
+        '<table><caption>Dependency state and evidence authority by domain</caption>'
+        '<thead><tr><th scope="col">Domain</th><th scope="col">Dependency</th>'
+        '<th scope="col">State</th><th scope="col">Evidence authority</th><th scope="col">Blocking</th><th scope="col">Evidence note</th>'
+        "</tr></thead><tbody>" + "".join(cells) + "</tbody></table></div>"
+    )
+
+
+def dependency_domain_cards(rows: list[dict[str, Any]]) -> str:
+    cards = []
+    for domain in sorted({str(row["domain"]) for row in rows}):
+        dependencies = [row for row in rows if str(row["domain"]) == domain]
+        states = Counter(str(row["state"]) for row in dependencies)
+        evidence = Counter(str(row["evidence_authority"]) for row in dependencies)
+        cards.append(
+            '<article class="pl-kpi">'
+            f'<h3>{html.escape(domain)}</h3>'
+            '<dl>'
+            f'<div><dt>Dependencies</dt><dd>{len(dependencies)}</dd></div>'
+            f'<div><dt>Healthy</dt><dd>{states["healthy"]}</dd></div>'
+            f'<div><dt>Unvalidated</dt><dd>{states["unvalidated"]}</dd></div>'
+            f'<div><dt>Runtime verified</dt><dd>{evidence["verified-runtime-baseline"]}</dd></div>'
+            f'<div><dt>Source derived</dt><dd>{evidence["source-derived"]}</dd></div>'
+            '</dl></article>'
+        )
+    return '<section class="pl-kpi-grid" aria-label="Domain dependency summaries">' + "".join(cards) + "</section>"
+
+
 def dep_dot(rows: list[dict[str, Any]], production: bool) -> str:
     states = {"healthy":"#2e7d32","degraded":"#b26a00","unavailable":"#b3261e","unvalidated":"#626262","stale":"#8a6d00"}
     lines = ["digraph dependency_health {", '  graph [rankdir="LR", bgcolor="transparent", fontname="sans-serif"];', '  node [shape="box", style="rounded,filled", fontname="sans-serif", fillcolor="#f5f7fa"];', '  edge [fontname="sans-serif", color="#667085"];']
@@ -270,7 +343,8 @@ def dep_dot(rows: list[dict[str, Any]], production: bool) -> str:
         for j, dep in enumerate(selected):
             nid = f"{did}n{j}"
             state = dep["state"]
-            label = f"{dep['dependency']}\\n{state}" + ("" if production else f"\\n{dep['evidence_authority']}")
+            marker = "● verified runtime" if dep["evidence_authority"] == "verified-runtime-baseline" else "◇ source-derived"
+            label = f"{dep['dependency']}\\n{state}" + ("" if production else f"\\n{marker}")
             lines.append(f'  {nid} [label="{label}", color="{states.get(state, states["unvalidated"])}"];')
             style = "bold" if dep["blocking"] else "solid"
             lines.append(f'  {did} -> {nid} [style="{style}"];')
@@ -346,7 +420,8 @@ def render_dependency_svg(rows: list[dict[str, Any]], production: bool) -> str:
             out.append(f'  <rect class="n" x="{dep_x}" y="{ny}" width="{dep_width}" height="34" rx="8" stroke="{color}"/>')
             detail = f'{dep["dependency"]} — {state}'
             if not production:
-                detail += f' — {dep["evidence_authority"]}'
+                marker = "● verified runtime" if dep["evidence_authority"] == "verified-runtime-baseline" else "◇ source-derived"
+                detail += f" — {marker}"
             out.append(f'  <text class="t s" x="{dep_x + 12}" y="{ny + 22}">{esc(detail)}</text>')
         y += block_height + group_gap
     out.append('</svg>')
@@ -614,10 +689,11 @@ def build() -> tuple[dict[Path,str], dict[str,Any]]:
     # Documentation Platform system-manual pages are owned by documentation_ia.py.
     # The enterprise generator merges that deterministic IA projection after completion.
     dep_summary = Counter(str(x.get("state") or "unvalidated") for x in deps)
-    dep_body = '# Dependency Health\n\n<div class="pl-page-lede"><strong>Trace degradation without leaking implementation paths.</strong><p>Domain health and child dependency evidence stay independent. The diagram is rendered as a contained asset; local filesystem prefixes and Markdown renderer directives are never emitted as visible content.</p></div>\n\n'
+    dep_body = '# Dependency Health\n\n<section class="pl-page-lede" aria-labelledby="dependency-health-basis"><p class="pl-eyebrow">Release-bound evidence</p><h2 id="dependency-health-basis">Trace degradation without overstating runtime proof</h2><p>Domain health and child dependency evidence stay independent. A source-derived dependency is documented from canonical architecture or metadata; it is not a runtime verification claim. Aggregate Identity &amp; Access and Rules health remains unvalidated while their promoted implementation coverage is partial.</p></section>\n\n'
     dep_body += '<div class="pl-kpi-grid">' + ''.join(f'<div class="pl-kpi"><span>{html.escape(state.replace("-", " ").title())}</span><strong>{count}</strong><small>dependency observations</small></div>' for state, count in sorted(dep_summary.items())) + '</div>\n\n'
-    dep_body += '<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/dependency-health-development.svg" alt="Detailed dependency health" loading="lazy"><figcaption>Promoted dependency relationships and evidence authority.</figcaption></figure>\n\n'
-    dep_body += '<div class="pl-wide-data">\n' + table(["Domain","Dependency","State","Evidence authority","Blocking","Root cause"],[[x["domain"],x["dependency"],x["state"],x["evidence_authority"],x["blocking"],x["root_cause"]] for x in deps]) + '</div>\n'
+    dep_body += '<figure class="pl-generated-diagram pl-generated-diagram--contained"><img src="../../../assets/enterprise/dependency-health-development.svg" alt="Detailed dependency health with source-derived and runtime-verified evidence markers" loading="lazy"><figcaption>● verified runtime evidence; ◇ source-derived dependency evidence. State remains visible as text and symbol, not color alone.</figcaption></figure>\n\n'
+    dep_body += dependency_domain_cards(deps) + '\n\n'
+    dep_body += dependency_health_table(deps) + '\n'
     outputs[DOC/"reference/dependency-health.md"]=doc_page("Dependency Health","Graphviz dependency-health visualization derived from canonical metadata and promoted evidence.","development",dep_body)
 
     # Page-type documentation is generated by documentation_ia.py from one canonical taxonomy.

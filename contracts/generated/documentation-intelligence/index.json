@@ -226,12 +226,44 @@
         "semantic_parity": "verified-with-mapped-presentation"
       },
       {
-        "dependencies": [],
-        "dependency_summary": {},
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "SQLite",
+            "note": "Runtime baseline reports healthy.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "WebAuthn assurance",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "Enterprise membership controls",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 2,
+          "unvalidated": 2
+        },
         "domain": "identity",
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
-        "label": "Identity",
+        "label": "Identity & Access",
         "operational_health": "unvalidated",
         "reason": null,
         "semantic_parity": "partial"
@@ -287,8 +319,54 @@
         "semantic_parity": "drift-detected"
       },
       {
-        "dependencies": [],
-        "dependency_summary": {},
+        "dependencies": [
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "FastAPI",
+            "note": "Runtime baseline reports online.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "verified-runtime-baseline",
+            "name": "SQLite",
+            "note": "Runtime baseline reports healthy.",
+            "source": "architecture/runtime-baselines/server-phone.json",
+            "state": "healthy"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "OPA policy engine",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "Policy lifecycle",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "Independent approvals",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          },
+          {
+            "evidence_status": "source-derived",
+            "name": "Temporary exceptions",
+            "note": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+            "source": "contracts/metadata/documentation-platform.json",
+            "state": "unvalidated"
+          }
+        ],
+        "dependency_summary": {
+          "healthy": 2,
+          "unvalidated": 4
+        },
         "domain": "rules",
         "evidence_status": "release-promoted",
         "freshness": "promoted-observation",
@@ -858,7 +936,7 @@
         "domain": "identity",
         "evidence_comparisons": [],
         "generator": "scripts/docs/runtime/generate_domain_operational_health.py",
-        "label": "Identity",
+        "label": "Identity & Access",
         "projection": "contracts/generated/runtime/domain-operational-health.json",
         "promoted_at": "2026-08-12T16:00:40Z",
         "release_tag": "lite-2026.08.12.2",
@@ -6284,5 +6362,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "34794570b5c242a7e86ba5b8ffc5fb2136f6d737d88023811e97150efe55f859"
+  "source_fingerprint": "759b799fd1e1e1b17d0e63d8ac585b838b063e9af89f2c6049cb432494945291"
 }

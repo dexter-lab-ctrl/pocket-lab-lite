@@ -66,7 +66,7 @@ Operational health and dependency evidence remain independent: a healthy domain 
 | node agent | healthy | verified-runtime-baseline | Runtime baseline reports online. |
 | core supervisor | healthy | verified-runtime-baseline | Runtime baseline reports online. |
 
-## Identity
+## Identity & Access
 
 <div class="pl-status-strip" role="group" aria-label="Current evidence status">
 <div><span>Health</span><span class="pl-intel-status pl-intel-status--unvalidated"><span aria-hidden="true">○</span> unvalidated</span></div>
@@ -77,6 +77,10 @@ Operational health and dependency evidence remain independent: a healthy domain 
 
 | Dependency | State | Evidence | Why |
 | --- | --- | --- | --- |
+| FastAPI | healthy | verified-runtime-baseline | Runtime baseline reports online. |
+| SQLite | healthy | verified-runtime-baseline | Runtime baseline reports healthy. |
+| WebAuthn assurance | unvalidated | source-derived | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
+| Enterprise membership controls | unvalidated | source-derived | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
 
 ## Backup & Restore
 
@@ -108,6 +112,12 @@ Operational health and dependency evidence remain independent: a healthy domain 
 
 | Dependency | State | Evidence | Why |
 | --- | --- | --- | --- |
+| FastAPI | healthy | verified-runtime-baseline | Runtime baseline reports online. |
+| SQLite | healthy | verified-runtime-baseline | Runtime baseline reports healthy. |
+| OPA policy engine | unvalidated | source-derived | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
+| Policy lifecycle | unvalidated | source-derived | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
+| Independent approvals | unvalidated | source-derived | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
+| Temporary exceptions | unvalidated | source-derived | Dependency is canonical, but no dedicated promoted runtime health signal is available. |
 
 ## Security
 

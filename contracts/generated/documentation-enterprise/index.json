@@ -25382,6 +25382,62 @@
       },
       {
         "affected_capabilities": [
+          "Identity & Access"
+        ],
+        "blocking": true,
+        "dependency": "FastAPI",
+        "domain": "Identity & Access",
+        "evidence_authority": "verified-runtime-baseline",
+        "freshness": "promoted-observation",
+        "owner": "FastAPI",
+        "root_cause": "Runtime baseline reports online.",
+        "state": "healthy",
+        "type": "runtime/service"
+      },
+      {
+        "affected_capabilities": [
+          "Identity & Access"
+        ],
+        "blocking": true,
+        "dependency": "SQLite",
+        "domain": "Identity & Access",
+        "evidence_authority": "verified-runtime-baseline",
+        "freshness": "promoted-observation",
+        "owner": "SQLite",
+        "root_cause": "Runtime baseline reports healthy.",
+        "state": "healthy",
+        "type": "runtime/service"
+      },
+      {
+        "affected_capabilities": [
+          "Identity & Access"
+        ],
+        "blocking": false,
+        "dependency": "WebAuthn assurance",
+        "domain": "Identity & Access",
+        "evidence_authority": "source-derived",
+        "freshness": "promoted-observation",
+        "owner": "WebAuthn assurance",
+        "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "state": "unvalidated",
+        "type": "canonical/source"
+      },
+      {
+        "affected_capabilities": [
+          "Identity & Access"
+        ],
+        "blocking": false,
+        "dependency": "Enterprise membership controls",
+        "domain": "Identity & Access",
+        "evidence_authority": "source-derived",
+        "freshness": "promoted-observation",
+        "owner": "Enterprise membership controls",
+        "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "state": "unvalidated",
+        "type": "canonical/source"
+      },
+      {
+        "affected_capabilities": [
           "Backup & Restore"
         ],
         "blocking": true,
@@ -25446,6 +25502,90 @@
         "evidence_authority": "source-derived",
         "freshness": "stale",
         "owner": "restic",
+        "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "state": "unvalidated",
+        "type": "canonical/source"
+      },
+      {
+        "affected_capabilities": [
+          "Rules"
+        ],
+        "blocking": true,
+        "dependency": "FastAPI",
+        "domain": "Rules",
+        "evidence_authority": "verified-runtime-baseline",
+        "freshness": "promoted-observation",
+        "owner": "FastAPI",
+        "root_cause": "Runtime baseline reports online.",
+        "state": "healthy",
+        "type": "runtime/service"
+      },
+      {
+        "affected_capabilities": [
+          "Rules"
+        ],
+        "blocking": true,
+        "dependency": "SQLite",
+        "domain": "Rules",
+        "evidence_authority": "verified-runtime-baseline",
+        "freshness": "promoted-observation",
+        "owner": "SQLite",
+        "root_cause": "Runtime baseline reports healthy.",
+        "state": "healthy",
+        "type": "runtime/service"
+      },
+      {
+        "affected_capabilities": [
+          "Rules"
+        ],
+        "blocking": false,
+        "dependency": "OPA policy engine",
+        "domain": "Rules",
+        "evidence_authority": "source-derived",
+        "freshness": "promoted-observation",
+        "owner": "OPA policy engine",
+        "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "state": "unvalidated",
+        "type": "canonical/source"
+      },
+      {
+        "affected_capabilities": [
+          "Rules"
+        ],
+        "blocking": false,
+        "dependency": "Policy lifecycle",
+        "domain": "Rules",
+        "evidence_authority": "source-derived",
+        "freshness": "promoted-observation",
+        "owner": "Policy lifecycle",
+        "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "state": "unvalidated",
+        "type": "canonical/source"
+      },
+      {
+        "affected_capabilities": [
+          "Rules"
+        ],
+        "blocking": false,
+        "dependency": "Independent approvals",
+        "domain": "Rules",
+        "evidence_authority": "source-derived",
+        "freshness": "promoted-observation",
+        "owner": "Independent approvals",
+        "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "state": "unvalidated",
+        "type": "canonical/source"
+      },
+      {
+        "affected_capabilities": [
+          "Rules"
+        ],
+        "blocking": false,
+        "dependency": "Temporary exceptions",
+        "domain": "Rules",
+        "evidence_authority": "source-derived",
+        "freshness": "promoted-observation",
+        "owner": "Temporary exceptions",
         "root_cause": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
         "state": "unvalidated",
         "type": "canonical/source"
@@ -33548,7 +33688,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -33598,7 +33740,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "worker_failed",
+          "worker_start_timeout"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -33623,7 +33768,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
         "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -33648,7 +33795,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -33698,7 +33847,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "command_undeliverable"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
         "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -33723,7 +33874,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "command_undeliverable"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
         "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -33798,7 +33951,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -33848,7 +34003,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "worker_failed",
+          "worker_start_timeout"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -33873,7 +34031,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "command_undeliverable"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
         "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -33912,7 +34072,34 @@
         "evidence": "Runtime baseline reports online.",
         "failure_mode": "FastAPI unavailable, stale or disconnected",
         "human_review_required": true,
-        "implementation_status": "implemented",
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "high",
+        "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
+        "user_impact": "Identity & Access may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "SQLite",
+        "detectability": "evidence-dependent",
+        "detection": "verified-runtime-baseline",
+        "evidence": "Runtime baseline reports healthy.",
+        "failure_mode": "SQLite unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
         "input_evidence": [
           "contracts/generated/documentation-intelligence/dependency-health.json",
           "contracts/generated/reason-codes.json",
@@ -33924,6 +34111,101 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "high",
+        "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
+        "user_impact": "Identity & Access may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "WebAuthn assurance",
+        "detectability": "evidence-dependent",
+        "detection": "source-derived",
+        "evidence": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "failure_mode": "WebAuthn assurance unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "webauthn_algorithm_unsupported",
+          "webauthn_assertion_invalid",
+          "webauthn_attestation_unsupported",
+          "webauthn_attested_data_missing",
+          "webauthn_authenticator_data_invalid",
+          "webauthn_cbor_invalid",
+          "webauthn_challenge_expired",
+          "webauthn_challenge_invalid"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "moderate",
+        "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
+        "user_impact": "Identity & Access may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "Enterprise membership controls",
+        "detectability": "evidence-dependent",
+        "detection": "source-derived",
+        "evidence": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "failure_mode": "Enterprise membership controls unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "enterprise_final_owner_protected",
+          "enterprise_member_invalid",
+          "enterprise_member_unknown",
+          "enterprise_membership_required",
+          "enterprise_membership_status_invalid",
+          "enterprise_mode_disabled",
+          "enterprise_mode_required",
+          "enterprise_owner_required"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "moderate",
+        "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
+        "user_impact": "Identity & Access may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "FastAPI",
+        "detectability": "evidence-dependent",
+        "detection": "verified-runtime-baseline",
+        "evidence": "Runtime baseline reports online.",
+        "failure_mode": "FastAPI unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "implemented",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -33973,7 +34255,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "worker_failed",
+          "worker_start_timeout"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -34037,7 +34322,34 @@
         "evidence": "Runtime baseline reports online.",
         "failure_mode": "FastAPI unavailable, stale or disconnected",
         "human_review_required": true,
-        "implementation_status": "implemented",
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "high",
+        "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
+        "user_impact": "Rules may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "SQLite",
+        "detectability": "evidence-dependent",
+        "detection": "verified-runtime-baseline",
+        "evidence": "Runtime baseline reports healthy.",
+        "failure_mode": "SQLite unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
         "input_evidence": [
           "contracts/generated/documentation-intelligence/dependency-health.json",
           "contracts/generated/reason-codes.json",
@@ -34049,6 +34361,159 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "high",
+        "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
+        "user_impact": "Rules may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "OPA policy engine",
+        "detectability": "evidence-dependent",
+        "detection": "source-derived",
+        "evidence": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "failure_mode": "OPA policy engine unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "policy_unavailable",
+          "generic_policy_toggle_retired",
+          "policy_action_not_registered",
+          "policy_activation_in_progress",
+          "policy_activation_not_uncertain",
+          "policy_activation_pending",
+          "policy_activation_state_changed",
+          "policy_activation_unknown"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "moderate",
+        "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
+        "user_impact": "Rules may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "Policy lifecycle",
+        "detectability": "evidence-dependent",
+        "detection": "source-derived",
+        "evidence": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "failure_mode": "Policy lifecycle unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "generic_policy_toggle_retired",
+          "human_session_required",
+          "policy_action_not_registered",
+          "policy_activation_in_progress",
+          "policy_activation_not_uncertain",
+          "policy_activation_pending",
+          "policy_activation_state_changed",
+          "policy_activation_unknown"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "moderate",
+        "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
+        "user_impact": "Rules may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "Independent approvals",
+        "detectability": "evidence-dependent",
+        "detection": "source-derived",
+        "evidence": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "failure_mode": "Independent approvals unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "independent_approval_satisfied"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "moderate",
+        "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
+        "user_impact": "Rules may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "Temporary exceptions",
+        "detectability": "evidence-dependent",
+        "detection": "source-derived",
+        "evidence": "Dependency is canonical, but no dedicated promoted runtime health signal is available.",
+        "failure_mode": "Temporary exceptions unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "partial",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "exception_expiry_invalid",
+          "exception_identity_unknown",
+          "exception_not_found",
+          "exception_scope_invalid",
+          "exception_unusable"
+        ],
+        "residual_risk": "human review; no arbitrary RPN",
+        "severity": "moderate",
+        "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
+        "user_impact": "Rules may degrade, block writes or become unavailable"
+      },
+      {
+        "automatic_recovery": "backend-owned retry/readiness guard where implemented",
+        "component": "FastAPI",
+        "detectability": "evidence-dependent",
+        "detection": "verified-runtime-baseline",
+        "evidence": "Runtime baseline reports online.",
+        "failure_mode": "FastAPI unavailable, stale or disconnected",
+        "human_review_required": true,
+        "implementation_status": "implemented",
+        "input_evidence": [
+          "contracts/generated/documentation-intelligence/dependency-health.json",
+          "contracts/generated/reason-codes.json",
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "contracts/generated/lite-asyncapi.json",
+          "contracts/generated/lite-openapi.json",
+          "contracts/generated/recovery-contract.json"
+        ],
+        "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
+        "occurrence": "not numerically scored without canonical incident frequency evidence",
+        "reason_codes": [
+          "enterprise_mode_disabled"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -34098,7 +34563,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "worker_failed",
+          "worker_start_timeout"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -36103,8 +36571,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 2,
-          "head": "6d55a593c3584a5a7926a51f9f3db4878f1bb32a",
-          "head_tree": "303ef9adc81b11cc0f0ff7e568b5638e01c2b26a",
+          "head": "eed4fa75d3f2d8c62ed62d1538e041f8d3f3abbf",
+          "head_tree": "ab84dd39ac2e69d2505df957a02c1b79236d777e",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -37953,9 +38421,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "ff5a5c5ec0b29f0b3639a5852c915b6f4aa105d1face78d4c0461c4d89221dfa",
+        "documentation": "606ab1c5d928bc32ab283922fbee5f3550d4a201f1d0720f63f3312cfe455ded",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
-        "operational_health": "2c85a340734f3e4bcc1f6a382111a8bb79ad327e22bec7366673252513f77457"
+        "operational_health": "9731e2e91bfbdbe2c32fa8f1e1cbc3b1db6d0f51b4067e7d01289fdc5f79e70d"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -40272,8 +40740,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 2,
-        "head": "6d55a593c3584a5a7926a51f9f3db4878f1bb32a",
-        "head_tree": "303ef9adc81b11cc0f0ff7e568b5638e01c2b26a",
+        "head": "eed4fa75d3f2d8c62ed62d1538e041f8d3f3abbf",
+        "head_tree": "ab84dd39ac2e69d2505df957a02c1b79236d777e",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -85983,8 +86451,8 @@
             },
             {
               "observed": {
-                "healthy": 22,
-                "unvalidated": 4
+                "healthy": 26,
+                "unvalidated": 10
               },
               "signal": "dependency health",
               "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -86264,8 +86732,8 @@
             },
             {
               "observed": {
-                "healthy": 22,
-                "unvalidated": 4
+                "healthy": 26,
+                "unvalidated": 10
               },
               "signal": "dependency health",
               "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -86456,8 +86924,8 @@
             },
             {
               "observed": {
-                "healthy": 22,
-                "unvalidated": 4
+                "healthy": 26,
+                "unvalidated": 10
               },
               "signal": "dependency health",
               "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -87409,8 +87877,8 @@
           {
             "boundary": "application-container",
             "observed": {
-              "healthy": 22,
-              "unvalidated": 4
+              "healthy": 26,
+              "unvalidated": 10
             },
             "signal": "dependency health",
             "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -87477,8 +87945,8 @@
           {
             "boundary": "external-release",
             "observed": {
-              "healthy": 22,
-              "unvalidated": 4
+              "healthy": 26,
+              "unvalidated": 10
             },
             "signal": "dependency health",
             "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -87578,8 +88046,8 @@
           {
             "boundary": "messaging-execution",
             "observed": {
-              "healthy": 22,
-              "unvalidated": 4
+              "healthy": 26,
+              "unvalidated": 10
             },
             "signal": "dependency health",
             "source": "contracts/generated/documentation-intelligence/dependency-health.json",
@@ -104489,5 +104957,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "19fdc8dcbc92b7c043c2dc438b3f48822599be8330b042ba201b9be35a7f5616"
+  "source_fingerprint": "8760866ab4866bbb630c2f136a551d5aa8c6f7f9cec7c18a0c2354c2cc122088"
 }

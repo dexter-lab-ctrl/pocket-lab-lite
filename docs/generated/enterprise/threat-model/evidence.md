@@ -31,7 +31,7 @@ confidence: generated
 | apps operational health | application-container | control-observed | healthy | contracts/generated/runtime/domain-operational-health.json |
 | scanner results | application-container | control-observed | normalized-evidence-present | contracts/generated/supply-chain/automation-summary.json |
 | release evidence | application-container | control-observed | release-assurance-model-operational | contracts/generated/documentation-enterprise/release-evidence.json |
-| dependency health | application-container | control-observed | Counter({'healthy': 22, 'unvalidated': 4}) | contracts/generated/documentation-intelligence/dependency-health.json |
+| dependency health | application-container | control-observed | Counter({'healthy': 26, 'unvalidated': 10}) | contracts/generated/documentation-intelligence/dependency-health.json |
 | SBOM/vulnerability evidence | application-container | control-observed | normalized canonical evidence present | contracts/generated/supply-chain/vulnerability-correlation.json |
 | home operational health | browser | control-observed | degraded | contracts/generated/runtime/domain-operational-health.json |
 | home operational health | control-api | control-observed | degraded | contracts/generated/runtime/domain-operational-health.json |
@@ -40,7 +40,7 @@ confidence: generated
 | security operational health | external-release | control-observed | healthy | contracts/generated/runtime/domain-operational-health.json |
 | scanner results | external-release | control-observed | normalized-evidence-present | contracts/generated/supply-chain/automation-summary.json |
 | release evidence | external-release | control-observed | release-assurance-model-operational | contracts/generated/documentation-enterprise/release-evidence.json |
-| dependency health | external-release | control-observed | Counter({'healthy': 22, 'unvalidated': 4}) | contracts/generated/documentation-intelligence/dependency-health.json |
+| dependency health | external-release | control-observed | Counter({'healthy': 26, 'unvalidated': 10}) | contracts/generated/documentation-intelligence/dependency-health.json |
 | SBOM/vulnerability evidence | external-release | control-observed | normalized canonical evidence present | contracts/generated/supply-chain/vulnerability-correlation.json |
 | devices operational health | managed-device | control-observed | healthy | contracts/generated/runtime/domain-operational-health.json |
 | Tailscale readiness | managed-device | control-observed | yes | contracts/generated/runtime/domain-operational-health.json |
@@ -52,7 +52,7 @@ confidence: generated
 | node-agent status | messaging-execution | control-observed | healthy | contracts/generated/documentation-intelligence/dependency-health.json |
 | supervisor status | messaging-execution | control-partial | unvalidated | contracts/generated/documentation-intelligence/dependency-health.json |
 | worker status | messaging-execution | control-observed | healthy | contracts/generated/documentation-intelligence/dependency-health.json |
-| dependency health | messaging-execution | control-observed | Counter({'healthy': 22, 'unvalidated': 4}) | contracts/generated/documentation-intelligence/dependency-health.json |
+| dependency health | messaging-execution | control-observed | Counter({'healthy': 26, 'unvalidated': 10}) | contracts/generated/documentation-intelligence/dependency-health.json |
 | SBOM/vulnerability evidence | messaging-execution | control-observed | normalized canonical evidence present | contracts/generated/supply-chain/vulnerability-correlation.json |
 | home operational health | server-host | control-observed | degraded | contracts/generated/runtime/domain-operational-health.json |
 | NATS/JetStream health | server-host | control-observed | healthy | contracts/generated/documentation-intelligence/dependency-health.json |

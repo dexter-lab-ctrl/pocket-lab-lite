@@ -15572,7 +15572,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "6174f0efeb5b96315e76dd12bcb4a737d26073dadeab8e00c995d58496664d45",
+    "aggregate_fingerprint": "0e00ad427e0c51435f606144ce333e8922ce9dda386c23923cafc06876e5589b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15582,7 +15582,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "0a889bcdadd48600f2fa362a0e528c7b5066bdfe03406c0b4019ca54bc2ae554",
+      "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
       "pocket-lab-final-structure/runtime/agents/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/agents/lite_system_profile.py": "559c1f44fe21f63cc9da0f4978d01fea67cd9ee2c436633f28ac3b0d7aff7b86",
       "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py": "a07f4bbb091b0b6d6bdc7a4c3c4d32d3c78749e1f2fb510d335f59ba6a6eb2f1",

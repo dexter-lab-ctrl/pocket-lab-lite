@@ -202,6 +202,13 @@ def test_enterprise_intelligence_contracts_cover_prompt_fields():
     assert traces and all({"action", "api", "frontend", "backend_handler", "execution_owner", "events", "tests", "evidence", "failure_states", "source_files"} <= set(x) for x in traces)
     assert len(privacy) >= 9 and all({"category", "source", "storage", "retention", "sanitization", "access", "network_exposure", "backup_behavior", "deletion_behavior", "privacy_risk", "controls"} <= set(x) for x in privacy)
     assert fmea and all({"component", "failure_mode", "detection", "user_impact", "automatic_recovery", "manual_recovery", "severity", "severity_definition", "occurrence", "detectability", "residual_risk", "human_review_required"} <= set(x) for x in fmea)
+    opa = next(item for item in fmea if item["component"] == "OPA policy engine")
+    assert opa["implementation_status"] == "partial"
+    assert "policy_unavailable" in opa["reason_codes"]
+    exceptions = next(item for item in fmea if item["component"] == "Temporary exceptions")
+    assert exceptions["implementation_status"] == "partial"
+    assert exceptions["reason_codes"]
+    assert all(code.startswith("exception_") for code in exceptions["reason_codes"])
     assert len(objectives) >= 6 and {x["status"] for x in objectives} <= {"pass", "degraded", "unknown"}
     assert all("live monitoring" not in str(x.get("latest_promoted_observation", "")).lower() for x in objectives)
     assert all({"decision", "context", "alternatives", "selected_approach", "reason", "consequences", "affected_components", "related_risks", "related_threats", "tests", "release_introduced", "superseded_by"} <= set(x) for x in adrs["entities"])

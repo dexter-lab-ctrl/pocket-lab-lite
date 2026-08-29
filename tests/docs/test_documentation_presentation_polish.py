@@ -183,6 +183,13 @@ def test_enterprise_dependency_health_renderer_does_not_emit_markdown_attribute_
     assert '<img src="../../../assets/enterprise/dependency-health-development.svg"' in block
     assert 'loading="lazy"' in block
     assert "{ loading=lazy }" not in block
+    assert 'class="pl-wide-data" role="region" aria-label="Dependency health details" tabindex="0"' in source
+    assert '<table><caption>Dependency state and evidence authority by domain</caption>' in source
+    assert '<th scope="col">State</th><th scope="col">Evidence authority</th>' in source
+    assert '"| Domain | Dependency | State |"' not in source
+    assert "dependency_domain_cards" in source
+    assert "◇ source-derived" in source
+    assert "● verified runtime" in source
 
 
 def test_enterprise_polish_css_is_responsive_and_reduced_motion_safe():
