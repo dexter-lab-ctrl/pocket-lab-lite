@@ -4640,7 +4640,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 426,
+  "page_count": 429,
   "page_types": [
     "overview",
     "guide",
@@ -7472,6 +7472,30 @@
       "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
       "title": "lite-2026.08.19.2",
       "url": "/generated/development/knowledge/releases/lite-2026-08-19-2/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
+      "confidence": "release-promoted",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:generated/development/knowledge/releases/lite-2026-08-29-1",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "generated/development/knowledge/releases/lite-2026-08-29-1.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
+      "title": "lite-2026.08.29.1",
+      "url": "/generated/development/knowledge/releases/lite-2026-08-29-1/"
     },
     {
       "additional_audiences": [],
@@ -15189,6 +15213,34 @@
       "url": "/generated/production/knowledge/releases/lite-2026-08-19-2/"
     },
     {
+      "additional_audiences": [
+        "user",
+        "operator"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/knowledge/generate_knowledge.py"
+      ],
+      "confidence": "release-promoted",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:generated/production/knowledge/releases/lite-2026-08-29-1",
+      "intents": [
+        "operate",
+        "audit",
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "generated/production/knowledge/releases/lite-2026-08-29-1.md",
+      "primary_audience": "release-reviewer",
+      "primary_navigation_owner": "release-change",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/knowledge/generate_knowledge.py",
+      "title": "lite-2026.08.29.1",
+      "url": "/generated/production/knowledge/releases/lite-2026-08-29-1/"
+    },
+    {
       "additional_audiences": [],
       "authority": "derived",
       "canonical_source_references": [
@@ -15986,6 +16038,31 @@
       "url": "/releases/lite-2026.08.19.2/"
     },
     {
+      "additional_audiences": [
+        "tester"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": true,
+      "id": "page:releases/lite-2026.08.29.1",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "releases/lite-2026.08.29.1.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Release lite-2026.08.29.1",
+      "url": "/releases/lite-2026.08.29.1/"
+    },
+    {
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
@@ -16033,7 +16110,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5208273b5cc36abd76ea5da9335482322f9dcb3e5a3b7af5782cc10d79e76b3a",
+  "source_fingerprint": "30fa72cbf47db216d3d57e0d7990fbdcba7af79df9cabe1d680aca396bd9f968",
   "top_level": [
     "start-here",
     "use",

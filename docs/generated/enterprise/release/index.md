@@ -19,32 +19,32 @@ Source/release/runtime identities remain separate. Current source commit: `uncom
 
 ## Release delta
 
-Status: **comparable**. From **lite-2026.08.12.2** to **lite-2026.08.19.2**. Repository HEAD is never substituted for a release.
+Status: **comparable**. From **lite-2026.08.19.2** to **lite-2026.08.29.1**. Repository HEAD is never substituted for a release.
 
 | Dimension | Classification | From digest | To digest |
 | --- | --- | --- | --- |
-| git-source | changed | 9eb5181b543cd86feef2045749141e6f56a4228fb78ba32b2b1583943fd7deb1 | e443d1cb54228f77f0b509318613ce5e04a5f68b1fbf3748e033ba099f54419e |
-| openapi | non-breaking | ca46065e6f046019e9141b5134306525d375b6f9d675a678e21b3c8697714c8a | 2a227b325ebecd2c420e49b26d0951a09ca3a4105b114661be0340f5e8f6cbd2 |
-| asyncapi-events | changed | 8a51bc94d741a923406fede9abef161821c06d4094ebf0c4de6bc8b8db157020 | 0be55ad04175cd1c464f9a0807cda20a754bbd00b2f71ef08a2adab29c5bda0b |
+| git-source | changed | e443d1cb54228f77f0b509318613ce5e04a5f68b1fbf3748e033ba099f54419e | 2944163f0cc2e3cf66bddbfdcceff51b986bbc436b2cf786387fabcc0a72491a |
+| openapi | non-breaking | 2a227b325ebecd2c420e49b26d0951a09ca3a4105b114661be0340f5e8f6cbd2 | 91a2bb77ed9f4946a549cb39c1ba35280365ac3be1a81ba0e7534ad6962aee5d |
+| asyncapi-events | changed | 0be55ad04175cd1c464f9a0807cda20a754bbd00b2f71ef08a2adab29c5bda0b | 00da212b6e6d96bf330ce736d869128e7d82463072941dbc409593a180dde3f5 |
 | sqlite-schema-migrations | not-comparable | — | — |
-| architecture | architecture-drift | 4ab392c6d2b5e56adfce730a97bdceed8a1b882b9800aceb0f1415a929c8e0cc | d98afd995a4cc5f0c1537cc43261cf454fc76fa1919d8cd1520ca37e597703ce |
-| trust-boundaries | architecture-drift | 3fa8d34f8ac8a8cf7881ed8b57ca19dc697c0c26fc6af0dde1de779e7fb83562 | 26562b8a411e389ef004af273f095839fe91069dcdbe482f8424bc247bad7fbd |
-| capabilities | changed | a8402a2158e5933f0500bc6dde5b94fd6465de37265afb03668cd84005e55f6e | e9ffb05ac6f4e2ed99ffa2e79744732afe87eafaea353e9669acfeb70c2a66d7 |
-| operational-health | changed | 4d1dbd6e336307cd772390e57ff72fea503f0330e2c7af7967b9831c7fe58f70 | 5432235467fc118fab21a5a02aaa902ba28b32a4176d1fb8df82ece791cecfd0 |
-| runtime-topology | changed | 886ac403a924c53922beb6d4d4f138b3713f1bc6d8420762d568171ac36e9401 | 6326d529ba0afaa830b353fd42597d7a3fd107c23e18e74f29a847d4f14c1c0e |
-| semantic-parity | changed | d0f15a8863af1c95e1fc011e8cf6d829d5f2aa5d3b416a38a750f6eadebeec8f | 3388e580dd9216d8ba60f23caf7560567cfc1f8335cbd740de3b04ead12ca477 |
-| platform-capability-evidence | changed | bccb11f395cba51d248eea1852527ff04cd55b6290e9c93c0bd6dcc125c3ecf8 | 33b8a8565525949e576151eb733c402f9ce825b21bbbb35d5015608e16da6542 |
-| reason-codes | changed | 252758a61fe828243776b889665cbbdacbe8314b84ab1b7f6c498a4cbe882ae4 | 8902ad00e878b270a0428a800de82579468ba3e8ff15db384977f4cc6a3f985c |
-| task-inventory | changed | 7d228a36df349d8e7af2ff828af0f479bf868ee3c4c0ed36cc4498666a7cfcd7 | 221d112d95c8a938edd3ec233bd5555e244723733769dd5d32d189752ae74620 |
-| security-controls | changed | e7b549c4d13ce2e11b2c43b08a7fc740d92240183d82082b6edb541532125f4f | b7c3648058436ba82bac5b08fa672bb212c86c5219d349d71ed089bb33181929 |
-| threat-model | changed | c94973c98de476ea5296efc458be2db24f85cf6d361d4859a53f024a107381c4 | d82a41f26174ff07ac07fd713148bb42dbf01d81ca9e521d9c50ba1ae85f6093 |
+| architecture | architecture-drift | d98afd995a4cc5f0c1537cc43261cf454fc76fa1919d8cd1520ca37e597703ce | c2ebe92f92f3f84a648205a5f732d946aa0bcc6fb2c199392b3f2fac3b04725b |
+| trust-boundaries | architecture-drift | 26562b8a411e389ef004af273f095839fe91069dcdbe482f8424bc247bad7fbd | 0f5f526dab5ad22248bf9f19c6b9bfedda72dd2598750c69c833bc34fb4e5875 |
+| capabilities | changed | e9ffb05ac6f4e2ed99ffa2e79744732afe87eafaea353e9669acfeb70c2a66d7 | dd67ee359435915488a2d4217ec630ddffcf033aca75b4fe09d4a5406ee320bd |
+| operational-health | changed | 5432235467fc118fab21a5a02aaa902ba28b32a4176d1fb8df82ece791cecfd0 | fdb3241b95bdc1b5451221bf24b8cff72a9ac7a44009c62972cdf6ae9fb4afe5 |
+| runtime-topology | changed | 6326d529ba0afaa830b353fd42597d7a3fd107c23e18e74f29a847d4f14c1c0e | c9128ff8ec66a475616fa98cedbe5baf6dc4604defbf851619962192010803f4 |
+| semantic-parity | unchanged | 3388e580dd9216d8ba60f23caf7560567cfc1f8335cbd740de3b04ead12ca477 | 3388e580dd9216d8ba60f23caf7560567cfc1f8335cbd740de3b04ead12ca477 |
+| platform-capability-evidence | changed | 33b8a8565525949e576151eb733c402f9ce825b21bbbb35d5015608e16da6542 | 0e495cd87750d6ca91fcf06a2eb472a027b9fd25e9710904d5ba68498f95f71f |
+| reason-codes | changed | 8902ad00e878b270a0428a800de82579468ba3e8ff15db384977f4cc6a3f985c | e174705eb6f0e213c4319d88b02392d66824b6280d76b4cbd3b463f180158445 |
+| task-inventory | changed | 221d112d95c8a938edd3ec233bd5555e244723733769dd5d32d189752ae74620 | c10ac9e36add5a45f112d93faadd98fe345168828bdf5b5fe3d8806049f9112d |
+| security-controls | changed | b7c3648058436ba82bac5b08fa672bb212c86c5219d349d71ed089bb33181929 | c4366040e9e680803c3dff44d217df0da32a6bdf7fb698e1d68b4129fc6dc8a7 |
+| threat-model | changed | d82a41f26174ff07ac07fd713148bb42dbf01d81ca9e521d9c50ba1ae85f6093 | d2e0171409ef897940883c427a528206fcc4454a5a44845d878a864619235f65 |
 | sbom | unchanged | 914cce33367e0d6811bd84bdde3a784d729ee452d97c2d21cf5355f15b97a65b | 914cce33367e0d6811bd84bdde3a784d729ee452d97c2d21cf5355f15b97a65b |
-| dependency-versions | changed | 85f1690746e36929098cd5a5a8a9e43eab670d52ab9188fce8b4cca26361db0c | 846fb5ec48aae6845ae59498a6e8b2ac94e6ed2d84503f261abcf0ff1737092e |
+| dependency-versions | unchanged | 846fb5ec48aae6845ae59498a6e8b2ac94e6ed2d84503f261abcf0ff1737092e | 846fb5ec48aae6845ae59498a6e8b2ac94e6ed2d84503f261abcf0ff1737092e |
 | vulnerabilities | unchanged | 828704f68e7a2522ffd4cc9e979bb1a5c910d8c679c64069aee087b3cc733355 | 828704f68e7a2522ffd4cc9e979bb1a5c910d8c679c64069aee087b3cc733355 |
 | licenses | unchanged | 3420cefa32d0a8c0591e1f776c319570db2588d92c81f829618df4a22e014a7a | 3420cefa32d0a8c0591e1f776c319570db2588d92c81f829618df4a22e014a7a |
 | release-artifacts | unchanged | 29d63d2302114690d98d76776e0012ee51ed3fe7cdfaba1d5bbf4fe89baf8384 | 29d63d2302114690d98d76776e0012ee51ed3fe7cdfaba1d5bbf4fe89baf8384 |
-| documentation-coverage | changed | 036be93d188847b32d3056f550b49c969d5342d170635674b7ed7980d6e102a5 | 8a3776528d59dd5a261833860e93003f5c6429622c9e5c81eb41bb863d93e615 |
-| validation-coverage | changed | 428bc1d6bc4425adf0fa9b87592ebea9547681c5bae3bfdefc70fdd9ceef9732 | f17b6a8201fb6171190ec0bd0ef6a0bdc510cda3b7967665f6c45f69e0fa1600 |
+| documentation-coverage | changed | 8a3776528d59dd5a261833860e93003f5c6429622c9e5c81eb41bb863d93e615 | 663a4d8e805cd1086277aa9b459c84f98efb7eb2eadb0d5d38e07afd540d3305 |
+| validation-coverage | changed | f17b6a8201fb6171190ec0bd0ef6a0bdc510cda3b7967665f6c45f69e0fa1600 | 7a93d18e849477fbdc2e046d45dff0e66d0b755c08d069135e30ec75375e08cd |
 
 ## Compatibility
 

@@ -40,6 +40,26 @@
       "tree_hash": "69d437b024d668663b4ef36cdd976d2dc05e63c3",
       "type": "release",
       "verification_status": "promoted"
+    },
+    {
+      "artifact": "dist.zip",
+      "artifact_checksum": "654f5d67e7de647269f7c09559c3c355f318574383450adcf33252c38a1430d4",
+      "confidence": "release-promoted",
+      "domain": "release",
+      "id": "release:lite-2026.08.29.1",
+      "name": "lite-2026.08.29.1",
+      "promoted_at": "2026-08-29T15:57:57Z",
+      "published_at": "2026-08-29T15:57:57Z",
+      "release_manifest_status": "verified",
+      "runtime_parity_status": null,
+      "sanitized": true,
+      "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+      "source_refs": [
+        "contracts/generated/releases/promoted-release-evidence.json"
+      ],
+      "tree_hash": "f8db7257a2df027aeba876e8ebd8af1a884c9947",
+      "type": "release",
+      "verification_status": "promoted"
     }
   ],
   "metadata": {
@@ -48,6 +68,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "650bdf14f69c5419508fe093b6f4a3d9b82f1818dad0f215c4414d70d5fd7fb3"
+    "source_fingerprint": "a119ade4fea4be2ae20ca5b5bd1f2af37d281a80940e694c0ba0814ae4e648ae"
   }
 }

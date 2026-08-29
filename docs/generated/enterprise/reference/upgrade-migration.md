@@ -11,8 +11,8 @@ confidence: generated
 
 | Field | Value |
 | --- | --- |
-| From | lite-2026.08.12.2 |
-| To | lite-2026.08.19.2 |
+| From | lite-2026.08.19.2 |
+| To | lite-2026.08.29.1 |
 | Database migrations | {'dimension': 'sqlite-schema-migrations', 'status': 'not-comparable', 'classification': 'not-comparable', 'from_digest': None, 'to_digest': None, 'from_objects': 0, 'to_objects': 0, 'source_paths': ['pocket-lab-final-structure/runtime/api_fastapi/migrations', 'pocket-lab-final-structure/runtime/migrations'], 'details': {}} |
 | Agent compatibility | review agent/supervisor and bootstrap source changes in release delta |
 | Runtime changes | compare only promoted runtime evidence; repository HEAD is never treated as a release baseline |

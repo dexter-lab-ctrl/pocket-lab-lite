@@ -61,8 +61,8 @@
     "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
     "generator_version": 1,
     "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
-    "promoted_baseline_sha256": "250a6d786529c5a3574a7ae1585d3865107be0129be479f5bebb36d8ebdaf144",
-    "promoted_semantic_fingerprint": "ab8a1e9816f72b886b2e825810a0afd27e1e33ba4e8d5dc9aa3d640dd3ad4e2c",
+    "promoted_baseline_sha256": "824bb21e8ec944cd9d2d58c56f5ff9e81272e7c8467fc3f125c19f92e7efcd69",
+    "promoted_semantic_fingerprint": "3ef822977e06ca9f6c310a92a65ed442246fce0640f2adf0085ea6b6f6e0a9d5",
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "validation_state": "generated"

@@ -117,7 +117,7 @@
   ],
   "sanitized": true,
   "schema_revision": 1,
-  "semantic_fingerprint": "ab8a1e9816f72b886b2e825810a0afd27e1e33ba4e8d5dc9aa3d640dd3ad4e2c",
+  "semantic_fingerprint": "3ef822977e06ca9f6c310a92a65ed442246fce0640f2adf0085ea6b6f6e0a9d5",
   "services": [
     {
       "execution_owner": "PM2",
@@ -146,9 +146,9 @@
       "expected_source_match": "matched",
       "id": "lite-api",
       "logical_role": "FastAPI control API",
-      "memory_bucket": "under-64-mib",
+      "memory_bucket": "64-191-mib",
       "presence": "present",
-      "restart_bucket": "none",
+      "restart_bucket": "low",
       "runtime_type": "python",
       "status": "online"
     },

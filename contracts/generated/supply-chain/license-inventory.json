@@ -8761,6 +8761,15 @@
         "unknown"
       ],
       "licenses": [],
+      "package": "<home>/pocket-lab-lite/requirements-ci-openapi-constraints.txt",
+      "version": null
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "<home>/pocket-lab-lite/requirements-docs.txt",
       "version": null
     },
@@ -8906,6 +8915,15 @@
       ],
       "licenses": [],
       "package": "actions/checkout",
+      "version": "v4.4.0"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
+      "package": "actions/checkout",
       "version": "v6"
     },
     {
@@ -8960,6 +8978,15 @@
       ],
       "licenses": [],
       "package": "actions/setup-node",
+      "version": "v5.0.0"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
+      "package": "actions/setup-node",
       "version": "v6"
     },
     {
@@ -8978,7 +9005,7 @@
       ],
       "licenses": [],
       "package": "actions/setup-python",
-      "version": "v5"
+      "version": "v5.6.0"
     },
     {
       "classification": "unknown",
@@ -9013,8 +9040,17 @@
         "unknown"
       ],
       "licenses": [],
+      "package": "actions/upload-artifact",
+      "version": "v4.6.2"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "arduino/setup-task",
-      "version": "v2"
+      "version": "v3.0.0"
     },
     {
       "classification": "unknown",
@@ -18951,6 +18987,15 @@
         "unknown"
       ],
       "licenses": [],
+      "package": "annotated-doc",
+      "version": "0.0.4"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "annotated-types",
       "version": "0.7.0"
     },
@@ -19590,6 +19635,15 @@
       "licenses": [
         "MIT"
       ],
+      "package": "fastapi",
+      "version": "0.137.2"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "fastapi",
       "version": "0.137.2"
     },
@@ -20363,6 +20417,15 @@
       "version": "2.15.0"
     },
     {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
+      "package": "nats-py",
+      "version": "2.15.0"
+    },
+    {
       "classification": "permissive",
       "classification_evidence": [
         "permissive"
@@ -20857,6 +20920,15 @@
       "version": "2.46.4"
     },
     {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
+      "package": "pydantic-core",
+      "version": "2.46.4"
+    },
+    {
       "classification": "permissive",
       "classification_evidence": [
         "permissive"
@@ -20886,6 +20958,15 @@
       "licenses": [
         "MIT"
       ],
+      "package": "pydantic",
+      "version": "2.13.4"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "pydantic",
       "version": "2.13.4"
     },
@@ -21443,6 +21524,15 @@
       "version": "1.3.1"
     },
     {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
+      "package": "starlette",
+      "version": "1.3.1"
+    },
+    {
       "classification": "permissive",
       "classification_evidence": [
         "permissive"
@@ -21628,6 +21718,15 @@
       "version": "4.15.0"
     },
     {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
+      "package": "typing-extensions",
+      "version": "4.15.0"
+    },
+    {
       "classification": "manual-review",
       "classification_evidence": [
         "manual-review"
@@ -21646,6 +21745,15 @@
       "licenses": [
         "MIT"
       ],
+      "package": "typing-inspection",
+      "version": "0.4.2"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "typing-inspection",
       "version": "0.4.2"
     },
@@ -21690,6 +21798,15 @@
       "licenses": [
         "BSD-3-Clause"
       ],
+      "package": "uvicorn",
+      "version": "0.49.0"
+    },
+    {
+      "classification": "unknown",
+      "classification_evidence": [
+        "unknown"
+      ],
+      "licenses": [],
       "package": "uvicorn",
       "version": "0.49.0"
     },
@@ -21890,8 +22007,8 @@
       "trivy"
     ],
     "status": "observed",
-    "syft_component_count": 2366,
-    "trivy_license_finding_count": 31,
+    "syft_component_count": 2379,
+    "trivy_license_finding_count": 26,
     "trivy_license_scanner": "executed-standard"
   },
   "policy": "Syft plus Trivy are the required package-license authority. ScanCode is optional deep-source enrichment; absence or failure never fabricates deep coverage and never blocks required qualification.",
@@ -21910,7 +22027,7 @@
     {
       "classification": "permissive",
       "license": "ISC",
-      "occurrences": 2,
+      "occurrences": 1,
       "package": "lucide-react",
       "severity": "LOW",
       "source": "trivy",
@@ -21919,7 +22036,7 @@
     {
       "classification": "permissive",
       "license": "ISC",
-      "occurrences": 2,
+      "occurrences": 1,
       "package": "yaml",
       "severity": "LOW",
       "source": "trivy",
@@ -22072,7 +22189,7 @@
     {
       "classification": "permissive",
       "license": "MIT",
-      "occurrences": 2,
+      "occurrences": 1,
       "package": "react",
       "severity": "LOW",
       "source": "trivy",
@@ -22081,7 +22198,7 @@
     {
       "classification": "permissive",
       "license": "MIT",
-      "occurrences": 2,
+      "occurrences": 1,
       "package": "react-dom",
       "severity": "LOW",
       "source": "trivy",
@@ -22090,7 +22207,7 @@
     {
       "classification": "permissive",
       "license": "MIT",
-      "occurrences": 2,
+      "occurrences": 1,
       "package": "scheduler",
       "severity": "LOW",
       "source": "trivy",

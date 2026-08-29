@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "583845669e9fcd6b0a991dac49c789a5afbc191092ee395f4d86a8c8125835d2",
+    "aggregate_fingerprint": "ed06697126345051ee178b46be773ac10a23a3c4d5db319d927f4279eccee4aa",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -12,6 +12,7 @@
     "source_fingerprints": {
       "contracts/generated/releases/manifests/lite-2026.08.12.2/pocketlab-lite-release.json": "c155fec8543dcdfda7f862bc5de9e94093a38ec7084f77ff5a194cf8b89292fc",
       "contracts/generated/releases/manifests/lite-2026.08.19.2/pocketlab-lite-release.json": "29b7b33c8b9f9153dd6b5008ee25a3c54876d627e0034961342f87a7fdd6994c",
+      "contracts/generated/releases/manifests/lite-2026.08.29.1/pocketlab-lite-release.json": "1c7a74faa6311259ce5394411c00dec4e440be7ee37d0f40b407a54005ccede1",
       "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
     },
     "validation_state": "verified"
@@ -74,6 +75,39 @@
         "repository": "dexter-lab-ctrl/pocket-lab-lite",
         "source_commit": "950cee9e89febf1feb5d1072eecb8aa30a4026ad",
         "source_manifest": "contracts/generated/releases/manifests/lite-2026.08.19.2/pocketlab-lite-release.json",
+        "supported_architecture": [
+          "ARM64"
+        ],
+        "validation_evidence": [
+          "GitHub Release tag and source commit bound",
+          "required release assets present",
+          "dist.zip SHA-256 verified against checksums.txt",
+          "release manifest tag, source commit, and artifact digest verified"
+        ]
+      },
+      {
+        "artifact_inventory": {
+          "checksums.txt": "c861821a09002bd87be7e884a19add35926633089f9654e88bd3c41f8527c568",
+          "dist.zip": "654f5d67e7de647269f7c09559c3c355f318574383450adcf33252c38a1430d4",
+          "pocketlab-lite-release.json": "38dd6040ca3acb32365f30a5c671beb20fd94d9a597d0942d878991d0deb3076"
+        },
+        "checksum_file_checksum": "c861821a09002bd87be7e884a19add35926633089f9654e88bd3c41f8527c568",
+        "dist_zip_checksum": "654f5d67e7de647269f7c09559c3c355f318574383450adcf33252c38a1430d4",
+        "exclusions": [
+          "raw release URLs",
+          "credentials",
+          "secrets"
+        ],
+        "installed_release_compatibility": null,
+        "last_known_good_compatibility": null,
+        "migration_version": null,
+        "pwa_build_identity": null,
+        "release_manifest_checksum": "1c7a74faa6311259ce5394411c00dec4e440be7ee37d0f40b407a54005ccede1",
+        "release_tag": "lite-2026.08.29.1",
+        "release_url_metadata": "not embedded",
+        "repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+        "source_manifest": "contracts/generated/releases/manifests/lite-2026.08.29.1/pocketlab-lite-release.json",
         "supported_architecture": [
           "ARM64"
         ],

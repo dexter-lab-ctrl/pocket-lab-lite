@@ -1,15 +1,15 @@
 {
   "artifacts": {
-    "license-inventory.json": "ad5012adda04ce10ee3859b1a099b1e08a0066ae04c89d03fe3f2494f4945412",
-    "sbom-dev.cdx.json": "e3aa8f28e4d4c13ee87d919dfaf9a30bf5a8a0cf5f90a436e46bd8b8dc322848",
-    "sbom-release.cdx.json": "a2b32890679e4e900936e44b764cefc49d54dab64a5a4861829ee40e3e6ceb33",
-    "sbom-runtime.cdx.json": "aa5df952b7c831f9570df6121d17041b32ae5f3a651aa4646206d4c3cb26947a",
+    "license-inventory.json": "4bd8b91bb256fbd16e24293bf22d2616a374858632cc33951739408612dfcf8d",
+    "sbom-dev.cdx.json": "d0db802e7e76c90603781724ef8f178d90000010fd1b6b3cedd498d6f942636d",
+    "sbom-release.cdx.json": "dde6c4d6e92a29845c88080cfb585deaec0b5c7f017620b9236d5796bb890fad",
+    "sbom-runtime.cdx.json": "738ef3e6773594bcd96d04a41528c39e24396633b498163ce35192e1e35f451a",
     "scorecard-checks.json": "e8013826f50e6698f1833fcdfeb152382faeb52808aaf4f62237cbb87adc9099",
-    "security-analysis.json": "896d0046be0362258195ee5f44436c764ef1752bf62d5c99bd5edf74fc03fe0f",
-    "vulnerability-correlation.json": "39d0577ac1342a7a87c7118871d895187c1f64a92f623c665e3f145a70750eee"
+    "security-analysis.json": "e451fb8fe3329c8e94a189966b41fc36046b99df66a1147a93b091c2ef92b692",
+    "vulnerability-correlation.json": "489b0957fbe8b310abe1fd0b7b7c392d346f5ed12dffcf465f4be31c8d91b7a9"
   },
   "capture_complete": true,
-  "capture_manifest_sha256": "ec34845eabacc3ca0572adc43842d131a5ba7be1fea19e0f9f89ca00ef90b53b",
+  "capture_manifest_sha256": "dc916ceb4c4ca7342a8d46b1a123186f3afef719d54b72747d622e7fcc56b2a9",
   "implementation_status": "implemented",
   "license_authority": {
     "deep_source_license_coverage": {
@@ -29,8 +29,8 @@
         "trivy"
       ],
       "status": "observed",
-      "syft_component_count": 2366,
-      "trivy_license_finding_count": 31,
+      "syft_component_count": 2379,
+      "trivy_license_finding_count": 26,
       "trivy_license_scanner": "executed-standard"
     }
   },
@@ -38,28 +38,28 @@
   "qualification_surface": "local-or-ci-diagnostic",
   "raw_output_canonical": false,
   "release_qualification": false,
-  "run_id": "scorecard-compatible-20260811T100353Z",
+  "run_id": "local-20260829T193652Z-2392471",
   "runtime_capture_performed": false,
   "runtime_source": "contracts/parity/runtime-verification-baseline.json",
   "schema_version": "1.2.0",
-  "source_commit": "19d54e0bb84226f355865c32c6decee8ce010083",
+  "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
   "tool_statuses": [
     {
-      "duration_seconds": 129.844,
+      "duration_seconds": 327.535,
       "exit_code": 0,
       "status": "completed",
       "step_id": "syft-dev",
       "tool": "syft"
     },
     {
-      "duration_seconds": 2.173,
+      "duration_seconds": 1.571,
       "exit_code": 0,
       "status": "completed",
       "step_id": "syft-release",
       "tool": "syft"
     },
     {
-      "duration_seconds": 73.047,
+      "duration_seconds": 30.893,
       "exit_code": 0,
       "status": "completed",
       "step_id": "trivy-source",
@@ -73,49 +73,49 @@
       "tool": "trivy"
     },
     {
-      "duration_seconds": 70.248,
+      "duration_seconds": 28.184,
       "exit_code": 1,
       "status": "findings-or-tool-nonzero",
       "step_id": "osv-source",
       "tool": "osv-scanner"
     },
     {
-      "duration_seconds": 5.133,
+      "duration_seconds": 4.33,
       "exit_code": 1,
       "status": "findings-or-tool-nonzero",
       "step_id": "osv-sbom-dev",
       "tool": "osv-scanner"
     },
     {
-      "duration_seconds": 5.45,
+      "duration_seconds": 84.639,
       "exit_code": 0,
       "status": "completed",
       "step_id": "grype-sbom-dev",
       "tool": "grype"
     },
     {
-      "duration_seconds": 13.184,
+      "duration_seconds": 472.482,
       "exit_code": 1,
       "status": "findings-or-tool-nonzero",
       "step_id": "gitleaks-worktree",
       "tool": "gitleaks"
     },
     {
-      "duration_seconds": 0.671,
+      "duration_seconds": 0.724,
       "exit_code": 0,
       "status": "completed",
       "step_id": "gitleaks-release",
       "tool": "gitleaks"
     },
     {
-      "duration_seconds": 4.932,
+      "duration_seconds": 20.575,
       "exit_code": 0,
       "status": "completed",
       "step_id": "semgrep",
       "tool": "semgrep"
     },
     {
-      "duration_seconds": 7.34,
+      "duration_seconds": 7.538,
       "exit_code": 0,
       "status": "completed",
       "step_id": "scorecard",

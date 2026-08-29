@@ -388,6 +388,7 @@ def test_license_inventory_keeps_package_and_deep_coverage_separate():
 def test_required_trivy_capture_enables_standard_license_scanner():
     source = (ROOT / "scripts" / "docs" / "enterprise" / "supply_chain_automation.py").read_text(encoding="utf-8")
     assert '"vuln,misconfig,secret,license"' in source
+    assert '"--skip-dirs", ".pocketlab-dev"' in source
     assert "--license-full" not in source
 
 
