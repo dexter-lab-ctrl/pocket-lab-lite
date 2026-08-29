@@ -160,7 +160,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/docs/enterprise/generate_enterprise_documentation.py generate
+          # This must remain last: the map inventories every Git-tracked path,
+          # including release-evidence projections written by the preceding
+          # promotion and enterprise-documentation steps.
+          python3 scripts/docs/knowledge/generate_codebase_map.py generate
           python3 scripts/docs/enterprise/generate_enterprise_documentation.py check
+          python3 scripts/docs/knowledge/generate_codebase_map.py check
           PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/docs
           git diff --check
 
