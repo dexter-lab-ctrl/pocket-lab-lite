@@ -2554,7 +2554,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "125596a7864afeee4303daa96772c4eff11e3b98d3caa3478017fb72884f415e",
+    "aggregate_fingerprint": "618bd8198b7e3b24152458e7803a7f2231984ff91bbcead17d859377b10c6c2b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2595,7 +2595,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
-      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
+      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "generated"
   }

@@ -15572,7 +15572,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "0e00ad427e0c51435f606144ce333e8922ce9dda386c23923cafc06876e5589b",
+    "aggregate_fingerprint": "01c169d5b9bd23740ebd4b64aa9650a858ee5ee9994f2026e90b4b2391e68dd7",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15775,6 +15775,8 @@
       "scripts/dev/check-wsl-docker-desktop.sh": "fcd240e7f2db292a20b550427fda813e048e893455d94b99eb63b0428f642c4b",
       "scripts/dev/check-wsl-filesystem-standard.sh": "0883ea1fe93a5dab9f4a65171a65614bb2727b3bd83c2b96f73e5018880a5cc4",
       "scripts/dev/check-wsl-ubuntu-dev.sh": "4f9406ea98d8e511c11f2e8caae8921b17ec6354325ad13d117a391265e2081c",
+      "scripts/dev/codex/check_mcp_dev.sh": "021edc376cdf42219a2445befa8177a7227c64eef30986ac2129fddecdf73588",
+      "scripts/dev/codex/run_pocketlab_mcp.sh": "9aba193e9f496a63ef6d998a882491a36b6e0e6f7fc5b6b911034f4efa6723fc",
       "scripts/dev/day0-dry-run.sh": "66c8c3f73aa4d46b02c83f3b0c9a5c955d568deeb3739bfabc4f7d2c630b76a0",
       "scripts/dev/day0-static-check.sh": "0a20d3e5c619dd3454e278bc32381ac9e02baad556a346469d916c1f8c5e999d",
       "scripts/dev/day0-termux-smoke.sh": "19521905e509519c7ba5e11e6e500bb356a38ca7880792a4aa4714b0778544f7",
@@ -15840,7 +15842,7 @@
       "scripts/dev/up.sh": "b51c1a636f904b872d7b9b8e178c6f409c7b61c7d1de55f9052083a451e975f3",
       "scripts/dev/wait-http.sh": "2572f60cf011844a547a35dcee2af15a02476381c21466c3ba848c0516afb9b5",
       "scripts/docs/generate_allure_report.sh": "672bd18a01342d14ae7e14c85b7670bfd704e12100863b8f30ccaeda97d98474",
-      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260",
+      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353",
       "scripts/docs/runtime/capture_termux_runtime.sh": "24e00f8cd4caa9908760078ace070dbf69bb25efd0864ae26794b68429e4a4f2",
       "scripts/docs/runtime/check_termux_ssh.sh": "918b13750417e28cea4e9b461ab03a973aca5db4f1edcdefbbc2ca85c4cebdf5",
       "scripts/docs/runtime/setup_termux_ssh.sh": "d34aaf42957bf4c6c1ec0ecab470c28757984ca8c7f69e4d84b15d68450899bb",

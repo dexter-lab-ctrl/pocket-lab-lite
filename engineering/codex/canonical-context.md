@@ -24,6 +24,13 @@ React/Vite PWA → Caddy → FastAPI /api/lite/* → NATS/JetStream
 
 Preserve the frontend/FastAPI/NATS/worker-agent-supervisor trust boundaries and Android/Termux, ARM64, Ubuntu/WSL2, edge-first behavior.
 
+## Local developer MCP
+
+Repository-owned Pocket Lab MCP source lives under `tools/mcp/pocketlab_dev/`.
+MCP transport and Desktop configuration are machine-local. MCP must not bypass
+FastAPI/NATS/worker/agent boundaries, expose arbitrary shell/SQL/SSH, mutate
+the Server Phone, or contain secrets.
+
 ## Generated files
 
 Generated documentation and contracts are projections. Do not hand-edit `docs/generated/**` or `contracts/generated/**` as the source fix. Change canonical inputs or generators, then regenerate and validate determinism when required.
