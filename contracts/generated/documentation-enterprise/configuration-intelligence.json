@@ -18439,9 +18439,11 @@
       "secret": false,
       "source": [
         "scripts/dev/codex/check_mcp_dev.sh",
+        "scripts/dev/codex/check_playwright_mcp.sh",
+        "scripts/dev/codex/run_playwright_mcp.sh",
         "scripts/dev/codex/run_pocketlab_mcp.sh",
-        "tests/docs/test_enterprise_completion.py",
-        "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/config.py"
+        "scripts/dev/codex/setup_playwright_mcp.sh",
+        "tests/docs/test_enterprise_completion.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
