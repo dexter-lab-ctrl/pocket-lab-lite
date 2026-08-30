@@ -22,6 +22,21 @@ class UnknownValidationTarget(ValueError):
     """Raised before execution for any non-allow-listed validation id."""
 
 
+@dataclass(frozen=True)
+class DiagnosticTarget:
+    """An immutable, semantic developer diagnostic definition."""
+
+    identifier: str
+    description: str
+    source_class: str
+    requires_local_process: bool
+    timeout_seconds: int | None
+
+
+class UnknownDiagnosticTarget(ValueError):
+    """Raised before execution for any non-allow-listed diagnostic id."""
+
+
 def build_validation_targets(
     python_executable: str | None = None,
 ) -> Mapping[str, ValidationTarget]:
@@ -52,6 +67,7 @@ def build_validation_targets(
                 "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/runner.py",
                 "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/server.py",
                 "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/tools/__init__.py",
+                "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/tools/diagnostics.py",
                 "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/tools/repository.py",
                 "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/tools/validation.py",
             ),
@@ -125,6 +141,21 @@ def build_validation_targets(
 
 VALIDATION_TARGETS = build_validation_targets()
 
+DIAGNOSTIC_TARGETS: Mapping[str, DiagnosticTarget] = MappingProxyType(
+    {
+        target.identifier: target
+        for target in (
+            DiagnosticTarget("docs_health", "Summarize generated documentation operational health.", "generated-contract", False, None),
+            DiagnosticTarget("generated_drift", "Summarize generated-artifact working-tree drift.", "local-git-status", True, 30),
+            DiagnosticTarget("runtime_capture", "Summarize promoted sanitized runtime evidence.", "generated-runtime-contract", False, None),
+            DiagnosticTarget("pm2_status", "Summarize local PM2 process state when available.", "local-process", True, 15),
+            DiagnosticTarget("nats_health", "Summarize existing generated NATS readiness evidence.", "generated-runtime-contract", False, None),
+            DiagnosticTarget("openapi_routes", "Summarize the generated Lite OpenAPI route surface.", "generated-contract", False, None),
+            DiagnosticTarget("security_summary", "Summarize generated security and supply-chain evidence.", "generated-contract", False, None),
+        )
+    }
+)
+
 
 def get_validation_target(target: str) -> ValidationTarget:
     try:
@@ -143,4 +174,25 @@ def validation_target_metadata() -> list[dict[str, object]]:
             "side_effect_class": target.side_effect_class,
         }
         for target in VALIDATION_TARGETS.values()
+    ]
+
+
+def get_diagnostic_target(target: str) -> DiagnosticTarget:
+    try:
+        return DIAGNOSTIC_TARGETS[target]
+    except KeyError as exc:
+        raise UnknownDiagnosticTarget(f"unknown diagnostic target: {target}") from exc
+
+
+def diagnostic_target_metadata() -> list[dict[str, object]]:
+    return [
+        {
+            "id": target.identifier,
+            "description": target.description,
+            "source_class": target.source_class,
+            "requires_local_process": target.requires_local_process,
+            "timeout_seconds": target.timeout_seconds,
+            "mutation_capability": False,
+        }
+        for target in DIAGNOSTIC_TARGETS.values()
     ]
