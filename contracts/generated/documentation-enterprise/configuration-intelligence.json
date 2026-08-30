@@ -16833,6 +16833,28 @@
     },
     {
       "affected_components": [
+        "developer MCP tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_PM2_NAMES",
+      "owner": "developer MCP tooling",
+      "purpose": "Local developer MCP process configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-developer-mcp",
+      "runtime_scope": "developer MCP process only",
+      "secret": false,
+      "source": [
+        "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/tools/diagnostics.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "FastAPI"
       ],
       "affects_release": true,

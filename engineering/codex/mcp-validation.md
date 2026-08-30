@@ -20,7 +20,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
 scripts/dev/codex/check_mcp_dev.sh
 ```
 
-The transport check initializes the real stdio server, requires the exact six-tool set, calls `repo_status`, `validation_targets`, `diagnostic_targets`, and deterministic `diagnostic_summary(openapi_routes)`. It does not depend on PM2, NATS, a Server Phone, network access, Tailscale, Docker, or scanners.
+The transport check initializes the real stdio server, requires the exact six-tool set and nine diagnostic IDs, and calls `repo_status`, `validation_targets`, `diagnostic_targets`, and deterministic `diagnostic_summary(openapi_routes)`. It does not depend on PM2, NATS, a Server Phone, network access, Tailscale, Docker, or scanners. Remote behavior is mocked in the focused MCP tests.
 
 Then call `run_validation` through MCP for `mcp_python_compile`, `mcp_shell_syntax`, and `git_diff_check`. Broader approved targets are available only when deliberately requested.
 

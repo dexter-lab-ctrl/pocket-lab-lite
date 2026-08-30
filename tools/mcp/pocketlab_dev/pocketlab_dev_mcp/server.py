@@ -32,6 +32,8 @@ DiagnosticTargetId = Literal[
     "nats_health",
     "openapi_routes",
     "security_summary",
+    "pm2_summary",
+    "security_run_summary",
 ]
 
 READ_ONLY_ANNOTATIONS = ToolAnnotations(
