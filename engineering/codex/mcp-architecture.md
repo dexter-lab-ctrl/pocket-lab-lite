@@ -2,7 +2,7 @@
 
 ## Status
 
-`VERIFIED` for the checked-in Increment 1 repository implementation after its focused validation. Increment 2 extends that same server with bounded read-only developer diagnostics. Desktop registration and Increment 2 Desktop smoke remain `UNVALIDATED`. The MCP layer is a local developer-tool-plane capability. It is outside the Pocket Lab Lite runtime and does not add a FastAPI route, Caddy route, frontend dependency, NATS service, PM2 service, or device control path.
+`VERIFIED` for the checked-in Increment 1 repository implementation after its focused validation. Increment 2 extends that same server with bounded read-only developer diagnostics. Increment 3 adds bounded read-only Server Phone observation through the existing machine-owned `pocketlab-termux` SSH alias. Desktop registration and Desktop smoke remain `UNVALIDATED`. The MCP layer is a local developer-tool-plane capability. It is outside the Pocket Lab Lite runtime and does not add a FastAPI route, Caddy route, frontend dependency, NATS service, PM2 service, or device control path.
 
 ```text
 Codex Desktop
@@ -45,4 +45,4 @@ Increment 2 adds exactly these two read-only diagnostic tools to the same server
 | `diagnostic_targets` | Ordered immutable diagnostic allow-list | none |
 | `diagnostic_summary` | One bounded diagnostic summary | `target`: allow-listed identifier |
 
-The final repository tool surface is exactly six tools. Diagnostics prefer existing generated contracts; they do not regenerate documentation, capture or promote runtime evidence, start services, make HTTP/SSH calls, or start scanners. `pm2_status` is limited to a fixed local `pm2 jlist` projection through the shared runner and excludes process environment and command data.
+The final repository tool surface is exactly six tools. Increment 3 extends the immutable diagnostic catalog to nine IDs: the existing seven plus `pm2_summary` and `security_run_summary`. `pm2_status` remains a local WSL2 `pm2 jlist` projection. `pm2_summary` is the distinct Server Phone Pocket Lab PM2 projection: its fixed remote Python projection runs read-only `pm2 jlist` and returns only bounded Pocket Lab process fields before the payload crosses SSH. `nats_health` combines that fixed Server Phone PM2 projection (when available) with promoted repository readiness evidence. `security_summary` remains repository-generated supply-chain evidence, while `security_run_summary` makes only a fixed credential-free loopback request to the existing read-only Server Phone security summary and reports unavailable if protected evidence cannot be read. No diagnostic accepts a host, command, argument, URL, path, process name, credential, or environment input; no scanner is started.

@@ -56,7 +56,8 @@ async def smoke() -> None:
             assert isinstance(targets.structured_content.get("targets"), list)
             diagnostics = await session.call_tool("diagnostic_targets", {})
             assert isinstance(diagnostics.structured_content, dict)
-            assert isinstance(diagnostics.structured_content.get("targets"), list)
+            diagnostic_ids = [item.get("id") for item in diagnostics.structured_content.get("targets", [])]
+            assert diagnostic_ids == ["docs_health", "generated_drift", "runtime_capture", "pm2_status", "nats_health", "openapi_routes", "security_summary", "pm2_summary", "security_run_summary"]
             openapi = await session.call_tool("diagnostic_summary", {"target": "openapi_routes"})
             assert isinstance(openapi.structured_content, dict)
             assert openapi.structured_content.get("target") == "openapi_routes"
@@ -71,4 +72,5 @@ printf 'PASS tool contract: 6 tools\n'
 printf 'PASS repo_status\n'
 printf 'PASS validation_targets\n'
 printf 'PASS diagnostic_targets\n'
+printf 'PASS diagnostic target contract: 9 targets\n'
 printf 'PASS diagnostic_summary(openapi_routes)\n'

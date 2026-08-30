@@ -15572,7 +15572,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "61acd9c12107ea610cd5cd38d83e4e563c2a6b181d11db7b3ae5ff9f750bb942",
+    "aggregate_fingerprint": "101ddded4ee40104f68515b93ed80bd0b1520880f646e3ea35da9caa06fd7b2f",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15775,7 +15775,7 @@
       "scripts/dev/check-wsl-docker-desktop.sh": "fcd240e7f2db292a20b550427fda813e048e893455d94b99eb63b0428f642c4b",
       "scripts/dev/check-wsl-filesystem-standard.sh": "0883ea1fe93a5dab9f4a65171a65614bb2727b3bd83c2b96f73e5018880a5cc4",
       "scripts/dev/check-wsl-ubuntu-dev.sh": "4f9406ea98d8e511c11f2e8caae8921b17ec6354325ad13d117a391265e2081c",
-      "scripts/dev/codex/check_mcp_dev.sh": "f7f2e567db7d004bf970878b3185615dec7ea88b9eb9ffe3b20963cfac66fdd3",
+      "scripts/dev/codex/check_mcp_dev.sh": "08eb397e7413be0fcdc872be6be77eac48f62216f63ccaaecb27e9d944a81777",
       "scripts/dev/codex/run_pocketlab_mcp.sh": "9aba193e9f496a63ef6d998a882491a36b6e0e6f7fc5b6b911034f4efa6723fc",
       "scripts/dev/day0-dry-run.sh": "66c8c3f73aa4d46b02c83f3b0c9a5c955d568deeb3739bfabc4f7d2c630b76a0",
       "scripts/dev/day0-static-check.sh": "0a20d3e5c619dd3454e278bc32381ac9e02baad556a346469d916c1f8c5e999d",

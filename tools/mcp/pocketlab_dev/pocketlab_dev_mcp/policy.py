@@ -3,9 +3,22 @@
 from __future__ import annotations
 
 import sys
+import shlex
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Mapping
+
+
+REMOTE_PM2_PROJECTION = (
+    "import json,subprocess,sys; "
+    "result=subprocess.run(['pm2','jlist'],stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=8); "
+    "sys.exit(result.returncode) if result.returncode else None; "
+    "items=json.loads(result.stdout); "
+    "allowed={'pocket-api','pocket-worker','pocket-nats','pocket-node-agent','pocket-telemetry','caddy-proxy','pocketlab-core-supervisor','pocketlab-app-photoprism'}; "
+    "projected=[{'name':item.get('name'),'status':(item.get('pm2_env') or {}).get('status') or item.get('status') or 'unknown','pid':item.get('pid'),'restart_count':(item.get('pm2_env') or {}).get('restart_time'),'started_at':(item.get('pm2_env') or {}).get('pm_uptime')} for item in items if isinstance(item,dict) and (item.get('name') in allowed or str(item.get('name') or '').startswith('pocketlab-agent-'))]; "
+    "print(json.dumps(projected[:12],separators=(',',':')))"
+)
+REMOTE_PM2_COMMAND = f"python3 -c {shlex.quote(REMOTE_PM2_PROJECTION)}"
 
 
 @dataclass(frozen=True)
@@ -31,6 +44,7 @@ class DiagnosticTarget:
     source_class: str
     requires_local_process: bool
     timeout_seconds: int | None
+    remote_argv: tuple[str, ...] = ()
 
 
 class UnknownDiagnosticTarget(ValueError):
@@ -152,6 +166,22 @@ DIAGNOSTIC_TARGETS: Mapping[str, DiagnosticTarget] = MappingProxyType(
             DiagnosticTarget("nats_health", "Summarize existing generated NATS readiness evidence.", "generated-runtime-contract", False, None),
             DiagnosticTarget("openapi_routes", "Summarize the generated Lite OpenAPI route surface.", "generated-contract", False, None),
             DiagnosticTarget("security_summary", "Summarize generated security and supply-chain evidence.", "generated-contract", False, None),
+            DiagnosticTarget(
+                "pm2_summary",
+                "Summarize Server Phone Pocket Lab PM2 state through the managed SSH alias.",
+                "server-phone-pm2",
+                True,
+                15,
+                (REMOTE_PM2_COMMAND,),
+            ),
+            DiagnosticTarget(
+                "security_run_summary",
+                "Summarize the Server Phone's existing read-only security-run view when available.",
+                "server-phone-security-evidence",
+                True,
+                15,
+                ("curl", "-fsS", "--max-time", "8", "--header", "Accept: application/json", "http://127.0.0.1:8080/api/lite/security/summary"),
+            ),
         )
     }
 )
@@ -192,6 +222,7 @@ def diagnostic_target_metadata() -> list[dict[str, object]]:
             "source_class": target.source_class,
             "requires_local_process": target.requires_local_process,
             "timeout_seconds": target.timeout_seconds,
+            "remote": bool(target.remote_argv),
             "mutation_capability": False,
         }
         for target in DIAGNOSTIC_TARGETS.values()

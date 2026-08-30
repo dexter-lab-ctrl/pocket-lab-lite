@@ -18869,6 +18869,28 @@
       },
       {
         "affected_components": [
+          "developer MCP tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PM2_NAMES",
+        "owner": "developer MCP tooling",
+        "purpose": "Local developer MCP process configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-developer-mcp",
+        "runtime_scope": "developer MCP process only",
+        "secret": false,
+        "source": [
+          "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/tools/diagnostics.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI"
         ],
         "affects_release": true,
@@ -36878,8 +36900,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "afbae2584bf3194ca6f39c332c3c9321305cdc92",
-          "head_tree": "eef10562b0c4a1c8a37450a09a104ec385ead929",
+          "head": "8878407616d5cac53084f84dc56643e509e04583",
+          "head_tree": "f3be2c2f31421d8bf2c5a9717b1d558e34828cb4",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -41252,8 +41274,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "afbae2584bf3194ca6f39c332c3c9321305cdc92",
-        "head_tree": "eef10562b0c4a1c8a37450a09a104ec385ead929",
+        "head": "8878407616d5cac53084f84dc56643e509e04583",
+        "head_tree": "f3be2c2f31421d8bf2c5a9717b1d558e34828cb4",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
