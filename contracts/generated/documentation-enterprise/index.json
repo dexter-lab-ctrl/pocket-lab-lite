@@ -36878,8 +36878,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "8bbf23b3405711dbb46721095a06d339e38f502e",
-          "head_tree": "16e11a18bf3433fa2e5b2fd8719a2ca11679d7a1",
+          "head": "afbae2584bf3194ca6f39c332c3c9321305cdc92",
+          "head_tree": "eef10562b0c4a1c8a37450a09a104ec385ead929",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -41252,8 +41252,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "8bbf23b3405711dbb46721095a06d339e38f502e",
-        "head_tree": "16e11a18bf3433fa2e5b2fd8719a2ca11679d7a1",
+        "head": "afbae2584bf3194ca6f39c332c3c9321305cdc92",
+        "head_tree": "eef10562b0c4a1c8a37450a09a104ec385ead929",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [

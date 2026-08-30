@@ -31,6 +31,8 @@ EXPECTED_TOOLS = {
     "changed_files",
     "validation_targets",
     "run_validation",
+    "diagnostic_targets",
+    "diagnostic_summary",
 }
 
 
@@ -52,12 +54,21 @@ async def smoke() -> None:
             targets = await session.call_tool("validation_targets", {})
             assert isinstance(targets.structured_content, dict)
             assert isinstance(targets.structured_content.get("targets"), list)
+            diagnostics = await session.call_tool("diagnostic_targets", {})
+            assert isinstance(diagnostics.structured_content, dict)
+            assert isinstance(diagnostics.structured_content.get("targets"), list)
+            openapi = await session.call_tool("diagnostic_summary", {"target": "openapi_routes"})
+            assert isinstance(openapi.structured_content, dict)
+            assert openapi.structured_content.get("target") == "openapi_routes"
+            assert openapi.structured_content.get("status") == "ok"
 
 
 anyio.run(smoke)
 PY
 
 printf 'PASS pocketlab-dev-mcp transport\n'
-printf 'PASS tool contract: 4 tools\n'
+printf 'PASS tool contract: 6 tools\n'
 printf 'PASS repo_status\n'
 printf 'PASS validation_targets\n'
+printf 'PASS diagnostic_targets\n'
+printf 'PASS diagnostic_summary(openapi_routes)\n'

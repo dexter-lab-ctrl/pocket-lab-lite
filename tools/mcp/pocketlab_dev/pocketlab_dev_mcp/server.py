@@ -1,4 +1,4 @@
-"""Stdio MCP server exposing the four bounded Pocket Lab developer tools."""
+"""Stdio MCP server exposing bounded Pocket Lab developer tools."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from mcp_types import ToolAnnotations
 
 from .config import resolve_repository_root, validate_repository_root
 from .tools.repository import RepositoryTools
+from .tools.diagnostics import DiagnosticTools
 from .tools.validation import ValidationTools
 
 ValidationTargetId = Literal[
@@ -22,6 +23,15 @@ ValidationTargetId = Literal[
     "lite_api_check",
     "docs_check",
     "lite_check",
+]
+DiagnosticTargetId = Literal[
+    "docs_health",
+    "generated_drift",
+    "runtime_capture",
+    "pm2_status",
+    "nats_health",
+    "openapi_routes",
+    "security_summary",
 ]
 
 READ_ONLY_ANNOTATIONS = ToolAnnotations(
@@ -43,6 +53,7 @@ def create_server(repository_root: Path | None = None) -> MCPServer:
     root = validate_repository_root(repository_root) if repository_root else resolve_repository_root()
     repository_tools = RepositoryTools(root)
     validation_tools = ValidationTools(root)
+    diagnostic_tools = DiagnosticTools(root)
     server = MCPServer(
         "pocketlab-dev-mcp",
         title="Pocket Lab developer MCP",
@@ -86,6 +97,24 @@ def create_server(repository_root: Path | None = None) -> MCPServer:
     )
     def run_validation(target: ValidationTargetId) -> dict[str, Any]:
         return validation_tools.run_validation(target)
+
+    @server.tool(
+        name="diagnostic_targets",
+        description="List the ordered, fixed read-only diagnostic allow-list.",
+        annotations=READ_ONLY_ANNOTATIONS,
+        structured_output=True,
+    )
+    def diagnostic_targets() -> dict[str, Any]:
+        return diagnostic_tools.diagnostic_targets()
+
+    @server.tool(
+        name="diagnostic_summary",
+        description="Return one bounded read-only developer diagnostic by identifier.",
+        annotations=READ_ONLY_ANNOTATIONS,
+        structured_output=True,
+    )
+    def diagnostic_summary(target: DiagnosticTargetId) -> dict[str, Any]:
+        return diagnostic_tools.diagnostic_summary(target)
 
     return server
 

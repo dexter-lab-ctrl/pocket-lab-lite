@@ -2,7 +2,7 @@
 
 ## Status
 
-`VERIFIED` for the checked-in Increment 1 repository implementation after its focused validation. Desktop registration remains `UNVALIDATED`. The MCP layer is a local developer-tool-plane capability. It is outside the Pocket Lab Lite runtime and does not add a FastAPI route, Caddy route, frontend dependency, NATS service, PM2 service, or device control path.
+`VERIFIED` for the checked-in Increment 1 repository implementation after its focused validation. Increment 2 extends that same server with bounded read-only developer diagnostics. Desktop registration and Increment 2 Desktop smoke remain `UNVALIDATED`. The MCP layer is a local developer-tool-plane capability. It is outside the Pocket Lab Lite runtime and does not add a FastAPI route, Caddy route, frontend dependency, NATS service, PM2 service, or device control path.
 
 ```text
 Codex Desktop
@@ -27,7 +27,7 @@ React/Vite PWA → Caddy → FastAPI /api/lite/* → NATS / JetStream
 
 The server runs only over stdio. It validates the configured repository root for `.git`, `AGENTS.md`, and `engineering/codex` before registering meaningful operations.
 
-## Increment 1 tool contract
+## Tool contract
 
 Exactly these four semantic tools are registered:
 
@@ -38,4 +38,11 @@ Exactly these four semantic tools are registered:
 | `validation_targets` | Ordered validation allow-list | none |
 | `run_validation` | One fixed validation target | `target`: allow-listed identifier |
 
-`PLANNED`: future increments may add separately reviewed developer diagnostics. They must not be presented as part of Increment 1 and must preserve the same local, bounded, non-runtime boundary.
+Increment 2 adds exactly these two read-only diagnostic tools to the same server:
+
+| Tool | Purpose | Inputs |
+| --- | --- | --- |
+| `diagnostic_targets` | Ordered immutable diagnostic allow-list | none |
+| `diagnostic_summary` | One bounded diagnostic summary | `target`: allow-listed identifier |
+
+The final repository tool surface is exactly six tools. Diagnostics prefer existing generated contracts; they do not regenerate documentation, capture or promote runtime evidence, start services, make HTTP/SSH calls, or start scanners. `pm2_status` is limited to a fixed local `pm2 jlist` projection through the shared runner and excludes process environment and command data.

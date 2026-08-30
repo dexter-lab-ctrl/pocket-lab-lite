@@ -20,7 +20,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
 scripts/dev/codex/check_mcp_dev.sh
 ```
 
-The transport check initializes the real stdio server, requires the exact four-tool set, and calls only `repo_status` and `validation_targets`.
+The transport check initializes the real stdio server, requires the exact six-tool set, calls `repo_status`, `validation_targets`, `diagnostic_targets`, and deterministic `diagnostic_summary(openapi_routes)`. It does not depend on PM2, NATS, a Server Phone, network access, Tailscale, Docker, or scanners.
 
 Then call `run_validation` through MCP for `mcp_python_compile`, `mcp_shell_syntax`, and `git_diff_check`. Broader approved targets are available only when deliberately requested.
 
@@ -35,7 +35,7 @@ task lite:check
 
 ## Desktop integration qualification
 
-After a human performs the machine-local registration, restart Desktop and ask it to use `repo_status`, list `validation_targets`, and show `changed_files`. Do not call `run_validation` in the first Desktop smoke test.
+After a human performs the machine-local registration, restart Desktop and ask it to use `repo_status`, list `validation_targets`, list `diagnostic_targets`, and call `diagnostic_summary` with `openapi_routes`. This remains separate `UNVALIDATED` Desktop evidence; do not call `run_validation` in the first Desktop smoke test.
 
 ## Rollback
 
