@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "0ebae16f2176d5649971776a257e9da79d3c8927ceb760106879da8de5509563",
+    "aggregate_fingerprint": "d293839fbb4f666224cf0428f685d6b89517d9442b0162907fd8794240594345",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15,7 +15,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "16171c44e96581755494034508fc1f0a69a118ed2166e83431bc14d662c80aa8",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py": "d582006b8a4fc9e5123952e3e2f3334c8661d1720f54934e8c434daf95cb0d7e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_transaction.py": "d0a294500be7a76d0d4ec8ebd1e6b076eedc45264146cce754892b6568285b31",
-      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
+      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "generated"
   },

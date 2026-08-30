@@ -956,7 +956,22 @@ def reason_outputs() -> dict[Path, str]:
 
 def env_inventory() -> list[dict[str, Any]]:
     pattern = re.compile(r"\b(?:POCKETLAB|POCKET_LAB|LITE|NATS|PLAYWRIGHT|CHROME|CHROMIUM|EDGE|SOURCE)_[A-Z0-9_]+\b")
-    source_files = [*list((ROOT / "scripts").rglob("*.sh")), *list((ROOT / "scripts").rglob("*.py")), *list((ROOT / "pocket-lab-final-structure").rglob("*.py")), *list((ROOT / "pocket-lab-final-structure").rglob("*.sh")), ROOT / "Taskfile.yml", ROOT / "playwright.config.ts"]
+    source_files = [
+        *[
+            path
+            for path in (ROOT / "scripts").rglob("*.sh")
+            if not path.is_relative_to(ROOT / "scripts/dev/codex")
+        ],
+        *[
+            path
+            for path in (ROOT / "scripts").rglob("*.py")
+            if not path.is_relative_to(ROOT / "scripts/dev/codex")
+        ],
+        *list((ROOT / "pocket-lab-final-structure").rglob("*.py")),
+        *list((ROOT / "pocket-lab-final-structure").rglob("*.sh")),
+        ROOT / "Taskfile.yml",
+        ROOT / "playwright.config.ts",
+    ]
     found: dict[str, set[str]] = defaultdict(set)
     defaults: dict[str, set[str]] = defaultdict(set)
     for path in source_files:

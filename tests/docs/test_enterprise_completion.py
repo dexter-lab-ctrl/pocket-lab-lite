@@ -218,6 +218,34 @@ def test_enterprise_intelligence_contracts_cover_prompt_fields():
     assert all(x["live_polling"] is False for x in validation["checks"])
 
 
+def test_developer_mcp_configuration_is_not_runtime_and_credentials_stay_secret():
+    rows = completion.configuration_intelligence([
+        {
+            "name": "NATS_CREDS",
+            "secret": True,
+            "source": ["tools/mcp/pocketlab_dev/pocketlab_dev_mcp/runner.py"],
+            "runtime_scope": "runtime or development depending on source",
+        },
+        {
+            "name": "POCKETLAB_REPO",
+            "secret": False,
+            "source": ["scripts/dev/codex/run_pocketlab_mcp.sh"],
+            "runtime_scope": "runtime or development depending on source",
+        },
+    ])
+    assert all(row["owner"] == "developer MCP tooling" for row in rows)
+    assert all(row["affects_runtime"] is False for row in rows)
+    assert all(row["runtime_scope"] == "developer MCP process only" for row in rows)
+    assert rows[0]["secret"] is True
+
+
+def test_configuration_secret_name_matching_does_not_confuse_authority_with_authentication():
+    generator = load_module("enterprise_generator", "scripts/docs/enterprise/generate_enterprise_documentation.py")
+    items = {item["name"]: item for item in generator.config_inventory()}
+    assert items["TAILSCALE_AUTHKEY"]["secret"] is True
+    assert items["POCKETLAB_IDENTITY_OWNER_AUTHORITY_TTL_SECONDS"]["secret"] is False
+
+
 def test_supply_chain_inventory_and_change_contracts_are_complete():
     baseline = completion.current_release_baseline(ROOT)["baseline"]
     inventory = completion.source_dependency_inventory(ROOT, baseline["tag"] if baseline else None)

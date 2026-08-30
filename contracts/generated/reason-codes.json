@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "6cc945278d8a07a6be73bb352977ab0c028a60bfd9a1cc5b9bbc1d07a2146d42",
+    "aggregate_fingerprint": "80d13d823af5a199b54ddc827c86c4429a94695c0af9038d199d9f61015a28cf",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -123,7 +123,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py": "8b38469e72f0e45e0acadcdb7021566866a34e3554e3ba8dec5162d13195350f",
       "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py": "febd4bf86527f2bcbe9a85b5a960ff6a095905c91cc10dfdd799b2c69b19c8e6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py": "f6b8e0d08fe76b7966b84524a39bd514aced277f46f09e92ac0ca8eacdd28ee2",
-      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
+      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "generated"
   },

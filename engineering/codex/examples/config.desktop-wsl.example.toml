@@ -1,0 +1,6 @@
+# Example only. This is machine-local Desktop configuration, not a repository
+# configuration file. Replace <wsl-user> with the local WSL account name.
+# The repository launcher resolves and validates its own working directory.
+
+[mcp_servers.pocketlab_dev]
+command = "/home/<wsl-user>/pocket-lab-lite/scripts/dev/codex/run_pocketlab_mcp.sh"

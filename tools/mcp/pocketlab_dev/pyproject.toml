@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pocketlab-dev-mcp"
+version = "0.1.0"
+description = "Bounded local development MCP for Pocket Lab Lite"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp>=2.0,<3",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+pocketlab-dev-mcp = "pocketlab_dev_mcp.server:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers", "--strict-config"]

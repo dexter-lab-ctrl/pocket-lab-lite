@@ -3699,6 +3699,30 @@
     },
     {
       "affected_components": [
+        "developer MCP tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "redacted/not inferred",
+      "name": "NATS_CREDS",
+      "owner": "developer MCP tooling",
+      "purpose": "Local developer MCP process configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-developer-mcp",
+      "runtime_scope": "developer MCP process only",
+      "secret": true,
+      "source": [
+        "tests/docs/test_enterprise_completion.py",
+        "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/runner.py",
+        "tools/mcp/pocketlab_dev/tests/test_redaction.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "repository tooling"
       ],
       "affects_release": false,
@@ -8975,14 +8999,15 @@
     },
     {
       "affected_components": [
-        "FastAPI"
+        "FastAPI",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
       "name": "POCKETLAB_IDENTITY_OWNER_AUTHORITY_TTL_SECONDS",
       "owner": "FastAPI/runtime",
-      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "purpose": "Documentation/developer automation configuration",
       "related_troubleshooting": [
         "Development Troubleshooting",
         "Production Troubleshooting"
@@ -8992,7 +9017,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+        "tests/docs/test_enterprise_completion.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18374,6 +18400,31 @@
     },
     {
       "affected_components": [
+        "developer MCP tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_REPO",
+      "owner": "developer MCP tooling",
+      "purpose": "Local developer MCP process configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-developer-mcp",
+      "runtime_scope": "developer MCP process only",
+      "secret": false,
+      "source": [
+        "scripts/dev/codex/check_mcp_dev.sh",
+        "scripts/dev/codex/run_pocketlab_mcp.sh",
+        "tests/docs/test_enterprise_completion.py",
+        "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/config.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "bootstrap/runtime"
       ],
       "affects_release": true,
@@ -20789,7 +20840,7 @@
       ],
       "affects_release": true,
       "affects_runtime": true,
-      "default": "source-defined/unvalidated",
+      "default": "redacted/not inferred",
       "name": "POCKETLAB_TEST_AUTH_BYPASS",
       "owner": "FastAPI/runtime",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -20800,7 +20851,7 @@
       "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
       "restart_required": "likely-runtime-restart",
       "runtime_scope": "runtime or development depending on source",
-      "secret": false,
+      "secret": true,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
@@ -22330,7 +22381,30 @@
     },
     {
       "affected_components": [
-        "bootstrap/runtime"
+        "developer MCP tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": false,
+      "default": "redacted/not inferred",
+      "name": "TAILSCALE_AUTH",
+      "owner": "developer MCP tooling",
+      "purpose": "Local developer MCP process configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "no-runtime-restart-for-developer-mcp",
+      "runtime_scope": "developer MCP process only",
+      "secret": true,
+      "source": [
+        "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/runner.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -22347,7 +22421,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": true,
       "source": [
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh",
+        "tests/docs/test_enterprise_completion.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

@@ -144,7 +144,7 @@
     "status": "validation contract documented; local PASS is not claimed"
   },
   "metadata": {
-    "aggregate_fingerprint": "0f328e316c38348126ee4058039daf29fa8c0e56a9e978d8d8e243b31edc6892",
+    "aggregate_fingerprint": "76ad3eea6ff763213ca6a3395f40a1da9696d815107a7c708ed3ee04469634ef",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -158,7 +158,7 @@
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
       "scripts/dev/lite/run-gate.sh": "8c0ee4015a9f604da6c7715313ea287674e07a9ad59c8b2419129ad63bba3198",
       "scripts/dev/lite/validation_evidence.py": "bbca414f1a3fa1a505c2c36db88874eb728d146e03f87d0d2649e4791d2d98b8",
-      "scripts/docs/lite/generate_platform_catalogs.py": "2220e5e9ce90587edce040a2a769aaf5cdbc53db66cf84369832a7f0ecca0260"
+      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "documented"
   }

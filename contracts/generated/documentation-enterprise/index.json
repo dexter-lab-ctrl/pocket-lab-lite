@@ -5735,6 +5735,30 @@
       },
       {
         "affected_components": [
+          "developer MCP tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "redacted/not inferred",
+        "name": "NATS_CREDS",
+        "owner": "developer MCP tooling",
+        "purpose": "Local developer MCP process configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-developer-mcp",
+        "runtime_scope": "developer MCP process only",
+        "secret": true,
+        "source": [
+          "tests/docs/test_enterprise_completion.py",
+          "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/runner.py",
+          "tools/mcp/pocketlab_dev/tests/test_redaction.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "repository tooling"
         ],
         "affects_release": false,
@@ -11011,14 +11035,15 @@
       },
       {
         "affected_components": [
-          "FastAPI"
+          "FastAPI",
+          "repository tooling"
         ],
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
         "name": "POCKETLAB_IDENTITY_OWNER_AUTHORITY_TTL_SECONDS",
         "owner": "FastAPI/runtime",
-        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "purpose": "Documentation/developer automation configuration",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
@@ -11028,7 +11053,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+          "tests/docs/test_enterprise_completion.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -20410,6 +20436,31 @@
       },
       {
         "affected_components": [
+          "developer MCP tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_REPO",
+        "owner": "developer MCP tooling",
+        "purpose": "Local developer MCP process configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-developer-mcp",
+        "runtime_scope": "developer MCP process only",
+        "secret": false,
+        "source": [
+          "scripts/dev/codex/check_mcp_dev.sh",
+          "scripts/dev/codex/run_pocketlab_mcp.sh",
+          "tests/docs/test_enterprise_completion.py",
+          "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/config.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "bootstrap/runtime"
         ],
         "affects_release": true,
@@ -22825,7 +22876,7 @@
         ],
         "affects_release": true,
         "affects_runtime": true,
-        "default": "source-defined/unvalidated",
+        "default": "redacted/not inferred",
         "name": "POCKETLAB_TEST_AUTH_BYPASS",
         "owner": "FastAPI/runtime",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -22836,7 +22887,7 @@
         "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
         "restart_required": "likely-runtime-restart",
         "runtime_scope": "runtime or development depending on source",
-        "secret": false,
+        "secret": true,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
@@ -24366,7 +24417,30 @@
       },
       {
         "affected_components": [
-          "bootstrap/runtime"
+          "developer MCP tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": false,
+        "default": "redacted/not inferred",
+        "name": "TAILSCALE_AUTH",
+        "owner": "developer MCP tooling",
+        "purpose": "Local developer MCP process configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "no-runtime-restart-for-developer-mcp",
+        "runtime_scope": "developer MCP process only",
+        "secret": true,
+        "source": [
+          "tools/mcp/pocketlab_dev/pocketlab_dev_mcp/runner.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "bootstrap/runtime",
+          "repository tooling"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -24383,7 +24457,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
         "source": [
-          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh",
+          "tests/docs/test_enterprise_completion.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -36803,8 +36878,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "d3beb4d25afbd36663018a4843858ed92f3794e7",
-          "head_tree": "a8e50fc1d8a1250898b8770a69bb8cd2b3c8c0b8",
+          "head": "8bbf23b3405711dbb46721095a06d339e38f502e",
+          "head_tree": "16e11a18bf3433fa2e5b2fd8719a2ca11679d7a1",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -38853,9 +38928,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "8780209a650903b7095cf2fd1ebea8aefdd863673f9504ca846e10b60d8f0010",
+        "documentation": "da4ccbd860d68bcf3c2316cbb494a3103b20ff6caaa6cbdf7dadb540270da6a7",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
-        "operational_health": "9731e2e91bfbdbe2c32fa8f1e1cbc3b1db6d0f51b4067e7d01289fdc5f79e70d"
+        "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -41177,8 +41252,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "d3beb4d25afbd36663018a4843858ed92f3794e7",
-        "head_tree": "a8e50fc1d8a1250898b8770a69bb8cd2b3c8c0b8",
+        "head": "8bbf23b3405711dbb46721095a06d339e38f502e",
+        "head_tree": "16e11a18bf3433fa2e5b2fd8719a2ca11679d7a1",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -105580,5 +105655,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "bb4e0b66407625ce862962711cc8abdfd65aa23c2ab785b97ba01a53025afaf1"
+  "source_fingerprint": "f913ba34d87a8fde4e50cc8a2611f0fae211dd595e18dc37be773b772170b936"
 }

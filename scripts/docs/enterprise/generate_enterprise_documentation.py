@@ -556,7 +556,7 @@ def config_inventory() -> list[dict[str, Any]]:
         for name in pattern.findall(text): seen[name].add(str(p.relative_to(ROOT)))
     out=[]
     for name,sources in sorted(seen.items()):
-        secret=any(x in name for x in ["TOKEN","PASSWORD","SECRET","KEY","CREDENTIAL"])
+        secret=bool(re.search(r"(?:^|_)(?:TOKEN|PASSWORD|SECRET|KEY|CREDENTIALS?|CREDS|AUTH|AUTHKEY)(?:_|$)", name))
         out.append({"name":name,"purpose":"source-discovered configuration key; canonical purpose requires owner review","owner":"source-defined component","source":sorted(sources)[:6],"default":"redacted/not inferred" if secret else "source-defined/unvalidated","required":"unvalidated","secret":secret,"runtime_scope":"runtime or development depending on source","restart_required":"unvalidated","affects_release":"unvalidated","affects_runtime":True,"validation":"source presence only","related_troubleshooting":[]})
     return out
 

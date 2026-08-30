@@ -140,6 +140,15 @@ git diff --check
 
 For documentation or generated-artifact changes, follow the generator ownership and ordering rules in `AGENTS.md` and `engineering/chatgpt/validation-matrix.md`. Change canonical inputs or generators, never generated projections directly.
 
+## Local developer MCP
+
+Pocket Lab MCP is a local developer capability. It does not modify runtime architecture.
+
+- [MCP architecture](mcp-architecture.md)
+- [MCP security model](mcp-security-model.md)
+- [MCP installation](mcp-installation.md)
+- [MCP validation](mcp-validation.md)
+
 ## Deeper guidance
 
 - Universal contract: `AGENTS.md`

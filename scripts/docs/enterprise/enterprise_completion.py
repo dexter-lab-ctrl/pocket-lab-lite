@@ -759,9 +759,14 @@ def configuration_intelligence(config:list[dict[str,Any]])->list[dict[str,Any]]:
         elif "backup" in name.lower() or "restic" in name.lower(): purpose="Backup/recovery configuration"
         elif "docs" in joined or "scripts/docs" in joined: purpose="Documentation/developer automation configuration"
         else: purpose="Pocket Lab runtime/development configuration discovered from source"
-        owner="documentation tooling" if "scripts/docs" in joined else "frontend" if "src/" in joined else "bootstrap/runtime" if "bootstrap" in joined else "FastAPI/runtime" if "api_fastapi" in joined else "repository tooling"
-        affected = sorted({"frontend" if "src/" in src.lower() else "FastAPI" if "api_fastapi" in src.lower() else "bootstrap/runtime" if "bootstrap" in src.lower() else "documentation" if "scripts/docs" in src.lower() or "mkdocs" in src.lower() else "repository tooling" for src in sources})
-        out.append({**row,"purpose":purpose,"owner":owner,"required":"source-required where fail-closed code validates presence; otherwise optional/unvalidated","restart_required":"likely-runtime-restart" if owner in {"bootstrap/runtime","FastAPI/runtime"} else "no-runtime-restart-for-doc-tooling" if owner=="documentation tooling" else "source-dependent","affects_release":owner in {"bootstrap/runtime","FastAPI/runtime","frontend"},"affects_runtime":owner!="documentation tooling","affected_components":affected,"validation":"source-discovery + secret-value redaction; actual runtime value is never rendered","related_troubleshooting":["Development Troubleshooting","Production Troubleshooting"]})
+        runtime_sources = [source for source in sources if not source.startswith("tests/")]
+        developer_mcp = bool(runtime_sources) and all(
+            "tools/mcp/pocketlab_dev/" in source or "scripts/dev/codex/" in source
+            for source in runtime_sources
+        )
+        owner="developer MCP tooling" if developer_mcp else "documentation tooling" if "scripts/docs" in joined else "frontend" if "src/" in joined else "bootstrap/runtime" if "bootstrap" in joined else "FastAPI/runtime" if "api_fastapi" in joined else "repository tooling"
+        affected = ["developer MCP tooling"] if developer_mcp else sorted({"frontend" if "src/" in src.lower() else "FastAPI" if "api_fastapi" in src.lower() else "bootstrap/runtime" if "bootstrap" in src.lower() else "documentation" if "scripts/docs" in src.lower() or "mkdocs" in src.lower() else "repository tooling" for src in sources})
+        out.append({**row,"purpose":"Local developer MCP process configuration" if developer_mcp else purpose,"owner":owner,"required":"source-required where fail-closed code validates presence; otherwise optional/unvalidated","restart_required":"no-runtime-restart-for-developer-mcp" if developer_mcp else "likely-runtime-restart" if owner in {"bootstrap/runtime","FastAPI/runtime"} else "no-runtime-restart-for-doc-tooling" if owner=="documentation tooling" else "source-dependent","affects_release":False if developer_mcp else owner in {"bootstrap/runtime","FastAPI/runtime","frontend"},"affects_runtime":False if developer_mcp else owner!="documentation tooling","runtime_scope":"developer MCP process only" if developer_mcp else row["runtime_scope"],"affected_components":affected,"validation":"source-discovery + secret-value redaction; actual runtime value is never rendered","related_troubleshooting":["Development Troubleshooting"] if developer_mcp else ["Development Troubleshooting","Production Troubleshooting"]})
     return out
 
 
