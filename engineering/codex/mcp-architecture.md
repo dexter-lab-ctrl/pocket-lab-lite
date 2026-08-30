@@ -27,6 +27,21 @@ React/Vite PWA → Caddy → FastAPI /api/lite/* → NATS / JetStream
 
 The server runs only over stdio. It validates the configured repository root for `.git`, `AGENTS.md`, and `engineering/codex` before registering meaningful operations.
 
+## Playwright MCP companion
+
+`@playwright/mcp` is a separate developer-only browser MCP. It is not added to
+the six-tool `pocketlab_dev` surface and does not alter the Pocket Lab runtime.
+
+```text
+Codex Desktop
+  ├── pocketlab_dev → bounded repository and diagnostic tooling
+  └── playwright → repository launcher → pinned WSL2 Node → external browser
+```
+
+The repository launcher is `scripts/dev/codex/run_playwright_mcp.sh`. It uses
+the existing `scripts/dev/lite/resolve-browser.mjs` resolver, a pinned isolated
+developer installation under `.pocketlab-dev/mcp/playwright`, and stdio.
+
 ## Tool contract
 
 Exactly these four semantic tools are registered:

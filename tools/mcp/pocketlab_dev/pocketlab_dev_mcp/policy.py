@@ -90,13 +90,16 @@ def build_validation_targets(
         ),
         ValidationTarget(
             "mcp_shell_syntax",
-            "Check the Pocket Lab MCP launcher and transport-check shell syntax.",
+            "Check the Pocket Lab MCP and Playwright MCP shell syntax.",
             "MCP shell syntax",
             (
                 "bash",
                 "-n",
                 "scripts/dev/codex/run_pocketlab_mcp.sh",
                 "scripts/dev/codex/check_mcp_dev.sh",
+                "scripts/dev/codex/setup_playwright_mcp.sh",
+                "scripts/dev/codex/run_playwright_mcp.sh",
+                "scripts/dev/codex/check_playwright_mcp.sh",
             ),
             30,
             "none",
