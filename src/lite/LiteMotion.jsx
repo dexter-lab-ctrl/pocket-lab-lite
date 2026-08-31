@@ -1,5 +1,6 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 
 const LITE_MOTION_TRANSFORM_IDLE = 'translate3d(0, 0, 0) scale(1)';
 const LITE_MOTION_TRANSFORM_ENTER = 'translate3d(0, 6px, 0) scale(0.992)';
@@ -25,13 +26,9 @@ export function useLiteReducedMotion() {
 }
 
 export function triggerLiteTactileFeedback(kind = 'light') {
-  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
-  const pattern = kind === 'accepted' ? 12 : kind === 'selection' ? 8 : 6;
-  try {
-    navigator.vibrate(pattern);
-  } catch (_error) {
-    // Vibration support is browser/device dependent. Ignore safely.
-  }
+  // Selection and routine detail controls remain visual-only. Hardware
+  // feedback is reserved for a deliberate, accepted primary action.
+  return kind === 'accepted' ? triggerLiteHaptic('accepted') : false;
 }
 
 export function useLiteRipple({ disabled = false } = {}) {

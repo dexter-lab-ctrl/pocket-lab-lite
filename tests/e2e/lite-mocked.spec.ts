@@ -1,6 +1,22 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, LITE_TABS, openTab, watchApiFailures } from './lite-test-helpers';
 
+const PREMIUM_VIEWPORTS = [
+  { width: 320, height: 568 },
+  { width: 390, height: 844 },
+  { width: 430, height: 932 },
+  { width: 768, height: 1024 },
+  { width: 1280, height: 720 },
+  { width: 1440, height: 900 },
+] as const;
+
+const PREMIUM_SCREENS = [
+  ['Home', 'home'],
+  ['Security', 'security'],
+  ['Identity & Access', 'identity'],
+  ['Rules', 'rules'],
+] as const;
+
 test.describe('Pocket Lab Lite mocked contract path', () => {
   test.beforeEach(async ({ page }) => {
     await installScenario(page, 'healthy');
@@ -33,6 +49,51 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/Safety|Security/i);
   });
 
+  test('Security completion remains visible once after navigating away and refreshes only Security on return', async ({ page }) => {
+    const apiRequestsAfterCompletion: string[] = [];
+    let terminalDelivered = false;
+    page.on('request', (request) => {
+      if (terminalDelivered && request.url().includes('/api/lite/')) apiRequestsAfterCompletion.push(request.url());
+    });
+
+    await page.goto('/?screen=security');
+    const security = page.locator('[data-lite-screen-id="security"]');
+    await expect(security).toBeVisible();
+
+    await openTab(page, 'Home', 'home');
+
+    // The mocked API has no writable Security scan state or SSE terminal
+    // endpoint, so this test hands off from an already server-accepted run by
+    // delivering the same sanitized terminal event the production stream
+    // publishes; it never forges completed Security read data.
+    terminalDelivered = true;
+    await page.evaluate(() => {
+      const detail = {
+        type: 'security:scan-completed',
+        profile: 'quick',
+        run_id: 'security-mock-002',
+        status: 'succeeded',
+        completed_at: '2026-08-31T10:00:00.000Z',
+        source: 'mocked-security-terminal-event',
+      };
+      window.dispatchEvent(new CustomEvent('security:scan-completed', { detail }));
+      window.dispatchEvent(new CustomEvent('security:scan-completed', { detail }));
+    });
+
+    const completionToast = page.locator('.lite-toast', { hasText: 'Safety check completed' });
+    await expect(completionToast).toHaveCount(1);
+    await expect(completionToast).toContainText('The latest safety result is ready to review.');
+    expect(apiRequestsAfterCompletion.filter((url) => /\/api\/lite\/(identity|policy|fleet|catalog)(?:\?|$)/.test(url))).toEqual([]);
+
+    const refreshedSecurity = page.waitForRequest((request) => (
+      /\/api\/lite\/security(?:\/summary)?(?:\?|$)/.test(request.url())
+    ));
+    await openTab(page, 'Security', 'security');
+    await refreshedSecurity;
+    await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/No urgent safety issues|Protected|Safety score/i);
+    await expect(completionToast).toHaveCount(1);
+  });
+
   test('Identity and Rules remain separate truthful Lite-friendly security surfaces', async ({ page }) => {
     await page.goto('/?screen=identity');
     const identity = page.locator('[data-lite-screen-id="identity"]');
@@ -42,16 +103,17 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toContainText('Passkeys');
     await expect(identity).toContainText('Sessions');
     await expect(identity).toContainText('Recovery');
-    await expect(identity).toContainText(/fixed idle and absolute expiry/i);
+    await identity.getByRole('button', { name: 'Manage access' }).click();
+    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/current and other owner sessions remain distinct/i);
     await expect(identity).not.toContainText('local-admin');
 
     await page.goto('/?screen=rules');
     const rules = page.locator('[data-lite-screen-id="rules"]');
     await expect(rules).toBeVisible();
     await expect(rules).toContainText('Safety Rules');
-    await expect(rules).toContainText('Protections active');
-    await expect(rules).toContainText('Sensitive changes stay deliberate');
-    await expect(rules).toContainText(/Passkey when needed/i);
+    await expect(rules).toContainText('Protected');
+    await expect(rules).toContainText('Sensitive changes are checked first');
+    await expect(rules).toContainText('Apps, devices, and identity changes are evaluated by Pocket Lab before they continue.');
     await expect(rules).not.toContainText('Open Policy Agent');
     await expect(rules).not.toContainText('Rego');
     await expect(rules).not.toContainText('package pocketlab');
@@ -90,5 +152,139 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rules.getByRole('heading', { name: 'Rules health', exact: true })).toBeVisible();
     await expect(rules).toContainText(/Not all conflicts are analyzable by this model|Advanced analysis is not available to this role/i);
     await expect(rules).not.toContainText('package pocketlab');
+  });
+
+  test('premium surfaces stay within each required viewport', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The exact matrix is run once in Chromium to avoid duplicating the suite.');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
+    for (const viewport of PREMIUM_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await page.goto('/?screen=home');
+      await expect(page.locator('[data-lite-screen-id="home"]')).toBeVisible();
+
+      for (const [label, screenId] of PREMIUM_SCREENS) {
+        await openTab(page, label, screenId);
+        const screen = page.locator(`[data-lite-screen-id="${screenId}"]`);
+        await expect(screen).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        expect(await screen.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.left >= 0 && rect.right <= window.innerWidth + 1;
+        })).toBe(true);
+      }
+
+      await openTab(page, 'Identity & Access', 'identity');
+      await page.getByRole('button', { name: 'Manage access' }).click();
+      const identitySheet = page.getByRole('dialog', { name: 'Manage access' });
+      await expect(identitySheet).toBeVisible();
+      expect(await identitySheet.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.left >= 0 && rect.right <= window.innerWidth + 1;
+      })).toBe(true);
+      const identityClose = identitySheet.getByRole('button', { name: 'Close app actions' });
+      await expect(identityClose).toBeVisible();
+      await page.keyboard.press('Tab');
+      expect(await page.evaluate(() => {
+        const active = document.activeElement;
+        if (!(active instanceof HTMLElement)) return false;
+        const rect = active.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
+      })).toBe(true);
+      await page.keyboard.press('Escape');
+
+      await openTab(page, 'Rules', 'rules');
+      await page.getByRole('button', { name: 'Manage Safety Rules' }).click();
+      const rulesSheet = page.getByRole('dialog', { name: 'Manage Safety Rules' });
+      await expect(rulesSheet).toBeVisible();
+      expect(await rulesSheet.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.left >= 0 && rect.right <= window.innerWidth + 1;
+      })).toBe(true);
+      const rulesClose = rulesSheet.getByRole('button', { name: 'Close app actions' });
+      await expect(rulesClose).toBeVisible();
+      await page.keyboard.press('Escape');
+
+      await page.evaluate((runId) => {
+        window.dispatchEvent(new CustomEvent('security:scan-completed', {
+          detail: { type: 'security:scan-completed', profile: 'quick', run_id: runId, status: 'succeeded' },
+        }));
+      }, `viewport-${viewport.width}x${viewport.height}`);
+      const toast = page.locator('.lite-toast', { hasText: 'Safety check completed' }).last();
+      await expect(toast).toBeVisible();
+      expect(await toast.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.left >= 0 && rect.right <= window.innerWidth + 1 && rect.top >= 0 && rect.bottom <= window.innerHeight + 1;
+      })).toBe(true);
+      expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+    }
+  });
+
+  test('Recovery keeps its summary and Manage workspace contained at each required viewport', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The exact Recovery matrix is run once in Chromium to avoid duplicating the suite.');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
+    for (const viewport of PREMIUM_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await page.goto('/?screen=recovery');
+      const recovery = page.locator('[data-lite-screen-id="recovery"]');
+      await expect(recovery).toBeVisible();
+      await expect(recovery).toContainText(/Backup protection|Recovery information|Create your first protected backup/i);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+      const manage = recovery.getByRole('button', { name: 'Manage backups and recovery' });
+      await manage.click();
+      const sheet = page.getByRole('dialog', { name: 'Manage backups and recovery' });
+      await expect(sheet).toBeVisible();
+      await sheet.getByRole('tab', { name: 'Restore' }).click();
+      await expect(sheet).toContainText('Review and restore safely');
+      const close = sheet.getByRole('button', { name: 'Close app actions' });
+      await expect(close).toBeVisible();
+      expect(await sheet.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.left >= 0 && rect.right <= window.innerWidth + 1;
+      })).toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(manage).toBeFocused();
+      expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+    }
+  });
+
+  test('Devices keeps the fleet summary and Add Device disclosure contained at each required viewport', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The exact Devices matrix is run once in Chromium to avoid duplicating the suite.');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
+    for (const viewport of PREMIUM_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await page.goto('/?screen=devices');
+      const devices = page.locator('[data-lite-screen-id="devices"]');
+      await expect(devices).toBeVisible();
+      await expect(devices).toContainText(/Remote access (ready|not ready)/);
+      await expect(devices).toContainText('Devices');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+      const serverCard = devices.locator('.lite-device-card-server');
+      await expect(serverCard).toContainText('Server host');
+      await expect(serverCard).toContainText('Protected control device');
+      await expect(serverCard.getByRole('button', { name: /remove|review/i })).toHaveCount(0);
+
+      const addDisclosure = devices.locator('.lite-devices-add-disclosure');
+      await addDisclosure.locator('summary').click();
+      await expect(addDisclosure).toHaveAttribute('open', '');
+      const addCard = addDisclosure.locator('.lite-devices-add-card');
+      await expect(addCard).toContainText('Add a device');
+      expect(await addCard.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.left >= 0 && rect.right <= window.innerWidth + 1;
+      })).toBe(true);
+
+      const details = devices.getByRole('button', { name: 'Details' }).first();
+      await details.click();
+      const detailPanel = devices.locator('.lite-device-details-panel');
+      await expect(detailPanel).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(details).toBeFocused();
+      expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+    }
   });
 });

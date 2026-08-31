@@ -55,6 +55,7 @@ export function useLiteRecoveryActions({
     onAccepted,
     onDone,
     onFailure,
+    acceptedHaptic = '',
     successHaptic = '',
     failureHaptic = '',
   } = {}) => {
@@ -93,7 +94,8 @@ export function useLiteRecoveryActions({
       const accepted = isAcceptedLiteMutationResponse(payload);
       onAccepted?.(payload);
       if (!accepted) onDone?.(payload);
-      if (successHaptic) triggerLiteHaptic(successHaptic);
+      if (accepted && acceptedHaptic) triggerLiteHaptic(acceptedHaptic);
+      if (!accepted && successHaptic) triggerLiteHaptic(successHaptic);
       return { ok: true, payload, accepted };
     } catch (error) {
       onFailure?.(error);

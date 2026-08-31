@@ -119,6 +119,7 @@ Execution ownership: FastAPI → NATS/JetStream → worker.
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`
+- `test:tests/e2e/lite-mocked.spec.ts`
 - `test:tests/parity/test_api_contract_fences.py`
 
 ## Failure modes and recovery

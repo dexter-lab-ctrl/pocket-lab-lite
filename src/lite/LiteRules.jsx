@@ -11,8 +11,10 @@ import {
   PageHeader,
   LiteRefreshButton,
   LoadingCard,
+  LiteButton,
 } from './LiteUi.jsx';
 import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
+import { LiteSheet } from './LiteOverlay.jsx';
 
 function actionLabel(action = '') {
   return ({
@@ -38,6 +40,7 @@ export default function RulesScreen() {
   } = useLiteResource(liteApi.policy, []);
   const enterprise = useLiteResource(liteApi.enterpriseIdentity, []);
   const [advancedOpen, setAdvancedOpen] = React.useState(false);
+  const [manageOpen, setManageOpen] = React.useState(false);
   const enterpriseEnabled = Boolean(enterprise.data?.enabled);
   const ready = data?.status === 'ready' && data?.engine?.healthy && data?.engine?.loopback_only;
   const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions.slice(0, 4) : [];
@@ -73,87 +76,27 @@ export default function RulesScreen() {
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Safety Rules need attention" description={degraded.message} className="mb-5" /> : null}
 
       {!loading && data ? (
-        <div className="lite-rules-grid lite-rules-personal-grid">
-          <GlassCard className="lite-rules-card lite-rules-primary-card">
-            <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Active' : 'Blocked'}</StatusBadge></div>
-            <h2>Protections active</h2>
-            <p>These sensitive actions are evaluated by Pocket Lab before they continue.</p>
-            <div className="lite-rules-list">
-              {(data?.policy_groups || []).map((group, index) => (
-                <div key={group.id}>
-                  <span>{index + 1}</span>
-                  <p><strong>{group.label}</strong><small>{(group.actions || []).map(actionLabel).join(' · ')}</small></p>
-                </div>
-              ))}
+        <>
+          <GlassCard className="lite-rules-card lite-rules-summary-card">
+            <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Protected' : 'Needs attention'}</StatusBadge></div>
+            <h2>{ready ? 'Sensitive changes are checked first.' : 'Safety Rules need attention.'}</h2>
+            <p>{ready ? 'Apps, devices, and identity changes are evaluated by Pocket Lab before they continue.' : degraded.message}</p>
+            <div className="lite-rules-summary-groups" aria-label="Protected areas">
+              {(data?.policy_groups || []).map((group) => <span key={group.id}>{group.label}</span>)}
             </div>
+            <div className="lite-rules-summary-next" role="status"><strong>{recent.length ? `${recent.length} recent protected decision${recent.length === 1 ? '' : 's'}` : 'No recent protected decisions'}</strong><span>{ready ? 'Review protections and recent decisions when you need more detail.' : 'Protected changes stay blocked until the server can verify Rules again.'}</span></div>
+            <LiteButton variant="secondary" onClick={() => setManageOpen(true)}>Manage Safety Rules</LiteButton>
           </GlassCard>
 
-          <GlassCard className="lite-rules-card lite-rules-guide-card">
-            <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">What to expect</span></div>
-            <h2>Sensitive changes stay deliberate</h2>
-            <div className="lite-identity-checklist">
-              <div><span className="lite-check-dot" /><strong>Server check first</strong><small>Pocket Lab evaluates the protected action before it is accepted.</small></div>
-              <div><span className="lite-check-dot" /><strong>Passkey when needed</strong><small>Some changes require recent passkey confirmation.</small></div>
-              <div><span className="lite-check-dot" /><strong>Fail closed</strong><small>If Rules cannot prove a safe decision, the protected change stays blocked.</small></div>
+          <LiteSheet open={manageOpen} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description="Review protections, recent decisions, safe templates, and technical status. Rules remain server-owned." className="lite-rules-manage-sheet">
+            <div className="lite-rules-manage-stack">
+              <section aria-labelledby="rules-manage-protections"><div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Active' : 'Blocked'}</StatusBadge></div><h2 id="rules-manage-protections">Protections</h2><p>These sensitive actions are evaluated by Pocket Lab before they continue.</p><div className="lite-rules-list">{(data?.policy_groups || []).map((group, index) => <div key={group.id}><span>{index + 1}</span><p><strong>{group.label}</strong><small>{(group.actions || []).map(actionLabel).join(' · ')}</small></p></div>)}</div><div className="lite-identity-checklist"><div><span className="lite-check-dot" /><strong>Server check first</strong><small>Pocket Lab evaluates a protected action before it is accepted.</small></div><div><span className="lite-check-dot" /><strong>Passkey when needed</strong><small>Some changes require recent passkey confirmation.</small></div><div><span className="lite-check-dot" /><strong>Fail closed</strong><small>If a safe decision cannot be proven, the protected change stays blocked.</small></div></div></section>
+              <section aria-labelledby="rules-manage-decisions"><div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Recent activity</span></div><h2 id="rules-manage-decisions">Recent protected decisions</h2><p>Only bounded metadata is shown. Raw policy input, credentials, and command payloads remain hidden.</p><div className="lite-rules-decision-list">{recent.length ? recent.map((decision) => { const reason = getLiteReasonPresentation(decision.reason_code, decision.reason_code || 'Decision recorded'); return <div key={decision.decision_id} className="lite-rules-decision-row lite-rules-personal-decision"><StatusBadge status={decision.allow ? 'healthy' : 'degraded'}>{decision.allow ? 'Allowed' : 'Blocked'}</StatusBadge><div><strong>{actionLabel(decision.action_id)}</strong><span>{decision.allow ? 'Pocket Lab allowed this protected change.' : 'Pocket Lab kept this protected change from continuing.'}</span><small>{reason.title}</small></div><div className="lite-rules-decision-meta"><span>{decision.occurred_at ? formatLiteTime(decision.occurred_at) : 'Recent'}</span></div></div>; }) : <StateSurface tone="neutral" title="No protected decisions yet" description="A decision will appear after a protected app install, device removal, or passkey removal is evaluated." />}</div></section>
+              <section aria-labelledby="rules-manage-templates"><div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Safe templates</span></div><h2 id="rules-manage-templates">How Pocket Lab protects changes</h2><p>Safeguards are server-owned and intentionally bounded. The browser cannot grant itself a role, assurance, approval, or exception.</p><div className="lite-rules-template-grid">{templates.map((template) => <div key={template.id} className="lite-rules-template-card"><div><strong>{template.label}</strong><StatusBadge status={template.status === 'active' ? 'healthy' : 'neutral'}>{template.status === 'active' ? 'Active' : 'Available'}</StatusBadge></div><p>{template.summary}</p></div>)}{!templates.length ? <StateSurface tone="neutral" title="No safeguard summaries" description="Pocket Lab will show the current safe templates here when the backend returns them." /> : null}</div></section>
+              <details className="lite-rules-advanced-details" onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}><summary>Technical status</summary>{advancedOpen ? <div className="mt-3"><div className="lite-rules-facts"><div><span>Policy engine</span><strong>{data?.engine?.name || 'Local policy runtime'}</strong></div><div><span>Runtime version</span><strong>{data?.engine?.version || 'unknown'}</strong></div><div><span>Network boundary</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs attention'}</strong></div><div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected exposure' : 'Not exposed'}</strong></div><div><span>Rules package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div><div><span>Revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div></div>{data?.degraded_reason ? <p>Reason code: <code>{data.degraded_reason}</code></p> : null}</div> : null}</details>
             </div>
-          </GlassCard>
-        </div>
-      ) : null}
-
-      {!loading && data ? (
-        <GlassCard className="lite-rules-card mt-5">
-          <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Safe templates</span></div>
-          <h2>How Pocket Lab protects changes</h2>
-          <p>Safeguards are server-owned and intentionally bounded. The browser cannot grant itself a role, assurance, approval or exception.</p>
-          <div className="lite-rules-template-grid">
-            {templates.map((template) => (
-              <div key={template.id} className="lite-rules-template-card">
-                <div><strong>{template.label}</strong><StatusBadge status={template.status === 'active' ? 'healthy' : 'neutral'}>{template.status === 'active' ? 'Active' : 'Available'}</StatusBadge></div>
-                <p>{template.summary}</p>
-              </div>
-            ))}
-            {!templates.length ? <StateSurface tone="neutral" title="No safeguard summaries" description="Pocket Lab will show the current safe templates here when the backend returns them." /> : null}
-          </div>
-          <details
-            className="lite-rules-advanced-details mt-4"
-            onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}
-          >
-            <summary>Advanced diagnostics</summary>
-            {advancedOpen ? (
-              <div className="mt-3">
-                <div className="lite-rules-facts">
-                  <div><span>Policy engine</span><strong>{data?.engine?.name || 'Local policy runtime'}</strong></div>
-                  <div><span>Runtime version</span><strong>{data?.engine?.version || 'unknown'}</strong></div>
-                  <div><span>Network boundary</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs attention'}</strong></div>
-                  <div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected exposure' : 'Not exposed'}</strong></div>
-                  <div><span>Rules package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div>
-                  <div><span>Revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div>
-                </div>
-                {data?.degraded_reason ? <p>Reason code: <code>{data.degraded_reason}</code></p> : null}
-              </div>
-            ) : null}
-          </details>
-        </GlassCard>
-      ) : null}
-
-      {!loading && data ? (
-        <GlassCard className="lite-rules-card mt-5">
-          <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Recent activity</span></div>
-          <h2>Recent protected decisions</h2>
-          <p>Only bounded metadata is shown. Raw policy input is not exposed; credentials, authenticator data and command payloads remain hidden.</p>
-          <div className="lite-rules-decision-list">
-            {recent.length ? recent.map((decision) => {
-              const reason = getLiteReasonPresentation(decision.reason_code, decision.reason_code || 'Decision recorded');
-              return (
-                <div key={decision.decision_id} className="lite-rules-decision-row lite-rules-personal-decision">
-                  <StatusBadge status={decision.allow ? 'healthy' : 'degraded'}>{decision.allow ? 'Allowed' : 'Blocked'}</StatusBadge>
-                  <div><strong>{actionLabel(decision.action_id)}</strong><span>{decision.target_type}: {decision.target_id}</span><small>{reason.title}</small></div>
-                  <div className="lite-rules-decision-meta"><span>{decision.occurred_at ? formatLiteTime(decision.occurred_at) : 'Recent'}</span></div>
-                </div>
-              );
-            }) : <StateSurface tone="neutral" title="No protected decisions yet" description="A decision will appear after a protected app install, device removal, or passkey removal is evaluated." />}
-          </div>
-        </GlassCard>
+          </LiteSheet>
+        </>
       ) : null}
 
       {enterpriseEnabled ? (

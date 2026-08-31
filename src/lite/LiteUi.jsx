@@ -4,6 +4,7 @@ import { NAV_ITEMS } from './liteNavigationConfig.js';
 import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
 import { actionReference } from '../lib/liteApi.js';
 import { useLiteUiStore, useLiteRefreshFeedback } from '../stores/liteUiStore.js';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 
 export { GlassCard, StatusBadge, StateSurface };
 
@@ -79,7 +80,7 @@ export function LiteRefreshButton({
 
   return (
     <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()}>
-      <LiteButton onClick={handleClick} tone={tone} haptic>
+      <LiteButton onClick={handleClick} tone={tone}>
         <RefreshCw className={`h-4 w-4 lite-refresh-icon ${refreshing ? 'is-refreshing' : ''}`} />
         {refreshing ? 'Refreshing…' : label}
       </LiteButton>
@@ -520,14 +521,10 @@ export function scanInProgressValue(runStatus, busy, progress) {
   return busy ? 8 : 0;
 }
 
-export function triggerHapticFeedback(pattern = 12) {
-  try {
-    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-      navigator.vibrate(pattern);
-    }
-  } catch (_error) {
-    // Haptics are optional and must never block a Lite action.
-  }
+export function triggerHapticFeedback(_pattern = 12) {
+  // Compatibility bridge for existing Lite callers. New code should use the
+  // semantic helper directly rather than choosing hardware patterns.
+  return triggerLiteHaptic('accepted');
 }
 
 export function shortRunId(value) {
@@ -842,7 +839,7 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
 
   function handleClick(event) {
     if (disabled) return;
-    if (haptic) triggerHapticFeedback();
+    if (haptic) triggerLiteHaptic('accepted');
     if (onClick) onClick(event);
   }
 

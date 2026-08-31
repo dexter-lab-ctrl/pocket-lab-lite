@@ -25,6 +25,7 @@ import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
 import { useLiteDeviceRemovalFlow } from '../hooks/useLiteDeviceRemovalFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import {
   GlassCard,
   StatusBadge,
@@ -54,7 +55,6 @@ import {
   liveSecurityProgress,
   securityProgressStage,
   scanInProgressValue,
-  triggerHapticFeedback,
   shortRunId,
   formatSecurityDuration,
   securityTrendLabel,
@@ -122,6 +122,10 @@ function deviceRestartProgressIsLive(progress) {
   return Boolean(status && !['completed', 'failed', 'cancelled', 'canceled', 'done'].includes(status));
 }
 
+function waitForDeviceCommandProgress() {
+  return new Promise((resolve) => window.setTimeout(resolve, 2_000));
+}
+
 export function hasLiveDeviceFleetOperation(payload) {
   if (!payload || typeof payload !== 'object') return false;
   if (hasLiteLiveOperation(payload?.current_action) || hasLiteLiveOperation(payload?.latest_operation)) return true;
@@ -159,6 +163,10 @@ export default function DevicesScreen() {
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsButtonRefs = useRef(new Map());
   const detailsPanelRef = useRef(null);
+  const deviceCompletionFeedback = useRef(createLiteFeedbackDeduper());
+  const pendingInviteId = useRef('');
+  const pendingRestartId = useRef('');
+  const pushToast = useLiteUiStore((state) => state.pushToast);
   const fleetPollingIsLive = useMemo(() => (fleetPayload) => (
     busy
     || Boolean(restartBusy)
@@ -201,6 +209,35 @@ export default function DevicesScreen() {
   const addDeviceFlow = useLiteAddDeviceFlow({ devices, latestInvite, backendReachable, savedStateOnly, remoteAccessReady });
   const addDeviceDisabled = busy || addDeviceFlow.writeBlocked || Boolean(activeNameConflict);
   useEffect(() => {
+    if (addDeviceFlow.value !== 'deviceOnline' || !invite || !pendingInviteId.current) return;
+    const id = `device:joined:${pendingInviteId.current}`;
+    if (!deviceCompletionFeedback.current.once(id, 'success')) return;
+    pushToast({
+      id,
+      kind: 'success',
+      title: 'Device joined',
+      message: `${invite.hostname || 'Your new device'} is online.`,
+    });
+    pendingInviteId.current = '';
+  }, [addDeviceFlow.value, invite, pushToast]);
+  useEffect(() => {
+    if (!pendingRestartId.current) return;
+    const status = devicePollingValue(restartProgress?.status || restartProgress?.state || restartProgress?.phase);
+    if (!['completed', 'failed'].includes(status)) return;
+    const id = `device:restart:${pendingRestartId.current}:${status}`;
+    if (deviceCompletionFeedback.current.once(id, status === 'completed' ? 'success' : 'warning')) {
+      pushToast({
+        id,
+        kind: status === 'completed' ? 'success' : 'warning',
+        title: status === 'completed' ? 'Agent restarted' : 'Agent restart needs attention',
+        message: restartProgress?.summary || (status === 'completed'
+          ? 'Pocket Lab confirmed the device agent is ready.'
+          : 'Pocket Lab could not confirm the device agent recovered.'),
+      });
+    }
+    pendingRestartId.current = '';
+  }, [pushToast, restartProgress]);
+  useEffect(() => {
     if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
     const frame = window.requestAnimationFrame(() => {
       const panel = detailsPanelRef.current;
@@ -215,6 +252,16 @@ export default function DevicesScreen() {
     trigger?.focus?.({ preventScroll: true });
     setDetailsDeviceId('');
   };
+  useEffect(() => {
+    if (!activeDetailsDevice) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      event.preventDefault();
+      closeDeviceDetails();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeDetailsDevice, detailsDeviceId]);
 
 
   async function addDevice() {
@@ -232,7 +279,9 @@ export default function DevicesScreen() {
       setResult(payload);
       if (payload?.status === 'invite_ready' && payload?.invite) {
         setInvite(payload.invite);
+        pendingInviteId.current = String(payload.command_id || payload.invite?.id || payload.invite?.hostname || candidateDeviceName);
         addDeviceFlow.inviteReady(payload);
+        triggerLiteHaptic('accepted');
       } else if (payload?.status === 'queued') {
         addDeviceFlow.queued(payload);
       }
@@ -248,6 +297,7 @@ export default function DevicesScreen() {
         addDeviceFlow.fail(err);
         setActionError(err.message);
       }
+      triggerLiteHaptic(detail?.status === 'duplicate_device' ? 'blocked' : 'warning');
     } finally {
       setBusy(false);
     }
@@ -280,30 +330,29 @@ export default function DevicesScreen() {
       node_id: nodeId,
       device_name: device?.name || device?.hostname || nodeId,
       status: 'starting',
-      summary: 'Pocket Lab is preparing a safe restart request.',
-      steps: [
-        { id: 'request_saved', label: 'Preparing request', detail: 'Pocket Lab is recording the restart request.', state: 'active' },
-        { id: 'private_channel', label: 'Private channel', detail: 'The request will be sent through the device command channel.', state: 'waiting' },
-        { id: 'device_ack', label: 'Device agent', detail: 'Waiting for the device agent to receive the request.', state: 'waiting' },
-        { id: 'heartbeat', label: 'Back online', detail: 'The device will show Online after a fresh heartbeat arrives.', state: 'waiting' },
-      ],
+      summary: 'Sending the restart request to Pocket Lab.',
+      steps: [],
     });
     try {
       const response = await liteApi.restartDeviceAgent(nodeId, {
         reason: 'Lite Devices restart requested',
       });
       setResult(response);
+      pendingRestartId.current = String(response?.command_id || nodeId);
+      triggerLiteHaptic('accepted');
       setRestartProgress({
-        ...response.progress,
+        ...(response.progress || {}),
         node_id: nodeId,
         device_name: device?.name || device?.hostname || nodeId,
+        status: response?.progress?.status || response?.status || 'queued',
+        summary: response?.progress?.summary || response?.summary || 'Pocket Lab accepted the restart request.',
       });
       refresh();
 
       const commandId = response?.command_id;
       if (commandId) {
         for (let attempt = 0; attempt < 12; attempt += 1) {
-          await sleep(2500);
+          await waitForDeviceCommandProgress();
           const statusPayload = await liteApi.restartDeviceAgentStatus(nodeId, commandId);
           const nextProgress = statusPayload?.progress || statusPayload;
           setRestartProgress({
@@ -318,6 +367,7 @@ export default function DevicesScreen() {
         }
       }
     } catch (err) {
+      triggerLiteHaptic('warning');
       setActionError(err.message);
       setRestartProgress((current) => ({
         ...(current || {}),
@@ -375,6 +425,15 @@ export default function DevicesScreen() {
       removalFlow.verify();
       removalFlow.complete();
       setResult(response);
+      const id = `device:removed:${nodeId}:${response?.updated_at || response?.device_id || 'confirmed'}`;
+      if (deviceCompletionFeedback.current.once(id, 'success')) {
+        pushToast({
+          id,
+          kind: 'success',
+          title: 'Device removed',
+          message: 'Pocket Lab removed the saved device record.',
+        });
+      }
       setRemoveCandidate(null);
       setRemoveAssessment(null);
       setInvite(null);
@@ -751,7 +810,7 @@ export default function DevicesScreen() {
                 <DeviceDetailsLazy
                   device={activeDetailsDevice}
                   onClose={closeDeviceDetails}
-                  onChooseModel={() => { triggerHapticFeedback(12); setDeviceModelPickerId(activeDetailsDevice?.id); }}
+                  onChooseModel={() => { setDeviceModelPickerId(activeDetailsDevice?.id); }}
                 />
               </Suspense>
             </div>
@@ -796,7 +855,7 @@ export default function DevicesScreen() {
                   restartBusy={restartBusy}
                   removeBusy={removeBusy}
                   detailsOpen={detailsDeviceId === key}
-                  onOpenDetails={() => { triggerHapticFeedback(10); setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
+                  onOpenDetails={() => { setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
                   detailsButtonRef={(node) => {
                     if (node) detailsButtonRefs.current.set(key, node);
                     else detailsButtonRefs.current.delete(key);

@@ -744,6 +744,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:add-device",
+          "target": "test:tests/e2e/lite-mocked.spec.ts"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:device-enrollment",
           "target": "api:get:/api/lite/fleet"
@@ -1137,12 +1143,6 @@
           "relation_type": "recovers_with",
           "source": "component:agent-supervisor",
           "target": "troubleshooting:supervisor-stopped"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:agent-supervisor",
-          "target": "test:tests/backend/test_lite_devices_durable_enrollment.py"
         }
       ],
       "expansion": {
@@ -1185,6 +1185,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Devices Feature Journey",
@@ -4310,6 +4311,12 @@
           "target": "test:tests/docs/test_enterprise_completion.py"
         },
         {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:security-scan",
+          "target": "test:tests/e2e/lite-mocked.spec.ts"
+        },
+        {
           "depth": 2,
           "relation_type": "verified_by",
           "source": "api:get:/api/lite/security/details/{run_id}",
@@ -4560,12 +4567,6 @@
           "relation_type": "verified_by",
           "source": "component:security-state",
           "target": "test:tests/docs/test_enterprise_completion.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:security-state",
-          "target": "test:tests/docs/test_living_knowledgebase.py"
         }
       ],
       "expansion": {
@@ -4617,6 +4618,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Security & Safety Feature Journey",
@@ -16110,7 +16112,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "30fa72cbf47db216d3d57e0d7990fbdcba7af79df9cabe1d680aca396bd9f968",
+  "source_fingerprint": "e427d5c61afadfe12bbd0811f24f9adedd51aca40b00257e46510820131d1adb",
   "top_level": [
     "start-here",
     "use",

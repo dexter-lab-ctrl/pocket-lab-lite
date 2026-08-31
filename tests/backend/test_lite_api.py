@@ -225,8 +225,6 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "Use your browser menu to install it on this phone." not in ui
     assert "Smartphone" in _lite_catalog_source()
     assert "Add to phone" not in ui
-    assert "isStandalonePwa" in ui
-    assert "navigator.vibrate" in ui
 
 
 def test_lite_caddy_generator_supports_app_route_registry():
@@ -4357,6 +4355,7 @@ def test_lite_app_catalog_safe_micro_interaction_source_is_scoped():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     motion = Path("src/lite/LiteMotion.jsx").read_text()
+    native_feedback = Path("src/lib/liteNativeFeedback.js").read_text()
 
     assert "LitePressableButton" in ui
     assert "LiteElevationSurface" in ui
@@ -4366,7 +4365,9 @@ def test_lite_app_catalog_safe_micro_interaction_source_is_scoped():
     assert "App Catalog safe micro-interaction primitives" in css
     assert "[data-lite-manage-portal=\"true\"] .lite-motion-ripple" in css
     assert "@media (prefers-reduced-motion: reduce)" in css
-    assert "navigator.vibrate" in motion
+    assert "navigator.vibrate" not in motion
+    assert "navigator.vibrate" in native_feedback
+    assert "triggerLiteHaptic" in native_feedback
     assert "pointer-events: none" in css
     assert "useDrag" not in motion
     assert "shell" not in motion.lower()
@@ -5927,6 +5928,7 @@ def test_lite_security_s3_no_manual_polling_regression():
 def test_lite_security_s3_preserves_backend_owned_safety_checks():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
     api = Path("src/lib/liteApi.js").read_text()
+    native_feedback = Path("src/lib/liteNativeFeedback.js").read_text()
 
     assert "liteApi.runSecurityScan" in security
     assert "liteApi.checkSecurityApp" in security
@@ -5934,7 +5936,14 @@ def test_lite_security_s3_preserves_backend_owned_safety_checks():
     assert "securityFlow.requestRun" in security
     assert "securityFlow.accepted" in security
     assert "securityFlow.fail" in security
-    assert "triggerHapticFeedback" in security
+
+    # Native feedback is centrally owned. Security must not fall back to
+    # screen-local or direct browser vibration.
+    assert "triggerHapticFeedback" not in security
+    assert "navigator.vibrate" not in security
+    assert "export function triggerLiteHaptic" in native_feedback
+    assert "navigator.vibrate" in native_feedback
+
     assert "liteApi.securityEvidence" in security
     assert "postJson('/api/lite/security/check'" in api
     assert "checkSecurityApp" in api
@@ -7568,6 +7577,7 @@ def test_lite_security_patch_e_snapshot_retention_and_size_budget_contract():
 def test_lite_security_patch_e_cross_tab_scan_completion_sync_contract():
     snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
     security = Path("src/lite/LiteSecurity.jsx").read_text()
+    bridge = Path("src/lite/LiteRevisionSyncBridge.jsx").read_text()
 
     assert "LITE_SECURITY_SCAN_BROADCAST_CHANNEL" in snapshots
     assert "LITE_SECURITY_SCAN_COMPLETED_EVENT" in snapshots
@@ -7576,14 +7586,18 @@ def test_lite_security_patch_e_cross_tab_scan_completion_sync_contract():
     assert "postSecurityScanCompleted" in snapshots
     assert "subscribeLiteSecurityScanCompleted" in snapshots
     assert "window.dispatchEvent" in snapshots
-    assert "subscribeLiteSecurityScanCompleted" in security
-    assert "liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : '')" in security
-    assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
-    assert "queryClient.invalidateQueries" in security
 
-    assert "nats.connect" not in snapshots + security
-    assert "child_process" not in snapshots + security
-    assert "exec(" not in snapshots + security
+    # Terminal Security completion is root-owned so it survives Security
+    # screen unmounts. The screen must not create a duplicate subscriber.
+    assert "subscribeLiteSecurityScanCompleted" not in security
+    assert "subscribeLiteSecurityScanCompleted" in bridge
+    assert "queryClient.invalidateQueries" in bridge
+    assert "liteQueryKeys.security" in bridge
+
+    security_sync_source = snapshots + security + bridge
+    assert "nats.connect" not in security_sync_source
+    assert "child_process" not in security_sync_source
+    assert "exec(" not in security_sync_source
 
 
 def test_lite_caddy_generator_serves_versioned_assets_before_spa_fallback():

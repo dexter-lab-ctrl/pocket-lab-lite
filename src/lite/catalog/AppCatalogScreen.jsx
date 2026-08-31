@@ -31,6 +31,7 @@ import { getLiteAppActionInvalidations, useLiteMutation } from '../../hooks/useL
 import { useLiteAppActionFlow } from '../../hooks/useLiteAppActionFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
+import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
@@ -1590,30 +1591,6 @@ function actionDetailsTone(details = {}, saved = {}) {
   return 'neutral';
 }
 
-function isStandalonePwa() {
-  try {
-    return window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone === true;
-  } catch {
-    return false;
-  }
-}
-
-function safeHaptic(duration = 8) {
-  try {
-    if (!isStandalonePwa()) return;
-    navigator.vibrate?.(duration);
-  } catch {
-    // Optional PWA-only browser feedback.
-  }
-}
-
-function handleCatalogPointerDown(event) {
-  const target = event.target?.closest?.('button, a, [role="button"]');
-  if (!target || target.getAttribute?.('aria-disabled') === 'true' || target.disabled) return;
-  safeHaptic(6);
-}
-
-
 function appTone(status) {
   const value = String(status || '').toLowerCase();
   if (['ready', 'installed', 'installed_running', 'running', 'healthy'].includes(value)) return 'healthy';
@@ -1920,6 +1897,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const manageSheetRef = useRef(null);
   const manageScrollRef = useRef(null);
   const longPressRef = useRef(null);
+  const catalogFeedbackDeduper = useRef(createLiteFeedbackDeduper());
+  const initiatedCatalogOperations = useRef(new Map());
 
   const clearLongPress = useCallback(() => {
     if (longPressRef.current) {
@@ -2133,7 +2112,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     if (first) {
       window.clearTimeout(longPressRef.current);
       longPressRef.current = window.setTimeout(() => {
-        safeHaptic(14);
         setQuickActionsAppId(appId);
       }, 420);
     }
@@ -2156,7 +2134,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const nextIndex = clampNumber(currentIndex + direction, 0, Math.max(0, availableManageSections.length - 1));
     const nextSection = availableManageSections[nextIndex];
     if (nextSection && nextSection !== manageSection) {
-      safeHaptic(8);
       setManageSection(nextSection);
       closeActionDetails();
     }
@@ -2217,6 +2194,32 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }));
   }, [appActionsData]);
 
+  // Lifecycle reads are authoritative for terminal feedback. Only operations
+  // initiated on this screen are tracked, and a stable reference settles once
+  // even while the live query continues to poll.
+  useEffect(() => {
+    const actions = normalizeAppActionsPayload(appActionsData || {}).actions || {};
+    Object.values(actions).forEach((action) => {
+      const reference = catalogActionReference(action);
+      if (!reference || !initiatedCatalogOperations.current.has(reference)) return;
+      const status = normalizedActionStatus(action?.status || action?.phase || action?.result?.status);
+      if (!isTerminalAppCatalogActionStatus(status)) return;
+      const kind = ['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled'].includes(status) ? 'warning' : 'success';
+      if (catalogFeedbackDeduper.current.once(`catalog:${reference}`, kind)) {
+        initiatedCatalogOperations.current.delete(reference);
+      }
+    });
+  }, [appActionsData]);
+
+  const rememberCatalogOperation = useCallback((response, actionId) => {
+    const reference = catalogActionReference(response);
+    if (!reference) return;
+    initiatedCatalogOperations.current.set(reference, actionId);
+    if (initiatedCatalogOperations.current.size > 32) {
+      initiatedCatalogOperations.current.delete(initiatedCatalogOperations.current.keys().next().value);
+    }
+  }, []);
+
   useEffect(() => () => clearLongPress(), [clearLongPress]);
 
   useEffect(() => {
@@ -2271,7 +2274,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setActionError(null);
     try {
       const targetNodeId = app?.target?.default_node_id || 'pocket-lab-lite-server';
-      setResult(await installAppMutation.run({ appId: app.id, targetNodeId }));
+      const response = await installAppMutation.run({ appId: app.id, targetNodeId });
+      rememberCatalogOperation(response, 'install_app');
+      setResult(response);
       await refresh();
       await refreshAppActions(app.id || 'photoprism');
     } catch (err) {
@@ -2449,6 +2454,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       });
       appActionFlow.accepted(response);
       appActionFlow.resultReady(response);
+      rememberCatalogOperation(response, actionId);
       setResult({ action_id: actionId, ...response });
       await refreshAppActions(appId);
       if (shouldRefreshCatalogAfterAppAction(actionId, response)) {

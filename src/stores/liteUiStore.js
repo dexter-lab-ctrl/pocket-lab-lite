@@ -230,6 +230,13 @@ export const useLiteUiStore = create((set, get) => ({
   activeSecurityHistoryLimit: DEFAULT_SECURITY_HISTORY_LIMIT,
   activeSecurityEvidenceRunId: null,
   activeSecurityDetailsRunId: null,
+  securityObservation: { active: false, runId: '' },
+  setSecurityObservation: (payload = {}) => set({
+    securityObservation: {
+      active: Boolean(payload.active),
+      runId: normalizeSecurityFindingId(payload.runId) || '',
+    },
+  }),
   setSecurityManageOpen: (open) => set((state) => ({
     securityManageOpen: Boolean(open),
     activeSecurityDetailsPanel: open ? state.activeSecurityDetailsPanel : null,

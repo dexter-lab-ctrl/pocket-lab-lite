@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Clock3, Cpu, HeartPulse, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertTriangle, HeartPulse, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   GlassCard,
   StatusBadge,
@@ -9,7 +9,6 @@ import {
   roleLabel,
   deviceConnectionLabel,
   deviceStatusLabel,
-  deviceCapabilityLabels,
   deviceCapabilitySummary,
   canonicalDevicePresentation,
   deviceLinkState,
@@ -17,29 +16,11 @@ import {
   canRemoveDevice,
 } from '../LiteUi.jsx';
 import { formatLiteTime } from '../../lib/liteApi.js';
-import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
 
 const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
 const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
 void DEVICES_CARD_RENDER_REDUCTION_M1;
 void DEVICES_CARD_ACTIONS_OWN_CLICKS;
-
-function hasMeaningfulStorage(device) {
-  const storage = device?.storage;
-  if (!storage || typeof storage !== 'object') return false;
-  return storage.ready === true
-    || Number.isFinite(Number(storage.available_gb))
-    || Boolean(String(storage.summary || '').trim())
-    || (Array.isArray(storage.media_roots) && storage.media_roots.length > 0)
-    || ['storage', 'backup_target'].includes(String(device?.role || '').toLowerCase());
-}
-
-function storageSummary(device) {
-  const storage = device?.storage || {};
-  if (Number.isFinite(Number(storage.available_gb))) return `${Number(storage.available_gb)} GB available`;
-  if (String(storage.summary || '').trim()) return String(storage.summary).trim();
-  return storage.ready ? 'Ready for app data and backups.' : 'Storage telemetry needs attention.';
-}
 
 function identityLabel(device) {
   const status = String(device?.identity?.status || device?.identity_status || '').toLowerCase();
@@ -108,12 +89,9 @@ function DeviceCard({
     ? 'lite-device-card-server'
     : `lite-device-card-linked lite-device-card-linked-${linkState}`;
   const deviceName = device?.name || 'Unnamed device';
-  const runtimeLabel = String(device?.system_profile?.runtime_type || '').replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
-  const capabilities = deviceCapabilityLabels(device);
   const capabilitySummary = deviceCapabilitySummary(device);
   const canRestart = canRestartDeviceAgent(device);
   const canRemove = canRemoveDevice(device);
-  const showStorage = hasMeaningfulStorage(device);
   const proactiveHealth = device?.proactive_health || null;
   const healthAttentionCurrent = Boolean(proactiveHealth?.attention_current !== false);
   const healthAttentionCount = healthAttentionCurrent ? Number(proactiveHealth?.attention_count || 0) : 0;
@@ -147,24 +125,6 @@ function DeviceCard({
         </p>
       </div>
 
-      <div className="lite-device-system-strip" aria-label="Device system summary">
-        <div>
-          <span>System</span>
-          <strong>{device?.system_profile?.display_model || device?.system_profile?.technical_model || 'Not reported'}</strong>
-          <small>{[device?.system_profile?.manufacturer ? String(device.system_profile.manufacturer).replace(/\b\w/g, (letter) => letter.toUpperCase()) : '', [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' '), runtimeLabel].filter(Boolean).join(' · ') || 'System profile pending'}</small>
-        </div>
-        <div>
-          <Cpu className="h-4 w-4" />
-          <span>Architecture</span>
-          <strong>{device?.system_profile?.android_abi || device?.system_profile?.architecture || 'Pending'}</strong>
-        </div>
-        <div>
-          <Clock3 className="h-4 w-4" />
-          <span>Uptime</span>
-          <strong>{device?.system_health?.uptime_label || 'Pending'}</strong>
-        </div>
-      </div>
-
       <div className="lite-device-card-meta">
         <span><strong>{stalenessLabel(device)}</strong></span>
         <span>Last seen <strong>{formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}</strong></span>
@@ -194,18 +154,10 @@ function DeviceCard({
         ) : null}
       </div>
 
-      {showStorage ? (
-        <div className={`lite-device-storage-summary ${device.storage.ready ? 'is-ready' : 'is-review'}`}>
-          <strong>{device.storage.ready ? 'Storage ready' : 'Storage needs attention'}</strong>
-          <span>{storageSummary(device)}</span>
-        </div>
-      ) : null}
-
       <div className="lite-device-actions">
         <LiteButton
           tone="secondary"
           onClick={() => {
-            triggerLiteTactileFeedback('selection');
             onOpenDetails?.();
           }}
           aria-expanded={detailsOpen}

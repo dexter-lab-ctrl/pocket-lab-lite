@@ -2546,6 +2546,29 @@
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_HAPTIC_PATTERNS",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/lib/liteNativeFeedback.js"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_HISTORY_SECTION_ROW_LIMIT",
         "owner": "frontend",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -36902,8 +36925,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "b112d5990cf6922972f7b837def3e5a8c3eebbe3",
-          "head_tree": "f208e4dceb865870ae1a54edfd531d70eb7bfea6",
+          "head": "fb3897bf63222c051ede1db1a0083f6c9749aecc",
+          "head_tree": "35450b00d4d060e32a2af7833f22b4b6fadeb2a2",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -38952,7 +38975,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "da4ccbd860d68bcf3c2316cbb494a3103b20ff6caaa6cbdf7dadb540270da6a7",
+        "documentation": "df35a9de6b28fe2b466c7f71c7548674b4dfd9e84056a5241a6cfed4bf8287d2",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
       },
@@ -41276,8 +41299,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "b112d5990cf6922972f7b837def3e5a8c3eebbe3",
-        "head_tree": "f208e4dceb865870ae1a54edfd531d70eb7bfea6",
+        "head": "fb3897bf63222c051ede1db1a0083f6c9749aecc",
+        "head_tree": "35450b00d4d060e32a2af7833f22b4b6fadeb2a2",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -105679,5 +105702,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "f913ba34d87a8fde4e50cc8a2611f0fae211dd595e18dc37be773b772170b936"
+  "source_fingerprint": "b63f512e47c31ebf1944fc6a46087384c2bf5c79560a105072bb0bdf24774b51"
 }

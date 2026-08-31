@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Activity,
   ArchiveRestore,
@@ -13,7 +13,7 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
+import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteElevationSurface, LiteMotionReveal } from './LiteMotion.jsx';
 import { selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
@@ -78,6 +78,8 @@ export default function RecoveryScreen() {
   const setEvidenceOpen = useLiteUiStore((state) => state.setRecoveryEvidenceOpen);
   const setRestoreConfirmation = useLiteUiStore((state) => state.setRecoveryRestoreConfirmation);
   const resetRecoveryTransientUi = useLiteUiStore((state) => state.resetRecoveryTransientUi);
+  const pushToast = useLiteUiStore((state) => state.pushToast);
+  const recoveryCompletionFeedback = useRef(createLiteFeedbackDeduper());
   const recoveryPollingIsLive = useCallback((payload) => hasLiveRecoveryOperation(payload), []);
   const detailsNeeded = recoveryManageOpen || Boolean(activeActionPanel) || databaseDetailsOpen || evidenceOpen || Boolean(restoreConfirmation);
   const {
@@ -346,8 +348,7 @@ export default function RecoveryScreen() {
       onAccepted: recoveryFlow.backupAccepted,
       onDone: recoveryFlow.backupDone,
       onFailure: recoveryFlow.fail,
-      successHaptic: 'accepted',
-      failureHaptic: 'warning',
+      acceptedHaptic: 'accepted',
     });
   }
 
@@ -358,7 +359,7 @@ export default function RecoveryScreen() {
       blocked: databaseWriteBlocked,
       blockedMessage: 'Database protection is temporarily blocking writes.',
       execute: () => liteApi.backupDatabase({ reason: 'manual Pocket Lab database backup' }),
-      successHaptic: 'accepted',
+      acceptedHaptic: 'accepted',
       failureHaptic: 'warning',
     });
   }
@@ -449,7 +450,6 @@ export default function RecoveryScreen() {
       onDone: recoveryFlow.verified,
       onFailure: recoveryFlow.fail,
       successHaptic: 'success',
-      failureHaptic: 'warning',
     });
   }
 
@@ -467,7 +467,6 @@ export default function RecoveryScreen() {
       onAccepted: recoveryFlow.previewAccepted,
       onDone: recoveryFlow.previewReady,
       onFailure: recoveryFlow.fail,
-      failureHaptic: 'warning',
     });
   }
 
@@ -499,13 +498,42 @@ export default function RecoveryScreen() {
       onDone: recoveryFlow.complete,
       onFailure: recoveryFlow.fail,
       successHaptic: 'success',
-      failureHaptic: 'warning',
     });
   }
 
   useEffect(() => () => {
     resetRecoveryTransientUi();
   }, [resetRecoveryTransientUi]);
+
+  useEffect(() => {
+    const actionId = recoveryFlow.context.lastCompletedActionId;
+    const completedAt = recoveryFlow.context.lastCompletedAt;
+    if (!actionId || !completedAt) return;
+    const copy = {
+      backup_now: { title: 'Backup completed', message: 'Pocket Lab recorded a new backup.' },
+      verify_backup: { title: 'Backup verified', message: 'Pocket Lab confirmed the latest backup is ready.' },
+      preview_restore_recovery: { title: 'Restore preview ready', message: 'Review the expected changes before restoring.' },
+      recovery_restore: { title: 'Restore completed', message: 'Pocket Lab completed the protected restore checks.' },
+    }[actionId];
+    if (!copy) return;
+    const id = `recovery:${actionId}:${completedAt}`;
+    if (!recoveryCompletionFeedback.current.once(id, 'success')) return;
+    pushToast({ id, kind: 'success', title: copy.title, message: copy.message });
+  }, [pushToast, recoveryFlow.context.lastCompletedActionId, recoveryFlow.context.lastCompletedAt]);
+
+  useEffect(() => {
+    const actionId = recoveryFlow.context.lastFailedActionId;
+    const failedAt = recoveryFlow.context.lastFailedAt;
+    if (!actionId || !failedAt) return;
+    const id = `recovery:${actionId}:failed:${failedAt}`;
+    if (!recoveryCompletionFeedback.current.once(id, 'warning')) return;
+    pushToast({
+      id,
+      kind: 'warning',
+      title: actionId === 'recovery_restore' ? 'Restore needs attention' : 'Recovery action needs attention',
+      message: recoveryFlow.error || 'Pocket Lab recorded a Recovery result that needs review.',
+    });
+  }, [pushToast, recoveryFlow.context.lastFailedActionId, recoveryFlow.context.lastFailedAt, recoveryFlow.error]);
 
   useEffect(() => {
     if (!restoreConfirmation) return;
