@@ -35,6 +35,94 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     expect(failed, `unexpected Lite API failures: ${failed.join(', ')}`).toEqual([]);
   });
 
+  test('Home keeps secondary capacity and healthy status detail behind accessible disclosures', async ({ page }) => {
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    const deviceDetails = page.locator('[data-home-device-details="true"]');
+    const statusDetails = page.locator('[data-home-status-details="true"]');
+
+    await expect(home.getByRole('button', { name: 'View device details' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(home.getByRole('button', { name: 'View all areas' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(deviceDetails).toBeHidden();
+    await expect(statusDetails).toBeHidden();
+
+    await home.getByRole('button', { name: 'View device details' }).click();
+    await expect(home.getByRole('button', { name: 'Hide device details' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(deviceDetails).toBeVisible();
+    await expect(deviceDetails).toContainText(/Storage|Pocket Lab data/i);
+
+    await home.getByRole('button', { name: 'View all areas' }).press('Enter');
+    await expect(home.getByRole('button', { name: 'Hide all areas' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(statusDetails).toBeVisible();
+    await expect(statusDetails.locator('.lite-home-premium-service')).toHaveCount(6);
+
+    await home.locator('.lite-home-premium-overview').getByRole('button', { name: 'Open Apps' }).click();
+    await expect(page.locator('[data-lite-screen-id="catalog"]')).toBeVisible();
+  });
+
+  test('Home gives a ready workspace a smooth, reduced-motion-safe pulse', async ({ page }) => {
+    await page.goto('/?screen=home');
+    const workflow = page.locator('[data-home-workflow-state]');
+
+    await expect(workflow).toBeVisible();
+    await expect(workflow).toContainText('Workspace pulse');
+    await expect(workflow.locator('.lite-home-workflow-node')).toHaveCount(4);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await workflow.evaluate((element) => {
+      element.classList.remove('motion-rest', 'motion-checking');
+      element.classList.add('motion-live');
+    });
+    const isVerticalWorkflow = (page.viewportSize()?.width || 0) < 768;
+    await expect(workflow.locator('.lite-home-workflow-line i').first()).toHaveCSS(
+      'animation-name',
+      isVerticalWorkflow ? 'liteHomeWorkflowSweepVertical' : 'liteHomeWorkflowSweep',
+    );
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(workflow.locator('.lite-home-workflow-line i').first()).toHaveCSS('animation-name', 'none');
+  });
+
+  test('Home surfaces an attention area without opening healthy workspace detail', async ({ page }) => {
+    await page.addInitScript((statusPayload) => {
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = (input, init) => {
+        const url = new URL(typeof input === 'string' ? input : input.url, window.location.origin);
+        if (url.pathname === '/api/lite/status') {
+          return Promise.resolve(new Response(JSON.stringify(statusPayload), {
+            headers: { 'Content-Type': 'application/json' },
+          }));
+        }
+        return originalFetch(input, init);
+      };
+    }, {
+      overall: 'degraded',
+      checked_at: '2026-08-31T16:00:00.000Z',
+      device: { name: 'Pocket Lab Lite' },
+      summary: { apps_available: 1, devices_known: 1, security_findings: 1, remote_access_ready: true },
+      telemetry: { free_space_mb: 256000, total_space_mb: 512000, memory_usage_mb: 512, memory_total_mb: 2048 },
+      services: [
+        { name: 'Security', status: 'unhealthy' },
+        { name: 'App Catalog', status: 'healthy' },
+        { name: 'Device Fleet', status: 'healthy' },
+      ],
+    });
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+
+    await expect(home.locator('.lite-home-premium-service-preview').getByText('Safety needs immediate attention.')).toBeVisible();
+    await expect(home.getByRole('button', { name: 'View all areas' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('Home keeps saved information truthful while secondary detail remains collapsed', async ({ page }) => {
+    await installScenario(page, 'offline-saved');
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    await expect(home).toContainText('Showing saved information');
+    await expect(home.getByRole('button', { name: 'View device details' })).toHaveAttribute('aria-expanded', 'false');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  });
+
   test('Recovery projection-too-old response stays truthful', async ({ page }) => {
     await installScenario(page, 'recovery-projection-too-old');
     await page.goto('/?screen=recovery');

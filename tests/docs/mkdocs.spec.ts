@@ -73,14 +73,22 @@ test.beforeEach(async ({ page }) => {
       && parsed.pathname.startsWith(DOCS_PREFIX)
       && parsed.pathname.endsWith('/');
 
+    const isLocalBrandLogoAbort =
+      failure === 'net::ERR_ABORTED'
+      && ['127.0.0.1', 'localhost'].includes(parsed.hostname)
+      && parsed.pathname === `${DOCS_PREFIX}assets/brand/pocket-lab-logo.svg`;
+
     // Material for MkDocs instant navigation may cancel a redundant
     // same-origin HTML-page request while the requested destination still
-    // loads successfully. Destination headings/content are asserted by the
-    // test itself, so this transport cancellation is not a broken asset.
+    // loads successfully. It can also abort the persistent header brand logo
+    // while transitioning between docs pages. The logo path is repository-
+    // owned and HTTP failures remain covered separately by the response
+    // handler below.
     //
-    // Do NOT suppress aborted assets, scripts, stylesheets, SVGs, external
-    // requests, DNS failures, connection failures, or other error classes.
+    // Keep all other aborted assets, scripts, stylesheets, SVGs, external
+    // requests, DNS failures, connection failures, and error classes visible.
     if (isLocalDocsPageAbort) return;
+    if (isLocalBrandLogoAbort) return;
 
     failedRequests.push(`${failure} ${url}`);
   });

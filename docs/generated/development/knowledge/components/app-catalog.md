@@ -88,6 +88,7 @@ Presents backend-owned app lifecycle and safe action readiness, including same-o
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
+- verified_by: `tests/e2e/lite-mocked.spec.ts`
 - verified_by: `tests/e2e/lite-test-helpers.ts`
 
 ## Used by / backlinks

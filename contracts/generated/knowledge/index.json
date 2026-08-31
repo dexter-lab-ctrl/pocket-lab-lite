@@ -41118,6 +41118,10 @@
       ],
       "test:tests/e2e/lite-mocked.spec.ts": [
         {
+          "source": "component:app-catalog",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:identity",
           "type": "verified_by"
         },
@@ -45035,6 +45039,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
         {
@@ -66524,6 +66532,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:624a7742021aa3b0",
+      "source": "component:app-catalog",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:6256777bb21d877e",
@@ -83400,7 +83417,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "f590a7b29e54267f0a120baaa5a8ac2ad82287d171fe9c903f2ea09a0a54ed4f",
+  "source_fingerprint": "cd472d658e3d2ceb209b71a0e2da98a87808adf582915e4485a340d2dfb38ea2",
   "statistics": {
     "entity_count": 1085,
     "entity_type_counts": {
@@ -83426,7 +83443,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3052,
+    "relation_count": 3053,
     "source_count": 232
   }
 }

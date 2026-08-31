@@ -1,6 +1,7 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import {
   Activity,
+  ChevronDown,
   ChevronRight,
   Cpu,
   Database,
@@ -65,6 +66,13 @@ const HOME_SERVICE_ICONS = Object.freeze({
   database: Database,
   local_source_store: HardDrive,
 });
+
+const HOME_WORKFLOW_STEPS = Object.freeze([
+  { id: 'device', label: 'Device', icon: Smartphone },
+  { id: 'services', label: 'Services', icon: Server },
+  { id: 'apps', label: 'Apps', icon: LayoutGrid },
+  { id: 'safety', label: 'Safety', icon: ShieldCheck },
+]);
 
 function badgeStatus(tone) {
   if (tone === 'ready') return 'healthy';
@@ -131,6 +139,87 @@ const HomeServiceCard = memo(function HomeServiceCard({ item, onNavigate }) {
   );
 });
 
+export function homeWorkflowPresentation({ overallTone, attentionCount, savedStateOnly, checking }) {
+  if (checking) {
+    return {
+      state: 'checking',
+      motion: 'checking',
+      eyebrow: 'Workspace pulse',
+      title: 'Checking your workspace flow',
+      summary: 'Refreshing the latest signals from your Pocket Lab.',
+      badge: 'Checking',
+      activeNodes: ['services', 'apps'],
+      doneNodes: ['device'],
+    };
+  }
+  if (savedStateOnly) {
+    return {
+      state: 'saved',
+      motion: 'rest',
+      eyebrow: 'Workspace pulse',
+      title: 'Showing saved workspace state',
+      summary: 'Reconnect to resume live workspace signals.',
+      badge: 'Saved',
+      activeNodes: [],
+      doneNodes: [],
+    };
+  }
+  if (overallTone !== 'ready') {
+    return {
+      state: 'attention',
+      motion: 'rest',
+      eyebrow: 'Workspace pulse',
+      title: 'Workspace flow needs attention',
+      summary: `${attentionCount || 'Some'} ${attentionCount === 1 ? 'area needs' : 'areas need'} a review before everything is ready.`,
+      badge: 'Review',
+      activeNodes: ['services'],
+      doneNodes: ['device'],
+    };
+  }
+  return {
+    state: 'ready',
+    motion: 'live',
+    eyebrow: 'Workspace pulse',
+    title: 'Your workspace is flowing smoothly',
+    summary: 'Device, services, apps, and safety are all ready together.',
+    badge: 'Live',
+    activeNodes: ['device', 'services', 'apps', 'safety'],
+    doneNodes: ['device', 'services', 'apps', 'safety'],
+  };
+}
+
+function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking }) {
+  const flow = homeWorkflowPresentation({ overallTone, attentionCount, savedStateOnly, checking });
+  return (
+    <section
+      className={`lite-home-workflow is-${flow.state} motion-${flow.motion}`}
+      aria-labelledby="lite-home-workflow-title"
+      data-home-workflow-state={flow.state}
+    >
+      <div className="lite-home-workflow-copy">
+        <span>{flow.eyebrow}</span>
+        <strong id="lite-home-workflow-title">{flow.title}</strong>
+        <p>{flow.summary}</p>
+      </div>
+      <div className="lite-home-workflow-visual" aria-hidden="true">
+        {HOME_WORKFLOW_STEPS.map((step, index) => {
+          const Icon = step.icon;
+          return (
+            <React.Fragment key={step.id}>
+              {index > 0 ? <span className="lite-home-workflow-line" style={{ '--lite-home-workflow-delay': `${(index - 1) * 180}ms` }}><i /></span> : null}
+              <span className={`lite-home-workflow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
+                <Icon className="h-4 w-4" />
+                <small>{step.label}</small>
+              </span>
+            </React.Fragment>
+          );
+        })}
+      </div>
+      <span className="lite-home-workflow-badge">{flow.badge}</span>
+    </section>
+  );
+}
+
 export default function HomeScreen({
   status,
   loading,
@@ -153,6 +242,9 @@ export default function HomeScreen({
   const checkedLabel = backendUpdatedAt
     ? formatLiteTime(backendUpdatedAt)
     : lastUpdatedLabel || 'Not checked yet';
+  const [deviceDetailsOpen, setDeviceDetailsOpen] = useState(false);
+  const [serviceDetailsOpen, setServiceDetailsOpen] = useState(false);
+  const attentionServices = overview.services.filter((item) => item.tone !== 'ready');
 
   const goTo = useCallback((screen) => {
     if (screen === 'home') {
@@ -189,24 +281,6 @@ export default function HomeScreen({
           <h2>{overview.heroTitle}</h2>
           <p>{overview.heroSummary}</p>
 
-          <div className="lite-home-premium-actions" aria-label="Workspace shortcuts">
-            <LitePressableButton className="lite-home-native-action is-primary" haptic="accepted" onClick={() => goTo(overview.nextAction.screen)}>
-              <Sparkles className="h-4 w-4" />
-              <span>{overview.nextAction.label}</span>
-            </LitePressableButton>
-            <LitePressableButton className="lite-home-native-action" haptic="selection" onClick={() => goTo('catalog')}>
-              <LayoutGrid className="h-4 w-4" />
-              <span>Apps</span>
-            </LitePressableButton>
-            <LitePressableButton className="lite-home-native-action" haptic="selection" onClick={() => goTo('devices')}>
-              <Smartphone className="h-4 w-4" />
-              <span>Devices</span>
-            </LitePressableButton>
-            <LitePressableButton className="lite-home-native-action" haptic="selection" onClick={() => goTo('recovery')}>
-              <Database className="h-4 w-4" />
-              <span>Backups</span>
-            </LitePressableButton>
-          </div>
         </div>
 
         <LiteElevationSurface as="aside" settle active={overview.overallTone !== 'ready'} className={`lite-home-readiness-card lite-home-premium-priority is-${overview.nextAction.tone}`}>
@@ -235,18 +309,36 @@ export default function HomeScreen({
             <div>
               <span>Workspace device</span>
               <h2>{status.device?.name || 'Pocket Lab Lite'}</h2>
-              <p>Current capacity for apps, backups, and private services.</p>
+              <p>Capacity for apps, backups, and private services.</p>
             </div>
             <StatusBadge status={badgeStatus(overview.overallTone)}>
               {effectiveSavedStateOnly ? 'Saved state' : overview.overallTone === 'ready' ? 'Available' : 'Review'}
             </StatusBadge>
           </div>
-          <div className="lite-home-premium-resource-grid">
-            {overview.resources.map((item) => <HomeResourceCard key={item.key} item={item} />)}
+          <div className="lite-home-premium-capacity-summary" aria-label="Workspace device capacity summary">
+            {overview.resources.slice(0, 2).map((item) => (
+              <span key={item.key} className={`is-${item.tone}`}>
+                <strong>{item.label}</strong> {item.value}
+              </span>
+            ))}
           </div>
-          <div className="lite-home-premium-freshness">
-            {backendReachable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-            <span>{effectiveSavedStateOnly ? 'Saved status' : 'Current information'} · {checkedLabel}{status.refresh_pending ? ' · Refreshing…' : ''}</span>
+          <LitePressableButton
+            className="lite-home-disclosure-button"
+            aria-expanded={deviceDetailsOpen}
+            aria-controls="lite-home-device-details"
+            onClick={() => setDeviceDetailsOpen((open) => !open)}
+          >
+            <span>{deviceDetailsOpen ? 'Hide device details' : 'View device details'}</span>
+            <ChevronDown className={`h-4 w-4 ${deviceDetailsOpen ? 'is-open' : ''}`} aria-hidden="true" />
+          </LitePressableButton>
+          <div id="lite-home-device-details" hidden={!deviceDetailsOpen} data-home-device-details="true">
+            <div className="lite-home-premium-resource-grid">
+              {overview.resources.map((item) => <HomeResourceCard key={item.key} item={item} />)}
+            </div>
+            <div className="lite-home-premium-freshness">
+              {backendReachable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+              <span>{effectiveSavedStateOnly ? 'Saved status' : 'Current information'} · {checkedLabel}{status.refresh_pending ? ' · Refreshing…' : ''}</span>
+            </div>
           </div>
         </GlassCard>
 
@@ -262,6 +354,12 @@ export default function HomeScreen({
               <small>ready</small>
             </span>
           </div>
+          <HomeWorkspaceFlow
+            overallTone={overview.overallTone}
+            attentionCount={overview.attentionCount}
+            savedStateOnly={effectiveSavedStateOnly}
+            checking={loading || refreshing || status.refresh_pending === true}
+          />
           <div className="lite-home-premium-trust-note">
             <ShieldCheck className="h-5 w-5" />
             <div>
@@ -277,17 +375,35 @@ export default function HomeScreen({
           <div>
             <span>Key areas</span>
             <h2 id="lite-home-key-areas">Workspace status</h2>
-            <p>Friendly summaries of the areas that keep Pocket Lab Lite useful and protected.</p>
+            <p>{overview.readyCount} of {overview.totalCount || '—'} areas ready{overview.attentionCount ? ` · ${overview.attentionCount} need${overview.attentionCount === 1 ? 's' : ''} attention` : ''}.</p>
           </div>
           {loading ? <span className="lite-home-premium-checking">Checking…</span> : null}
         </div>
 
         {loading && !overview.services.length ? <LoadingCard label="Loading workspace status…" /> : (
-          <div className="lite-home-premium-service-grid">
-            {overview.services.map((item) => (
-              <HomeServiceCard key={item.key} item={item} onNavigate={goTo} />
-            ))}
-          </div>
+          <>
+            {attentionServices.length ? (
+              <div className="lite-home-premium-service-grid lite-home-premium-service-preview" aria-label="Areas needing attention">
+                {attentionServices.map((item) => <HomeServiceCard key={item.key} item={item} onNavigate={goTo} />)}
+              </div>
+            ) : null}
+            <LitePressableButton
+              className="lite-home-disclosure-button"
+              aria-expanded={serviceDetailsOpen}
+              aria-controls="lite-home-all-areas"
+              onClick={() => setServiceDetailsOpen((open) => !open)}
+            >
+              <span>{serviceDetailsOpen ? 'Hide all areas' : 'View all areas'}</span>
+              <ChevronDown className={`h-4 w-4 ${serviceDetailsOpen ? 'is-open' : ''}`} aria-hidden="true" />
+            </LitePressableButton>
+            <div id="lite-home-all-areas" hidden={!serviceDetailsOpen} data-home-status-details="true">
+              <div className="lite-home-premium-service-grid">
+                {overview.services.map((item) => (
+                  <HomeServiceCard key={item.key} item={item} onNavigate={goTo} />
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </section>
     </div>

@@ -1638,6 +1638,17 @@
       "target_type": "component"
     },
     {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:cee74b27bf9115dd",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "target_type": "test"
+    },
+    {
       "evidence": [
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"
@@ -1953,17 +1964,6 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "component:app-catalog",
       "target_type": "component"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:apps:f10616a2b5821b1d",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/docs/test_documentation_presentation_polish.py",
-      "target_type": "test"
     },
     {
       "depth": 2,

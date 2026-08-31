@@ -22011,6 +22011,61 @@ html.lite-install-light-shell body {
   margin-top: 1rem;
 }
 
+.theme-pocket-lite-daylight .lite-home-premium-capacity-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  margin-top: 0.85rem;
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-capacity-summary span {
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-capacity-summary span::after {
+  content: '·';
+  margin-left: 0.85rem;
+  color: #cbd5e1;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-capacity-summary span:last-child::after {
+  display: none;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-capacity-summary strong {
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-home-disclosure-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.95rem;
+  background: rgba(248, 250, 252, 0.78);
+  color: #1e40af;
+  font-size: 0.84rem;
+  font-weight: 850;
+  text-align: left;
+}
+
+.theme-pocket-lite-daylight .lite-home-disclosure-button svg {
+  transition: transform 180ms var(--lite-native-ease);
+}
+
+.theme-pocket-lite-daylight .lite-home-disclosure-button svg.is-open {
+  transform: rotate(180deg);
+}
+
 .theme-pocket-lite-daylight .lite-home-premium-resource {
   display: flex;
   align-items: flex-start;
@@ -22102,6 +22157,169 @@ html.lite-install-light-shell body {
   font-weight: 850;
 }
 
+.theme-pocket-lite-daylight .lite-home-workflow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 1.1rem;
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.92), rgba(255, 255, 255, 0.86));
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-copy {
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-copy > span {
+  display: block;
+  color: #0369a1;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-copy strong {
+  display: block;
+  margin-top: 0.14rem;
+  color: #0f172a;
+  font-size: 0.93rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-copy p {
+  margin: 0.22rem 0 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-visual {
+  display: grid;
+  grid-template-columns: auto minmax(1rem, 1fr) auto minmax(1rem, 1fr) auto minmax(1rem, 1fr) auto;
+  grid-column: 1 / -1;
+  align-items: center;
+  min-width: 0;
+  padding-top: 0.1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 0.18rem;
+  width: 2.45rem;
+  min-height: 2.45rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #64748b;
+  box-shadow: 0 0.28rem 0.75rem rgba(15, 23, 42, 0.05);
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-node small {
+  position: absolute;
+  top: calc(100% + 0.18rem);
+  left: 50%;
+  color: inherit;
+  font-size: 0.58rem;
+  font-weight: 850;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-node.is-active,
+.theme-pocket-lite-daylight .lite-home-workflow-node.is-done {
+  border-color: rgba(14, 165, 233, 0.32);
+  background: rgba(255, 255, 255, 0.98);
+  color: #0369a1;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-node.is-done::after {
+  content: '';
+  position: absolute;
+  top: 0.18rem;
+  right: 0.12rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.14);
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-line {
+  position: relative;
+  height: 0.16rem;
+  margin: 0 -0.05rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.42);
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-line i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.9), transparent);
+  opacity: 0.42;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow.motion-live .lite-home-workflow-line i,
+.theme-pocket-lite-daylight .lite-home-workflow.motion-checking .lite-home-workflow-line i {
+  animation: liteHomeWorkflowSweep 2.4s var(--lite-native-ease) infinite;
+  animation-delay: var(--lite-home-workflow-delay, 0ms);
+  opacity: 1;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow.motion-live .lite-home-workflow-node.is-active {
+  animation: liteHomeWorkflowNodePulse 2.4s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow.is-attention {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.94), rgba(255, 255, 255, 0.86));
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow.is-attention .lite-home-workflow-badge {
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.9);
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow.is-saved .lite-home-workflow-badge {
+  color: #475569;
+  background: rgba(226, 232, 240, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-home-workflow-badge {
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9rem;
+  padding: 0.35rem 0.62rem;
+  border-radius: 999px;
+  background: rgba(224, 242, 254, 0.82);
+  color: #0369a1;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+@keyframes liteHomeWorkflowSweep {
+  0% { transform: translateX(-140%); opacity: 0; }
+  24% { opacity: 1; }
+  72% { opacity: 1; }
+  100% { transform: translateX(290%); opacity: 0; }
+}
+
+@keyframes liteHomeWorkflowNodePulse {
+  0%, 100% { box-shadow: 0 0.28rem 0.75rem rgba(15, 23, 42, 0.05); }
+  50% { box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.12), 0 0.38rem 0.92rem rgba(14, 165, 233, 0.14); }
+}
+
 .theme-pocket-lite-daylight .lite-home-premium-trust-note {
   display: flex;
   align-items: flex-start;
@@ -22133,6 +22351,10 @@ html.lite-install-light-shell body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-preview {
+  margin-bottom: 0.1rem;
 }
 
 .theme-pocket-lite-daylight .lite-home-premium-service {
@@ -22296,6 +22518,15 @@ html.lite-install-light-shell body {
     grid-template-columns: 1fr;
   }
 
+  .theme-pocket-lite-daylight .lite-home-premium-capacity-summary {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-capacity-summary span::after {
+    display: none;
+  }
+
   .theme-pocket-lite-daylight .lite-home-premium-stat > button {
     min-height: 5.75rem;
   }
@@ -22318,15 +22549,63 @@ html.lite-install-light-shell body {
     height: 4.25rem;
   }
 
+  .theme-pocket-lite-daylight .lite-home-workflow-visual {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 0;
+    padding: 0.2rem 0 0 0.55rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-workflow-node {
+    display: flex;
+    justify-content: flex-start;
+    width: auto;
+    min-width: 2.45rem;
+    padding: 0 0.7rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-workflow-node small {
+    position: static;
+    margin: 0 0 0 0.3rem;
+    transform: none;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-workflow-line {
+    width: 0.16rem;
+    height: 0.9rem;
+    margin: -0.05rem 0 -0.05rem 1.14rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-workflow-line i {
+    width: 100%;
+    height: 42%;
+    background: linear-gradient(180deg, transparent, rgba(14, 165, 233, 0.9), transparent);
+  }
+
+  .theme-pocket-lite-daylight .lite-home-workflow.motion-live .lite-home-workflow-line i,
+  .theme-pocket-lite-daylight .lite-home-workflow.motion-checking .lite-home-workflow-line i {
+    animation-name: liteHomeWorkflowSweepVertical;
+  }
+
   .theme-pocket-lite-daylight .lite-recovery-premium-hero,
   .theme-pocket-lite-daylight .lite-recovery-premium-summary-card {
     border-radius: 1.35rem;
   }
 }
 
+@keyframes liteHomeWorkflowSweepVertical {
+  0% { transform: translateY(-140%); opacity: 0; }
+  24% { opacity: 1; }
+  72% { opacity: 1; }
+  100% { transform: translateY(290%); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .theme-pocket-lite-daylight .lite-home-premium-hero::after,
   .theme-pocket-lite-daylight .lite-home-native-action,
+  .theme-pocket-lite-daylight .lite-home-disclosure-button svg,
+  .theme-pocket-lite-daylight .lite-home-workflow-line i,
+  .theme-pocket-lite-daylight .lite-home-workflow-node,
   .theme-pocket-lite-daylight .lite-home-priority-action,
   .theme-pocket-lite-daylight .lite-home-premium-stat,
   .theme-pocket-lite-daylight .lite-home-premium-service,
