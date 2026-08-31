@@ -24775,6 +24775,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:439de25800f4e0f8",
+      "source": "journey:security-scan",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:439fea36dc945999",
@@ -45104,6 +45118,20 @@
       "id": "rel:bf70fab8f167dc40",
       "source": "api:get:/api/lite/system/telemetry-thresholds",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:bfc0c57c57b23c67",
+      "source": "journey:add-device",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
       "type": "verified_by"
     },
     {

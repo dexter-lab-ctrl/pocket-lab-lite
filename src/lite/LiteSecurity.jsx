@@ -37,7 +37,6 @@ import {
   securityDetailsStaleTime,
   securitySummaryStaleTime,
 } from './security/securityPreload.js';
-import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import {
   isLiteSecurityViewLive,
@@ -78,7 +77,6 @@ import {
   liveSecurityProgress,
   securityProgressStage,
   scanInProgressValue,
-  triggerHapticFeedback,
   shortRunId,
   formatSecurityDuration,
   securityTrendLabel,
@@ -1907,6 +1905,7 @@ export default function SecurityScreen() {
   const activeSecurityHistoryLimit = useLiteUiStore((state) => state.activeSecurityHistoryLimit);
   const setActiveSecurityHistoryLimit = useLiteUiStore((state) => state.setActiveSecurityHistoryLimit);
   const setActiveSecurityEvidenceRunId = useLiteUiStore((state) => state.setActiveSecurityEvidenceRunId);
+  const setSecurityObservation = useLiteUiStore((state) => state.setSecurityObservation);
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
   const securityScanSubmitGuardRef = useRef(false);
@@ -2073,14 +2072,6 @@ export default function SecurityScreen() {
     };
   }), [data, securityPrecedence]);
   const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && profileRefreshing) || (shouldLoadSecurityHistory && historyRefreshing);
-
-  useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
-    if (event?.type && event.type !== 'security:scan-completed') return;
-    const profile = normalizeSecurityProfileId(event.profile || 'quick');
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : '') });
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20) });
-  }), [activeSecurityHistoryLimit, queryClient]);
 
   useEffect(() => {
     if (!securityFreshnessData?.revision) return;
@@ -2445,6 +2436,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.runSecurityScan('local', { profile: 'quick', reason: 'manual quick safety check' });
       securityFlow.accepted(payload);
       acceptedScan = true;
+      setSecurityObservation({ active: true, runId: payload?.run_id || payload?.job_id || payload?.command_id || '' });
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'quick'));
       invalidateSecurityQuery('quick');
     } catch (err) {
@@ -2500,6 +2492,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.runSecurityScan('local', { profile: 'full', reason: 'manual full local check' });
       securityFlow.accepted(payload);
       acceptedScan = true;
+      setSecurityObservation({ active: true, runId: payload?.run_id || payload?.job_id || payload?.command_id || '' });
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'full'));
       invalidateSecurityQuery('full');
     } catch (err) {
@@ -2540,6 +2533,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
       securityFlow.accepted(payload);
       acceptedScan = true;
+      setSecurityObservation({ active: true, runId: payload?.run_id || payload?.job_id || payload?.command_id || '' });
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'app'));
       invalidateSecurityQuery('app');
     } catch (err) {
@@ -2573,7 +2567,6 @@ export default function SecurityScreen() {
   }
 
   async function showEvidence(event) {
-    triggerHapticFeedback(8);
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     const runId = activeProfileRun?.run_id || result?.run_id;
     setActiveSecurityDetails('evidence', runId);
@@ -2599,7 +2592,6 @@ export default function SecurityScreen() {
   }
 
   function openRemediation(finding, event) {
-    triggerHapticFeedback(6);
     remediationTriggerRef.current = event?.currentTarget || null;
     setRemediationFinding(finding);
   }
@@ -2610,7 +2602,6 @@ export default function SecurityScreen() {
   }
 
   function openFindingDetails(finding, event) {
-    triggerHapticFeedback(6);
     findingDetailTriggerRef.current = event?.currentTarget || null;
     setExpandedSecurityFindingId(securityFindingUiId(finding));
   }
@@ -2642,7 +2633,6 @@ export default function SecurityScreen() {
   }
 
   function openSecurityManage(event) {
-    triggerHapticFeedback(6);
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     setSecurityManageOpen(true);
     if (typeof refreshSecurityDetails === 'function') {
@@ -2666,7 +2656,6 @@ export default function SecurityScreen() {
   function chooseSecurityProfile(profileId) {
     const nextProfile = normalizeSecurityProfileId(profileId);
     setSelectedScanProfile(nextProfile);
-    triggerHapticFeedback(4);
   }
 
   function cycleSecurityProfile(event) {

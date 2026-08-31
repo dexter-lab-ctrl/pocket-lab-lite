@@ -37,6 +37,8 @@ export const liteRecoveryFlowMachine = createMachine({
     actionStartedAt: '',
     lastCompletedActionId: '',
     lastCompletedAt: '',
+    lastFailedActionId: '',
+    lastFailedAt: '',
     failureReason: '',
   },
   on: {
@@ -201,7 +203,9 @@ export const liteRecoveryFlowMachine = createMachine({
       actionStartedAt: '',
       failureReason: '',
     })),
-    setFailure: assign(({ event }) => ({
+    setFailure: assign(({ context, event }) => ({
+      lastFailedActionId: context.activeActionId,
+      lastFailedAt: new Date().toISOString(),
       activeActionId: '',
       actionStartedAt: '',
       failureReason: event.reason || friendlyFlowError(event.error, 'Recovery needs attention.'),

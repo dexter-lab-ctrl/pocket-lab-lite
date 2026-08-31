@@ -41124,6 +41124,14 @@
         {
           "source": "domain:security",
           "type": "verified_by"
+        },
+        {
+          "source": "journey:add-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:security-scan",
+          "type": "verified_by"
         }
       ],
       "test:tests/e2e/lite-test-helpers.ts": [
@@ -51406,6 +51414,10 @@
         {
           "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
         }
       ],
       "journey:app-installation": [
@@ -52373,6 +52385,10 @@
         },
         {
           "target": "test:tests/docs/test_enterprise_completion.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         }
       ],
@@ -63413,6 +63429,15 @@
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/rules/analysis",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:439de25800f4e0f8",
+      "source": "journey:security-scan",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -76534,6 +76559,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:bfc0c57c57b23c67",
+      "source": "journey:add-device",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:bfd5fceb82e267a8",
@@ -83383,7 +83417,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "e1a81cb3b4174dd7f405d79af2468fb998ac32beb539fa45cddaaf7048778872",
+  "source_fingerprint": "6b06b3c2467b683cdcd9d605a17def736d42a2229d5e9b024b2c9e91dda2a8f9",
   "statistics": {
     "entity_count": 1085,
     "entity_type_counts": {
@@ -83409,7 +83443,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3051,
+    "relation_count": 3053,
     "source_count": 232
   }
 }

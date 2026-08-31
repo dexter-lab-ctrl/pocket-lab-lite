@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 
 export function useDeviceMotion() {
   const [motionEnabled, setMotionEnabled] = useState(false);
@@ -36,7 +37,7 @@ export function useDeviceMotion() {
   }, [motionEnabled]);
 
   const handleEnableMotion = async () => {
-    if (navigator.vibrate) navigator.vibrate(10);
+    triggerLiteHaptic('accepted');
     if (motionEnabled) {
       setMotionEnabled(false);
       return;

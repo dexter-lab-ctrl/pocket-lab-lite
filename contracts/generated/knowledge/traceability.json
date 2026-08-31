@@ -3203,7 +3203,8 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_d2_d3.py",
         "test:tests/backend/test_lite_devices_durable_enrollment.py",
-        "test:tests/docs/test_documentation_ia.py"
+        "test:tests/docs/test_documentation_ia.py",
+        "test:tests/e2e/lite-mocked.spec.ts"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3492,7 +3493,8 @@
         "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
         "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
         "test:tests/backend/test_lite_workload_admission.py",
-        "test:tests/docs/test_enterprise_completion.py"
+        "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/e2e/lite-mocked.spec.ts"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3652,6 +3654,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e1a81cb3b4174dd7f405d79af2468fb998ac32beb539fa45cddaaf7048778872"
+    "source_fingerprint": "6b06b3c2467b683cdcd9d605a17def736d42a2229d5e9b024b2c9e91dda2a8f9"
   }
 }

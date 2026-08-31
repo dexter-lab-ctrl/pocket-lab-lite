@@ -12,13 +12,22 @@ const TOAST_ICONS = {
 export default function LiteToastHost() {
   const toasts = useLiteUiStore((state) => state.toasts);
   const dismissToast = useLiteUiStore((state) => state.dismissToast);
+  const [visible, setVisible] = React.useState(() => typeof document === 'undefined' || document.visibilityState !== 'hidden');
 
   React.useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const onVisibilityChange = () => setVisible(document.visibilityState !== 'hidden');
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
+
+  React.useEffect(() => {
+    if (!visible) return undefined;
     const timers = toasts
       .filter((toast) => toast.timeoutMs > 0)
       .map((toast) => window.setTimeout(() => dismissToast(toast.id), toast.timeoutMs));
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [dismissToast, toasts]);
+  }, [dismissToast, toasts, visible]);
 
   if (!toasts.length) return null;
 

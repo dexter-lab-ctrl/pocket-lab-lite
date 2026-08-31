@@ -2,8 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMachine } from '@xstate/react';
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
+import { useLiteSecurityEvents } from '../hooks/useLiteSecurityEvents.js';
 import { liteApi } from '../lib/liteApi.js';
 import { getOfflineCacheMeta, setOfflineCacheMeta } from '../lib/liteOfflineDb.js';
+import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import {
   LITE_REVISION_CHANGED_EVENT,
@@ -66,7 +69,23 @@ export default function LiteRevisionSyncBridge() {
   const syncSnapshotRef = useRef(syncSnapshot);
   syncSnapshotRef.current = syncSnapshot;
   const setRevisionSyncState = useLiteUiStore((state) => state.setRevisionSyncState);
+  const pushToast = useLiteUiStore((state) => state.pushToast);
+  const activeSecurityHistoryLimit = useLiteUiStore((state) => state.activeSecurityHistoryLimit);
+  const activeTab = useLiteUiStore((state) => state.activeTab);
+  const securityObservation = useLiteUiStore((state) => state.securityObservation);
+  const setSecurityObservation = useLiteUiStore((state) => state.setSecurityObservation);
+  const securityCompletionIds = useRef(new Set());
   const streamStatus = String(syncSnapshot.value || 'idle');
+
+  // Security records only a bounded active run ID in the UI store when the
+  // server accepts a scan. While that run is active and its screen is closed,
+  // the root owns the existing stream; idle tabs do not hold a connection.
+  useLiteSecurityEvents({
+    enabled: Boolean(securityObservation?.active) && activeTab !== 'security',
+    historyLimit: activeSecurityHistoryLimit || 20,
+    activeRunId: securityObservation?.runId || '',
+    localActive: Boolean(securityObservation?.active),
+  });
 
   const persistState = useCallback(() => {
     void setOfflineCacheMeta(
@@ -239,6 +258,37 @@ export default function LiteRevisionSyncBridge() {
     }
     wasOnline.current = online;
   }, [online, queryClient]);
+
+  // Security completion events were already sanitized and cross-tab capable,
+  // but their only subscriber lived inside the Security screen. Keeping this
+  // root subscription makes a completed check visible after navigation while
+  // retaining focused query invalidation and a run-ID completion guard.
+  useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
+    const runId = String(event.run_id || '').trim().slice(0, 120);
+    const profile = ['quick', 'full', 'app'].includes(String(event.profile || '').toLowerCase())
+      ? String(event.profile).toLowerCase()
+      : 'quick';
+    const status = String(event.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+    if (!runId || !['succeeded', 'success', 'completed', 'complete', 'done', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention'].includes(status)) return;
+    const eventId = `security-completion:${runId}`;
+    const needsAttention = ['failed', 'failure', 'error', 'blocked', 'review', 'needs_attention'].includes(status);
+    if (securityCompletionIds.current.has(eventId)) return;
+    securityCompletionIds.current.add(eventId);
+    if (securityCompletionIds.current.size > 64) securityCompletionIds.current.delete(securityCompletionIds.current.values().next().value);
+    setSecurityObservation({ active: false, runId: '' });
+    [
+      liteQueryKeys.security(),
+      liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''),
+      liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
+    ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+    triggerLiteHaptic(needsAttention ? 'warning' : 'success');
+    pushToast({
+      id: eventId,
+      kind: needsAttention ? 'warning' : 'success',
+      title: needsAttention ? 'Safety check needs attention' : 'Safety check completed',
+      message: needsAttention ? 'Pocket Lab recorded a result that needs review.' : 'The latest safety result is ready to review.',
+    });
+  }), [activeSecurityHistoryLimit, pushToast, queryClient, setSecurityObservation]);
 
   useEffect(() => {
     if (streamStatus !== 'connecting' || !online || !visible || !isLeader
