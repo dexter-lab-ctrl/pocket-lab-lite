@@ -44,7 +44,7 @@ export function normalizeSecurityProgressEvent(value = {}) {
   return {
     ...value,
     event_id: integerEventId(value.event_id),
-    run_id: String(value.run_id || '').trim(),
+    run_id: sanitizeSecurityRunId(value.run_id),
     profile: String(value.profile || 'quick').trim().toLowerCase() || 'quick',
     app_id: value.app_id || null,
     status,
@@ -140,3 +140,4 @@ export function progressPayloadFromSecurityEvent(event = {}) {
     sanitized: true,
   };
 }
+import { sanitizeSecurityRunId } from './securityRunId.js';
