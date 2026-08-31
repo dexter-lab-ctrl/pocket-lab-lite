@@ -291,6 +291,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:app-catalog",
+          "target": "test:tests/e2e/lite-mocked.spec.ts"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:app-catalog",
           "target": "test:tests/e2e/lite-test-helpers.ts"
         },
         {
@@ -544,12 +550,6 @@
           "relation_type": "verified_by",
           "source": "component:app-lifecycle-worker",
           "target": "test:tests/backend/test_lite_worker_recovery.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:app-lifecycle-worker",
-          "target": "test:tests/docs/test_documentation_presentation_polish.py"
         }
       ],
       "expansion": {
@@ -592,6 +592,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
@@ -16111,7 +16112,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "407f847c8f096b70260106fbcc40d80711abf918d93477c61ecf17abda2597f5",
+  "source_fingerprint": "a844a48d19c913410f1d96bd4b0c49a4e65308903bc788c99ebb8c151e221cb9",
   "top_level": [
     "start-here",
     "use",
