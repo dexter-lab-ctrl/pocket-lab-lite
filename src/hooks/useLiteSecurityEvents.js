@@ -10,6 +10,7 @@ import {
   progressPayloadFromSecurityEvent,
   terminalSecurityProgress,
 } from '../lib/securityProgressEvents.js';
+import { sanitizeSecurityRunId } from '../lib/securityRunId.js';
 import {
   publishLiteLifecycleDiagnostics,
   reconcileLiteSecurityProgress,
@@ -48,9 +49,9 @@ function normalizeProfile(profile = 'quick') {
 }
 
 function securityEventMatchesActiveRun(event = {}, activeRunId = '') {
-  const expected = String(activeRunId || '').trim();
+  const expected = sanitizeSecurityRunId(activeRunId);
   if (!expected) return false;
-  const actual = String(event?.run_id || event?.command_id || event?.job_id || '').trim();
+  const actual = sanitizeSecurityRunId(event?.run_id || event?.command_id || event?.job_id);
   return Boolean(actual && actual === expected);
 }
 
@@ -84,7 +85,7 @@ function broadcastTerminalSecurityEvent(payload = {}) {
 
 function invalidateTerminalSecurityQueries(queryClient, payload, historyLimit) {
   const profile = normalizeProfile(payload.profile);
-  const runId = payload.run_id || 'latest';
+  const runId = sanitizeSecurityRunId(payload.run_id) || 'latest';
   queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
   queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityFreshness() });
   queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
@@ -114,7 +115,7 @@ function acceptAndApplySecurityEvent(queryClient, event, historyLimit = 20) {
     broadcastTerminalSecurityEvent(payload);
     invalidateTerminalSecurityQueries(queryClient, payload, historyLimit);
   } else if (incoming.type === 'security.scan.evidence_saved') {
-    const runId = payload.run_id || 'latest';
+    const runId = sanitizeSecurityRunId(payload.run_id) || 'latest';
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityEvidenceSummary(runId) });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityRunDetails(runId) });
   }
@@ -175,7 +176,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
   const environment = useSecurityLifecycleEnvironment();
   const historyLimitValue = Number(historyLimit || 20);
   const profileValue = normalizeProfile(profile);
-  const activeRunKey = String(activeRunId || '').trim();
+  const activeRunKey = sanitizeSecurityRunId(activeRunId);
   const localProgressActive = Boolean(localActive);
   const canObserve = Boolean(enabled && environment.visible && environment.online);
   const activateFallback = () => {

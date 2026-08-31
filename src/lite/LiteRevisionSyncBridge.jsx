@@ -4,14 +4,11 @@ import { useMachine } from '@xstate/react';
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
 import { useLiteSecurityEvents } from '../hooks/useLiteSecurityEvents.js';
 import { liteApi } from '../lib/liteApi.js';
+import { claimObservedSecurityCompletion } from '../lib/securityCompletion.js';
 import { getOfflineCacheMeta, setOfflineCacheMeta } from '../lib/liteOfflineDb.js';
 import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
-import {
-  securityTerminalNeedsAttention,
-  terminalSecurityProgress,
-} from '../lib/securityProgressEvents.js';
 import {
   LITE_REVISION_CHANGED_EVENT,
   LITE_REVISION_RESET_EVENT,
@@ -268,31 +265,16 @@ export default function LiteRevisionSyncBridge() {
   // root subscription makes a completed check visible after navigation while
   // retaining focused query invalidation and a run-ID completion guard.
   useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
-    const runId = String(event.run_id || '').trim().slice(0, 120);
-    const observedRunId = String(securityObservation?.runId || '').trim();
-    const profile = ['quick', 'full', 'app'].includes(String(event.profile || '').toLowerCase())
-      ? String(event.profile).toLowerCase()
-      : 'quick';
-    if (!securityObservation?.active || !observedRunId || runId !== observedRunId) return;
-    if (!terminalSecurityProgress(event)) return;
-    const eventId = `security-completion:${runId}`;
-    const needsAttention = securityTerminalNeedsAttention(event);
-    if (securityCompletionIds.current.has(eventId)) return;
-    securityCompletionIds.current.add(eventId);
-    if (securityCompletionIds.current.size > 64) securityCompletionIds.current.delete(securityCompletionIds.current.values().next().value);
-    setSecurityObservation({ active: false, runId: '' });
+    const completion = claimObservedSecurityCompletion(event, securityObservation, securityCompletionIds.current);
+    if (!completion) return;
+    setSecurityObservation(completion.observation);
     [
       liteQueryKeys.security(),
-      liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''),
+      liteQueryKeys.securityProfile(completion.profile, completion.profile === 'app' ? 'photoprism' : ''),
       liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
-    triggerLiteHaptic(needsAttention ? 'warning' : 'success');
-    pushToast({
-      id: eventId,
-      kind: needsAttention ? 'warning' : 'success',
-      title: needsAttention ? 'Safety check needs attention' : 'Safety check completed',
-      message: needsAttention ? 'Pocket Lab recorded a result that needs review.' : 'The latest safety result is ready to review.',
-    });
+    triggerLiteHaptic(completion.haptic);
+    pushToast(completion.toast);
   }), [activeSecurityHistoryLimit, pushToast, queryClient, securityObservation?.active, securityObservation?.runId, setSecurityObservation]);
 
   useEffect(() => {

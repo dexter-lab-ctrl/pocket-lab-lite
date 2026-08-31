@@ -1,4 +1,5 @@
 import { initialLiteScreenIdFromLocation, normalizeLiteScreenId } from '../lite/liteNavigationConfig.js';
+import { sanitizeSecurityRunId } from '../lib/securityRunId.js';
 import { create } from 'zustand';
 
 const DEFAULT_TAB = initialLiteScreenIdFromLocation();
@@ -234,7 +235,7 @@ export const useLiteUiStore = create((set, get) => ({
   setSecurityObservation: (payload = {}) => set({
     securityObservation: {
       active: Boolean(payload.active),
-      runId: normalizeSecurityFindingId(payload.runId) || '',
+      runId: sanitizeSecurityRunId(payload.runId) || '',
     },
   }),
   setSecurityManageOpen: (open) => set((state) => ({
@@ -260,18 +261,18 @@ export const useLiteUiStore = create((set, get) => ({
     const nextPanel = normalizeSecurityDetailsPanel(panelId);
     set({
       activeSecurityDetailsPanel: nextPanel,
-      activeSecurityDetailsRunId: nextPanel ? normalizeSecurityFindingId(runId) : null,
-      lastSecurityRunIdViewed: runId ? normalizeSecurityFindingId(runId) : get().lastSecurityRunIdViewed,
+      activeSecurityDetailsRunId: nextPanel ? sanitizeSecurityRunId(runId) || null : null,
+      lastSecurityRunIdViewed: runId ? sanitizeSecurityRunId(runId) || null : get().lastSecurityRunIdViewed,
       activeOverlay: nextPanel ? normalizeOverlay({ type: 'details', id: nextPanel, source: 'security' }) : null,
     });
   },
   setExpandedSecurityFindingId: (findingId) => set({ expandedSecurityFindingId: normalizeSecurityFindingId(findingId) }),
-  setLastSecurityRunIdViewed: (runId) => set({ lastSecurityRunIdViewed: normalizeSecurityFindingId(runId) }),
+  setLastSecurityRunIdViewed: (runId) => set({ lastSecurityRunIdViewed: sanitizeSecurityRunId(runId) || null }),
   setActiveSecurityHistoryLimit: (limit = DEFAULT_SECURITY_HISTORY_LIMIT) => {
     const nextLimit = Number.isFinite(Number(limit)) ? Math.max(1, Math.min(50, Number(limit))) : DEFAULT_SECURITY_HISTORY_LIMIT;
     set({ activeSecurityHistoryLimit: nextLimit });
   },
-  setActiveSecurityEvidenceRunId: (runId) => set({ activeSecurityEvidenceRunId: normalizeSecurityFindingId(runId) }),
+  setActiveSecurityEvidenceRunId: (runId) => set({ activeSecurityEvidenceRunId: sanitizeSecurityRunId(runId) || null }),
 
 
   recoveryManageOpen: false,

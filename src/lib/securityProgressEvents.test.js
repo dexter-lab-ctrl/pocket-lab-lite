@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   acceptSecurityProgressEvent,
+  normalizeSecurityProgressEvent,
   securityTerminalNeedsAttention,
   terminalSecurityProgress,
 } from './securityProgressEvents.js';
@@ -16,6 +17,11 @@ const event = (overrides = {}) => ({
 });
 
 describe('acceptSecurityProgressEvent', () => {
+  it('preserves the exact case of opaque backend run IDs', () => {
+    expect(normalizeSecurityProgressEvent({ run_id: ' security-2026-08-31T165957Z-2226321f ' }).run_id)
+      .toBe('security-2026-08-31T165957Z-2226321f');
+  });
+
   it('classifies every supported terminal status consistently', () => {
     ['succeeded', 'success', 'completed', 'complete', 'done'].forEach((status) => {
       expect(terminalSecurityProgress({ status })).toBe(true);

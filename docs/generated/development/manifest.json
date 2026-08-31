@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "79b0e01b24665f059831d69eefd645ba0d3e38e7ada851fd964ef052494816e6",
+  "source_fingerprint": "3b0ce9a88e00166448fbc4cf5c6f80924d2cbba441337f3d872a2f4d27434609",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -100,7 +100,7 @@
     "src/lite/LiteRecovery.stories.jsx": "0019e8e6110fda92080db12232466d6f633116caaa95efa2a534002b29e5506b",
     "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
     "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
-    "src/lite/LiteRevisionSyncBridge.jsx": "08693420b2de94610a79e2c6b710636af35eaa453560cac3ee3e9aabb1052741",
+    "src/lite/LiteRevisionSyncBridge.jsx": "ee30715c8a9d7b152d70ad99ca1761d8208ca2cf0d2ddea0980848afc8001720",
     "src/lite/LiteRules.jsx": "3e38953488dcf31099d4f2ab3192e8227b0226f175281c0feb96254b2f60f808",
     "src/lite/LiteRules.stories.jsx": "e0c1670434e62a0ef2d323a550e680e0e7fc9fda721679baced5600b811426e1",
     "src/lite/LiteRulesEnterprise.jsx": "51545febd943c05ac206c7259704a51b87f6418c39f523316209114e1739d208",

@@ -140,6 +140,11 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
   test('an accepted Security run reconciles one root terminal snapshot across navigation', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true });
+      window.__liteHapticCalls = [];
+      Object.defineProperty(navigator, 'vibrate', {
+        configurable: true,
+        value: (pattern) => { window.__liteHapticCalls.push(pattern); return true; },
+      });
       if (navigator.serviceWorker) {
         Object.defineProperty(navigator.serviceWorker, 'controller', { configurable: true, get: () => null });
       }
@@ -208,38 +213,40 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       const source = window.__liteControlledSecurityEvents.instances
         .find((item) => item.url.includes('/api/lite/security/events') && !item.closed);
       source.emit({
-        type: 'security.scan.snapshot',
+        type: 'security.scan.completed',
         event_id: 500,
-        run_id: 'security-stale-mock-001',
+        run_id: 'security-2026-08-31T165957Z-wrong-run',
         profile: 'quick',
         status: 'succeeded',
         active_scan: false,
-        snapshot: true,
+        snapshot: false,
       });
     });
     await expect(page.locator('.lite-toast', { hasText: 'Safety check completed' })).toHaveCount(0);
 
+    const hapticCallsBeforeTerminal = await page.evaluate(() => window.__liteHapticCalls.length);
     terminalDelivered = true;
     await page.evaluate(() => {
       const source = window.__liteControlledSecurityEvents.instances
         .find((item) => item.url.includes('/api/lite/security/events') && !item.closed);
       const terminal = {
-        type: 'security.scan.snapshot',
+        type: 'security.scan.completed',
         event_id: 501,
-        run_id: 'security-mock-002',
+        run_id: 'security-2026-08-31t165957z-2226321f',
         profile: 'quick',
         status: 'succeeded',
         percent: 100,
         active_scan: false,
-        snapshot: true,
+        snapshot: false,
         updated_at: '2026-08-31T10:00:00.000Z',
       };
       source.emit(terminal);
-      source.emit({ ...terminal, type: 'security.scan.completed', event_id: 502, snapshot: false, status: 'completed' });
+      source.emit({ ...terminal, event_id: 502, run_id: 'security-2026-08-31T165957Z-2226321f' });
     });
 
     const completionToast = page.locator('.lite-toast', { hasText: 'Safety check completed' });
     await expect(completionToast).toHaveCount(1);
+    expect(await page.evaluate((before) => window.__liteHapticCalls.slice(before), hapticCallsBeforeTerminal)).toEqual([[10, 30, 14]]);
     await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
       .filter((source) => source.url.includes('/api/lite/security/events') && !source.closed).length)).toBe(0);
     expect(requestsAfterTerminal.filter((url) => /\/api\/lite\/(identity|policy|fleet|catalog|recovery)(?:\?|$)/.test(url))).toEqual([]);

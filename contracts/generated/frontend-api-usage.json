@@ -2577,7 +2577,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "eb9c84dea565461bdbb9181a027bd1aed1331aa4084f5846acdc08894ee74324",
+    "aggregate_fingerprint": "622e0c65c0ee7440029bd7347df3f5863cde2da5a30e3c784fb4aab0f0f344dc",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2610,7 +2610,7 @@
       "src/lite/LiteRecovery.stories.jsx": "0019e8e6110fda92080db12232466d6f633116caaa95efa2a534002b29e5506b",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
-      "src/lite/LiteRevisionSyncBridge.jsx": "08693420b2de94610a79e2c6b710636af35eaa453560cac3ee3e9aabb1052741",
+      "src/lite/LiteRevisionSyncBridge.jsx": "ee30715c8a9d7b152d70ad99ca1761d8208ca2cf0d2ddea0980848afc8001720",
       "src/lite/LiteRules.jsx": "3e38953488dcf31099d4f2ab3192e8227b0226f175281c0feb96254b2f60f808",
       "src/lite/LiteRules.stories.jsx": "e0c1670434e62a0ef2d323a550e680e0e7fc9fda721679baced5600b811426e1",
       "src/lite/LiteRulesEnterprise.jsx": "51545febd943c05ac206c7259704a51b87f6418c39f523316209114e1739d208",
@@ -2620,7 +2620,7 @@
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "e68c96ecbf88fdbb4d407792fd5fd879ab5d775bbbb576b5940001f1e817b2aa",
       "src/lite/LiteToastHost.jsx": "956b9a1acd325db430d4c7c790240f3a759c64c7d66cba6e3ae6d7a2e97ac5dd",
       "src/lite/LiteUi.jsx": "c7d0680d7aa9bc761d53622d5900dee46fed3c38220982c272110814f92d92b3",
-      "src/mocks/handlers.js": "fd1b6bc56744ca6a492a4180595ba96ea7edf06fa3af8a943b6fd0da705ad37c"
+      "src/mocks/handlers.js": "f8a555e7e7dffc26974f5a7e3758b2a2240c752a2696ccd22357140fb220c36f"
     },
     "validation_state": "generated"
   }

@@ -14,7 +14,7 @@
     "scenario": "identity-summary",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "905c15d061b3cc0581bd9d22270d4dee2d3a02672edd6c4962cf88cd6145c032",
+    "source_fingerprint": "cbde20dcf520ba44fe3d35c1864c81289e8d2c5312134a395ca2343750d5df3b",
     "validation_status": "generated"
   }
 }
