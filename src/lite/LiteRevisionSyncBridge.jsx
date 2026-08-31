@@ -9,6 +9,10 @@ import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js'
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import {
+  securityTerminalNeedsAttention,
+  terminalSecurityProgress,
+} from '../lib/securityProgressEvents.js';
+import {
   LITE_REVISION_CHANGED_EVENT,
   LITE_REVISION_RESET_EVENT,
   applyLiteRevisionEnvelope,
@@ -269,11 +273,10 @@ export default function LiteRevisionSyncBridge() {
     const profile = ['quick', 'full', 'app'].includes(String(event.profile || '').toLowerCase())
       ? String(event.profile).toLowerCase()
       : 'quick';
-    const status = String(event.status || '').toLowerCase().replace(/[\s-]+/g, '_');
     if (!securityObservation?.active || !observedRunId || runId !== observedRunId) return;
-    if (!['succeeded', 'success', 'completed', 'complete', 'done', 'degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention', 'cancelled', 'canceled'].includes(status)) return;
+    if (!terminalSecurityProgress(event)) return;
     const eventId = `security-completion:${runId}`;
-    const needsAttention = ['degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention', 'cancelled', 'canceled'].includes(status);
+    const needsAttention = securityTerminalNeedsAttention(event);
     if (securityCompletionIds.current.has(eventId)) return;
     securityCompletionIds.current.add(eventId);
     if (securityCompletionIds.current.size > 64) securityCompletionIds.current.delete(securityCompletionIds.current.values().next().value);
