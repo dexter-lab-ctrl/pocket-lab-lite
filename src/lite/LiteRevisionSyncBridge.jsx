@@ -71,17 +71,17 @@ export default function LiteRevisionSyncBridge() {
   const setRevisionSyncState = useLiteUiStore((state) => state.setRevisionSyncState);
   const pushToast = useLiteUiStore((state) => state.pushToast);
   const activeSecurityHistoryLimit = useLiteUiStore((state) => state.activeSecurityHistoryLimit);
-  const activeTab = useLiteUiStore((state) => state.activeTab);
   const securityObservation = useLiteUiStore((state) => state.securityObservation);
   const setSecurityObservation = useLiteUiStore((state) => state.setSecurityObservation);
   const securityCompletionIds = useRef(new Set());
   const streamStatus = String(syncSnapshot.value || 'idle');
 
   // Security records only a bounded active run ID in the UI store when the
-  // server accepts a scan. While that run is active and its screen is closed,
-  // the root owns the existing stream; idle tabs do not hold a connection.
+  // server accepts a scan. The root owns this stream for the full accepted
+  // lifecycle, regardless of which Pocket Lab screen is currently visible.
+  // Idle app state never keeps this additional EventSource open.
   useLiteSecurityEvents({
-    enabled: Boolean(securityObservation?.active) && activeTab !== 'security',
+    enabled: Boolean(securityObservation?.active && securityObservation?.runId),
     historyLimit: activeSecurityHistoryLimit || 20,
     activeRunId: securityObservation?.runId || '',
     localActive: Boolean(securityObservation?.active),
@@ -265,13 +265,15 @@ export default function LiteRevisionSyncBridge() {
   // retaining focused query invalidation and a run-ID completion guard.
   useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
     const runId = String(event.run_id || '').trim().slice(0, 120);
+    const observedRunId = String(securityObservation?.runId || '').trim();
     const profile = ['quick', 'full', 'app'].includes(String(event.profile || '').toLowerCase())
       ? String(event.profile).toLowerCase()
       : 'quick';
     const status = String(event.status || '').toLowerCase().replace(/[\s-]+/g, '_');
-    if (!runId || !['succeeded', 'success', 'completed', 'complete', 'done', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention'].includes(status)) return;
+    if (!securityObservation?.active || !observedRunId || runId !== observedRunId) return;
+    if (!['succeeded', 'success', 'completed', 'complete', 'done', 'degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention', 'cancelled', 'canceled'].includes(status)) return;
     const eventId = `security-completion:${runId}`;
-    const needsAttention = ['failed', 'failure', 'error', 'blocked', 'review', 'needs_attention'].includes(status);
+    const needsAttention = ['degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention', 'cancelled', 'canceled'].includes(status);
     if (securityCompletionIds.current.has(eventId)) return;
     securityCompletionIds.current.add(eventId);
     if (securityCompletionIds.current.size > 64) securityCompletionIds.current.delete(securityCompletionIds.current.values().next().value);
@@ -288,7 +290,7 @@ export default function LiteRevisionSyncBridge() {
       title: needsAttention ? 'Safety check needs attention' : 'Safety check completed',
       message: needsAttention ? 'Pocket Lab recorded a result that needs review.' : 'The latest safety result is ready to review.',
     });
-  }), [activeSecurityHistoryLimit, pushToast, queryClient, setSecurityObservation]);
+  }), [activeSecurityHistoryLimit, pushToast, queryClient, securityObservation?.active, securityObservation?.runId, setSecurityObservation]);
 
   useEffect(() => {
     if (streamStatus !== 'connecting' || !online || !visible || !isLeader

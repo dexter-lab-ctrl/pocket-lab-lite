@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
   Copy,
@@ -1887,7 +1887,6 @@ export function hasLiveSecurityOperation(payload) {
 
 export default function SecurityScreen() {
   const [result, setResult] = useState(null);
-  const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || '';
   const [directSecurityProgressData, setDirectSecurityProgressData] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -1906,6 +1905,8 @@ export default function SecurityScreen() {
   const setActiveSecurityHistoryLimit = useLiteUiStore((state) => state.setActiveSecurityHistoryLimit);
   const setActiveSecurityEvidenceRunId = useLiteUiStore((state) => state.setActiveSecurityEvidenceRunId);
   const setSecurityObservation = useLiteUiStore((state) => state.setSecurityObservation);
+  const securityObservation = useLiteUiStore((state) => state.securityObservation);
+  const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || securityObservation?.runId || '';
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
   const securityScanSubmitGuardRef = useRef(false);
@@ -1921,8 +1922,11 @@ export default function SecurityScreen() {
   const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
   const localSecurityProgressActive = hasOptimisticSecurityProgress(result) || hasLiveSecurityOperation(result);
+  const rootOwnsAcceptedSecurityRun = Boolean(securityObservation?.active && securityObservation?.runId);
   const shouldLoadSecurityProgress = busy || localSecurityProgressActive;
-  const shouldUseSecurityProgressStream = Boolean(shouldLoadSecurityProgress || securityManageOpen || activeSecurityDetails === 'checkPath');
+  const shouldUseSecurityProgressStream = Boolean(
+    !rootOwnsAcceptedSecurityRun && (shouldLoadSecurityProgress || securityManageOpen || activeSecurityDetails === 'checkPath'),
+  );
   const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
   const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
     queryKey: liteQueryKeys.securityFreshness(),
@@ -2012,9 +2016,21 @@ export default function SecurityScreen() {
     localActive: localSecurityProgressActive,
     onProgress: setDirectSecurityProgressData,
   });
+  // The root accepted-run stream writes here. Observing this query does not
+  // start another EventSource or a progress polling loop.
+  const { data: cachedSecurityProgressData } = useQuery({
+    queryKey: liteQueryKeys.securityProgress(),
+    queryFn: () => queryClient.getQueryData(liteQueryKeys.securityProgress()) || null,
+    enabled: false,
+  });
   void securityProgressUsingFallback;
   void securityProgressFallbackLabel;
-  const liveSecurityProgressData = selectLiveSecurityProgress(null, directSecurityProgressData, securityProgressData, activeSecurityProgressRunId);
+  const liveSecurityProgressData = selectLiveSecurityProgress(
+    null,
+    directSecurityProgressData,
+    rootOwnsAcceptedSecurityRun ? cachedSecurityProgressData : securityProgressData,
+    activeSecurityProgressRunId,
+  );
   useEffect(() => {
     if (!result || !hasOptimisticSecurityProgress(result) || !liveSecurityProgressData || !isTerminalSecurityResult(liveSecurityProgressData)) return;
     const resultRunId = result.run_id || result.job_id || result.command_id || result.scan_progress?.run_id || '';

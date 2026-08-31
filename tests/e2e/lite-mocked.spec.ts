@@ -49,41 +49,110 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/Safety|Security/i);
   });
 
-  test('Security completion remains visible once after navigating away and refreshes only Security on return', async ({ page }) => {
-    const apiRequestsAfterCompletion: string[] = [];
+  test('an accepted Security run keeps one root EventSource across navigation until its terminal SSE event', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true });
+      if (navigator.serviceWorker) {
+        Object.defineProperty(navigator.serviceWorker, 'controller', { configurable: true, get: () => null });
+      }
+      class ControlledEventSource {
+        static instances = [];
+        constructor(url) {
+          this.url = String(url);
+          this.closed = false;
+          this.listeners = new Map();
+          ControlledEventSource.instances.push(this);
+          window.setTimeout(() => this.onopen?.({ type: 'open' }), 0);
+        }
+        addEventListener(type, listener) {
+          const listeners = this.listeners.get(type) || [];
+          listeners.push(listener);
+          this.listeners.set(type, listeners);
+        }
+        removeEventListener(type, listener) {
+          this.listeners.set(type, (this.listeners.get(type) || []).filter((item) => item !== listener));
+        }
+        close() { this.closed = true; }
+        emit(payload) {
+          const event = { data: JSON.stringify(payload) };
+          this.onmessage?.(event);
+          (this.listeners.get(payload.type) || []).forEach((listener) => listener(event));
+        }
+      }
+      window.EventSource = ControlledEventSource;
+      window.__liteControlledSecurityEvents = ControlledEventSource;
+    });
+
+    const requestsAfterTerminal: string[] = [];
     let terminalDelivered = false;
     page.on('request', (request) => {
-      if (terminalDelivered && request.url().includes('/api/lite/')) apiRequestsAfterCompletion.push(request.url());
+      if (terminalDelivered && request.url().includes('/api/lite/')) requestsAfterTerminal.push(request.url());
     });
 
     await page.goto('/?screen=security');
-    const security = page.locator('[data-lite-screen-id="security"]');
-    await expect(security).toBeVisible();
+    expect(await page.evaluate(async () => (await fetch('/api/lite/security/summary')).status)).toBe(200);
+    const acceptedScan = page.waitForResponse((response) => (
+      response.url().includes('/api/lite/security/check') && response.status() === 202
+    ));
+    await page.getByRole('button', { name: 'Run Quick Scan' }).click();
+    await acceptedScan;
+    // The click opens the screen-local stream while the request is in flight.
+    // Once the server accepts the run, the root stream replaces it before any
+    // navigation occurs; capture that settled owner rather than the transient.
+    await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
+      .filter((source) => source.url.includes('/api/lite/security/events')).length)).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
+      .filter((source) => source.url.includes('/api/lite/security/events') && !source.closed).length)).toBe(1);
+    const ownerId = await page.evaluate(() => window.__liteControlledSecurityEvents.instances
+      .findIndex((source) => source.url.includes('/api/lite/security/events') && !source.closed));
 
     await openTab(page, 'Home', 'home');
+    await expect(page.locator('[data-lite-screen-id="security"]')).not.toBeVisible();
+    await expect.poll(() => page.evaluate(() => ({
+      active: window.__liteControlledSecurityEvents.instances
+        .filter((source) => source.url.includes('/api/lite/security/events') && !source.closed).length,
+      owner: window.__liteControlledSecurityEvents.instances.findIndex((source) => (
+        source.url.includes('/api/lite/security/events') && !source.closed
+      )),
+    }))).toEqual({ active: 1, owner: ownerId });
 
-    // The mocked API has no writable Security scan state or SSE terminal
-    // endpoint, so this test hands off from an already server-accepted run by
-    // delivering the same sanitized terminal event the production stream
-    // publishes; it never forges completed Security read data.
+    await page.evaluate(() => {
+      const source = window.__liteControlledSecurityEvents.instances
+        .find((item) => item.url.includes('/api/lite/security/events') && !item.closed);
+      source.emit({
+        type: 'security.scan.completed',
+        event_id: 500,
+        run_id: 'security-stale-mock-001',
+        profile: 'quick',
+        status: 'succeeded',
+        active_scan: false,
+      });
+    });
+    await expect(page.locator('.lite-toast', { hasText: 'Safety check completed' })).toHaveCount(0);
+
     terminalDelivered = true;
     await page.evaluate(() => {
-      const detail = {
-        type: 'security:scan-completed',
-        profile: 'quick',
+      const source = window.__liteControlledSecurityEvents.instances
+        .find((item) => item.url.includes('/api/lite/security/events') && !item.closed);
+      const terminal = {
+        type: 'security.scan.completed',
+        event_id: 501,
         run_id: 'security-mock-002',
+        profile: 'quick',
         status: 'succeeded',
-        completed_at: '2026-08-31T10:00:00.000Z',
-        source: 'mocked-security-terminal-event',
+        percent: 100,
+        active_scan: false,
+        updated_at: '2026-08-31T10:00:00.000Z',
       };
-      window.dispatchEvent(new CustomEvent('security:scan-completed', { detail }));
-      window.dispatchEvent(new CustomEvent('security:scan-completed', { detail }));
+      source.emit(terminal);
+      source.emit({ ...terminal, event_id: 502, status: 'completed' });
     });
 
     const completionToast = page.locator('.lite-toast', { hasText: 'Safety check completed' });
     await expect(completionToast).toHaveCount(1);
-    await expect(completionToast).toContainText('The latest safety result is ready to review.');
-    expect(apiRequestsAfterCompletion.filter((url) => /\/api\/lite\/(identity|policy|fleet|catalog)(?:\?|$)/.test(url))).toEqual([]);
+    await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
+      .filter((source) => source.url.includes('/api/lite/security/events') && !source.closed).length)).toBe(0);
+    expect(requestsAfterTerminal.filter((url) => /\/api\/lite\/(identity|policy|fleet|catalog|recovery)(?:\?|$)/.test(url))).toEqual([]);
 
     const refreshedSecurity = page.waitForRequest((request) => (
       /\/api\/lite\/security(?:\/summary)?(?:\?|$)/.test(request.url())
@@ -205,17 +274,6 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await expect(rulesClose).toBeVisible();
       await page.keyboard.press('Escape');
 
-      await page.evaluate((runId) => {
-        window.dispatchEvent(new CustomEvent('security:scan-completed', {
-          detail: { type: 'security:scan-completed', profile: 'quick', run_id: runId, status: 'succeeded' },
-        }));
-      }, `viewport-${viewport.width}x${viewport.height}`);
-      const toast = page.locator('.lite-toast', { hasText: 'Safety check completed' }).last();
-      await expect(toast).toBeVisible();
-      expect(await toast.evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        return rect.left >= 0 && rect.right <= window.innerWidth + 1 && rect.top >= 0 && rect.bottom <= window.innerHeight + 1;
-      })).toBe(true);
       expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
     }
   });
