@@ -49,7 +49,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/Safety|Security/i);
   });
 
-  test('an accepted Security run keeps one root EventSource across navigation until its terminal SSE event', async ({ page }) => {
+  test('an accepted Security run reconciles one root terminal snapshot across navigation', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true });
       if (navigator.serviceWorker) {
@@ -120,12 +120,13 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       const source = window.__liteControlledSecurityEvents.instances
         .find((item) => item.url.includes('/api/lite/security/events') && !item.closed);
       source.emit({
-        type: 'security.scan.completed',
+        type: 'security.scan.snapshot',
         event_id: 500,
         run_id: 'security-stale-mock-001',
         profile: 'quick',
         status: 'succeeded',
         active_scan: false,
+        snapshot: true,
       });
     });
     await expect(page.locator('.lite-toast', { hasText: 'Safety check completed' })).toHaveCount(0);
@@ -135,17 +136,18 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       const source = window.__liteControlledSecurityEvents.instances
         .find((item) => item.url.includes('/api/lite/security/events') && !item.closed);
       const terminal = {
-        type: 'security.scan.completed',
+        type: 'security.scan.snapshot',
         event_id: 501,
         run_id: 'security-mock-002',
         profile: 'quick',
         status: 'succeeded',
         percent: 100,
         active_scan: false,
+        snapshot: true,
         updated_at: '2026-08-31T10:00:00.000Z',
       };
       source.emit(terminal);
-      source.emit({ ...terminal, event_id: 502, status: 'completed' });
+      source.emit({ ...terminal, type: 'security.scan.completed', event_id: 502, snapshot: false, status: 'completed' });
     });
 
     const completionToast = page.locator('.lite-toast', { hasText: 'Safety check completed' });
@@ -160,6 +162,17 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await openTab(page, 'Security', 'security');
     await refreshedSecurity;
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/No urgent safety issues|Protected|Safety score/i);
+    await expect(completionToast).toHaveCount(1);
+
+    // A historical result delivered after the accepted observation is cleared
+    // must remain presentation-only and never recreate the global notice.
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('security:scan-completed', {
+      detail: {
+        run_id: 'security-historical-mock-000',
+        profile: 'quick',
+        status: 'succeeded',
+      },
+    })));
     await expect(completionToast).toHaveCount(1);
   });
 

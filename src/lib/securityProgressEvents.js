@@ -1,6 +1,11 @@
 const TERMINAL_STATUSES = new Set([
   'succeeded', 'success', 'completed', 'complete', 'done',
-  'degraded', 'failed', 'failure', 'cancelled', 'canceled',
+  'degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention',
+  'cancelled', 'canceled',
+]);
+const ATTENTION_TERMINAL_STATUSES = new Set([
+  'degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention',
+  'cancelled', 'canceled',
 ]);
 const ACTIVE_STATUSES = new Set([
   'queued', 'accepted', 'waiting', 'running', 'working', 'in_progress',
@@ -11,7 +16,7 @@ function integerEventId(value) {
   return Number.isSafeInteger(number) && number > 0 ? number : 0;
 }
 
-function normalizedStatus(value) {
+export function normalizeSecurityProgressStatus(value) {
   return String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
 }
 
@@ -23,15 +28,19 @@ function timestamp(value = {}) {
 }
 
 export function terminalSecurityProgress(value = {}) {
-  return TERMINAL_STATUSES.has(normalizedStatus(value.status));
+  return TERMINAL_STATUSES.has(normalizeSecurityProgressStatus(value.status));
+}
+
+export function securityTerminalNeedsAttention(value = {}) {
+  return ATTENTION_TERMINAL_STATUSES.has(normalizeSecurityProgressStatus(value.status));
 }
 
 export function activeSecurityProgress(value = {}) {
-  return Boolean(value.active_scan) || ACTIVE_STATUSES.has(normalizedStatus(value.status));
+  return Boolean(value.active_scan) || ACTIVE_STATUSES.has(normalizeSecurityProgressStatus(value.status));
 }
 
 export function normalizeSecurityProgressEvent(value = {}) {
-  const status = normalizedStatus(value.status || 'idle');
+  const status = normalizeSecurityProgressStatus(value.status || 'idle');
   return {
     ...value,
     event_id: integerEventId(value.event_id),

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { acceptSecurityProgressEvent } from './securityProgressEvents.js';
+import {
+  acceptSecurityProgressEvent,
+  securityTerminalNeedsAttention,
+  terminalSecurityProgress,
+} from './securityProgressEvents.js';
 
 const event = (overrides = {}) => ({
   event_id: 10,
@@ -12,6 +16,17 @@ const event = (overrides = {}) => ({
 });
 
 describe('acceptSecurityProgressEvent', () => {
+  it('classifies every supported terminal status consistently', () => {
+    ['succeeded', 'success', 'completed', 'complete', 'done'].forEach((status) => {
+      expect(terminalSecurityProgress({ status })).toBe(true);
+      expect(securityTerminalNeedsAttention({ status })).toBe(false);
+    });
+    ['degraded', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention', 'cancelled', 'canceled'].forEach((status) => {
+      expect(terminalSecurityProgress({ status })).toBe(true);
+      expect(securityTerminalNeedsAttention({ status })).toBe(true);
+    });
+  });
+
   it('accepts replayed missed events in order', () => {
     const first = acceptSecurityProgressEvent(null, event({ event_id: 11, replayed: true }));
     const second = acceptSecurityProgressEvent(first.value, event({ event_id: 12, percent: 60, replayed: true }));

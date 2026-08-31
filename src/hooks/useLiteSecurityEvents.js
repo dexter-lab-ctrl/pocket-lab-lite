@@ -73,7 +73,7 @@ function typeFromProgress(progress = {}) {
 }
 
 function broadcastTerminalSecurityEvent(payload = {}) {
-  if (!terminalSecurityProgress(payload) || payload.snapshot) return null;
+  if (!terminalSecurityProgress(payload)) return null;
   return broadcastLiteSecurityScanCompleted(payload.profile || 'quick', {
     run_id: payload.run_id || '',
     status: payload.status || 'completed',

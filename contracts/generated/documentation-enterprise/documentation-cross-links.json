@@ -8702,17 +8702,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:security:0e9e6361d85ec94b",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/security",
-      "target": "test:tests/e2e/lite-mocked.spec.ts",
-      "target_type": "test"
-    },
-    {
-      "depth": 1,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:security:126ec5748f8087e7",
       "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/security",
@@ -9544,6 +9533,17 @@
       "source": "page:generated/enterprise/journeys/security",
       "target": "CTRL-WEBAUTHN-ASSURANCE",
       "target_type": "control"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:d2dc1bc1df7db57e",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "target_type": "test"
     },
     {
       "depth": 2,

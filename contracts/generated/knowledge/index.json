@@ -41128,10 +41128,6 @@
         {
           "source": "journey:add-device",
           "type": "verified_by"
-        },
-        {
-          "source": "journey:security-scan",
-          "type": "verified_by"
         }
       ],
       "test:tests/e2e/lite-test-helpers.ts": [
@@ -52386,10 +52382,6 @@
         {
           "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
-        },
-        {
-          "target": "test:tests/e2e/lite-mocked.spec.ts",
-          "type": "verified_by"
         }
       ],
       "journey:startup": [
@@ -63429,15 +63421,6 @@
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/rules/analysis",
       "type": "owns"
-    },
-    {
-      "evidence": [
-        "tests/e2e/lite-mocked.spec.ts"
-      ],
-      "id": "rel:439de25800f4e0f8",
-      "source": "journey:security-scan",
-      "target": "test:tests/e2e/lite-mocked.spec.ts",
-      "type": "verified_by"
     },
     {
       "evidence": [
@@ -83417,7 +83400,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "6b06b3c2467b683cdcd9d605a17def736d42a2229d5e9b024b2c9e91dda2a8f9",
+  "source_fingerprint": "f590a7b29e54267f0a120baaa5a8ac2ad82287d171fe9c903f2ea09a0a54ed4f",
   "statistics": {
     "entity_count": 1085,
     "entity_type_counts": {
@@ -83443,7 +83426,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3053,
+    "relation_count": 3052,
     "source_count": 232
   }
 }

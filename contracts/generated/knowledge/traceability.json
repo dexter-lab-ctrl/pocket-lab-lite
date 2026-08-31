@@ -3493,8 +3493,7 @@
         "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
         "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
         "test:tests/backend/test_lite_workload_admission.py",
-        "test:tests/docs/test_enterprise_completion.py",
-        "test:tests/e2e/lite-mocked.spec.ts"
+        "test:tests/docs/test_enterprise_completion.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3654,6 +3653,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "6b06b3c2467b683cdcd9d605a17def736d42a2229d5e9b024b2c9e91dda2a8f9"
+    "source_fingerprint": "f590a7b29e54267f0a120baaa5a8ac2ad82287d171fe9c903f2ea09a0a54ed4f"
   }
 }
