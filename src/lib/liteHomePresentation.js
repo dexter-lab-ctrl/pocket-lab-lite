@@ -244,6 +244,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
   const activitySummary = systemCurrentState.activity_summary || {};
   const savedStateOnly = Boolean(options.savedStateOnly);
   const backendReachable = options.backendReachable !== false;
+  const lastUpdatedLabel = String(options.lastUpdatedLabel || '').trim();
   const services = (Array.isArray(status.services) ? status.services : [])
     .map(homeServicePresentation)
     .sort((a, b) => {
@@ -260,17 +261,11 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
   const safetyItems = boundedCount(summary.security_findings);
   const deviceHealthAttention = boundedCount(summary.device_health_attention);
   const remoteReady = summary.remote_access_ready === true;
-  const overallTone = savedStateOnly || !backendReachable ? 'review' : homeStatusTone(status.overall);
+  const overallState = normalizedStatus(status.overall);
+  const overallKnown = Boolean(status.overall) && overallState !== 'unknown';
+  const overallTone = savedStateOnly || !backendReachable ? 'review' : overallKnown ? homeStatusTone(status.overall) : 'unknown';
 
-  let nextAction = {
-    screen: 'catalog',
-    label: apps ? 'Open Apps' : 'Browse Apps',
-    title: apps ? 'Continue with your apps' : 'Add your first self-hosted app',
-    detail: apps
-      ? `${apps} ${apps === 1 ? 'app is' : 'apps are'} ready to open or manage.`
-      : 'Choose a self-hosted app when you are ready to expand this workspace.',
-    tone: 'primary',
-  };
+  let nextAction = null;
 
   if (savedStateOnly || !backendReachable) {
     nextAction = {
@@ -280,6 +275,8 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       detail: 'Saved information remains visible. Actions stay protected until Pocket Lab reconnects.',
       tone: 'review',
     };
+  } else if (!overallKnown) {
+    nextAction = null;
   } else if (safetyItems > 0) {
     nextAction = {
       screen: 'security',
@@ -312,10 +309,31 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       detail: 'Local use is available, but private remote access is not ready yet.',
       tone: 'review',
     };
+  } else if (apps === 0) {
+    nextAction = {
+      screen: 'catalog',
+      label: 'Browse Apps',
+      title: 'Add a self-hosted app when you are ready',
+      detail: 'No app is currently available from this workspace overview.',
+      tone: 'primary',
+    };
+  } else {
+    const attentionService = services.find((item) => item.tone !== 'ready' && item.screen && item.screen !== 'home');
+    if (attentionService) {
+      nextAction = {
+        screen: attentionService.screen,
+        label: `Review ${attentionService.label}`,
+        title: `${attentionService.label} needs attention`,
+        detail: attentionService.summary,
+        tone: attentionService.tone,
+      };
+    }
   }
 
   const heroTitle = savedStateOnly || !backendReachable
     ? 'Your workspace is available with saved information'
+    : !overallKnown
+      ? 'Workspace status is not confirmed yet'
     : overallTone === 'ready'
       ? 'Your self-hosted workspace is ready'
       : overallTone === 'danger'
@@ -324,6 +342,8 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
 
   const heroSummary = savedStateOnly || !backendReachable
     ? 'Review the latest saved overview while Pocket Lab reconnects. Protected actions remain unavailable until fresh information returns.'
+    : !overallKnown
+      ? 'Pocket Lab has not reported a current workspace state. Check again when current information is available.'
     : overallTone === 'ready'
       ? 'Open apps, connect devices, review safety, and keep a verified backup from one private workspace.'
       : 'Pocket Lab is still usable. Review the recommended next step before making important changes.';
@@ -411,6 +431,41 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
     : semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: 'unknown', summary: 'Activity state has not been reported yet.', screen: 'home' });
 
   const resources = [deviceHealthResource, storageResource, databaseResource, activityResource];
+  const keyAreas = services.filter((item) => ['app_catalog', 'device_fleet', 'security', 'remote_access', 'recovery'].includes(item.key)).slice(0, 5);
+  const workspaceStory = savedStateOnly || !backendReachable
+    ? {
+        state: 'saved',
+        tone: 'saved',
+        headline: 'Showing saved information',
+        summary: heroSummary,
+        consequence: 'Current workspace status cannot be confirmed until Pocket Lab reconnects.',
+        freshness: lastUpdatedLabel ? { label: 'Saved', detail: lastUpdatedLabel, state: 'stale' } : { label: 'Saved state', state: 'saved' },
+      }
+    : !overallKnown
+      ? {
+          state: 'unknown',
+          tone: 'unknown',
+          headline: heroTitle,
+          summary: heroSummary,
+          attention: 'No healthy workspace state is assumed while current status is incomplete.',
+        }
+      : overallTone === 'ready'
+        ? {
+            state: 'ready',
+            tone: 'ready',
+            headline: 'Your Pocket Lab is ready',
+            summary: 'Apps, devices, and workspace services are available from the latest reported status.',
+            consequence: 'No immediate follow-up is required.',
+            freshness: lastUpdatedLabel ? { label: 'Current information', detail: lastUpdatedLabel, state: 'live' } : null,
+          }
+        : {
+            state: overallTone === 'danger' ? 'attention' : 'review',
+            tone: overallTone === 'danger' ? 'danger' : 'attention',
+            headline: heroTitle,
+            summary: heroSummary,
+            attention: nextAction?.detail || services.find((item) => item.tone !== 'ready')?.summary || 'Review the current workspace areas for more detail.',
+            freshness: lastUpdatedLabel ? { label: 'Current information', detail: lastUpdatedLabel, state: 'live' } : null,
+          };
 
   return {
     overallTone,
@@ -420,6 +475,15 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
     attentionCount,
     totalCount,
     nextAction,
+    workspaceStory,
+    keyAreas,
+    workspaceDetails: {
+      title: 'Workspace details',
+      description: 'Capacity, readiness context, and the latest safe workspace information.',
+      resources,
+      showWorkflow: ['review', 'danger'].includes(overallTone),
+      freshness: lastUpdatedLabel || 'Not checked yet',
+    },
     services: services.slice(0, 8),
     stats: [
       { key: 'apps', label: 'Apps', value: apps, note: apps === 1 ? 'self-hosted app available' : 'self-hosted apps available', screen: 'catalog' },
