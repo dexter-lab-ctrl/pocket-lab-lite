@@ -327,4 +327,99 @@ export function buildLiteIdentityAccessOverview(identity, {
   return { workspaceStory, keyAreas };
 }
 
+const RULES_ACTION_LABELS = {
+  'catalog.install': 'Install an app',
+  'device.remove': 'Remove a device',
+  'identity.passkey.revoke': 'Remove a passkey',
+};
+
+export function getLiteRulesActionLabel(action = '') {
+  const value = String(action || '').trim();
+  return RULES_ACTION_LABELS[value] || '';
+}
+
+/** Maps the prepared Personal Rules read without making policy authority local. */
+export function buildLiteRulesOverview(policy, {
+  savedStateOnly = false,
+  backendReachable = true,
+  lastUpdatedLabel = '',
+  isExpired = false,
+} = {}) {
+  const source = policy && typeof policy === 'object' ? policy : null;
+  const groups = Array.isArray(source?.policy_groups) ? source.policy_groups : [];
+  const decisions = Array.isArray(source?.recent_decisions) ? source.recent_decisions : [];
+  const isSaved = Boolean(savedStateOnly || (!backendReachable && source));
+  const ready = source?.status === 'ready' && source?.engine?.healthy === true && source?.engine?.loopback_only === true;
+  const freshness = identityFreshness({ savedStateOnly, backendReachable, lastUpdatedLabel, isExpired });
+  let workspaceStory;
+  if (isSaved) {
+    workspaceStory = {
+      state: isExpired ? 'stale' : 'saved',
+      tone: isExpired ? 'stale' : 'saved',
+      headline: 'Showing saved Rules information',
+      summary: 'Live Rules health and authorization cannot currently be confirmed.',
+      consequence: 'Protected actions still require current server verification.',
+      freshness,
+      nextAction: { id: 'refresh', label: 'Refresh Rules' },
+    };
+  } else if (!source || !source.engine || !source.status) {
+    workspaceStory = {
+      state: 'unknown',
+      tone: 'unknown',
+      headline: 'Rules status is not confirmed yet',
+      summary: 'Pocket Lab is still checking the prepared protection state.',
+      freshness,
+    };
+  } else if (ready) {
+    workspaceStory = {
+      state: 'ready',
+      tone: 'ready',
+      headline: 'Protected changes are checked first',
+      summary: 'Pocket Lab evaluates sensitive changes on the server before they continue.',
+      consequence: 'If a safe decision cannot be proven, the protected change stays blocked.',
+      freshness,
+      nextAction: { id: 'manage', label: 'Manage Safety Rules' },
+    };
+  } else {
+    workspaceStory = {
+      state: 'degraded',
+      tone: 'attention',
+      headline: 'Protected changes stay blocked until Rules recover',
+      summary: getLiteReasonPresentation(source.degraded_reason, source.summary || 'Safety Rules need attention.').message,
+      consequence: 'Pocket Lab will not bypass the policy layer while current protection cannot be proved.',
+      freshness,
+      nextAction: { id: 'refresh', label: 'Refresh Rules' },
+    };
+  }
+
+  return {
+    workspaceStory,
+    protectedAreas: groups.map((group) => ({
+      key: group?.id || group?.label || 'protection',
+      label: group?.label || 'Protected changes',
+      value: Array.isArray(group?.actions) && group.actions.length ? `${group.actions.length} protected` : 'Protection details unavailable',
+      summary: Array.isArray(group?.actions) && group.actions.length
+        ? group.actions.map((action) => getLiteRulesActionLabel(action) || 'Additional protected action').join(' · ')
+        : 'Pocket Lab checks this area before a sensitive change continues.',
+      attention: !ready,
+    })),
+    recentDecisionSummary: decisions.length
+      ? `${decisions.length} recent protected decision${decisions.length === 1 ? '' : 's'}`
+      : 'No recent protected decisions',
+  };
+}
+
+/** Maps Enterprise governance reads into a concise story; it never grants authority. */
+export function buildLiteEnterpriseRulesOverview({ health, approvals = [], exceptions = [] } = {}) {
+  const source = health && typeof health === 'object' ? health : null;
+  const pendingApprovals = approvals.filter((item) => item?.status === 'pending').length;
+  const activeExceptions = exceptions.filter((item) => item?.status === 'active').length;
+  const ready = source?.consistency_state === 'ready';
+  if (!source) return { workspaceStory: { state: 'unknown', tone: 'unknown', headline: 'Rules governance is not confirmed yet', summary: 'Pocket Lab is still checking Enterprise Rules health.' }, pendingApprovals, activeExceptions };
+  if (!ready) return { workspaceStory: { state: 'degraded', tone: 'attention', headline: 'Enterprise Rules need attention', summary: getLiteReasonPresentation(source.degraded_reason, 'Protected changes remain fail-closed until Rules health recovers.').message, consequence: 'Active, known-good, and runtime-observed Rules state must be proved by the server.', nextAction: { id: 'protection', label: 'Review Rules health' } }, pendingApprovals, activeExceptions };
+  if (pendingApprovals) return { workspaceStory: { state: 'review', tone: 'review', headline: 'An approval request needs review', summary: `${pendingApprovals} pending request${pendingApprovals === 1 ? '' : 's'} requires server-governed review.`, consequence: 'Approval changes approval state only; the requester must retry the protected action.', nextAction: { id: 'requests', label: 'Review requests' } }, pendingApprovals, activeExceptions };
+  if (activeExceptions) return { workspaceStory: { state: 'review', tone: 'review', headline: 'Temporary access is active', summary: `${activeExceptions} narrow exception${activeExceptions === 1 ? '' : 's'} remains time-bounded.`, consequence: 'Temporary access is not a permanent Rules change.', nextAction: { id: 'exceptions', label: 'Review temporary access' } }, pendingApprovals, activeExceptions };
+  return { workspaceStory: { state: 'ready', tone: 'ready', headline: 'Enterprise Rules are ready', summary: 'Active, known-good, and runtime-observed Rules state are consistent.', consequence: 'Protected changes continue to use server-resolved roles, assurance, and policy evaluation.' }, pendingApprovals, activeExceptions };
+}
+
 export const IDENTITY_RULES_PRESENTATION_READY = true;

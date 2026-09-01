@@ -4,6 +4,9 @@ import {
   getLiteReasonPresentation,
   getLiteStatusPresentation,
   buildLiteIdentityAccessOverview,
+  buildLiteEnterpriseRulesOverview,
+  buildLiteRulesOverview,
+  getLiteRulesActionLabel,
   identityActionStageLabel,
   shortRevision,
 } from './identityRulesPresentation.js';
@@ -115,5 +118,56 @@ describe('Identity and Rules presentation helpers', () => {
       enterprise: { enabled: false },
     }, { passkeyEligible: true });
     expect(missingRecovery.workspaceStory.nextAction).toEqual({ id: 'review_recovery', label: 'Review Recovery' });
+  });
+
+  it('keeps Personal Rules unknown until prepared engine and policy truth exist', () => {
+    expect(buildLiteRulesOverview(null).workspaceStory).toMatchObject({ state: 'unknown', tone: 'unknown' });
+    expect(buildLiteRulesOverview({ status: 'ready' }).workspaceStory.state).toBe('unknown');
+  });
+
+  it('keeps saved Personal Rules non-authoritative and refresh-only', () => {
+    const overview = buildLiteRulesOverview({
+      status: 'ready',
+      engine: { healthy: true, loopback_only: true },
+      policy_groups: [],
+    }, { savedStateOnly: true, lastUpdatedLabel: 'Saved earlier' });
+    expect(overview.workspaceStory).toMatchObject({ state: 'saved', tone: 'saved' });
+    expect(overview.workspaceStory.nextAction).toEqual({ id: 'refresh', label: 'Refresh Rules' });
+    expect(overview.workspaceStory.consequence).toContain('server verification');
+  });
+
+  it('maps only verified protected actions to friendly labels', () => {
+    expect(getLiteRulesActionLabel('catalog.install')).toBe('Install an app');
+    expect(getLiteRulesActionLabel('device.remove')).toBe('Remove a device');
+    expect(getLiteRulesActionLabel('unverified.action')).toBe('');
+  });
+
+  it('keeps an allowed policy decision separate from protected-action execution', () => {
+    const overview = buildLiteRulesOverview({
+      status: 'ready',
+      engine: { healthy: true, loopback_only: true },
+      recent_decisions: [{ allow: true }],
+      policy_groups: [],
+    });
+    expect(overview.recentDecisionSummary).toBe('1 recent protected decision');
+    expect(overview.workspaceStory.consequence).toContain('stays blocked');
+  });
+
+  it('prioritizes approval review without implying protected-action execution', () => {
+    const overview = buildLiteEnterpriseRulesOverview({
+      health: { consistency_state: 'ready' },
+      approvals: [{ status: 'pending' }],
+    });
+    expect(overview.workspaceStory.nextAction).toEqual({ id: 'requests', label: 'Review requests' });
+    expect(overview.workspaceStory.consequence).toContain('requester must retry');
+  });
+
+  it('keeps temporary Enterprise exceptions distinct from permanent Rules changes', () => {
+    const overview = buildLiteEnterpriseRulesOverview({
+      health: { consistency_state: 'ready' },
+      exceptions: [{ status: 'active' }],
+    });
+    expect(overview.workspaceStory.nextAction).toEqual({ id: 'exceptions', label: 'Review temporary access' });
+    expect(overview.workspaceStory.consequence).toContain('not a permanent Rules change');
   });
 });
