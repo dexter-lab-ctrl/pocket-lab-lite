@@ -16,7 +16,7 @@ generator_version: 3
 
 > Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>93</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>22</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>192</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>93</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>22</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>193</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -389,6 +389,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/e2e/lite-mocked.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-mocked.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-parity.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-parity.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-test-helpers.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-test-helpers.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-visual-devices.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-visual-devices.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-visual.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-visual.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/nats/test_subject_permissions.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/nats/test_subject_permissions.py</span></div></article>
 <article class="pl-repository-card"><code>tests/parity/test_api_contract_fences.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/parity/test_api_contract_fences.py</span></div></article>

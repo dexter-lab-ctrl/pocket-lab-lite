@@ -143,6 +143,17 @@ export function hasLiveDeviceFleetOperation(payload) {
   });
 }
 
+export function remoteAccessPresentation(remoteAccess = {}) {
+  const ready = remoteAccess?.status === 'healthy' || remoteAccess?.ready === true;
+  return {
+    ready,
+    title: ready ? 'Ready' : 'Remote access not ready',
+    summary: remoteAccess?.summary || (ready
+      ? 'Private-network access is available for eligible devices.'
+      : 'Pocket Lab is checking whether private-network device access is available.'),
+  };
+}
+
 export default function DevicesScreen() {
   const [hostname, setHostname] = useState('');
   const [selectedRole, setSelectedRole] = useState('compute');
@@ -188,7 +199,8 @@ export default function DevicesScreen() {
   const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
-  const remoteAccessReady = remoteAccess?.status === 'healthy' || remoteAccess?.ready;
+  const remoteAccessView = remoteAccessPresentation(remoteAccess);
+  const remoteAccessReady = remoteAccessView.ready;
   const latestInvite = invite || data?.latest_invite || null;
   useLiteServiceWorkerUpdateBlocker('devices-workflow', Boolean(
     hostname.trim()
@@ -490,15 +502,14 @@ export default function DevicesScreen() {
         </div>
         <div className="lite-remote-access-copy">
           <span>Remote access</span>
-          <strong>{remoteAccessReady ? 'Remote access ready' : 'Remote access not ready'}</strong>
-          <p>{remoteAccess?.summary || 'Pocket Lab is checking whether private-network device access is available.'}</p>
+          <strong>{remoteAccessView.title}</strong>
+          {!remoteAccessReady ? <p>{remoteAccessView.summary}</p> : null}
         </div>
-        {remoteAccessReady && remoteAccess?.ip ? (
-          <div className="lite-remote-access-ip">
-            <span>Tailscale IP</span>
-            <code>{remoteAccess.ip}</code>
-          </div>
-        ) : null}
+        {remoteAccessReady ? <details className="lite-remote-access-details">
+          <summary>Connection details</summary>
+          <p>{remoteAccessView.summary}</p>
+          {remoteAccess?.ip ? <div className="lite-remote-access-ip"><span>Tailscale IP</span><code>{remoteAccess.ip}</code></div> : null}
+        </details> : null}
       </section>
 
       <div className="lite-devices-layout">
