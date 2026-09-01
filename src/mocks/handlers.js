@@ -753,6 +753,14 @@ export const handlers = [
     status: 'healthy',
     devices: mockLiteDevices(),
     count: mockLiteDevices().length,
+    ...(scenario() === 'devices-add-ready' ? {
+      remote_access: {
+        status: 'healthy',
+        ready: true,
+        ip: '100.64.0.10',
+        summary: 'Private-network access is available for eligible devices.',
+      },
+    } : {}),
     roles: [
       { role: 'compute', role_label: 'App Host', description: 'Runs apps and services for your Pocket Lab.' },
       { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' }

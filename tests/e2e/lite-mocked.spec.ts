@@ -425,7 +425,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await page.goto('/?screen=devices');
       const devices = page.locator('[data-lite-screen-id="devices"]');
       await expect(devices).toBeVisible();
-      await expect(devices).toContainText(/Remote access (ready|not ready)/);
+      await expect(devices).toContainText(/Remote access\s*(Ready|not ready)/i);
       await expect(devices).toContainText('Devices');
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
@@ -433,6 +433,14 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await expect(serverCard).toContainText('Server host');
       await expect(serverCard).toContainText('Protected control device');
       await expect(serverCard.getByRole('button', { name: /remove|review/i })).toHaveCount(0);
+      const flowTrackHeight = await serverCard.locator('.lite-device-flow-track').evaluate((element) => (
+        Number.parseFloat(window.getComputedStyle(element).height)
+      ));
+      if (viewport.width <= 640) {
+        expect(flowTrackHeight).toBeGreaterThan(10);
+      } else {
+        expect(flowTrackHeight).toBeLessThanOrEqual(4);
+      }
 
       const addDisclosure = devices.locator('.lite-devices-add-disclosure');
       await addDisclosure.locator('summary').click();
@@ -452,5 +460,72 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await expect(details).toBeFocused();
       expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
     }
+  });
+
+  test('Devices keeps healthy cards compact while preserving accessible connection and action state', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices presentation contract is covered once in Chromium.');
+    await page.goto('/?screen=devices');
+    const devices = page.locator('[data-lite-screen-id="devices"]');
+    const healthyCard = devices.locator('.lite-device-card').filter({ hasText: 'Test-Phone-4' });
+    const serverCard = devices.locator('.lite-device-card-server');
+
+    await expect(healthyCard.locator('[data-connection-state="connected"]')).toBeVisible();
+    await expect(healthyCard.locator('.lite-device-card-disclosure')).not.toHaveAttribute('open', '');
+    await expect(healthyCard.locator('.lite-device-trust-strip')).toBeHidden();
+    await expect(healthyCard.getByRole('button', { name: 'Details' })).toBeVisible();
+    await expect(healthyCard.getByRole('button', { name: /restart agent|review removal|remove device/i })).toHaveCount(0);
+
+    const more = healthyCard.locator('.lite-device-card-disclosure > summary');
+    await more.press('Enter');
+    await expect(healthyCard.locator('.lite-device-card-disclosure')).toHaveAttribute('open', '');
+    await expect(healthyCard.locator('.lite-device-trust-strip')).toContainText(/identity|capabilities/i);
+
+    await expect(serverCard.locator('[data-connection-state="server"]')).toBeVisible();
+    await expect(serverCard).toContainText('Protected control device');
+    await expect(serverCard.getByRole('button', { name: /remove|review removal/i })).toHaveCount(0);
+
+    const remote = devices.locator('.lite-remote-access-not-ready');
+    await expect(remote).toContainText('Remote access not ready');
+  });
+
+  test('Devices makes remote-access and reduced-motion connection states explicit', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices motion contract is covered once in Chromium.');
+    await installScenario(page, 'nats-down');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/?screen=devices');
+    const devices = page.locator('[data-lite-screen-id="devices"]');
+    await expect(devices.locator('.lite-remote-access-not-ready')).toContainText('Remote access not ready');
+
+    const connectedSignal = devices.locator('[data-connection-state="connected"] .lite-device-flow-signal').first();
+    await expect(connectedSignal).toHaveCSS('animation-name', 'none');
+    const disconnected = devices.locator('[data-connection-state="disconnected"]').first();
+    await expect(disconnected).toBeVisible();
+    await expect(disconnected).toHaveAttribute('aria-label', /disconnected/i);
+  });
+
+  test('Devices retains the backend-owned Add Device invite flow', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices invite flow is covered once in Chromium.');
+    await page.addInitScript(() => {
+      if (!navigator.serviceWorker) return;
+      Object.defineProperty(navigator.serviceWorker, 'controller', {
+        configurable: true,
+        get: () => null,
+      });
+    });
+    await installScenario(page, 'devices-add-ready');
+    await page.goto('/?screen=devices');
+    const devices = page.locator('[data-lite-screen-id="devices"]');
+    await expect(devices.locator('.lite-remote-access-ready')).toContainText('Ready');
+    await expect(devices.locator('.lite-remote-access-details')).not.toHaveAttribute('open', '');
+    const addDisclosure = devices.locator('.lite-devices-add-disclosure');
+
+    await addDisclosure.locator('summary').click();
+    await addDisclosure.getByLabel('Device name').fill('Workshop tablet');
+    await addDisclosure.getByRole('button', { name: 'Add Device', exact: true }).click();
+    const invite = addDisclosure.locator('.lite-invite-card');
+    await expect(invite).toBeVisible();
+    await expect(invite).toContainText('Invite ready');
+    await expect(invite.getByLabel('Connect this device command')).toBeVisible();
+    await expect(invite.getByRole('button', { name: 'Copy command' })).toBeVisible();
   });
 });

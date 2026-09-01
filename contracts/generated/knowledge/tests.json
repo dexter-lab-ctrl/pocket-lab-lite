@@ -1783,6 +1783,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-devices.spec.ts",
+      "name": "tests/e2e/lite-visual-devices.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-visual.spec.ts",
       "name": "tests/e2e/lite-visual.spec.ts",
       "source_refs": [
@@ -1957,6 +1967,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e9beab8c9c9c928411f899121accbd1e84d3723ef53655e1f6fdf53aae48037f"
+    "source_fingerprint": "bb91dd4b033a51e567ffd72bc83914fb2ab1bb1b03dbd1894bdcc8364d338dd9"
   }
 }

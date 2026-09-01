@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, HeartPulse, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronDown, HeartPulse, Lock, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   GlassCard,
   StatusBadge,
@@ -70,6 +70,20 @@ function responsibilitySummary(device) {
   return parts.slice(0, 2).join(' · ');
 }
 
+export function deviceConnectionFlowState({ isServerCard, linkState, presentation }) {
+  if (isServerCard) return 'server';
+  if (linkState === 'repairing' || presentation.state === 'repairing') return 'repairing';
+  if (linkState === 'joined' || presentation.state === 'online') return 'connected';
+  return 'disconnected';
+}
+
+export function deviceConnectionFlowLabel(state, deviceName, isServerCard) {
+  if (isServerCard) return `Pocket Lab Server. ${deviceName} is the protected server host.`;
+  if (state === 'connected') return `Pocket Lab Server connected to ${deviceName}.`;
+  if (state === 'repairing') return `Pocket Lab Server is restoring the connection to ${deviceName}.`;
+  return `Pocket Lab Server is disconnected from ${deviceName}.`;
+}
+
 function DeviceCard({
   device,
   restartBusy = '',
@@ -95,6 +109,9 @@ function DeviceCard({
   const proactiveHealth = device?.proactive_health || null;
   const healthAttentionCurrent = Boolean(proactiveHealth?.attention_current !== false);
   const healthAttentionCount = healthAttentionCurrent ? Number(proactiveHealth?.attention_count || 0) : 0;
+  const flowState = deviceConnectionFlowState({ isServerCard, linkState, presentation });
+  const showHealthAttention = Boolean(proactiveHealth && (healthAttentionCount > 0 || !['healthy', 'unknown'].includes(String(proactiveHealth.status || '').toLowerCase())));
+  const lastSeen = device?.last_seen_state?.last_seen_at || device?.last_seen;
 
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
@@ -114,24 +131,21 @@ function DeviceCard({
           {isServerCard ? 'Server host' : device?.role_label || roleLabel(device?.role)}
         </span>
         <h2>{deviceName}</h2>
-        <p>
-          {isServerCard
-            ? 'Protected control device for this self-hosted workspace.'
-            : linkState === 'joined'
-              ? 'Connected and reporting through the private device channel.'
-              : linkState === 'repairing'
-                ? 'Pocket Lab is repairing this device connection.'
-                : 'This device is not currently reporting.'}
-        </p>
+        {isServerCard ? <p>Protected control device for this self-hosted workspace.</p> : null}
       </div>
 
-      <div className="lite-device-card-meta">
+      <div className="lite-device-primary-meta">
         <span><strong>{stalenessLabel(device)}</strong></span>
-        <span>Last seen <strong>{formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}</strong></span>
-        <span><strong>{capabilitySummary.label}</strong></span>
+        {lastSeen ? <span>Last seen <strong>{formatLiteTime(lastSeen)}</strong></span> : null}
       </div>
 
-      {proactiveHealth ? (
+      <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>
+        <span className="lite-device-flow-node lite-device-flow-server"><Server className="h-3.5 w-3.5" /> Server</span>
+        <span className="lite-device-flow-track" aria-hidden="true"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
+        <span className="lite-device-flow-node lite-device-flow-device">{isServerCard ? <Lock className="h-3.5 w-3.5" /> : <Network className="h-3.5 w-3.5" />}{isServerCard ? ' Protected host' : ' Device'}</span>
+      </div>
+
+      {showHealthAttention ? (
         <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
           <span className="lite-device-health-strip-icon">
             {healthAttentionCount > 0 ? <AlertTriangle className="h-4 w-4" /> : <HeartPulse className="h-4 w-4" />}
@@ -144,16 +158,6 @@ function DeviceCard({
         </div>
       ) : null}
 
-      <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
-        <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
-        {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
-        {device?.removal_assessment ? (
-          <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
-            {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
-          </small>
-        ) : null}
-      </div>
-
       <div className="lite-device-actions">
         <LiteButton
           tone="secondary"
@@ -165,26 +169,31 @@ function DeviceCard({
         >
           {detailsOpen ? 'Hide Details' : healthAttentionCount > 0 ? 'Review health' : 'Details'}
         </LiteButton>
-        {canRestart ? (
-          <LiteButton
-            tone="secondary"
-            onClick={onRestartAgent}
-            disabled={restartBusy === device?.id}
-          >
-            <RefreshCw className="h-4 w-4" />
-            {restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
-          </LiteButton>
-        ) : null}
-        {canRemove ? (
-          <LiteButton
-            tone="danger"
-            onClick={onRemoveDevice}
-            disabled={removeBusy}
-          >
-            <Trash2 className="h-4 w-4" />
-            {(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review'}
-          </LiteButton>
-        ) : null}
+        <details className="lite-device-card-disclosure">
+          <summary aria-label={`More details and actions for ${deviceName}`}>
+            <span>More</span><ChevronDown className="h-4 w-4" />
+          </summary>
+          <div className="lite-device-card-disclosure-content">
+            <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
+              <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
+              {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
+              {device?.removal_assessment ? (
+                <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
+                  {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
+                </small>
+              ) : null}
+              <small>Capabilities: {capabilitySummary.label}</small>
+            </div>
+            {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
+              {canRestart ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
+                <RefreshCw className="h-4 w-4" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
+              </LiteButton> : null}
+              {canRemove ? <LiteButton tone="danger" onClick={onRemoveDevice} disabled={removeBusy}>
+                <Trash2 className="h-4 w-4" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
+              </LiteButton> : null}
+            </div> : null}
+          </div>
+        </details>
       </div>
     </GlassCard>
   );

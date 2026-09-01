@@ -11586,6 +11586,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-devices.spec.ts",
+      "name": "tests/e2e/lite-visual-devices.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-visual.spec.ts",
       "name": "tests/e2e/lite-visual.spec.ts",
       "source_refs": [
@@ -18725,6 +18736,20 @@
       "id": "rel:226117a54927555c",
       "source": "component:frontend-state",
       "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-visual-devices.spec.ts"
+      ],
+      "id": "rel:2277164ce7cafe06",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-visual-devices.spec.ts",
       "type": "verified_by"
     },
     {
