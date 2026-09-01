@@ -595,7 +595,7 @@ export default function RecoveryScreen() {
         className="lite-recovery-operational-story"
         story={recoveryStory}
         primaryAction={recoveryStory.nextAction?.id === 'backup' ? { label: 'Back Up Now', onClick: backup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'verify' ? { label: 'Verify Backup', onClick: verifyLatestBackup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'preview' ? { label: 'Preview Restore', onClick: previewLatestRestore, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'refresh' ? { label: 'Refresh Recovery', onClick: refreshSummary } : recoveryStory.nextAction?.id === 'manage' ? { label: recoveryStory.nextAction.label, onClick: () => openRecoveryManage(recoveryStory.nextAction.section) } : null}
-        manageAction={{ label: 'Manage recovery', onClick: () => openRecoveryManage('backup') }}
+        manageAction={{ label: 'Manage Recovery', onClick: () => openRecoveryManage('backup') }}
       />
 
       <LiteActionRow

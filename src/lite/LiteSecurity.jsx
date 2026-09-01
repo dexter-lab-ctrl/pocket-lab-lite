@@ -2929,7 +2929,7 @@ export default function SecurityScreen() {
             label: safetyStory.primaryAction.label,
             onClick: () => { setSecurityManageSection(safetyStory.primaryAction.section || 'overview'); setSecurityManageOpen(true); },
           } : null}
-          manageAction={{ label: 'Manage safety', onClick: openSecurityManage }}
+          manageAction={{ label: 'Manage Safety', onClick: openSecurityManage }}
         />
         <LiteActionRow
           className="lite-security-latest-check-row"
