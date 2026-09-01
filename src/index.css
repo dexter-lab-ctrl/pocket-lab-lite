@@ -23862,11 +23862,11 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .lite-device-flow-signal {
   position: absolute;
   top: 50%;
-  left: -14%;
+  left: 0;
   width: .65rem;
   height: .65rem;
   border-radius: 999px;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   opacity: 0;
 }
 .theme-pocket-lite-daylight .lite-device-flow-break {
@@ -23880,7 +23880,7 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .is-connected .lite-device-flow-signal {
   background: #10b981;
   box-shadow: 0 0 0 .2rem rgba(16, 185, 129, .12);
-  animation: lite-device-flow-packet 2.5s ease-in-out infinite;
+  animation: lite-device-flow-packet-horizontal 2.5s ease-in-out infinite;
 }
 .theme-pocket-lite-daylight .lite-device-connection-flow.is-repairing {
   border-color: rgba(245, 158, 11, .28);
@@ -23890,7 +23890,7 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .is-repairing .lite-device-flow-signal {
   background: #d97706;
   box-shadow: 0 0 0 .2rem rgba(245, 158, 11, .12);
-  animation: lite-device-flow-packet 1.4s ease-in-out infinite;
+  animation: lite-device-flow-packet-horizontal 1.4s ease-in-out infinite;
 }
 .theme-pocket-lite-daylight .lite-device-connection-flow.is-disconnected {
   border-color: rgba(239, 68, 68, .24);
@@ -23967,11 +23967,11 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .lite-remote-access-details > summary { color: #047857; }
 .theme-pocket-lite-daylight .lite-remote-access-details > p { max-width: 28rem; margin: .2rem 0 .45rem; color: #475569; font-size: .8rem; }
 .theme-pocket-lite-daylight .lite-remote-access-details .lite-remote-access-ip { justify-items: start; }
-@keyframes lite-device-flow-packet {
-  0%, 15% { transform: translate(-10%, -50%); opacity: 0; }
+@keyframes lite-device-flow-packet-horizontal {
+  0%, 15% { left: 0; transform: translate(-50%, -50%); opacity: 0; }
   24% { opacity: .96; }
   75% { opacity: .96; }
-  100% { transform: translate(170%, -50%); opacity: 0; }
+  100% { left: 100%; transform: translate(-50%, -50%); opacity: 0; }
 }
 @media (max-width: 640px) {
   .theme-pocket-lite-daylight .lite-device-connection-flow {
@@ -23981,19 +23981,19 @@ html.lite-install-light-shell body {
     padding: .6rem .7rem;
   }
   .theme-pocket-lite-daylight .lite-device-flow-track { width: 2px; height: 1.7rem; margin-left: .5rem; }
-  .theme-pocket-lite-daylight .lite-device-flow-signal { top: -14%; left: 50%; transform: translateX(-50%); }
+  .theme-pocket-lite-daylight .lite-device-flow-signal { top: 0; left: 50%; transform: translate(-50%, -50%); }
+  .theme-pocket-lite-daylight .is-connected .lite-device-flow-signal { animation-name: lite-device-flow-packet-vertical; }
+  .theme-pocket-lite-daylight .is-repairing .lite-device-flow-signal { animation-name: lite-device-flow-packet-vertical; }
   .theme-pocket-lite-daylight .is-disconnected .lite-device-flow-break { left: 50%; top: 50%; }
   .theme-pocket-lite-daylight .lite-remote-access-panel { grid-template-columns: auto minmax(0, 1fr); }
   .theme-pocket-lite-daylight .lite-remote-access-details { grid-column: 1 / -1; justify-self: start; }
   .theme-pocket-lite-daylight .lite-device-card-disclosure-content { min-width: 0; }
 }
-@media (max-width: 640px) {
-  @keyframes lite-device-flow-packet {
-    0%, 15% { transform: translate(-50%, -10%); opacity: 0; }
-    24% { opacity: .96; }
-    75% { opacity: .96; }
-    100% { transform: translate(-50%, 230%); opacity: 0; }
-  }
+@keyframes lite-device-flow-packet-vertical {
+  0%, 15% { top: 0; transform: translate(-50%, -50%); opacity: 0; }
+  24% { opacity: .96; }
+  75% { opacity: .96; }
+  100% { top: 100%; transform: translate(-50%, -50%); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .theme-pocket-lite-daylight .lite-device-flow-signal,

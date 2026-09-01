@@ -503,6 +503,74 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(disconnected).toHaveAttribute('aria-label', /disconnected/i);
   });
 
+  test('Devices moves connection packets across their desktop and mobile tracks while keeping static states still', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The deterministic connection geometry contract is covered once in Chromium.');
+
+    const freezePacketAt = async (signal: ReturnType<typeof page.locator>, animationName: string, elapsedSeconds: number) => {
+      return signal.evaluate((element, { name, elapsed }) => {
+        const signal = element as HTMLElement;
+        signal.style.animation = `${name} 2.5s linear ${-elapsed}s paused both`;
+        const track = signal.parentElement?.getBoundingClientRect();
+        const packet = signal.getBoundingClientRect();
+        if (!track) throw new Error('Connection packet has no track.');
+        return { track: { x: track.x, y: track.y, width: track.width, height: track.height }, packet: { x: packet.x, y: packet.y, width: packet.width, height: packet.height } };
+      }, { name: animationName, elapsed: elapsedSeconds });
+    };
+
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/?screen=devices');
+    const devices = page.locator('[data-lite-screen-id="devices"]');
+    const connectedSignal = devices.locator('[data-connection-state="connected"] .lite-device-flow-signal').first();
+    await expect(connectedSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-horizontal');
+    const desktopStart = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-horizontal', .6);
+    const desktopEnd = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-horizontal', 1.8);
+    expect(desktopEnd.packet.x - desktopStart.packet.x).toBeGreaterThan(desktopStart.track.width * .4);
+    await connectedSignal.evaluate((element) => { (element as HTMLElement).style.animation = ''; });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(connectedSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-vertical');
+    const mobileStart = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-vertical', .6);
+    const mobileEnd = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-vertical', 1.8);
+    expect(mobileEnd.packet.y - mobileStart.packet.y).toBeGreaterThan(mobileStart.track.height * .4);
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(connectedSignal).toHaveCSS('animation-name', 'none');
+
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    const fleetPayload = await page.evaluate(async () => {
+      const response = await fetch('/api/lite/fleet');
+      return response.json();
+    }) as { devices: Array<{ id: string; [key: string]: unknown }> };
+    const repairingFleetPayload = {
+      ...fleetPayload,
+      devices: fleetPayload.devices.map((device) => device.id === 'test-phone-4'
+        ? { ...device, status: 'repairing', connection: 'repairing' }
+        : device),
+    };
+    await page.addInitScript((payload) => {
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = (input, init) => {
+        const url = new URL(typeof input === 'string' ? input : input.url, window.location.origin);
+        if (url.pathname === '/api/lite/fleet') {
+          return Promise.resolve(new Response(JSON.stringify(payload), {
+            headers: { 'Content-Type': 'application/json' },
+          }));
+        }
+        return originalFetch(input, init);
+      };
+    }, repairingFleetPayload);
+    await page.goto('/?screen=devices');
+    const repairingSignal = page.locator('[data-connection-state="repairing"] .lite-device-flow-signal').first();
+    await expect(repairingSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-vertical');
+    await expect(repairingSignal).toHaveCSS('background-color', 'rgb(217, 119, 6)');
+    const repairingStart = await freezePacketAt(repairingSignal, 'lite-device-flow-packet-vertical', .6);
+    const repairingEnd = await freezePacketAt(repairingSignal, 'lite-device-flow-packet-vertical', 1.8);
+    expect(repairingEnd.packet.y - repairingStart.packet.y).toBeGreaterThan(repairingStart.track.height * .4);
+    await expect(page.locator('[data-connection-state="disconnected"] .lite-device-flow-signal')).toHaveCSS('animation-name', 'none');
+    await expect(page.locator('[data-connection-state="server"] .lite-device-flow-signal')).toHaveCSS('animation-name', 'none');
+  });
+
   test('Devices retains the backend-owned Add Device invite flow', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices invite flow is covered once in Chromium.');
     await page.addInitScript(() => {
