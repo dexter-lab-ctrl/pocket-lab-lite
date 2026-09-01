@@ -36925,8 +36925,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "59995f4a94f4b79550f9104e769609a807b217e0",
-          "head_tree": "d3c0c9f8785b2d6ed5ca3be7b76dee3dbd87e3ad",
+          "head": "377d791545675901535dbc130d93aa35c65a00ed",
+          "head_tree": "78af9c455c47dd0f69ee122ee1ce3e55067bf187",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -38975,7 +38975,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "784800022d5090327f9241cbbb4d63d7ae5f5df3cbba34d45009d9ff9543e4f4",
+        "documentation": "179c952683b0712ee47270ebbec97e923d332b850800caa182574804592a7c06",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
       },
@@ -41299,8 +41299,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "59995f4a94f4b79550f9104e769609a807b217e0",
-        "head_tree": "d3c0c9f8785b2d6ed5ca3be7b76dee3dbd87e3ad",
+        "head": "377d791545675901535dbc130d93aa35c65a00ed",
+        "head_tree": "78af9c455c47dd0f69ee122ee1ce3e55067bf187",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -105702,5 +105702,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "541aab6152adcb50049eb6067e054095d427bc969f8aaca1c28a090114200329"
+  "source_fingerprint": "d9eb0c82ba8c144b61109db2db52a648ded5f0a0bd1f3eb8454f31c2e3ff471d"
 }

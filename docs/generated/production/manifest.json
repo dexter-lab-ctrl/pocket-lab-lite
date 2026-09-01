@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "4a1f2cf64180dfd6a19c437f4770e4192db9cf7eb5347417c9f7a401837e2b8f",
+  "source_fingerprint": "ae40f6fa0fb418913108c52f1c221f9f65fbf45bbd848604e6c14b20ebaf6585",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -121,7 +121,7 @@
     "src/lite/components/LiteProgressiveDetails.jsx": "5993dacb7e061099a7fdaf667371d749002e6002c30a95e8633bbf68862ca538",
     "src/lite/components/LiteTechnicalDetails.jsx": "5a0c7f387e61db5086e0dc5895b49cfb8d5105c6fc0cc925ffd5241594cd56c4",
     "src/lite/components/LiteVirtualList.jsx": "83c3e253109b929e83cb7899a2271d8a48a0c4ac5330c1484923c3d1be65bb9d",
-    "src/lite/devices/DeviceCard.jsx": "fa8b0dfc1edfa967fc142eecde9982a19cee017d329334ae0a3b565f6e3298ac",
+    "src/lite/devices/DeviceCard.jsx": "9ff0a9c84b5da799c85d0f3a907f5bfa1506e1101762ce2b2f82d33270d08395",
     "src/lite/devices/DeviceCard.test.jsx": "3e98e510634eff635298cbee4779230e79a269f974d8fb44fd7c72c4a8436127",
     "src/lite/devices/DeviceDetailsLazy.jsx": "77410b7e275a005cff76a723cf1f45f12497998daadbc0e588e6d3fa85e954c7",
     "src/lite/devices/DeviceModelPickerLazy.jsx": "6e8feb505b98df6413c0cd39d7fe281e8aa21f379f60fad90a322f085091f7fa",
