@@ -129,7 +129,7 @@ function buildDetails({ type, model = {} }) {
     toolNames = [],
     sbomSaved = false,
     evidenceFileCount = 0,
-    safetyScore = 0,
+    safetyScore = null,
     safetyLabel = '',
     lastRun = null,
     savedStateOnly = false,
@@ -213,7 +213,7 @@ function buildDetails({ type, model = {} }) {
       next_step: rows.length ? 'Open one finding at a time for the safest next step.' : 'Run Safety Check again later to keep evidence fresh.',
       technicalDetails: [
         { label: 'Latest run', value: shortId(lastRun?.run_id) || 'not available' },
-        { label: 'Safety score', value: safetyScore },
+        { label: 'Safety assessment', value: safetyScore === null || safetyScore === undefined ? 'not reported' : `${safetyScore} reported by Pocket Lab` },
         { label: 'Status', value: safetyLabel },
       ],
     };

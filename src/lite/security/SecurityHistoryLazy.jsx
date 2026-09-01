@@ -52,7 +52,7 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
   return (
     <div className="lite-security-history-lazy" data-security-history-lazy="true" data-security-history-cursor-v2="true">
       <div className="lite-security-trend-summary">
-        <div><span>Latest score</span><strong>{latestScore ?? '—'}</strong></div>
+        <div><span>Latest assessment</span><strong>{latestScore === null || latestScore === undefined ? 'Not reported' : `${latestScore} reported`}</strong></div>
         <div><span>Trend</span><strong>{trendLabel || 'Not enough history'}</strong>{trendDetail ? <small>{trendDetail}</small> : null}</div>
       </div>
       {savedStateOnly ? <p className="lite-security-s7-saved-note">Showing saved history. Reconnect to load older checks.</p> : null}
@@ -85,8 +85,8 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
           return (
             <div className="lite-security-s7-history-row">
               <div>
-                <strong>{entry?.summary || (reviewCount ? `${reviewCount} item${reviewCount === 1 ? '' : 's'} need attention` : 'Protected')}</strong>
-                <span>{entry?.label || String(entry?.profile || 'quick')} · Score {entry?.score ?? '—'} · {formatDuration(entry?.duration_ms, entry?.duration_seconds)}</span>
+                <strong>{entry?.summary || (reviewCount ? `${reviewCount} item${reviewCount === 1 ? '' : 's'} need attention` : 'No review items reported')}</strong>
+                <span>{entry?.label || String(entry?.profile || 'quick')} · {entry?.score === null || entry?.score === undefined ? 'Assessment not reported' : `${entry.score} reported`} · {formatDuration(entry?.duration_ms, entry?.duration_seconds)}</span>
                 {tools.length ? <small>{tools.join(' · ')}</small> : null}
                 {entry?.timeout?.summary ? <small>{entry.timeout.summary}</small> : null}
                 {!entry?.timeout?.summary && entry?.status === 'failed' ? <small>{entry?.failure_message || 'The safety check did not finish.'}</small> : null}
