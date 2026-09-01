@@ -18,6 +18,7 @@ describe('Lite shared operational storytelling primitives', () => {
       headline: 'Status not available',
     });
     expect(operationalStoryPresentation({ state: 'saved', tone: 'ready' }).tone).toBe('saved');
+    expect(operationalStoryPresentation({ state: 'signed_out' }).stateLabel).toBe('Signed Out');
   });
 
   it('renders supplied story content, actions, and disabled reasons without inventing an outcome', () => {

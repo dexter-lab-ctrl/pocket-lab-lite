@@ -328,7 +328,7 @@ export default function IdentityScreen() {
         className="lite-identity-operational-story"
         story={accessOverview.workspaceStory}
         primaryAction={accessOverview.workspaceStory.nextAction?.id === 'create_owner' ? { label: 'Create Owner', onClick: () => document.getElementById('identity-owner-setup')?.scrollIntoView({ block: 'start' }) } : accessOverview.workspaceStory.nextAction?.id === 'sign_in_passkey' ? { label: 'Sign in with Passkey', onClick: signInWithPasskey, disabled: Boolean(busy) } : accessOverview.workspaceStory.nextAction?.id === 'add_passkey' ? { label: 'Add Passkey', onClick: addPasskey, disabled: Boolean(busy) || !passkeyEligible } : accessOverview.workspaceStory.nextAction?.id === 'review_recovery' ? { label: 'Review Recovery', onClick: () => setManageOpen(true) } : accessOverview.workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh access', onClick: refresh } : null}
-        manageAction={data?.authenticated && !identityReadOnly ? { label: 'Manage access', onClick: () => setManageOpen(true) } : null}
+        manageAction={data?.authenticated && !identityReadOnly ? { label: 'Manage Access', onClick: () => setManageOpen(true) } : null}
       />
 
       {!loading ? <section className="lite-identity-key-areas" aria-labelledby="identity-key-areas"><div className="lite-identity-key-areas-head"><span>Access overview</span><h2 id="identity-key-areas">What to review</h2></div>{accessOverview.keyAreas.map((item) => <LiteActionRow key={item.key} label={item.label} value={item.value} summary={item.summary} attention={item.attention} action={data?.authenticated && !identityReadOnly ? { label: 'Manage', onClick: () => setManageOpen(true) } : null} />)}</section> : null}
@@ -349,7 +349,6 @@ export default function IdentityScreen() {
 
       {loading ? <LoadingCard label="Checking Identity & Access..." /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Identity is unavailable" description={String(error)} className="mb-5" /> : null}
-      {savedStateOnly ? <StateSurface tone="neutral" title="Showing saved Identity state" description={`${isExpired ? 'This saved state is old. ' : ''}${lastUpdatedLabel || 'Pocket Lab will refresh when the backend is reachable.'} Sign-in and protected write actions still require the live server.`} className="mb-5" /> : null}
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but one or more Identity checks are degraded. Protected changes remain server-authorized." className="mb-5" /> : null}
 
       {!loading && data?.setup_required && !identityReadOnly ? (

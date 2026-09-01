@@ -896,7 +896,11 @@ export function operationalStoryPresentation(story = {}) {
       }
     : null;
 
-  return { state, tone, headline, summary, consequence, attention, freshness };
+  const stateLabel = state
+    ? state.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase())
+    : 'Unknown';
+
+  return { state, stateLabel, tone, headline, summary, consequence, attention, freshness };
 }
 
 function StoryAction({ action, fallbackTone = 'secondary' }) {
@@ -925,7 +929,7 @@ export function LiteOperationalStory({ story, primaryAction, manageAction, class
   return (
     <section className={`lite-operational-story is-${presentation.tone} ${className}`.trim()} aria-live="polite">
       <div className="lite-operational-story-copy">
-        <span>{presentation.state || 'unknown'}</span>
+        <span>{presentation.stateLabel}</span>
         <strong>{presentation.headline}</strong>
         {presentation.summary ? <p>{presentation.summary}</p> : null}
         {presentation.consequence ? <p className="lite-operational-story-consequence">{presentation.consequence}</p> : null}

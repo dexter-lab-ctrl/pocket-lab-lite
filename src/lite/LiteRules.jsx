@@ -86,7 +86,6 @@ export default function RulesScreen() {
 
       {loading ? <LoadingCard label="Checking Safety Rules..." /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Safety Rules are unavailable" description={String(error)} className="mb-5" /> : null}
-      {savedStateOnly ? <StateSurface tone="neutral" title="Showing saved Rules state" description={`${isExpired ? 'This saved state is old. ' : ''}${lastUpdatedLabel || 'Pocket Lab will refresh it when the backend is reachable.'} Protected write actions must still be verified by the server.`} className="mb-5" /> : null}
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Safety Rules need attention" description={degraded.message} className="mb-5" /> : null}
 
       {!loading && data ? (
