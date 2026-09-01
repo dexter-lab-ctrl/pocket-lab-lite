@@ -3,6 +3,7 @@ import {
   getApprovalPresentation,
   getLiteReasonPresentation,
   getLiteStatusPresentation,
+  buildLiteIdentityAccessOverview,
   identityActionStageLabel,
   shortRevision,
 } from './identityRulesPresentation.js';
@@ -56,5 +57,63 @@ describe('Identity and Rules presentation helpers', () => {
     expect(identityActionStageLabel('pending')).toBe('Waiting for Pocket Lab…');
     expect(identityActionStageLabel('verifying')).toBe('Verifying…');
     expect(identityActionStageLabel('completed')).toBe('Completed');
+  });
+
+  it('keeps an absent Identity projection unknown instead of signed in or signed out', () => {
+    const overview = buildLiteIdentityAccessOverview(null);
+    expect(overview.workspaceStory).toMatchObject({ state: 'unknown', tone: 'unknown' });
+    expect(overview.workspaceStory.headline).toContain('not confirmed');
+  });
+
+  it('keeps saved Identity data visibly non-authoritative', () => {
+    const overview = buildLiteIdentityAccessOverview({
+      authenticated: true,
+      passkeys: [{ active: true }],
+      sessions: [{ active: true }],
+      recovery: { configured: true },
+      enterprise: { enabled: false },
+    }, { savedStateOnly: true, lastUpdatedLabel: 'Saved earlier' });
+    expect(overview.workspaceStory).toMatchObject({ state: 'saved', tone: 'saved' });
+    expect(overview.workspaceStory.summary).toContain('cannot currently be confirmed');
+    expect(overview.workspaceStory.nextAction).toEqual({ id: 'refresh', label: 'Refresh access' });
+  });
+
+  it('prioritizes a passkey sign-in only when the server and browser both support it', () => {
+    const eligible = buildLiteIdentityAccessOverview({
+      authenticated: false,
+      setup_required: false,
+      owner: { username: 'owner' },
+      sign_in_methods: { passkey: true },
+    }, { passkeyEligible: true });
+    expect(eligible.workspaceStory.nextAction).toEqual({ id: 'sign_in_passkey', label: 'Sign in with Passkey' });
+
+    const unavailable = buildLiteIdentityAccessOverview({
+      authenticated: false,
+      setup_required: false,
+      owner: { username: 'owner' },
+      sign_in_methods: { passkey: true },
+    }, { passkeyEligible: false });
+    expect(unavailable.workspaceStory.nextAction).toBeNull();
+  });
+
+  it('does not claim signed-in access is ready when passkeys or recovery are missing', () => {
+    const missingPasskey = buildLiteIdentityAccessOverview({
+      authenticated: true,
+      passkeys: [],
+      sessions: [{ active: true }],
+      recovery: { configured: true },
+      enterprise: { enabled: false },
+    }, { passkeyEligible: true });
+    expect(missingPasskey.workspaceStory.nextAction).toEqual({ id: 'add_passkey', label: 'Add Passkey' });
+    expect(missingPasskey.workspaceStory.tone).toBe('review');
+
+    const missingRecovery = buildLiteIdentityAccessOverview({
+      authenticated: true,
+      passkeys: [{ active: true }],
+      sessions: [{ active: true }],
+      recovery: { configured: false },
+      enterprise: { enabled: false },
+    }, { passkeyEligible: true });
+    expect(missingRecovery.workspaceStory.nextAction).toEqual({ id: 'review_recovery', label: 'Review Recovery' });
   });
 });

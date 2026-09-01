@@ -194,6 +194,34 @@
   gap: .75rem;
   margin: 1rem 0 0;
 }
+
+.theme-pocket-lite-daylight .lite-identity-operational-story {
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-key-areas {
+  display: grid;
+  gap: .6rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-key-areas-head {
+  display: grid;
+  gap: .15rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-key-areas-head > span {
+  color: var(--lite-muted, #667085);
+  font-size: .78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.theme-pocket-lite-daylight .lite-identity-key-areas-head > h2 {
+  margin: 0;
+  font-size: 1rem;
+}
 .theme-pocket-lite-daylight .lite-identity-posture-strip > div {
   display: grid;
   gap: .22rem;

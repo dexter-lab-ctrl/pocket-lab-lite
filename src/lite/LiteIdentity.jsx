@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Copy, Fingerprint, KeyRound, LogIn, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { getLiteReasonPresentation, identityActionStageLabel } from '../lib/identityRulesPresentation.js';
+import { buildLiteIdentityAccessOverview, getLiteReasonPresentation, identityActionStageLabel } from '../lib/identityRulesPresentation.js';
 import { takePendingOwnerClaim } from '../lib/liteOwnerClaim.js';
 import { createLitePasskey, getLitePasskey, webAuthnAvailable } from '../lib/liteWebAuthn.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
@@ -16,6 +16,8 @@ import {
   StateSurface,
   PageHeader,
   LiteButton,
+  LiteActionRow,
+  LiteOperationalStory,
   LiteRefreshButton,
   LoadingCard,
   copyTextToClipboard,
@@ -86,8 +88,17 @@ export default function IdentityScreen() {
   const activeSessions = useMemo(() => (data?.sessions || []).filter((item) => item.active), [data?.sessions]);
   const activePasskeys = useMemo(() => (data?.passkeys || []).filter((item) => item.active), [data?.passkeys]);
   const passkeyEligible = webAuthnAvailable();
+  const identityReadOnly = savedStateOnly || !backendReachable;
   const status = data?.setup_required ? 'review' : data?.authenticated ? 'healthy' : 'degraded';
   const enterpriseRole = data?.enterprise?.current_membership?.role || '';
+  const accessOverview = useMemo(() => buildLiteIdentityAccessOverview(data, {
+    savedStateOnly,
+    backendReachable,
+    lastUpdatedLabel,
+    isExpired,
+    passkeyEligible,
+    claimActive: claimState.active,
+  }), [data, savedStateOnly, backendReachable, lastUpdatedLabel, isExpired, passkeyEligible, claimState.active]);
 
   useEffect(() => {
     let cancelled = false;
@@ -309,11 +320,20 @@ export default function IdentityScreen() {
       <PageHeader
         eyebrow="Identity"
         title="Identity & Access"
-        description="Use a passkey for normal access, review active sessions, keep recovery local, and add server-managed roles only when Enterprise Mode is enabled."
+        description="Your access protection, active sessions, and recovery options."
         actions={<LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
-      <section className="lite-identity-hero" aria-labelledby="identity-posture-title">
+      <LiteOperationalStory
+        className="lite-identity-operational-story"
+        story={accessOverview.workspaceStory}
+        primaryAction={accessOverview.workspaceStory.nextAction?.id === 'create_owner' ? { label: 'Create Owner', onClick: () => document.getElementById('identity-owner-setup')?.scrollIntoView({ block: 'start' }) } : accessOverview.workspaceStory.nextAction?.id === 'sign_in_passkey' ? { label: 'Sign in with Passkey', onClick: signInWithPasskey, disabled: Boolean(busy) } : accessOverview.workspaceStory.nextAction?.id === 'add_passkey' ? { label: 'Add Passkey', onClick: addPasskey, disabled: Boolean(busy) || !passkeyEligible } : accessOverview.workspaceStory.nextAction?.id === 'review_recovery' ? { label: 'Review Recovery', onClick: () => setManageOpen(true) } : accessOverview.workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh access', onClick: refresh } : null}
+        manageAction={data?.authenticated && !identityReadOnly ? { label: 'Manage access', onClick: () => setManageOpen(true) } : null}
+      />
+
+      {!loading ? <section className="lite-identity-key-areas" aria-labelledby="identity-key-areas"><div className="lite-identity-key-areas-head"><span>Access overview</span><h2 id="identity-key-areas">What to review</h2></div>{accessOverview.keyAreas.map((item) => <LiteActionRow key={item.key} label={item.label} value={item.value} summary={item.summary} attention={item.attention} action={data?.authenticated && !identityReadOnly ? { label: 'Manage', onClick: () => setManageOpen(true) } : null} />)}</section> : null}
+
+      <section hidden className="lite-identity-hero" aria-labelledby="identity-posture-title">
         <div className="lite-identity-hero-copy">
           <div className="lite-home-pill"><span className="lite-ready-dot" />{data?.authenticated ? 'Owner signed in' : data?.setup_required ? 'Owner setup needed' : 'Sign in required'}</div>
           <h2 id="identity-posture-title">{data?.authenticated ? 'Your local access is protected.' : data?.setup_required ? 'Create the local Pocket Lab owner.' : 'Sign in before making protected changes.'}</h2>
@@ -332,8 +352,8 @@ export default function IdentityScreen() {
       {savedStateOnly ? <StateSurface tone="neutral" title="Showing saved Identity state" description={`${isExpired ? 'This saved state is old. ' : ''}${lastUpdatedLabel || 'Pocket Lab will refresh when the backend is reachable.'} Sign-in and protected write actions still require the live server.`} className="mb-5" /> : null}
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but one or more Identity checks are degraded. Protected changes remain server-authorized." className="mb-5" /> : null}
 
-      {!loading && data?.setup_required ? (
-        <GlassCard className="lite-identity-card lite-identity-auth-card">
+      {!loading && data?.setup_required && !identityReadOnly ? (
+        <GlassCard id="identity-owner-setup" className="lite-identity-card lite-identity-auth-card">
           <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><Fingerprint className="h-5 w-5" /></div><span className="lite-identity-soft-badge">First owner</span></div>
           <h2>{claimState.active ? 'Create your passkey' : 'Open your owner connect link'}</h2>
           {claimState.active ? (
@@ -364,13 +384,13 @@ export default function IdentityScreen() {
         </GlassCard>
       ) : null}
 
-      {!loading && data?.owner && !data?.authenticated ? (
+      {!loading && data?.owner && !data?.authenticated && !identityReadOnly ? (
         <div className="lite-identity-grid">
           <GlassCard className="lite-identity-card lite-identity-auth-card">
             <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><LogIn className="h-5 w-5" /></div><StatusBadge status="review">Signed out</StatusBadge></div>
             <h2>Sign in</h2>
             <p>Use your passkey for normal sign-in. Password sign-in remains under Advanced when configured.</p>
-            <LiteButton onClick={signInWithPasskey} disabled={Boolean(busy) || !data?.sign_in_methods?.passkey || !passkeyEligible}>{busy === 'passkey-login' ? 'Checking passkey…' : 'Sign In with Passkey'}</LiteButton>
+            <LiteButton variant="secondary" onClick={signInWithPasskey} disabled={Boolean(busy) || !data?.sign_in_methods?.passkey || !passkeyEligible}>{busy === 'passkey-login' ? 'Checking passkey…' : 'Sign In with Passkey'}</LiteButton>
             <div className="mt-4"><LiteButton variant="secondary" onClick={() => setAdvancedSignIn((value) => !value)}>{advancedSignIn ? 'Hide Advanced Sign-In' : 'Advanced Sign-In'}</LiteButton></div>
             {advancedSignIn && data?.sign_in_methods?.password ? (
               <form className="lite-identity-form mt-4" onSubmit={signIn}>
@@ -396,16 +416,16 @@ export default function IdentityScreen() {
         </div>
       ) : null}
 
-      {data?.authenticated ? (
+      {data?.authenticated && !identityReadOnly ? (
         <>
-          <div className="lite-identity-posture-strip" aria-label="Access posture">
+          <div hidden className="lite-identity-posture-strip" aria-label="Access posture">
             <div><span>Owner</span><strong>{data?.owner?.display_name || 'Pocket Lab Owner'}</strong><small>{enterpriseRole ? `${enterpriseRole} role` : 'Personal Mode'}</small></div>
             <div><span>Passkeys</span><strong>{activePasskeys.length ? `${activePasskeys.length} ready` : 'Needs attention'}</strong><small>{passkeyEligible ? 'Browser eligible' : 'HTTPS/passkey support needed'}</small></div>
             <div><span>Sessions</span><strong>{activeSessions.length} active</strong><small>{activeSessions.some((session) => session.current) ? 'Current session verified' : 'Session posture available'}</small></div>
             <div><span>Recovery</span><strong>{data?.recovery?.configured ? 'Ready' : 'Needs attention'}</strong><small>{data?.recovery?.configured ? `${data.recovery.remaining} unused` : 'Generate a recovery set'}</small></div>
           </div>
 
-          <GlassCard className="lite-identity-card lite-identity-summary-card mt-5">
+          <GlassCard hidden className="lite-identity-card lite-identity-summary-card mt-5">
             <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={activePasskeys.length && data?.recovery?.configured ? 'healthy' : 'review'}>{activePasskeys.length && data?.recovery?.configured ? 'Ready' : 'Review protection'}</StatusBadge></div>
             <h2>{data?.owner?.display_name || 'Pocket Lab Owner'}</h2>
             <p>@{data?.owner?.username || 'owner'} · Signed in with {data?.session?.auth_method || 'server session'}</p>
