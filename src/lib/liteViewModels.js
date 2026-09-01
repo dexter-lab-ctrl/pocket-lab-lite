@@ -2692,6 +2692,87 @@ export function selectRecoverySummaryView(payload = {}) {
   });
 }
 
+// Presentation-only Recovery story. It does not settle operations, grant a
+// restore permission, or infer backend health from browser state.
+export function selectRecoveryOperationalStoryView(payload = {}, {
+  savedStateOnly = false,
+  backendReachable = true,
+  projectionStale = false,
+  databaseWriteBlocked = false,
+} = {}) {
+  const backup = selectRecoveryLatestBackupView(payload);
+  const preview = selectRecoveryRestorePreviewView(payload);
+  const restore = selectRecoveryLastRestoreView(payload);
+  const operation = selectRecoveryActionStateView(payload);
+  const verified = backup?.verification_status === 'verified';
+  const previewReady = preview?.status === 'ready' && preview?.restore_allowed !== false;
+  const restoreStatus = normalizeRecoveryStatus(restore?.status || restore?.state || restore?.phase);
+  const healthStatus = normalizeRecoveryStatus(restore?.health_validation?.status || '');
+  const serviceStatus = normalizeRecoveryStatus(restore?.service_restart?.status || '');
+  const live = Boolean(operation?.live || backup?.pending === true || payload?.running === true || payload?.operation_running === true || payload?.in_progress === true);
+  const freshness = {
+    state: savedStateOnly || projectionStale ? 'saved' : backup?.created_at ? 'current' : 'unknown',
+    label: savedStateOnly || projectionStale ? 'Showing saved Recovery information' : backup?.created_at ? `Last backup ${backup.created_at}` : '',
+    detail: savedStateOnly || projectionStale ? 'Live restore readiness cannot be confirmed.' : '',
+  };
+  const base = {
+    latestBackup: backup,
+    verification: { verified, status: normalizeRecoveryStatus(backup?.verification_status || '') },
+    restoreReadiness: { previewReady, preview_id: safeString(preview?.preview_id || ''), change_count: Number(preview?.change_count || 0) },
+    freshness,
+  };
+  if (savedStateOnly || projectionStale || backendReachable === false) return {
+    ...base, state: 'saved', tone: 'degraded', headline: 'Showing saved Recovery information',
+    summary: 'Saved details remain available, but Pocket Lab must confirm current recovery state before changes.',
+    consequence: 'Backup and restore actions stay protected until the live connection returns.', attention: '',
+    nextAction: { id: 'refresh', label: 'Refresh Recovery' },
+  };
+  if (databaseWriteBlocked) return {
+    ...base, state: 'blocked', tone: 'review', headline: 'Recovery protection needs attention',
+    summary: 'Pocket Lab is protecting recovery changes until the current database condition is resolved.',
+    consequence: 'Backup and restore actions remain blocked for safety.', attention: '',
+    nextAction: { id: 'manage', label: 'Review protection', section: 'protection' },
+  };
+  if (live) return {
+    ...base, state: 'active', tone: 'checking', headline: 'Recovery work is in progress',
+    summary: safeString(operation?.summary || operation?.progress?.stage || 'Pocket Lab is completing the current recovery operation.'),
+    consequence: 'Completion is reported only after backend-prepared terminal evidence is available.', attention: '', nextAction: null,
+  };
+  if (['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled'].includes(restoreStatus)) return {
+    ...base, state: 'restore_failed', tone: 'danger', headline: 'Restore needs attention',
+    summary: safeString(restore?.summary || 'The last restore did not complete.'),
+    consequence: 'Earlier backups and recovery history remain available for review.', attention: '',
+    nextAction: { id: 'manage', label: 'Review restore', section: 'restore' },
+  };
+  if (['succeeded', 'success', 'completed', 'complete', 'done', 'succeeded_with_warnings'].includes(restoreStatus)) {
+    const healthy = ['healthy', 'ready', 'succeeded', 'success', 'completed', 'complete', 'done'].includes(healthStatus);
+    const warnings = restoreStatus === 'succeeded_with_warnings' || ['warning', 'warnings', 'failed', 'failure', 'error'].includes(healthStatus) || ['failed', 'failure', 'error'].includes(serviceStatus);
+    return {
+      ...base, state: warnings ? 'restore_warning' : healthy ? 'restore_completed' : 'restore_health_pending', tone: warnings ? 'review' : healthy ? 'ready' : 'checking',
+      headline: warnings ? 'Restore completed with warnings' : healthy ? 'Restore completed and Pocket Lab is responding normally' : 'Restore completed; health validation is still pending',
+      summary: safeString(restore?.summary || 'Pocket Lab recorded the restore result.'),
+      consequence: warnings ? 'Review service recovery and health validation before relying on the restored state.' : healthy ? 'Service recovery and health validation were reported by Pocket Lab.' : 'Do not treat restored files as a fully healthy recovery until validation completes.',
+      attention: '', nextAction: { id: 'manage', label: warnings ? 'Review restore' : 'View restore details', section: 'restore' },
+    };
+  }
+  if (!backup?.backup_id) return {
+    ...base, state: 'no_backup', tone: 'unknown', headline: 'Create your first protected backup',
+    summary: 'Create a backup before making important changes.', consequence: '', attention: '', nextAction: { id: 'backup', label: 'Back Up Now' },
+  };
+  if (!verified) return {
+    ...base, state: 'verification_pending', tone: 'review', headline: 'Your latest backup needs verification',
+    summary: 'A backup is available, but Pocket Lab has not confirmed its recovery evidence yet.', consequence: 'Verify it before relying on it for recovery.', attention: '', nextAction: { id: 'verify', label: 'Verify Backup' },
+  };
+  if (previewReady) return {
+    ...base, state: 'preview_ready', tone: 'ready', headline: 'Your latest backup is verified',
+    summary: 'A restore preview is ready. Nothing was changed during preview.', consequence: 'Review the planned changes before confirming a protected restore.', attention: '', nextAction: { id: 'manage', label: 'Review Restore', section: 'restore' },
+  };
+  return {
+    ...base, state: 'verified', tone: 'ready', headline: 'Your latest backup is verified',
+    summary: 'You can preview a restore before anything changes.', consequence: '', attention: '', nextAction: { id: 'preview', label: 'Preview Restore' },
+  };
+}
+
 export function selectRecoveryRepositoryView(payload = {}) {
   return normalizeRecoveryRepository(payload?.repository || payload?.repository_readiness || {});
 }

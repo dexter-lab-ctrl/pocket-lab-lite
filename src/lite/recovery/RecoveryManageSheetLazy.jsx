@@ -114,7 +114,6 @@ export default function RecoveryManageSheetLazy({
   onDatabaseBackup,
   onOpenDatabaseDetails,
   onBackUpApp,
-  onPreviewAppRestore,
   onOpenActionDetails,
   onOpenEvidence,
   detailsLoading = false,
@@ -229,7 +228,6 @@ export default function RecoveryManageSheetLazy({
                         <span>{lifecycle?.backup?.summary || app.summary || 'App backup profile is ready.'}</span>
                       </div>
                       <div>
-                        <LiteButton tone="secondary" onClick={() => onPreviewAppRestore(app)} disabled={Boolean(busy)}>Preview</LiteButton>
                         <LiteButton onClick={() => onBackUpApp(app)} disabled={Boolean(busy)}>
                           {busy === `app-backup:${app.app_id}` ? 'Starting…' : 'Back up'}
                         </LiteButton>
