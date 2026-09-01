@@ -23830,41 +23830,78 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .lite-device-primary-meta strong { color: #334155; }
 .theme-pocket-lite-daylight .lite-device-connection-flow {
   display: grid;
-  grid-template-columns: auto minmax(2.5rem, 1fr) auto;
-  align-items: center;
-  gap: .5rem;
-  min-height: 2.35rem;
-  padding: .45rem .55rem;
-  border: 1px solid rgba(148, 163, 184, .18);
-  border-radius: .9rem;
-  background: rgba(248, 250, 252, .72);
+  gap: .6rem;
+  min-width: 0;
+  margin-top: .15rem;
+  padding: .75rem .8rem .8rem;
+  border: 1px solid rgba(125, 158, 185, .25);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(248, 250, 252, .96), rgba(239, 246, 255, .78));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .68), 0 .35rem .9rem rgba(15, 23, 42, .035);
   color: #475569;
 }
-.theme-pocket-lite-daylight .lite-device-flow-node {
-  display: inline-flex;
+.theme-pocket-lite-daylight .lite-device-connection-copy { display: grid; gap: .1rem; }
+.theme-pocket-lite-daylight .lite-device-connection-copy > span {
+  color: #64748b;
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.theme-pocket-lite-daylight .lite-device-connection-copy strong { color: #334155; font-size: .78rem; }
+.theme-pocket-lite-daylight .lite-device-flow-topology {
+  display: grid;
+  grid-template-columns: minmax(3.75rem, auto) minmax(3.5rem, 1fr) minmax(3.75rem, auto);
   align-items: center;
-  gap: .32rem;
+  gap: .65rem;
+  min-width: 0;
+}
+.theme-pocket-lite-daylight .lite-device-flow-node {
+  display: grid;
+  justify-items: center;
+  gap: .28rem;
   min-width: 0;
   color: #334155;
-  font-size: .72rem;
+  font-size: .7rem;
   font-weight: 850;
+  text-align: center;
+}
+.theme-pocket-lite-daylight .lite-device-flow-node > svg {
+  width: 2.15rem;
+  height: 2.15rem;
+  padding: .48rem;
+  border: 1px solid rgba(37, 99, 235, .26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 .25rem .55rem rgba(37, 99, 235, .1);
+  color: #2563eb;
+}
+.theme-pocket-lite-daylight .lite-device-flow-node small {
+  display: block;
+  max-width: 8.25rem;
+  overflow: hidden;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .theme-pocket-lite-daylight .lite-device-flow-track {
   position: relative;
   display: block;
-  height: 2px;
-  min-width: 2rem;
+  height: 3px;
+  min-width: 0;
   border-radius: 999px;
-  background: rgba(148, 163, 184, .4);
+  background: linear-gradient(90deg, rgba(14, 165, 233, .35), rgba(37, 99, 235, .68), rgba(14, 165, 233, .35));
   overflow: hidden;
 }
 .theme-pocket-lite-daylight .lite-device-flow-signal {
   position: absolute;
   top: 50%;
   left: 0;
-  width: .65rem;
-  height: .65rem;
+  width: .78rem;
+  height: .78rem;
   border-radius: 999px;
   transform: translate(-50%, -50%);
   opacity: 0;
@@ -23873,10 +23910,8 @@ html.lite-install-light-shell body {
   display: none;
 }
 .theme-pocket-lite-daylight .lite-device-connection-flow.is-connected {
-  border-color: rgba(16, 185, 129, .18);
-  background: rgba(240, 253, 244, .72);
+  border-color: rgba(14, 165, 233, .25);
 }
-.theme-pocket-lite-daylight .is-connected .lite-device-flow-track { background: rgba(16, 185, 129, .5); }
 .theme-pocket-lite-daylight .is-connected .lite-device-flow-signal {
   background: #10b981;
   box-shadow: 0 0 0 .2rem rgba(16, 185, 129, .12);
@@ -23915,11 +23950,32 @@ html.lite-install-light-shell body {
   transform: translate(-50%, -50%);
 }
 .theme-pocket-lite-daylight .lite-device-connection-flow.is-server {
-  border-color: rgba(37, 99, 235, .2);
-  background: linear-gradient(90deg, rgba(239,246,255,.82), rgba(248,250,252,.72));
+  border-color: rgba(37, 99, 235, .3);
+  background: linear-gradient(135deg, rgba(239,246,255,.9), rgba(248,250,252,.82));
 }
-.theme-pocket-lite-daylight .is-server .lite-device-flow-track { background: rgba(37, 99, 235, .42); }
 .theme-pocket-lite-daylight .is-server .lite-device-flow-node { color: #1e40af; }
+.theme-pocket-lite-daylight .lite-device-protected-host {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 3.2rem;
+}
+.theme-pocket-lite-daylight .lite-device-protected-host .lite-device-flow-node { justify-items: start; }
+.theme-pocket-lite-daylight .lite-device-protected-host .lite-device-flow-node > svg { color: #1d4ed8; }
+.theme-pocket-lite-daylight .lite-device-protected-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .4rem .55rem;
+  border: 1px solid rgba(37, 99, 235, .18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  color: #1e40af;
+  font-size: .7rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
 .theme-pocket-lite-daylight .lite-device-card-disclosure {
   position: relative;
   min-width: 0;
@@ -23975,16 +24031,21 @@ html.lite-install-light-shell body {
 }
 @media (max-width: 640px) {
   .theme-pocket-lite-daylight .lite-device-connection-flow {
-    grid-template-columns: 1fr;
-    justify-items: start;
-    gap: .3rem;
-    padding: .6rem .7rem;
+    gap: .7rem;
+    padding: .75rem;
   }
-  .theme-pocket-lite-daylight .lite-device-flow-track { width: 2px; height: 1.7rem; margin-left: .5rem; }
+  .theme-pocket-lite-daylight .lite-device-flow-topology {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: .45rem;
+  }
+  .theme-pocket-lite-daylight .lite-device-flow-track { width: 3px; height: 3rem; min-height: 2.5rem; }
   .theme-pocket-lite-daylight .lite-device-flow-signal { top: 0; left: 50%; transform: translate(-50%, -50%); }
   .theme-pocket-lite-daylight .is-connected .lite-device-flow-signal { animation-name: lite-device-flow-packet-vertical; }
   .theme-pocket-lite-daylight .is-repairing .lite-device-flow-signal { animation-name: lite-device-flow-packet-vertical; }
   .theme-pocket-lite-daylight .is-disconnected .lite-device-flow-break { left: 50%; top: 50%; }
+  .theme-pocket-lite-daylight .lite-device-protected-host { justify-content: center; }
+  .theme-pocket-lite-daylight .lite-device-protected-host .lite-device-flow-node { justify-items: center; }
   .theme-pocket-lite-daylight .lite-remote-access-panel { grid-template-columns: auto minmax(0, 1fr); }
   .theme-pocket-lite-daylight .lite-remote-access-details { grid-column: 1 / -1; justify-self: start; }
   .theme-pocket-lite-daylight .lite-device-card-disclosure-content { min-width: 0; }

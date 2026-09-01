@@ -433,14 +433,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await expect(serverCard).toContainText('Server host');
       await expect(serverCard).toContainText('Protected control device');
       await expect(serverCard.getByRole('button', { name: /remove|review/i })).toHaveCount(0);
-      const flowTrackHeight = await serverCard.locator('.lite-device-flow-track').evaluate((element) => (
-        Number.parseFloat(window.getComputedStyle(element).height)
-      ));
-      if (viewport.width <= 640) {
-        expect(flowTrackHeight).toBeGreaterThan(10);
-      } else {
-        expect(flowTrackHeight).toBeLessThanOrEqual(4);
-      }
+      await expect(serverCard.locator('.lite-device-protected-host')).toContainText(/Pocket Lab Server.*Protected/i);
+      await expect(serverCard.locator('.lite-device-flow-track')).toHaveCount(0);
 
       const addDisclosure = devices.locator('.lite-devices-add-disclosure');
       await addDisclosure.locator('summary').click();
@@ -470,6 +464,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const serverCard = devices.locator('.lite-device-card-server');
 
     await expect(healthyCard.locator('[data-connection-state="connected"]')).toBeVisible();
+    await expect(healthyCard.locator('.lite-device-flow-server')).toContainText('Server');
+    await expect(healthyCard.locator('.lite-device-flow-device')).toContainText('Test-Phone-4');
     await expect(healthyCard.locator('.lite-device-card-disclosure')).not.toHaveAttribute('open', '');
     await expect(healthyCard.locator('.lite-device-trust-strip')).toBeHidden();
     await expect(healthyCard.getByRole('button', { name: 'Details' })).toBeVisible();
@@ -481,6 +477,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(healthyCard.locator('.lite-device-trust-strip')).toContainText(/identity|capabilities/i);
 
     await expect(serverCard.locator('[data-connection-state="server"]')).toBeVisible();
+    await expect(serverCard.locator('.lite-device-protected-host')).toBeVisible();
+    await expect(serverCard.locator('.lite-device-flow-track')).toHaveCount(0);
     await expect(serverCard).toContainText('Protected control device');
     await expect(serverCard.getByRole('button', { name: /remove|review removal/i })).toHaveCount(0);
 
@@ -501,6 +499,11 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const disconnected = devices.locator('[data-connection-state="disconnected"]').first();
     await expect(disconnected).toBeVisible();
     await expect(disconnected).toHaveAttribute('aria-label', /disconnected/i);
+    expect(await disconnected.locator('.lite-device-flow-break').evaluate((element) => {
+      const marker = element.getBoundingClientRect();
+      const surface = element.closest('.lite-device-connection-flow')?.getBoundingClientRect();
+      return Boolean(surface && marker.left >= surface.left && marker.right <= surface.right && marker.top >= surface.top && marker.bottom <= surface.bottom);
+    })).toBe(true);
   });
 
   test('Devices moves connection packets across their desktop and mobile tracks while keeping static states still', async ({ page }, testInfo) => {
@@ -564,11 +567,13 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const repairingSignal = page.locator('[data-connection-state="repairing"] .lite-device-flow-signal').first();
     await expect(repairingSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-vertical');
     await expect(repairingSignal).toHaveCSS('background-color', 'rgb(217, 119, 6)');
+    await expect(page.locator('[data-connection-state="repairing"] .lite-device-connection-copy')).toContainText('Repairing connection');
     const repairingStart = await freezePacketAt(repairingSignal, 'lite-device-flow-packet-vertical', .6);
     const repairingEnd = await freezePacketAt(repairingSignal, 'lite-device-flow-packet-vertical', 1.8);
     expect(repairingEnd.packet.y - repairingStart.packet.y).toBeGreaterThan(repairingStart.track.height * .4);
     await expect(page.locator('[data-connection-state="disconnected"] .lite-device-flow-signal')).toHaveCSS('animation-name', 'none');
-    await expect(page.locator('[data-connection-state="server"] .lite-device-flow-signal')).toHaveCSS('animation-name', 'none');
+    await expect(page.locator('[data-connection-state="server"] .lite-device-protected-host')).toBeVisible();
+    await expect(page.locator('[data-connection-state="server"] .lite-device-flow-signal')).toHaveCount(0);
   });
 
   test('Devices retains the backend-owned Add Device invite flow', async ({ page }, testInfo) => {

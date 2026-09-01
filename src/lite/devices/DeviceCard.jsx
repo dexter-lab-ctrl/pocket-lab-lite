@@ -84,6 +84,13 @@ export function deviceConnectionFlowLabel(state, deviceName, isServerCard) {
   return `Pocket Lab Server is disconnected from ${deviceName}.`;
 }
 
+function deviceConnectionSummary(state) {
+  if (state === 'connected') return 'Connected privately';
+  if (state === 'repairing') return 'Repairing connection';
+  if (state === 'server') return 'Protected control plane';
+  return 'Connection interrupted';
+}
+
 function DeviceCard({
   device,
   restartBusy = '',
@@ -140,9 +147,22 @@ function DeviceCard({
       </div>
 
       <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>
-        <span className="lite-device-flow-node lite-device-flow-server"><Server className="h-3.5 w-3.5" /> Server</span>
-        <span className="lite-device-flow-track" aria-hidden="true"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
-        <span className="lite-device-flow-node lite-device-flow-device">{isServerCard ? <Lock className="h-3.5 w-3.5" /> : <Network className="h-3.5 w-3.5" />}{isServerCard ? ' Protected host' : ' Device'}</span>
+        <div className="lite-device-connection-copy">
+          <span>Connection</span>
+          <strong>{deviceConnectionSummary(flowState)}</strong>
+        </div>
+        {isServerCard ? (
+          <div className="lite-device-protected-host" aria-hidden="true">
+            <span className="lite-device-flow-node lite-device-flow-server"><Server className="h-4 w-4" /><small>Pocket Lab Server</small></span>
+            <span className="lite-device-protected-lock"><Lock className="h-3.5 w-3.5" /> Protected</span>
+          </div>
+        ) : (
+          <div className="lite-device-flow-topology" aria-hidden="true">
+            <span className="lite-device-flow-node lite-device-flow-server"><Server className="h-4 w-4" /><small>Server</small></span>
+            <span className="lite-device-flow-track"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
+            <span className="lite-device-flow-node lite-device-flow-device"><Network className="h-4 w-4" /><small title={deviceName}>{deviceName}</small></span>
+          </div>
+        )}
       </div>
 
       {showHealthAttention ? (
