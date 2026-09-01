@@ -20,10 +20,17 @@ describe('Lite Home presentation model', () => {
     const overview = buildLiteHomeOverview({ overall: 'healthy', services: [] }, {
       savedStateOnly: true,
       backendReachable: false,
+      lastUpdatedLabel: '12 minutes ago',
     });
     expect(overview.heroTitle).toContain('saved information');
     expect(overview.nextAction.screen).toBe('home');
     expect(overview.nextAction.detail).toContain('Actions stay protected');
+    expect(overview.workspaceStory).toMatchObject({
+      state: 'saved',
+      tone: 'saved',
+      headline: 'Showing saved information',
+    });
+    expect(overview.workspaceStory.freshness).toMatchObject({ label: 'Saved', detail: '12 minutes ago', state: 'stale' });
   });
 
   it('prioritizes safety and remote access using bounded current summaries', () => {
@@ -42,6 +49,34 @@ describe('Lite Home presentation model', () => {
     });
     expect(access.nextAction.screen).toBe('devices');
     expect(access.nextAction.title).toContain('remote access');
+  });
+
+  it('keeps the Home story unknown until prepared workspace status is reported', () => {
+    const overview = buildLiteHomeOverview({ services: [], summary: {} });
+    expect(overview.overallTone).toBe('unknown');
+    expect(overview.workspaceStory).toMatchObject({
+      state: 'unknown',
+      tone: 'unknown',
+      headline: 'Workspace status is not confirmed yet',
+    });
+    expect(overview.nextAction).toBeNull();
+  });
+
+  it('uses ready workspace truth without inventing a competing primary action', () => {
+    const overview = buildLiteHomeOverview({
+      overall: 'healthy',
+      summary: { apps_available: 2, devices_known: 2, security_findings: 0, remote_access_ready: true },
+      services: [
+        { name: 'App Catalog', status: 'healthy' },
+        { name: 'Device Fleet', status: 'healthy' },
+        { name: 'Security', status: 'healthy' },
+        { name: 'Remote Access', status: 'healthy' },
+      ],
+    }, { lastUpdatedLabel: 'just now' });
+    expect(overview.workspaceStory).toMatchObject({ state: 'ready', tone: 'ready', headline: 'Your Pocket Lab is ready' });
+    expect(overview.workspaceStory.freshness).toMatchObject({ label: 'Current information', detail: 'just now' });
+    expect(overview.nextAction).toBeNull();
+    expect(overview.keyAreas.map((item) => item.label)).toEqual(['Apps', 'Devices', 'Safety', 'Remote access']);
   });
 
   it('normalizes service tones and current resource thresholds deterministically', () => {

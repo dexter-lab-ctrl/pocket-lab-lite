@@ -22050,6 +22050,15 @@ html.lite-install-light-shell body {
   contain-intrinsic-size: 36rem;
 }
 
+.theme-pocket-lite-daylight .lite-home-premium-services > .lite-action-row {
+  margin-top: 0.65rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-workspace-details {
+  display: grid;
+  gap: 0.65rem;
+}
+
 .theme-pocket-lite-daylight .lite-home-premium-section-head {
   display: flex;
   align-items: flex-start;
