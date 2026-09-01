@@ -3,7 +3,7 @@ import React from 'react';
 import { FileCheck, ShieldCheck } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { getLiteReasonPresentation } from '../lib/identityRulesPresentation.js';
+import { buildLiteRulesOverview, getLiteReasonPresentation, getLiteRulesActionLabel } from '../lib/identityRulesPresentation.js';
 import {
   GlassCard,
   StatusBadge,
@@ -12,16 +12,14 @@ import {
   LiteRefreshButton,
   LoadingCard,
   LiteButton,
+  LiteActionRow,
+  LiteOperationalStory,
 } from './LiteUi.jsx';
 import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
 
 function actionLabel(action = '') {
-  return ({
-    'catalog.install': 'Install an app',
-    'device.remove': 'Remove a device',
-    'identity.passkey.revoke': 'Remove a passkey',
-  })[action] || String(action || '').replaceAll('.', ' · ');
+  return getLiteRulesActionLabel(action) || String(action || '').replaceAll('.', ' · ');
 }
 
 export default function RulesScreen() {
@@ -42,21 +40,37 @@ export default function RulesScreen() {
   const [advancedOpen, setAdvancedOpen] = React.useState(false);
   const [manageOpen, setManageOpen] = React.useState(false);
   const enterpriseEnabled = Boolean(enterprise.data?.enabled);
+  const rulesReadOnly = savedStateOnly || !backendReachable;
   const ready = data?.status === 'ready' && data?.engine?.healthy && data?.engine?.loopback_only;
   const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions.slice(0, 4) : [];
   const templates = Array.isArray(data?.templates) ? data.templates : [];
   const degraded = getLiteReasonPresentation(data?.degraded_reason, data?.summary || 'Safety Rules need attention.');
+  const overview = React.useMemo(() => buildLiteRulesOverview(data, {
+    savedStateOnly,
+    backendReachable,
+    lastUpdatedLabel,
+    isExpired,
+  }), [data, savedStateOnly, backendReachable, lastUpdatedLabel, isExpired]);
 
   return (
     <>
       <PageHeader
         eyebrow="Rules"
         title="Safety Rules"
-        description="See which protected changes are covered, what Pocket Lab may ask you to confirm, and why a sensitive action was allowed or blocked."
+        description="Protection for sensitive changes and the reason Pocket Lab allows or blocks them."
         actions={<LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
-      <section className="lite-rules-hero" aria-labelledby="rules-posture-title">
+      <LiteOperationalStory
+        className="lite-rules-operational-story"
+        story={overview.workspaceStory}
+        primaryAction={overview.workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh Rules', onClick: refresh } : null}
+        manageAction={overview.workspaceStory.nextAction?.id === 'manage' && !rulesReadOnly ? { label: 'Manage Safety Rules', onClick: () => setManageOpen(true) } : null}
+      />
+
+      {!loading && data ? <section className="lite-rules-key-areas" aria-labelledby="rules-key-areas"><div className="lite-rules-key-areas-head"><span>Protection areas</span><h2 id="rules-key-areas">What Pocket Lab checks</h2></div>{overview.protectedAreas.map((area) => <LiteActionRow key={area.key} label={area.label} value={area.value} summary={area.summary} attention={area.attention} action={!rulesReadOnly ? { label: 'Manage', onClick: () => setManageOpen(true) } : null} />)}<LiteActionRow label="Recent decisions" value={overview.recentDecisionSummary} summary="A Rules decision explains the policy evaluation; it does not prove the downstream change completed." action={!rulesReadOnly ? { label: 'Manage', onClick: () => setManageOpen(true) } : null} /></section> : null}
+
+      <section hidden className="lite-rules-hero" aria-labelledby="rules-posture-title">
         <div className="lite-rules-hero-copy">
           <div className="lite-home-pill"><span className="lite-ready-dot" />{ready ? 'Rules ready' : 'Safety Rules need attention'}</div>
           <h2 id="rules-posture-title">{ready ? 'Protected changes are covered.' : 'Protected changes stay blocked until Rules recover.'}</h2>
@@ -77,7 +91,7 @@ export default function RulesScreen() {
 
       {!loading && data ? (
         <>
-          <GlassCard className="lite-rules-card lite-rules-summary-card">
+          <GlassCard hidden className="lite-rules-card lite-rules-summary-card">
             <div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Protected' : 'Needs attention'}</StatusBadge></div>
             <h2>{ready ? 'Sensitive changes are checked first.' : 'Safety Rules need attention.'}</h2>
             <p>{ready ? 'Apps, devices, and identity changes are evaluated by Pocket Lab before they continue.' : degraded.message}</p>
@@ -88,7 +102,7 @@ export default function RulesScreen() {
             <LiteButton variant="secondary" onClick={() => setManageOpen(true)}>Manage Safety Rules</LiteButton>
           </GlassCard>
 
-          <LiteSheet open={manageOpen} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description="Review protections, recent decisions, safe templates, and technical status. Rules remain server-owned." className="lite-rules-manage-sheet">
+          <LiteSheet open={manageOpen && !rulesReadOnly} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description="Review protections, recent decisions, safe templates, and technical status. Rules remain server-owned." className="lite-rules-manage-sheet">
             <div className="lite-rules-manage-stack">
               <section aria-labelledby="rules-manage-protections"><div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={ready ? 'healthy' : 'degraded'}>{ready ? 'Active' : 'Blocked'}</StatusBadge></div><h2 id="rules-manage-protections">Protections</h2><p>These sensitive actions are evaluated by Pocket Lab before they continue.</p><div className="lite-rules-list">{(data?.policy_groups || []).map((group, index) => <div key={group.id}><span>{index + 1}</span><p><strong>{group.label}</strong><small>{(group.actions || []).map(actionLabel).join(' · ')}</small></p></div>)}</div><div className="lite-identity-checklist"><div><span className="lite-check-dot" /><strong>Server check first</strong><small>Pocket Lab evaluates a protected action before it is accepted.</small></div><div><span className="lite-check-dot" /><strong>Passkey when needed</strong><small>Some changes require recent passkey confirmation.</small></div><div><span className="lite-check-dot" /><strong>Fail closed</strong><small>If a safe decision cannot be proven, the protected change stays blocked.</small></div></div></section>
               <section aria-labelledby="rules-manage-decisions"><div className="lite-rules-card-head"><div className="lite-rules-mini-icon"><FileCheck className="h-5 w-5" /></div><span className="lite-rules-soft-badge">Recent activity</span></div><h2 id="rules-manage-decisions">Recent protected decisions</h2><p>Only bounded metadata is shown. Raw policy input, credentials, and command payloads remain hidden.</p><div className="lite-rules-decision-list">{recent.length ? recent.map((decision) => { const reason = getLiteReasonPresentation(decision.reason_code, decision.reason_code || 'Decision recorded'); return <div key={decision.decision_id} className="lite-rules-decision-row lite-rules-personal-decision"><StatusBadge status={decision.allow ? 'healthy' : 'degraded'}>{decision.allow ? 'Allowed' : 'Blocked'}</StatusBadge><div><strong>{actionLabel(decision.action_id)}</strong><span>{decision.allow ? 'Pocket Lab allowed this protected change.' : 'Pocket Lab kept this protected change from continuing.'}</span><small>{reason.title}</small></div><div className="lite-rules-decision-meta"><span>{decision.occurred_at ? formatLiteTime(decision.occurred_at) : 'Recent'}</span></div></div>; }) : <StateSurface tone="neutral" title="No protected decisions yet" description="A decision will appear after a protected app install, device removal, or passkey removal is evaluated." />}</div></section>

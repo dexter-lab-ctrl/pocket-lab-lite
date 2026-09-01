@@ -460,6 +460,30 @@
 .theme-pocket-lite-daylight .lite-rules-personal-grid {
   align-items: stretch;
 }
+.theme-pocket-lite-daylight .lite-rules-operational-story,
+.theme-pocket-lite-daylight .lite-rules-enterprise-story {
+  margin: 0 0 1rem;
+}
+.theme-pocket-lite-daylight .lite-rules-key-areas {
+  display: grid;
+  gap: .6rem;
+  margin: 1rem 0 1.25rem;
+}
+.theme-pocket-lite-daylight .lite-rules-key-areas-head {
+  display: grid;
+  gap: .15rem;
+}
+.theme-pocket-lite-daylight .lite-rules-key-areas-head > span {
+  color: var(--lite-muted, #667085);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.theme-pocket-lite-daylight .lite-rules-key-areas-head > h2 {
+  margin: 0;
+  font-size: 1rem;
+}
 .theme-pocket-lite-daylight .lite-rules-primary-card {
   grid-column: span 1;
 }
