@@ -875,6 +875,107 @@ export function ResultNotice({ result, error }) {
   );
 }
 
+const LITE_OPERATIONAL_TONES = new Set(['ready', 'info', 'review', 'attention', 'blocked', 'danger', 'unknown', 'saved', 'stale', 'live', 'refreshing', 'completed', 'failed', 'running', 'waiting']);
+
+export function operationalStoryPresentation(story = {}) {
+  const state = String(story?.state || 'unknown').toLowerCase();
+  const requestedTone = String(story?.tone || state || 'unknown').toLowerCase();
+  let tone = LITE_OPERATIONAL_TONES.has(requestedTone) ? requestedTone : 'unknown';
+  if (state === 'unknown') tone = 'unknown';
+  if (state === 'saved' && ['ready', 'live'].includes(tone)) tone = 'saved';
+  if (state === 'stale' && ['ready', 'live'].includes(tone)) tone = 'stale';
+  const headline = String(story?.headline || '').trim() || 'Status not available';
+  const summary = String(story?.summary || '').trim();
+  const consequence = String(story?.consequence || '').trim();
+  const attention = String(story?.attention || '').trim();
+  const freshness = story?.freshness && typeof story.freshness === 'object'
+    ? {
+        label: String(story.freshness.label || '').trim(),
+        detail: String(story.freshness.detail || '').trim(),
+        state: String(story.freshness.state || '').trim().toLowerCase(),
+      }
+    : null;
+
+  return { state, tone, headline, summary, consequence, attention, freshness };
+}
+
+function StoryAction({ action, fallbackTone = 'secondary' }) {
+  if (!action?.label) return null;
+  return (
+    <div className="lite-operational-story-action">
+      <LiteButton
+        onClick={action.onClick}
+        disabled={Boolean(action.disabled)}
+        tone={action.tone || fallbackTone}
+        ariaLabel={action.ariaLabel || action.label}
+      >
+        {action.label}
+      </LiteButton>
+      {action.disabled && action.disabledReason ? <small>{action.disabledReason}</small> : null}
+    </div>
+  );
+}
+
+export function LiteOperationalStory({ story, primaryAction, manageAction, className = '' }) {
+  const presentation = operationalStoryPresentation(story);
+  const hasActions = Boolean(primaryAction?.label || manageAction?.label);
+
+  return (
+    <section className={`lite-operational-story is-${presentation.tone} ${className}`.trim()} aria-live="polite">
+      <div className="lite-operational-story-copy">
+        <span>{presentation.state || 'unknown'}</span>
+        <strong>{presentation.headline}</strong>
+        {presentation.summary ? <p>{presentation.summary}</p> : null}
+        {presentation.consequence ? <p className="lite-operational-story-consequence">{presentation.consequence}</p> : null}
+        {presentation.attention ? <p className="lite-operational-story-attention">{presentation.attention}</p> : null}
+        {presentation.freshness?.label ? <small className={`lite-operational-story-freshness is-${presentation.freshness.state || 'unknown'}`.trim()}>{presentation.freshness.label}{presentation.freshness.detail ? ` · ${presentation.freshness.detail}` : ''}</small> : null}
+      </div>
+      {hasActions ? (
+        <div className="lite-operational-story-actions">
+          <StoryAction action={primaryAction} fallbackTone="primary" />
+          <StoryAction action={manageAction} />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+export function LiteActionRow({ label, value = '', summary = '', action, disabledReason = '', attention = false, className = '' }) {
+  return (
+    <div className={`lite-action-row ${attention ? 'is-attention' : ''} ${className}`.trim()}>
+      <div>
+        <strong>{label}</strong>
+        {summary ? <p>{summary}</p> : null}
+        {disabledReason ? <small>{disabledReason}</small> : null}
+      </div>
+      <div className="lite-action-row-trailing">
+        {value ? <span>{value}</span> : null}
+        {action?.label ? <LiteButton onClick={action.onClick} disabled={Boolean(action.disabled)} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
+      </div>
+    </div>
+  );
+}
+
+export function LiteOutcomeNotice({ outcome, className = '' }) {
+  if (!outcome?.headline && !outcome?.summary) return null;
+  const tone = LITE_OPERATIONAL_TONES.has(String(outcome?.tone || '').toLowerCase())
+    ? String(outcome.tone).toLowerCase()
+    : 'unknown';
+  return (
+    <section className={`lite-outcome-notice is-${tone} ${className}`.trim()} aria-live="polite">
+      <strong>{outcome.headline || 'Outcome not reported'}</strong>
+      {outcome.summary ? <p>{outcome.summary}</p> : null}
+      {outcome.consequence ? <p>{outcome.consequence}</p> : null}
+      {outcome.nextAction ? <small>{outcome.nextAction}</small> : null}
+    </section>
+  );
+}
+
+export function LiteTechnicalDetails({ summary = 'Technical details', children, className = '' }) {
+  if (!children) return null;
+  return <details className={`lite-technical-details ${className}`.trim()}><summary>{summary}</summary><div>{children}</div></details>;
+}
+
 export function LoadingCard({ label = 'Loading Pocket Lab Lite...' }) {
   return (
     <GlassCard>

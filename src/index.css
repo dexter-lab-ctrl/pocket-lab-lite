@@ -15592,6 +15592,76 @@ textarea {
 [data-lite-manage-portal="true"] .lite-flow-status-step.is-failed span { background: #e11d48; }
 @media (max-width: 640px) { .theme-pocket-lite-daylight .lite-flow-status-head, [data-lite-manage-portal="true"] .lite-flow-status-head { align-items: flex-start; flex-direction: column; } .theme-pocket-lite-daylight .lite-flow-status-head strong, [data-lite-manage-portal="true"] .lite-flow-status-head strong { text-align: left; } .theme-pocket-lite-daylight .lite-flow-status-steps, [data-lite-manage-portal="true"] .lite-flow-status-steps { grid-template-columns: 1fr; } }
 
+/* Shared operational storytelling: domain data supplies truth; these surfaces only present it. */
+.theme-pocket-lite-daylight .lite-operational-story,
+.theme-pocket-lite-daylight .lite-outcome-notice,
+.theme-pocket-lite-daylight .lite-action-row,
+.theme-pocket-lite-daylight .lite-technical-details {
+  border: 1px solid rgba(148, 163, 184, .22);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, .82);
+  color: #334155;
+}
+.theme-pocket-lite-daylight .lite-operational-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .9rem;
+  padding: 1rem;
+  box-shadow: 0 .75rem 1.8rem rgba(15, 23, 42, .06);
+}
+.theme-pocket-lite-daylight .lite-operational-story-copy { min-width: 0; }
+.theme-pocket-lite-daylight .lite-operational-story-copy > span {
+  display: block;
+  color: #64748b;
+  font-size: .67rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.theme-pocket-lite-daylight .lite-operational-story strong,
+.theme-pocket-lite-daylight .lite-outcome-notice strong,
+.theme-pocket-lite-daylight .lite-action-row strong { color: #0f172a; font-size: .95rem; font-weight: 900; }
+.theme-pocket-lite-daylight .lite-operational-story p,
+.theme-pocket-lite-daylight .lite-outcome-notice p,
+.theme-pocket-lite-daylight .lite-action-row p { margin: .28rem 0 0; color: #475569; font-size: .82rem; line-height: 1.45; }
+.theme-pocket-lite-daylight .lite-operational-story-consequence { color: #334155 !important; font-weight: 750; }
+.theme-pocket-lite-daylight .lite-operational-story-attention { color: #9a5b13 !important; font-weight: 800; }
+.theme-pocket-lite-daylight .lite-operational-story-freshness,
+.theme-pocket-lite-daylight .lite-action-row small,
+.theme-pocket-lite-daylight .lite-outcome-notice small { display: block; margin-top: .45rem; color: #64748b; font-size: .74rem; line-height: 1.35; }
+.theme-pocket-lite-daylight .lite-operational-story-freshness.is-saved,
+.theme-pocket-lite-daylight .lite-operational-story-freshness.is-stale { color: #9a5b13; }
+.theme-pocket-lite-daylight .lite-operational-story.is-danger,
+.theme-pocket-lite-daylight .lite-outcome-notice.is-danger { border-color: rgba(225, 29, 72, .25); background: rgba(255, 241, 242, .82); }
+.theme-pocket-lite-daylight .lite-operational-story.is-blocked,
+.theme-pocket-lite-daylight .lite-outcome-notice.is-blocked,
+.theme-pocket-lite-daylight .lite-operational-story.is-attention { border-color: rgba(245, 158, 11, .28); background: rgba(255, 251, 235, .86); }
+.theme-pocket-lite-daylight .lite-operational-story.is-saved { border-color: rgba(245, 158, 11, .24); }
+.theme-pocket-lite-daylight .lite-operational-story.is-stale { border-color: rgba(245, 158, 11, .32); background: rgba(255, 251, 235, .86); }
+.theme-pocket-lite-daylight .lite-operational-story.is-failed,
+.theme-pocket-lite-daylight .lite-outcome-notice.is-failed { border-color: rgba(225, 29, 72, .25); background: rgba(255, 241, 242, .82); }
+.theme-pocket-lite-daylight .lite-operational-story-actions { display: flex; flex-wrap: wrap; align-content: start; justify-content: flex-end; gap: .5rem; }
+.theme-pocket-lite-daylight .lite-operational-story-action { display: grid; gap: .3rem; justify-items: end; }
+.theme-pocket-lite-daylight .lite-operational-story-action small { max-width: 14rem; color: #9a5b13; font-size: .72rem; text-align: right; }
+.theme-pocket-lite-daylight .lite-action-row { display: flex; align-items: center; justify-content: space-between; gap: .8rem; min-height: 3.1rem; padding: .75rem .85rem; }
+.theme-pocket-lite-daylight .lite-action-row > div:first-child { min-width: 0; }
+.theme-pocket-lite-daylight .lite-action-row-trailing { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .55rem; }
+.theme-pocket-lite-daylight .lite-action-row-trailing > span { color: #475569; font-size: .78rem; font-weight: 800; text-align: right; }
+.theme-pocket-lite-daylight .lite-action-row.is-attention { border-color: rgba(245, 158, 11, .28); background: rgba(255, 251, 235, .86); }
+.theme-pocket-lite-daylight .lite-outcome-notice { padding: .85rem; }
+.theme-pocket-lite-daylight .lite-technical-details { padding: .1rem .8rem; }
+.theme-pocket-lite-daylight .lite-technical-details summary { min-height: 2.75rem; display: flex; align-items: center; cursor: pointer; color: #475569; font-size: .8rem; font-weight: 850; }
+.theme-pocket-lite-daylight .lite-technical-details > div { padding: 0 0 .8rem; color: #64748b; font-size: .8rem; line-height: 1.45; }
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-operational-story { grid-template-columns: 1fr; }
+  .theme-pocket-lite-daylight .lite-operational-story-actions { justify-content: stretch; }
+  .theme-pocket-lite-daylight .lite-operational-story-action { justify-items: stretch; }
+  .theme-pocket-lite-daylight .lite-operational-story-action .pocket-button { width: 100%; justify-content: center; }
+  .theme-pocket-lite-daylight .lite-operational-story-action small { max-width: none; text-align: left; }
+  .theme-pocket-lite-daylight .lite-action-row { align-items: flex-start; flex-direction: column; }
+  .theme-pocket-lite-daylight .lite-action-row-trailing { width: 100%; justify-content: space-between; }
+}
+
 /* Lite App Catalog: synthetic action progress should not pretend to be a real percentage timeline. */
 .lite-action-progress[data-indeterminate="true"] .lite-action-progress__rail,
 .lite-action-progress[data-indeterminate="true"] .lite-action-progress__stages {
