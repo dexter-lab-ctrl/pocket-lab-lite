@@ -16,7 +16,7 @@ import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteElevationSurface, LiteMotionReveal } from './LiteMotion.jsx';
-import { selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
+import { selectRecoveryOperationalStoryView, selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
   GlassCard,
   StatusBadge,
@@ -26,6 +26,9 @@ import {
   backendLabel,
   PageHeader,
   LiteButton,
+  LiteOperationalStory,
+  LiteActionRow,
+  LiteOutcomeNotice,
   LiteRefreshButton,
   LoadingCard,
   LiteFlowStatusPanel,
@@ -304,6 +307,12 @@ export default function RecoveryScreen() {
     : latestBackupVerified
       ? 'Your latest backup is verified. Preview a restore before anything changes.'
       : data?.summary || 'Create a protected backup before making important changes.';
+  const recoveryStory = selectRecoveryOperationalStoryView(data, {
+    savedStateOnly,
+    backendReachable,
+    projectionStale,
+    databaseWriteBlocked,
+  });
   const latestActivity = [
     latestBackup ? {
       key: 'backup',
@@ -423,17 +432,6 @@ export default function RecoveryScreen() {
         mode: app.default_mode || 'config_only',
         reason: 'manual app backup',
       }),
-      failureHaptic: 'warning',
-    });
-  }
-
-  async function previewAppRestore(app) {
-    if (!app?.app_id) return;
-    await recoveryActions.runAction({
-      actionId: 'app_restore_preview',
-      busyKey: `app-preview:${app.app_id}`,
-      appId: app.app_id,
-      execute: () => liteApi.previewAppRestore(app.app_id, { reason: 'manual app restore preview' }),
       failureHaptic: 'warning',
     });
   }
@@ -593,7 +591,34 @@ export default function RecoveryScreen() {
         {recoveryAnnouncement}
       </div>
 
-      <LiteElevationSurface as="section" settle active={recoveryLive} className="lite-recovery-r1-hero lite-recovery-premium-hero" data-recovery-r1-summary="true" data-recovery-native-polish="true">
+      <LiteOperationalStory
+        className="lite-recovery-operational-story"
+        story={recoveryStory}
+        primaryAction={recoveryStory.nextAction?.id === 'backup' ? { label: 'Back Up Now', onClick: backup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'verify' ? { label: 'Verify Backup', onClick: verifyLatestBackup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'preview' ? { label: 'Preview Restore', onClick: previewLatestRestore, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'refresh' ? { label: 'Refresh Recovery', onClick: refreshSummary } : recoveryStory.nextAction?.id === 'manage' ? { label: recoveryStory.nextAction.label, onClick: () => openRecoveryManage(recoveryStory.nextAction.section) } : null}
+        manageAction={{ label: 'Manage recovery', onClick: () => openRecoveryManage('backup') }}
+      />
+
+      <LiteActionRow
+        className="lite-recovery-latest-backup-row"
+        label="Latest backup"
+        value={latestBackupVerified ? 'Verified' : latestBackup ? 'Verification needed' : 'Not created'}
+        summary={latestBackup?.created_at ? `Created ${formatLiteTime(latestBackup.created_at)}${latestBackup?.size_bytes ? ` · ${formatSize(latestBackup.size_bytes)}` : ''}` : 'No protected backup is recorded yet.'}
+        attention={!latestBackupVerified}
+        action={{ label: 'Details', onClick: () => openRecoveryManage('backup') }}
+      />
+
+      <LiteFlowStatusPanel
+        className="lite-recovery-journey"
+        title="Safe recovery journey"
+        label={recoveryLive ? recoveryFlow.label : 'Preview before anything changes'}
+        steps={restoreSteps.map((step) => ({ label: step.label, state: step.complete ? 'completed' : 'waiting', detail: step.detail }))}
+        note="Preview does not change local state. A checkpoint is created before a confirmed restore."
+        tone={recoveryLive ? 'checking' : 'info'}
+      />
+
+      {lastRestore?.restore_id && !recoveryLive ? <LiteOutcomeNotice outcome={{ tone: recoveryStory.tone, headline: recoveryStory.headline, summary: recoveryStory.summary, consequence: recoveryStory.consequence }} className="lite-recovery-latest-outcome" /> : null}
+
+      <LiteElevationSurface hidden as="section" settle active={recoveryLive} className="lite-recovery-r1-hero lite-recovery-premium-hero" data-recovery-r1-summary="true" data-recovery-native-polish="true">
         <div className="lite-recovery-r1-hero-copy">
           <div className="lite-home-pill" data-testid="parity-recovery-status">
             <span className="lite-ready-dot" />
@@ -746,7 +771,6 @@ export default function RecoveryScreen() {
             onDatabaseBackup={backUpDatabase}
             onOpenDatabaseDetails={() => setDatabaseDetailsOpen(true)}
             onBackUpApp={backUpApp}
-            onPreviewAppRestore={previewAppRestore}
             onOpenActionDetails={openActionPanel}
             onOpenEvidence={() => setEvidenceOpen(true)}
             detailsLoading={detailsLoading && !detailsData}
