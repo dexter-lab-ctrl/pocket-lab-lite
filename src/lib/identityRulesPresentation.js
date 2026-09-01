@@ -171,4 +171,160 @@ export function identityActionStageLabel(stage = '') {
   })[stage] || '';
 }
 
+function identityFreshness({ savedStateOnly = false, backendReachable = true, lastUpdatedLabel = '', isExpired = false } = {}) {
+  if (savedStateOnly || !backendReachable) {
+    return {
+      label: 'Saved information',
+      detail: `${isExpired ? 'Older saved state' : lastUpdatedLabel || 'Live status unavailable'}`,
+      state: isExpired ? 'stale' : 'saved',
+    };
+  }
+  return null;
+}
+
+/**
+ * Maps only the prepared Identity read into the default Access Center story.
+ * Browser WebAuthn support is deliberately an input, not identity authority.
+ */
+export function buildLiteIdentityAccessOverview(identity, {
+  savedStateOnly = false,
+  backendReachable = true,
+  lastUpdatedLabel = '',
+  isExpired = false,
+  passkeyEligible = false,
+  claimActive = false,
+} = {}) {
+  const source = identity && typeof identity === 'object' ? identity : null;
+  const passkeys = Array.isArray(source?.passkeys) ? source.passkeys : [];
+  const sessions = Array.isArray(source?.sessions) ? source.sessions : [];
+  const activePasskeys = passkeys.filter((item) => item?.active);
+  const activeSessions = sessions.filter((item) => item?.active);
+  const recoveryConfigured = typeof source?.recovery?.configured === 'boolean' ? source.recovery.configured : null;
+  const enterpriseEnabled = typeof source?.enterprise?.enabled === 'boolean' ? source.enterprise.enabled : null;
+  const freshness = identityFreshness({ savedStateOnly, backendReachable, lastUpdatedLabel, isExpired });
+  const knownAuthentication = typeof source?.authenticated === 'boolean';
+  const knownSetup = typeof source?.setup_required === 'boolean';
+  const isSaved = Boolean(savedStateOnly || (!backendReachable && source));
+
+  let workspaceStory;
+  if (isSaved) {
+    workspaceStory = {
+      state: isExpired ? 'stale' : 'saved',
+      tone: isExpired ? 'stale' : 'saved',
+      headline: 'Showing saved access information',
+      summary: 'Live authentication and session status cannot currently be confirmed.',
+      consequence: 'Protected changes still require the live server.',
+      freshness,
+      nextAction: { id: 'refresh', label: 'Refresh access' },
+    };
+  } else if (!source || (!knownAuthentication && !knownSetup)) {
+    workspaceStory = {
+      state: 'unknown',
+      tone: 'unknown',
+      headline: 'Access status is not confirmed yet',
+      summary: 'Pocket Lab is still checking the prepared access state.',
+      freshness,
+    };
+  } else if (source.setup_required) {
+    workspaceStory = claimActive && passkeyEligible
+      ? {
+          state: 'setup',
+          tone: 'review',
+          headline: 'Owner setup needed',
+          summary: 'Create the local Pocket Lab owner with a passkey.',
+          consequence: 'The owner claim remains server-verified until setup completes.',
+          freshness,
+          nextAction: { id: 'create_owner', label: 'Create Owner' },
+        }
+      : {
+          state: 'setup',
+          tone: 'review',
+          headline: 'Owner setup needed',
+          summary: 'Open a trusted owner setup link to continue.',
+          consequence: passkeyEligible ? 'A passkey is the recommended way to protect local access.' : 'Passkeys are not available in this browser; the supported fallback remains available below.',
+          freshness,
+        };
+  } else if (source.authenticated === false && source.owner) {
+    const canUsePasskey = source?.sign_in_methods?.passkey === true && passkeyEligible;
+    workspaceStory = {
+      state: 'signed_out',
+      tone: 'attention',
+      headline: 'Sign in before making protected changes',
+      summary: canUsePasskey ? 'Use your passkey for normal Pocket Lab access.' : 'A supported sign-in method is required before protected changes.',
+      freshness,
+      nextAction: canUsePasskey ? { id: 'sign_in_passkey', label: 'Sign in with Passkey' } : null,
+    };
+  } else if (source.authenticated === true) {
+    const missingPasskey = activePasskeys.length === 0;
+    const recoveryNeedsAttention = recoveryConfigured === false;
+    workspaceStory = missingPasskey
+      ? {
+          state: 'signed_in',
+          tone: 'review',
+          headline: 'Signed in — add a passkey',
+          summary: 'Passkeys are the recommended way to sign in and confirm sensitive changes.',
+          freshness,
+          nextAction: passkeyEligible ? { id: 'add_passkey', label: 'Add Passkey' } : null,
+        }
+      : recoveryNeedsAttention
+        ? {
+            state: 'signed_in',
+            tone: 'review',
+            headline: 'Signed in — set up recovery',
+            summary: 'A recovery set helps restore owner access if normal sign-in is unavailable.',
+            freshness,
+            nextAction: { id: 'review_recovery', label: 'Review Recovery' },
+          }
+        : {
+            state: 'signed_in',
+            tone: 'ready',
+            headline: 'Signed in with protected local access',
+            summary: 'Your passkey, sessions, and recovery state are available to review.',
+            freshness,
+          };
+  } else {
+    workspaceStory = {
+      state: 'unknown',
+      tone: 'unknown',
+      headline: 'Access status is not confirmed yet',
+      summary: 'Pocket Lab did not provide enough prepared Identity state to determine sign-in status.',
+      freshness,
+    };
+  }
+
+  const previous = isSaved ? 'Previously known ' : '';
+  const keyAreas = [
+    {
+      key: 'passkeys',
+      label: 'Passkeys',
+      value: source ? (activePasskeys.length ? `${activePasskeys.length} active` : 'Not set up') : 'Unknown',
+      summary: source ? (activePasskeys.length ? `${previous}passkeys can protect sign-in and sensitive confirmation.` : 'Add a passkey to use the preferred sign-in path.') : 'Passkey state is not available yet.',
+      attention: Boolean(source && activePasskeys.length === 0),
+    },
+    {
+      key: 'sessions',
+      label: 'Sessions',
+      value: source ? `${activeSessions.length} active` : 'Unknown',
+      summary: source ? `${previous}current and other sessions stay separate.` : 'Session state is not available yet.',
+      attention: false,
+    },
+    {
+      key: 'recovery',
+      label: 'Recovery',
+      value: recoveryConfigured === true ? 'Ready' : recoveryConfigured === false ? 'Needs attention' : 'Unknown',
+      summary: recoveryConfigured === true ? `${previous}recovery codes are configured.` : recoveryConfigured === false ? 'Create or review recovery codes before relying on them.' : 'Recovery state is not available yet.',
+      attention: recoveryConfigured === false,
+    },
+    {
+      key: 'enterprise',
+      label: 'Enterprise Mode',
+      value: enterpriseEnabled === true ? 'Enabled' : enterpriseEnabled === false ? 'Personal Mode' : 'Unknown',
+      summary: enterpriseEnabled === true ? `${previous}server-managed membership and role are available in Manage access.` : enterpriseEnabled === false ? 'Personal access remains the default experience.' : 'Enterprise Mode state is not available yet.',
+      attention: false,
+    },
+  ];
+
+  return { workspaceStory, keyAreas };
+}
+
 export const IDENTITY_RULES_PRESENTATION_READY = true;
