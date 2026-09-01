@@ -1551,6 +1551,13 @@ function safeNumber(value, fallback = 0) {
   return Number.isFinite(next) ? next : fallback;
 }
 
+function securityScoreValue(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  return Math.max(0, Math.min(100, numeric));
+}
+
 function safeBool(value) {
   return Boolean(value === true || value === 'true' || value === 1 || value === '1');
 }
@@ -1605,6 +1612,7 @@ function normalizeSecurityRun(run = {}) {
     completed_at: safeIso(run.completed_at || run.updated_at || run.checked_at),
     updated_at: safeIso(run.updated_at || run.checked_at || run.completed_at),
     summary: safeString(run.summary || ''),
+    score: securityScoreValue(run.score),
     duration_seconds: safeNumber(run.duration_seconds, 0),
     tools: safeList(run.tools || ['lynis', 'trivy']),
     scan_profile: safeString(run.scan_profile || 'quick', 'quick'),
@@ -1624,7 +1632,7 @@ function normalizeSecurityRun(run = {}) {
     tool_results: selectSecurityToolResultsView(run.tool_results),
     execution_timeline: selectSecurityTimelineView({ execution_timeline: run.execution_timeline }),
   }, [
-    'run_id', 'status', 'state', 'phase', 'requested_at', 'started_at', 'completed_at', 'updated_at', 'summary', 'duration_seconds',
+    'run_id', 'status', 'state', 'phase', 'requested_at', 'started_at', 'completed_at', 'updated_at', 'summary', 'score', 'duration_seconds',
     'tools', 'scan_profile', 'app_id', 'app_label', 'coverage_summary', 'critical_count', 'high_count', 'medium_count', 'low_count', 'info_count', 'items_to_review', 'evidence_count', 'partial_results', 'sbom_saved',
     'evidence_refs', 'tool_results', 'execution_timeline',
   ]);
@@ -1708,7 +1716,7 @@ export function selectSecurityHistorySummaryView(payload = {}) {
       ...run,
       run_id: safeString(item?.run_id || item?.id || run.run_id || ''),
       status: normalizeSecurityStatus(item?.status || run.status || ''),
-      score: safeNumber(item?.score, 0),
+      score: securityScoreValue(item?.score ?? run.score),
       summary: safeString(item?.summary || run.summary || ''),
       requested_at: safeIso(item?.requested_at || item?.queued_at || run.requested_at),
       completed_at: safeIso(item?.completed_at || item?.updated_at || item?.checked_at || run.completed_at),
@@ -1914,7 +1922,8 @@ export function selectSecurityProfileView(payload = {}, profile = 'quick') {
     run_id: safeString(latestRun?.run_id || ''),
     latest_run: latestRun,
     status: normalizeSecurityStatus(latestRun?.status || (isSelectedLatestPayload ? payload?.status : '') || ''),
-    score: Math.max(0, Math.min(100, safeNumber(latestRun?.score ?? (isSelectedLatestPayload ? payload?.score : 0), 0))),
+    score: securityScoreValue(latestRun?.score ?? (isSelectedLatestPayload ? payload?.score : undefined)),
+    score_provenance: securityScoreValue(latestRun?.score ?? (isSelectedLatestPayload ? payload?.score : undefined)) === null ? 'not_reported' : 'backend_reported',
     summary: safeString(latestRun?.summary || (isSelectedLatestPayload ? payload?.summary : '') || ''),
     requested_at: safeIso(latestRun?.requested_at),
     started_at: safeIso(latestRun?.started_at),
@@ -1983,14 +1992,15 @@ export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick
   const latestRunId = safeString(view.latest_run_id || view.run_id || view.latest_run?.run_id);
   const hasRun = Boolean(view.has_run || latestRunId || completedAt);
   const rawDurationMs = view.duration_ms ?? view.latest_run?.duration_ms;
-  const rawScore = view.score ?? view.latest_run?.score;
+  const rawScore = securityScoreValue(view.score ?? view.latest_run?.score);
   return {
     view_model: LITE_SECURITY_PROFILE_SNAPSHOT_VERSION,
     profile: view.profile, app_id: safeString(view.app_id), app_label: safeString(view.app_label),
     label: safeString(view.label || (view.profile === 'full' ? 'Full Local Check' : view.profile === 'app' ? `${view.app_label || 'App'} App Check` : 'Quick Scan')),
     latest_run_id: latestRunId,
     status: hasRun ? normalizeSecurityStatus(view.status) : 'not_checked',
-    score: hasRun && rawScore !== null && rawScore !== undefined ? Math.max(0, Math.min(100, safeNumber(rawScore, 0))) : null,
+    score: hasRun ? rawScore : null,
+    score_provenance: hasRun && rawScore !== null ? 'backend_reported' : 'not_reported',
     summary: safeString(view.summary || (hasRun ? 'Security result available.' : 'Not checked')), completed_at: completedAt,
     saved_at: safeIso(freshness.saved_at || freshness.checked_at || completedAt),
     evidence_saved: hasRun && safeBool(view.evidence_saved || view.evidence_summary?.evidence_saved),
@@ -2050,7 +2060,8 @@ export function selectSecurityHistorySnapshotView(payload = {}) {
     started_at: safeIso(run.started_at),
     completed_at: safeIso(run.completed_at),
     updated_at: safeIso(run.updated_at || run.completed_at),
-    score: Math.max(0, Math.min(100, safeNumber(run.score, 0))),
+    score: securityScoreValue(run.score),
+    score_provenance: securityScoreValue(run.score) === null ? 'not_reported' : 'backend_reported',
     critical_count: safeNumber(run.critical_count, 0),
     high_count: safeNumber(run.high_count, 0),
     medium_count: safeNumber(run.medium_count, 0),
@@ -2086,6 +2097,7 @@ export function selectSecurityScreenSnapshotView(payload = {}) {
     status: summary.status,
     summary: summary.summary,
     score: summary.score,
+    score_provenance: summary.score_provenance,
     scan_profile: summary.scan_profile,
     app_id: summary.app_id,
     app_label: summary.app_label,
@@ -2104,6 +2116,123 @@ export function selectSecurityScreenSnapshotView(payload = {}) {
     live: Boolean(summary.live),
     saved_snapshot: true,
     sanitized: true,
+  };
+}
+
+const SECURITY_SUCCESS_STATUSES = new Set(['ready', 'succeeded', 'success', 'completed', 'complete', 'done', 'verified']);
+const SECURITY_ATTENTION_STATUSES = new Set(['review', 'needs_attention', 'degraded']);
+
+// This is intentionally a presentation boundary. It chooses safe, user-facing
+// wording from prepared Security data; it neither scores the device nor settles
+// a Security run.
+export function selectSecuritySafetyStoryView(payload = {}, {
+  profile = 'quick',
+  savedStateOnly = false,
+  backendReachable = true,
+} = {}) {
+  const profileId = normalizeSecurityProfileId(profile);
+  const profileView = payload?.security_profiles?.[profileId] || selectSecurityProfileView(payload, profileId);
+  const latestRun = profileView?.latest_run || null;
+  const status = normalizeSecurityStatus(latestRun?.status || profileView?.status || payload?.status || 'unknown');
+  const progress = selectSecurityProgressView(payload) || {};
+  const precedence = selectSecurityStatePrecedence(payload, profileId, profileView?.app_id || '');
+  const findings = Math.max(
+    safeNumber(profileView?.items_to_review, 0),
+    safeNumber(latestRun?.items_to_review, 0),
+  );
+  const freshness = profileView?.freshness || selectSecurityProfileFreshnessView(latestRun, profileId, snapshotMeta(payload));
+  const profileLabel = profileId === 'full' ? 'Full Scan' : profileId === 'app' ? 'App Scan' : 'Quick Scan';
+  const activeState = normalizeSecurityStatus(progress.status || progress.state || status);
+  const active = Boolean(precedence.active || SECURITY_LIVE_STATUSES.has(activeState));
+  const saved = !active && Boolean(savedStateOnly || freshness?.is_saved || freshness?.is_stale || precedence.source === 'offline_dexie_snapshot');
+  const scoreSource = profileView?.score_provenance === 'backend_reported'
+    ? profileView?.score
+    : payload?.score_provenance === 'backend_reported' && profileView?.is_latest_payload
+      ? payload?.score
+      : undefined;
+  const score = securityScoreValue(scoreSource);
+  const score_provenance = score === null ? 'not_reported' : 'backend_reported';
+  const latestContext = latestRun?.completed_at || latestRun?.updated_at || freshness?.checked_at || freshness?.saved_at || '';
+
+  const base = {
+    profile: profileId,
+    profileLabel,
+    latestCheck: {
+      profile: profileLabel,
+      completed_at: latestContext,
+      summary: safeString(latestRun?.summary || profileView?.summary || payload?.summary || ''),
+      findings,
+      coverage: profileView?.coverage_summary || {},
+    },
+    score: { value: score, provenance: score_provenance },
+    freshness: {
+      state: saved ? 'saved' : freshness?.is_stale ? 'stale' : latestContext ? 'current' : 'unknown',
+      label: saved ? (freshness?.label || 'Showing saved Security information') : (freshness?.label || ''),
+      detail: saved ? 'Live protection status cannot be confirmed.' : '',
+    },
+  };
+
+  if (active) {
+    const queued = ['queued', 'pending', 'accepted'].includes(activeState);
+    return {
+      ...base,
+      state: queued ? 'queued' : 'running', tone: 'checking',
+      headline: queued ? `${profileLabel} is getting ready` : `${profileLabel} is running`,
+      summary: safeString(progress.stage || progress.message || (queued ? 'Pocket Lab accepted the check and is waiting for backend progress.' : 'Pocket Lab is checking safety and saving a sanitized result.')),
+      consequence: 'You can leave this screen; Pocket Lab keeps the check and its progress backend-owned.',
+      attention: '', primaryAction: null,
+    };
+  }
+  if (saved || backendReachable === false) {
+    return {
+      ...base,
+      state: 'saved', tone: 'degraded', headline: 'Showing saved Security information',
+      summary: latestRun?.summary || 'Pocket Lab cannot confirm live Security status right now.',
+      consequence: 'Last known results remain readable, but a new check stays protected until the live connection returns.',
+      attention: '', primaryAction: { id: 'refresh', label: 'Refresh Safety Center' },
+    };
+  }
+  if (['failed', 'failure', 'error'].includes(status)) {
+    return {
+      ...base,
+      state: 'failed', tone: 'danger', headline: `${profileLabel} did not complete`,
+      summary: latestRun?.summary || profileView?.summary || 'The latest safety check did not finish.',
+      consequence: latestContext ? 'Earlier saved results remain available for review.' : '',
+      attention: 'Run another check when Pocket Lab is ready.', primaryAction: { id: 'run', label: 'Run Safety Check' },
+    };
+  }
+  if (['blocked', 'cancelled', 'canceled'].includes(status)) {
+    return {
+      ...base,
+      state: status === 'blocked' ? 'blocked' : 'cancelled', tone: 'review', headline: status === 'blocked' ? 'Safety check is blocked' : 'Safety check was cancelled',
+      summary: latestRun?.summary || profileView?.summary || 'Pocket Lab did not complete the latest safety check.',
+      consequence: '', attention: 'Review the check details before trying again.', primaryAction: { id: 'manage', label: 'Review check details', section: 'checks' },
+    };
+  }
+  if (SECURITY_ATTENTION_STATUSES.has(status) || findings > 0) {
+    return {
+      ...base,
+      state: 'attention', tone: 'review', headline: `${findings || 'Some'} item${findings === 1 ? '' : 's'} need review`,
+      summary: latestRun?.summary || profileView?.summary || 'The latest safety check reported items requiring attention.',
+      consequence: 'This does not by itself mean the entire Pocket Lab is unavailable.',
+      attention: 'Review the reported items and follow the supported guidance.', primaryAction: { id: 'manage', label: 'Review issues', section: 'issues' },
+    };
+  }
+  if (SECURITY_SUCCESS_STATUSES.has(status) && Boolean(profileView?.has_run || latestRun?.run_id || latestContext)) {
+    return {
+      ...base,
+      state: 'completed', tone: 'ready', headline: 'No issues requiring attention were reported',
+      summary: `The latest ${profileLabel} completed without reported review items.`,
+      consequence: 'This result applies only to the coverage of that check.',
+      attention: '', primaryAction: { id: 'run', label: 'Run Safety Check' },
+    };
+  }
+  return {
+    ...base,
+    state: 'unknown', tone: 'unknown', headline: 'Security status is not confirmed yet',
+    summary: `${profileLabel} has not provided a completed result to this Safety Center.`,
+    consequence: 'Pocket Lab does not infer protection from missing information.',
+    attention: '', primaryAction: { id: 'run', label: 'Run Safety Check' },
   };
 }
 
@@ -2137,7 +2266,8 @@ export function selectSecuritySummaryView(payload = {}) {
     version: LITE_SECURITY_VIEW_MODEL_VERSION,
     status: normalizeSecurityStatus(payload?.status || lastRun?.status || 'unknown'),
     summary: safeString(payload?.summary || 'Security status is available.'),
-    score: Math.max(0, Math.min(100, safeNumber(payload?.score, 0))),
+    score: securityScoreValue(payload?.score ?? lastRun?.score),
+    score_provenance: securityScoreValue(payload?.score ?? lastRun?.score) === null ? 'not_reported' : 'backend_reported',
     checks_reviewed: safeNumber(payload?.checks_reviewed ?? payload?.checks_count, 0),
     checks_count: safeNumber(payload?.checks_count ?? payload?.checks_reviewed, 0),
     items_to_review: findings.items_to_review,
@@ -2200,6 +2330,7 @@ export function selectSecurityScreenView(payload = {}) {
       status: summary.status,
       summary: summary.summary,
       score: summary.score,
+      score_provenance: summary.score_provenance,
       app_id: summary.app_id,
       app_label: summary.app_label,
       items_to_review: summary.items_to_review,
