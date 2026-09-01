@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { deviceConnectionFlowLabel, deviceConnectionFlowState } from './DeviceCard.jsx';
-import { remoteAccessPresentation } from '../LiteDevices.jsx';
+import { fleetOperationalStory, remoteAccessPresentation } from '../LiteDevices.jsx';
 
 describe('DeviceCard connection presentation', () => {
   it('keeps connected, repairing, disconnected, and protected server states distinct', () => {
@@ -20,5 +20,12 @@ describe('DeviceCard connection presentation', () => {
   it('keeps healthy remote access compact while retaining an explicit not-ready state', () => {
     expect(remoteAccessPresentation({ status: 'healthy', ready: true }).title).toBe('Ready');
     expect(remoteAccessPresentation({ status: 'not_ready', ready: false }).title).toBe('Remote access not ready');
+    expect(remoteAccessPresentation({ status: 'healthy', ready: true }, true)).toMatchObject({ ready: false, saved: true });
+  });
+
+  it('keeps fleet saved and unknown state out of live-ready copy', () => {
+    expect(fleetOperationalStory({ savedStateOnly: true }).state).toBe('saved');
+    expect(fleetOperationalStory({ data: null }).state).toBe('unknown');
+    expect(fleetOperationalStory({ data: {}, devices: [{ id: 'offline' }], onlineDevices: 0 }).state).toBe('review');
   });
 });

@@ -908,6 +908,8 @@ function StoryAction({ action, fallbackTone = 'secondary' }) {
         disabled={Boolean(action.disabled)}
         tone={action.tone || fallbackTone}
         ariaLabel={action.ariaLabel || action.label}
+        aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
+        buttonRef={action.buttonRef}
       >
         {action.label}
       </LiteButton>
