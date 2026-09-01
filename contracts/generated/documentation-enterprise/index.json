@@ -16978,7 +16978,7 @@
           ".storybook/preview.jsx",
           "src/mocks/handlers.js",
           "src/stories/pocketlabTier9MockApi.js",
-          "storybook-static/assets/preview-C0x9qNo2.js",
+          "storybook-static/assets/preview-BX0Gdc1B.js",
           "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -36925,8 +36925,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "8cc7466406d31f724637ad6178222e13d54230ca",
-          "head_tree": "90855deab9d2e8d582c30ee442e52457b0cc86fb",
+          "head": "59995f4a94f4b79550f9104e769609a807b217e0",
+          "head_tree": "d3c0c9f8785b2d6ed5ca3be7b76dee3dbd87e3ad",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -38975,7 +38975,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "71414d5680cc4aa54471dfb14d77f83f5059e30807496d5166ec972b2af37e23",
+        "documentation": "784800022d5090327f9241cbbb4d63d7ae5f5df3cbba34d45009d9ff9543e4f4",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
       },
@@ -41299,8 +41299,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "8cc7466406d31f724637ad6178222e13d54230ca",
-        "head_tree": "90855deab9d2e8d582c30ee442e52457b0cc86fb",
+        "head": "59995f4a94f4b79550f9104e769609a807b217e0",
+        "head_tree": "d3c0c9f8785b2d6ed5ca3be7b76dee3dbd87e3ad",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -105702,5 +105702,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "6c1bddff63b0381eba7144c5a6ec85234195ddf980167ed781f6409a8ef612f9"
+  "source_fingerprint": "541aab6152adcb50049eb6067e054095d427bc969f8aaca1c28a090114200329"
 }
