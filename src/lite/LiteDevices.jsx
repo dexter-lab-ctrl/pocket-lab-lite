@@ -79,6 +79,7 @@ import {
   ResultNotice,
   LoadingCard,
   LiteFlowStatusPanel,
+  LiteOperationalStory,
   friendlyOverallLabel,
   deviceLinkState,
   restartProgressTitle,
@@ -143,7 +144,15 @@ export function hasLiveDeviceFleetOperation(payload) {
   });
 }
 
-export function remoteAccessPresentation(remoteAccess = {}) {
+export function remoteAccessPresentation(remoteAccess = {}, savedStateOnly = false) {
+  if (savedStateOnly) {
+    return {
+      ready: false,
+      saved: true,
+      title: 'Showing saved remote access information',
+      summary: 'Pocket Lab cannot confirm current remote access until live information returns.',
+    };
+  }
   const ready = remoteAccess?.status === 'healthy' || remoteAccess?.ready === true;
   return {
     ready,
@@ -151,6 +160,58 @@ export function remoteAccessPresentation(remoteAccess = {}) {
     summary: remoteAccess?.summary || (ready
       ? 'Private-network access is available for eligible devices.'
       : 'Pocket Lab is checking whether private-network device access is available.'),
+  };
+}
+
+export function fleetOperationalStory({ data, devices = [], onlineDevices = 0, healthAttentionCount = 0, savedStateOnly = false } = {}) {
+  if (savedStateOnly) {
+    return {
+      state: 'saved',
+      tone: 'saved',
+      headline: 'Showing saved device information',
+      summary: 'Pocket Lab cannot confirm which devices are currently reachable until live information returns.',
+      consequence: 'Device actions remain protected while this information is saved.',
+    };
+  }
+  if (!data) {
+    return {
+      state: 'unknown',
+      tone: 'unknown',
+      headline: 'Device status is not confirmed yet',
+      summary: 'Pocket Lab is waiting for current device information.',
+    };
+  }
+  if (healthAttentionCount > 0) {
+    return {
+      state: 'attention',
+      tone: 'attention',
+      headline: 'Some devices need attention',
+      summary: `${healthAttentionCount} device health ${healthAttentionCount === 1 ? 'item needs' : 'items need'} review.`,
+      consequence: onlineDevices > 0 ? `${onlineDevices} device${onlineDevices === 1 ? ' is' : 's are'} still connected.` : 'Open a device to review its prepared status.',
+    };
+  }
+  if (onlineDevices > 0) {
+    return {
+      state: 'ready',
+      tone: 'ready',
+      headline: `${onlineDevices} device${onlineDevices === 1 ? ' is' : 's are'} connected`,
+      summary: 'Pocket Lab is receiving current status from the connected devices below.',
+      consequence: 'No immediate device action is needed.',
+    };
+  }
+  if (devices.length > 0) {
+    return {
+      state: 'review',
+      tone: 'review',
+      headline: 'No device is connected right now',
+      summary: 'Open a device below to review the prepared connection state and available next step.',
+    };
+  }
+  return {
+    state: 'unknown',
+    tone: 'unknown',
+    headline: 'No devices are listed yet',
+    summary: 'Add a device when you are ready to expand your Pocket Lab.',
   };
 }
 
@@ -199,7 +260,7 @@ export default function DevicesScreen() {
   const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
-  const remoteAccessView = remoteAccessPresentation(remoteAccess);
+  const remoteAccessView = remoteAccessPresentation(remoteAccess, savedStateOnly);
   const remoteAccessReady = remoteAccessView.ready;
   const latestInvite = invite || data?.latest_invite || null;
   useLiteServiceWorkerUpdateBlocker('devices-workflow', Boolean(
@@ -214,6 +275,7 @@ export default function DevicesScreen() {
   const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
+  const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly });
   const selectedRoleLabel = roleLabel(selectedRole);
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
   const localNameConflict = findDeviceNameConflict(candidateDeviceName, devices);
@@ -469,32 +531,12 @@ export default function DevicesScreen() {
     <>
       <PageHeader
         eyebrow="Devices"
-        title="My Devices"
-        description="See this device and any others connected to your Pocket Lab. Add a new device when you are ready to expand."
+        title="Devices"
+        description="See what Pocket Lab can reach and what needs attention."
         actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
-      <section className="lite-devices-hero">
-        <div className="lite-devices-hero-copy">
-          <div className="lite-home-pill">
-            <span className="lite-ready-dot" />
-            {remoteAccessReady ? (onlineDevices > 0 ? 'Devices online' : 'Remote access ready') : 'Remote access not ready'}
-          </div>
-          <h2>Keep your devices easy to find and easy to trust.</h2>
-          <p>
-            Check which devices are available, when they were last seen, and add another device without handling setup details manually.
-          </p>
-        </div>
-
-        <div className="lite-devices-count-card">
-          <div className="lite-devices-orbit">
-            <Network className="h-7 w-7" />
-          </div>
-          <span>Connected now</span>
-          <strong>{onlineDevices}</strong>
-          <p>{healthAttentionCount > 0 ? `${healthAttentionCount} health item${healthAttentionCount === 1 ? '' : 's'} to review` : `${devices.length} total device${devices.length === 1 ? '' : 's'} known`}</p>
-        </div>
-      </section>
+      <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
         <div className="lite-remote-access-icon">
@@ -677,7 +719,7 @@ export default function DevicesScreen() {
               <small>Current connection, system identity, and health at a glance.</small>
             </div>
             <div className="lite-devices-section-metrics" aria-label="Device totals">
-              <span><strong>{onlineDevices}</strong> online</span>
+              {savedStateOnly ? <span><strong>Saved</strong> information</span> : <span><strong>{onlineDevices}</strong> online</span>}
               <span><strong>{devices.length}</strong> total</span>
               {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> health attention</span> : null}
             </div>
@@ -866,6 +908,7 @@ export default function DevicesScreen() {
                   restartBusy={restartBusy}
                   removeBusy={removeBusy}
                   detailsOpen={detailsDeviceId === key}
+                  savedStateOnly={savedStateOnly}
                   onOpenDetails={() => { setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
                   detailsButtonRef={(node) => {
                     if (node) detailsButtonRefs.current.set(key, node);

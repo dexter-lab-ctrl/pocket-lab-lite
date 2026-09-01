@@ -1201,6 +1201,152 @@ export function selectLiteDeviceCard(device = {}) {
   return output;
 }
 
+export function selectDeviceOperationalStory(device = {}, { savedStateOnly = false } = {}) {
+  const status = normalizeDeviceStatus(device?.status || device?.state || device?.connection || 'unknown');
+  const connection = normalizeDeviceStatus(device?.connection || device?.connection_state || status);
+  const protectedHost = Boolean(device?.protected_server_host || device?.protected || device?.is_current || device?.isCurrent || normalizeDeviceStatus(device?.role) === 'server_host');
+  const progress = device?.restart_progress || device?.command_progress || null;
+  const progressStatus = normalizeDeviceStatus(progress?.status || progress?.state || progress?.phase || '');
+  const agentStatus = normalizeDeviceStatus(device?.agent_status || device?.agent?.status || '');
+  const restartAssessment = isObject(device?.restart_agent_assessment) ? device.restart_agent_assessment : null;
+  const supervisorRecoveryAvailable = restartAssessment?.allowed === true;
+  const commandUndeliverable = restartAssessment?.command_deliverable === false;
+  const remote = isObject(device?.remote_access) ? device.remote_access : null;
+  const remoteReady = remote?.ready === true || normalizeDeviceStatus(remote?.status) === 'healthy';
+  const remoteStatus = normalizeDeviceStatus(remote?.status || remote?.state || '');
+  const remoteNotReady = Boolean(remote) && !remoteReady && ['remote_access_not_ready', 'not_ready', 'unavailable', 'failed'].includes(remoteStatus);
+  const repairing = ['repairing', 'restarting', 'restart_pending', 'command_pending', 'command_running', 'running', 'queued', 'accepted'].includes(progressStatus)
+    || ['repairing', 'restarting', 'restart_pending'].includes(status)
+    || connection === 'repairing';
+
+  if (savedStateOnly) {
+    return {
+      state: 'saved',
+      tone: 'saved',
+      headline: 'Showing saved device information',
+      summary: 'Pocket Lab cannot confirm this device’s current connection until live information returns.',
+      consequence: 'Device actions remain protected while this information is saved.',
+      connection_state: 'unknown',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: null,
+    };
+  }
+
+  if (protectedHost) {
+    return {
+      state: 'protected',
+      tone: 'info',
+      headline: 'Pocket Lab server',
+      summary: 'This protected host runs your Pocket Lab control plane.',
+      consequence: 'It cannot be removed like a regular device.',
+      connection_state: 'server',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: null,
+    };
+  }
+
+  if (repairing) {
+    return {
+      state: 'repairing',
+      tone: 'attention',
+      headline: 'Repairing this device connection',
+      summary: String(progress?.summary || 'Pocket Lab is checking whether this device reports back.').slice(0, 220),
+      attention: 'Pocket Lab will only confirm recovery after prepared device status reports it.',
+      connection_state: 'repairing',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: null,
+    };
+  }
+
+  if (status === 'agent_stopped' || connection === 'stopped' || ['stopped', 'offline'].includes(agentStatus) && status !== 'offline') {
+    return {
+      state: 'agent_stopped',
+      tone: 'attention',
+      headline: 'Agent stopped',
+      summary: supervisorRecoveryAvailable
+        ? 'The device agent is stopped. Pocket Lab can try the prepared recovery action.'
+        : 'The device agent is stopped. Manual recovery guidance is required.',
+      attention: commandUndeliverable ? 'Pocket Lab cannot currently deliver a restart command because this device is not reachable.' : '',
+      connection_state: 'disconnected',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: supervisorRecoveryAvailable ? { kind: 'restart', label: 'Restart agent' } : null,
+    };
+  }
+
+  if (status === 'joining' || connection === 'joining') {
+    return {
+      state: 'joining',
+      tone: 'info',
+      headline: 'Joining Pocket Lab',
+      summary: 'This device is still joining. Pocket Lab will confirm it after the first prepared heartbeat.',
+      connection_state: 'disconnected',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: null,
+    };
+  }
+
+  if (status === 'waiting' || status === 'pending' || connection === 'waiting') {
+    return {
+      state: 'waiting',
+      tone: 'review',
+      headline: 'Waiting for this device',
+      summary: 'Pocket Lab is waiting for this device to connect.',
+      connection_state: 'disconnected',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: null,
+    };
+  }
+
+  if ((status === 'offline' || connection === 'offline') && ['running', 'online', 'healthy'].includes(agentStatus)) {
+    return {
+      state: 'offline',
+      tone: 'danger',
+      headline: 'Device is disconnected',
+      summary: 'The agent is reported as running, but Pocket Lab is not receiving a current connection from this device.',
+      connection_state: 'disconnected',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: supervisorRecoveryAvailable ? { kind: 'restart', label: 'Restart agent' } : null,
+    };
+  }
+
+  if (status === 'offline' || connection === 'offline' || commandUndeliverable) {
+    return {
+      state: 'offline',
+      tone: 'danger',
+      headline: 'Device is offline',
+      summary: commandUndeliverable
+        ? 'Pocket Lab cannot currently deliver a restart command because this device is not reachable.'
+        : 'Pocket Lab has not received fresh status from this device.',
+      connection_state: 'disconnected',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: supervisorRecoveryAvailable ? { kind: 'restart', label: 'Restart agent' } : null,
+    };
+  }
+
+  if (status === 'online' || status === 'healthy' || status === 'ready' || connection === 'online') {
+    return {
+      state: 'online',
+      tone: 'ready',
+      headline: 'Connected',
+      summary: 'Pocket Lab is receiving fresh status from this device.',
+      consequence: remoteNotReady ? 'Local Pocket Lab connection is working, but remote access is not ready.' : 'No immediate action is needed.',
+      connection_state: 'connected',
+      remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+      next_action: null,
+    };
+  }
+
+  return {
+    state: 'unknown',
+    tone: 'unknown',
+    headline: 'Device status is not confirmed yet',
+    summary: 'Pocket Lab has not reported enough current information to confirm this device’s connection.',
+    connection_state: 'unknown',
+    remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
+    next_action: null,
+  };
+}
+
 export function selectDeviceCardsView(payload = {}) {
   const devices = Array.isArray(payload?.devices) ? payload.devices : [];
   return devices.map(selectLiteDeviceCard).filter(Boolean);

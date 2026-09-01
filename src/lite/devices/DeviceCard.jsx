@@ -2,20 +2,18 @@ import React from 'react';
 import { AlertTriangle, ChevronDown, HeartPulse, Lock, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   GlassCard,
-  StatusBadge,
   LiteButton,
-  backendBadgeStatus,
-  normalizeBackendState,
   roleLabel,
-  deviceConnectionLabel,
-  deviceStatusLabel,
   deviceCapabilitySummary,
   canonicalDevicePresentation,
   deviceLinkState,
   canRestartDeviceAgent,
   canRemoveDevice,
+  LiteActionRow,
+  LiteOperationalStory,
 } from '../LiteUi.jsx';
 import { formatLiteTime } from '../../lib/liteApi.js';
+import { selectDeviceOperationalStory } from '../../lib/liteViewModels.js';
 
 const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
 const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
@@ -29,14 +27,6 @@ function identityLabel(device) {
   if (status === 'join_blocked') return 'Join blocked';
   if (device?.identity?.repair_required) return 'Repair required';
   return 'Identity check pending';
-}
-
-function stalenessLabel(device) {
-  const state = String(device?.staleness_state || device?.last_seen_state?.staleness_state || '').toLowerCase();
-  if (state === 'review_recommended') return 'Review recommended';
-  if (state === 'stale') return 'Stale';
-  if (state === 'recently_offline') return 'Recently offline';
-  return deviceConnectionLabel(device);
 }
 
 function healthLabel(value) {
@@ -100,25 +90,30 @@ function DeviceCard({
   onRemoveDevice,
   onOpenDetails,
   detailsButtonRef = null,
+  savedStateOnly = false,
 }) {
   const presentation = canonicalDevicePresentation(device);
-  const online = presentation.state === 'online';
+  const online = !savedStateOnly && presentation.state === 'online';
   const linkState = deviceLinkState(device);
   const role = String(device?.role || '').toLowerCase();
-  const isServerCard = role === 'server_host' || device?.is_current || device?.isCurrent;
+  const isServerCard = Boolean(device?.protected_server_host || role === 'server_host' || device?.is_current || device?.isCurrent);
+  const effectiveLinkState = savedStateOnly && !isServerCard ? 'disconnected' : linkState;
   const connectionClass = isServerCard
     ? 'lite-device-card-server'
-    : `lite-device-card-linked lite-device-card-linked-${linkState}`;
+    : `lite-device-card-linked lite-device-card-linked-${effectiveLinkState}`;
   const deviceName = device?.name || 'Unnamed device';
   const capabilitySummary = deviceCapabilitySummary(device);
-  const canRestart = canRestartDeviceAgent(device);
-  const canRemove = canRemoveDevice(device);
+  const canRestart = !savedStateOnly && canRestartDeviceAgent(device);
+  const canRemove = !savedStateOnly && canRemoveDevice(device);
   const proactiveHealth = device?.proactive_health || null;
   const healthAttentionCurrent = Boolean(proactiveHealth?.attention_current !== false);
   const healthAttentionCount = healthAttentionCurrent ? Number(proactiveHealth?.attention_count || 0) : 0;
-  const flowState = deviceConnectionFlowState({ isServerCard, linkState, presentation });
+  const flowState = savedStateOnly && !isServerCard
+    ? 'disconnected'
+    : deviceConnectionFlowState({ isServerCard, linkState: effectiveLinkState, presentation });
   const showHealthAttention = Boolean(proactiveHealth && (healthAttentionCount > 0 || !['healthy', 'unknown'].includes(String(proactiveHealth.status || '').toLowerCase())));
   const lastSeen = device?.last_seen_state?.last_seen_at || device?.last_seen;
+  const story = selectDeviceOperationalStory(device, { savedStateOnly });
 
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
@@ -127,9 +122,6 @@ function DeviceCard({
           <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
           <Network className="h-5 w-5" />
         </div>
-        <StatusBadge status={backendBadgeStatus(presentation.state)}>
-          {presentation.label}
-        </StatusBadge>
       </div>
 
       <div className="lite-device-card-heading">
@@ -139,11 +131,6 @@ function DeviceCard({
         </span>
         <h2>{deviceName}</h2>
         {isServerCard ? <p>Protected control device for this self-hosted workspace.</p> : null}
-      </div>
-
-      <div className="lite-device-primary-meta">
-        <span><strong>{stalenessLabel(device)}</strong></span>
-        {lastSeen ? <span>Last seen <strong>{formatLiteTime(lastSeen)}</strong></span> : null}
       </div>
 
       <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>
@@ -165,6 +152,32 @@ function DeviceCard({
         )}
       </div>
 
+      <LiteOperationalStory
+        className="lite-device-operational-story"
+        story={{
+          ...story,
+          freshness: lastSeen ? { label: savedStateOnly ? 'Saved status' : 'Last seen', detail: formatLiteTime(lastSeen), state: savedStateOnly ? 'stale' : 'live' } : null,
+        }}
+        primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary' } : null}
+        manageAction={{
+          label: detailsOpen ? 'Hide details' : 'Manage',
+          onClick: onOpenDetails,
+          ariaLabel: `${detailsOpen ? 'Hide' : 'Manage'} ${deviceName}`,
+          ariaExpanded: detailsOpen,
+          buttonRef: detailsButtonRef,
+        }}
+      />
+
+      {story.remote_access === 'not_ready' ? (
+        <LiteActionRow
+          className="lite-device-remote-access-row"
+          label="Remote access"
+          value="Not ready"
+          summary="This is separate from the local Pocket Lab connection."
+          attention
+        />
+      ) : null}
+
       {showHealthAttention ? (
         <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
           <span className="lite-device-health-strip-icon">
@@ -179,19 +192,9 @@ function DeviceCard({
       ) : null}
 
       <div className="lite-device-actions">
-        <LiteButton
-          tone="secondary"
-          onClick={() => {
-            onOpenDetails?.();
-          }}
-          aria-expanded={detailsOpen}
-          buttonRef={detailsButtonRef}
-        >
-          {detailsOpen ? 'Hide Details' : healthAttentionCount > 0 ? 'Review health' : 'Details'}
-        </LiteButton>
         <details className="lite-device-card-disclosure">
           <summary aria-label={`More details and actions for ${deviceName}`}>
-            <span>More</span><ChevronDown className="h-4 w-4" />
+            <span>Technical and safety</span><ChevronDown className="h-4 w-4" />
           </summary>
           <div className="lite-device-card-disclosure-content">
             <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
@@ -205,7 +208,7 @@ function DeviceCard({
               <small>Capabilities: {capabilitySummary.label}</small>
             </div>
             {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
-              {canRestart ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
+              {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
                 <RefreshCw className="h-4 w-4" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
               </LiteButton> : null}
               {canRemove ? <LiteButton tone="danger" onClick={onRemoveDevice} disabled={removeBusy}>
@@ -223,7 +226,8 @@ function areEqual(previous, next) {
   return previous.device === next.device
     && previous.restartBusy === next.restartBusy
     && previous.removeBusy === next.removeBusy
-    && previous.detailsOpen === next.detailsOpen;
+    && previous.detailsOpen === next.detailsOpen
+    && previous.savedStateOnly === next.savedStateOnly;
 }
 
 export default React.memo(DeviceCard, areEqual);

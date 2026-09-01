@@ -22059,6 +22059,18 @@ html.lite-install-light-shell body {
   gap: 0.65rem;
 }
 
+.theme-pocket-lite-daylight .lite-device-operational-story {
+  margin-top: 0.8rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-operational-story {
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-remote-access-row {
+  margin-top: 0.65rem;
+}
+
 .theme-pocket-lite-daylight .lite-home-premium-section-head {
   display: flex;
   align-items: flex-start;
