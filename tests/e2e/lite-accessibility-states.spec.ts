@@ -15,7 +15,7 @@ const MANAGE_CASES = [
   ['home', /Workspace details/i, '[role="dialog"]'],
   ['catalog', /^Manage$/i, '[role="dialog"]'],
   ['devices', /Manage Test-Phone-4/i, '.lite-device-details-panel'],
-  ['security', /Manage Safety/i, '[role="dialog"]'],
+  ['security', /Manage Security details/i, '[role="dialog"]'],
   ['identity', /Manage Access/i, '[role="dialog"]'],
   ['rules', /Manage Safety Rules/i, '[role="dialog"]'],
   ['recovery', /Manage Recovery/i, '[role="dialog"]'],
@@ -36,7 +36,9 @@ for (const [screenId, openerName, surfaceSelector] of MANAGE_CASES) {
     await expect(surface).toBeVisible();
     if (surfaceSelector === '[role="dialog"]') {
       await expect(surface).toHaveAttribute('aria-modal', 'true');
-      await expect(surface).toHaveAttribute('aria-labelledby', /.+/);
+      const ariaLabel = await surface.getAttribute('aria-label');
+      const labelledBy = await surface.getAttribute('aria-labelledby');
+      expect(Boolean(ariaLabel || labelledBy), `${screenId}: dialog must have an accessible name`).toBe(true);
       await expect.poll(() => page.evaluate(() => Boolean(document.activeElement?.closest?.('[role="dialog"]')))).toBe(true);
     } else {
       await expect(surface).toHaveAttribute('role', 'region');
@@ -71,7 +73,7 @@ test('mobile Manage overlay remains accessible at 200 percent text', async ({ pa
   await page.goto('/?screen=security');
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
   await waitForLiteScreenToSettle(page, 'security');
-  await page.getByRole('button', { name: /Manage Safety/i }).click();
+  await page.getByRole('button', { name: /Manage Security details/i }).click();
 
   const dialog = page.locator('[role="dialog"]:visible').first();
   await expect(dialog).toBeVisible();
