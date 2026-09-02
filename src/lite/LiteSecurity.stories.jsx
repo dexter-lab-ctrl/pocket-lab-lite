@@ -9,47 +9,54 @@ async function expectSecurity(canvasElement) {
   return canvas;
 }
 
-async function openManage(canvasElement) {
+async function openManageSection(canvasElement, label = 'Overview') {
   const canvas = await expectSecurity(canvasElement);
   const manage = await canvas.findByRole('button', { name: /Manage Safety/i });
   await userEvent.click(manage);
   const body = within(canvasElement.ownerDocument.body);
-  await expect(await body.findByRole('dialog')).toBeInTheDocument();
+  const dialog = await body.findByRole('dialog', { name: /Manage Security/i });
+  await expect(dialog).toBeInTheDocument();
+  if (label !== 'Overview') {
+    const tab = within(dialog).getByRole('tab', { name: new RegExp(`Open ${label} in Security Manage`, 'i') });
+    await userEvent.click(tab);
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+  }
+  await expect(within(dialog).getByRole('heading', { name: label, level: 3 })).toBeInTheDocument();
 }
 
 export const QuickCheckHealthy = {
   ...createLiteStory('security', 'security-quick-healthy'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/No urgent safety issues|Protected|Safety score/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/No urgent safety issues|Protected|Safety score/i);
   },
 };
 export const QuickCheckReviewRecommended = {
   ...createLiteStory('security', 'security-action-needed'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/attention|review|issue/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/attention|review|issue/i);
   },
 };
 export const FullCheckRunning = {
   ...createLiteStory('security', 'security-full-running'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/running|checking|progress/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/running|checking|progress/i);
   },
 };
 export const AppCheckHealthy = {
   ...createLiteStory('security', 'security-app-check-healthy'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/PhotoPrism|App Check/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/PhotoPrism|App Check/i);
   },
 };
 export const UrgentFinding = {
   ...createLiteStory('security', 'security-urgent'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/urgent|critical|attention/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/urgent|critical|attention/i);
   },
 };
 export const NoScanHistory = createLiteStory('security', 'security-first-run');
@@ -58,36 +65,61 @@ export const ProgressStages = createLiteStory('security', 'security-progress');
 export const ScannerUnavailable = {
   ...createLiteStory('security', 'security-scanner-unavailable'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/scanner|unavailable|attention/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/scanner|unavailable|attention/i);
   },
 };
 export const UnsupportedAppProfileRoute = createLiteStory('security', 'security-unsupported-app-route');
 export const SavedOfflineSnapshot = {
   ...createLiteStory('security', 'offline-saved'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/saved|offline/i)).toBeInTheDocument();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/saved|offline/i);
   },
 };
 
 export const HealthyManageOverview = {
   ...createLiteStory('security', 'security-quick-healthy', { viewport: 'desktop' }),
-  play: async ({ canvasElement }) => openManage(canvasElement),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Overview'),
+};
+export const ManageChanges = {
+  ...createLiteStory('security', 'security-action-needed', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Changes'),
+};
+export const ManageIssues = {
+  ...createLiteStory('security', 'security-urgent', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Issues'),
+};
+export const ManageCheckPath = {
+  ...createLiteStory('security', 'security-full-running', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Check path'),
+};
+export const ManageEvidence = {
+  ...createLiteStory('security', 'security-quick-healthy', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Evidence'),
+};
+export const ManageHistory = {
+  ...createLiteStory('security', 'security-quick-healthy', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'History'),
+};
+export const ManageTechnicalDetails = {
+  ...createLiteStory('security', 'security-quick-healthy', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Technical details'),
 };
 export const UrgentFindingManageOpen = {
   ...createLiteStory('security', 'security-urgent', { viewport: 'desktop' }),
-  play: async ({ canvasElement }) => openManage(canvasElement),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Issues'),
 };
 export const ScannerUnavailableManageOpen = {
   ...createLiteStory('security', 'security-scanner-unavailable', { viewport: 'mobile390' }),
-  play: async ({ canvasElement }) => openManage(canvasElement),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Overview'),
 };
 export const OfflineSavedManageOpen = {
   ...createLiteStory('security', 'offline-saved', { viewport: 'mobile390' }),
   play: async ({ canvasElement }) => {
-    const canvas = await expectSecurity(canvasElement);
-    await expect(await canvas.findByText(/saved|offline/i)).toBeInTheDocument();
-    await expect(canvas.queryByRole('button', { name: /Run Quick Scan/i })).toBeDisabled();
+    await expectSecurity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/saved|offline/i);
+    const quickScan = within(canvasElement).queryByRole('button', { name: /Run Quick Scan/i });
+    if (quickScan) await expect(quickScan).toBeDisabled();
   },
 };
