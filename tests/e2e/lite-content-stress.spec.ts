@@ -100,7 +100,9 @@ test('long content remains contained with a 200 percent root text stress', async
 });
 
 test('representative mobile Manage dialogs contain long copy and remain scrollable', async ({ page }) => {
-  await installScenario(page, 'healthy');
+  // This flow includes App Catalog Manage, which exists only when the app is installed.
+  // catalog-ready changes the Catalog fixture while other Lite domains retain their base healthy payloads.
+  await installScenario(page, 'catalog-ready');
   await page.setViewportSize({ width: 390, height: 844 });
 
   const flows = [
