@@ -11,7 +11,7 @@ async function expectSecurity(canvasElement) {
 
 async function openManageSection(canvasElement, label = 'Overview') {
   const canvas = await expectSecurity(canvasElement);
-  const manage = await canvas.findByRole('button', { name: /Manage Safety/i });
+  const manage = await canvas.findByRole('button', { name: /Manage Security details/i });
   await userEvent.click(manage);
   const body = within(canvasElement.ownerDocument.body);
   const dialog = await body.findByRole('dialog', { name: /Manage Security/i });
@@ -119,7 +119,7 @@ export const OfflineSavedManageOpen = {
   play: async ({ canvasElement }) => {
     await expectSecurity(canvasElement);
     await expect(canvasElement).toHaveTextContent(/saved|offline/i);
-    const quickScan = within(canvasElement).queryByRole('button', { name: /Run Quick Scan/i });
+    const quickScan = within(canvasElement).queryByRole('button', { name: /Run Quick Safety Check|Reconnect to run Quick Safety Check/i });
     if (quickScan) await expect(quickScan).toBeDisabled();
   },
 };
