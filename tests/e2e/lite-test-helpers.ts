@@ -61,7 +61,7 @@ function escapeRegex(value: string) {
 export async function openTab(page: Page, label: string, screenId: string) {
   const shortLabel = label.split(' ')[0];
   const accessibleName = new RegExp(`^(${escapeRegex(label)}|${escapeRegex(shortLabel)})$`, 'i');
-  const button = page.getByRole('button', { name: accessibleName }).locator(':visible').first();
+  const button = page.getByRole('button', { name: accessibleName }).first();
   await button.click();
   await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible' });
 }
