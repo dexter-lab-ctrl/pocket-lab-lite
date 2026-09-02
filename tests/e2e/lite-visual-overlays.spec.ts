@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
 type OverlayCase = {
   name: string;
   screen: string;
-  open: (page: any) => Promise<void>;
-  surface: (page: any) => any;
+  open: (page: Page) => Promise<void>;
+  surface: (page: Page) => Locator;
 };
 
 const OVERLAYS: OverlayCase[] = [
@@ -31,7 +31,7 @@ const OVERLAYS: OverlayCase[] = [
     name: 'security-manage',
     screen: 'security',
     open: async (page) => page.getByRole('button', { name: /Manage Safety/i }).click(),
-    surface: (page) => page.getByRole('dialog').filter({ hasText: /Safety|Security/i }).first(),
+    surface: (page) => page.getByRole('dialog', { name: /Manage Security/i }),
   },
   {
     name: 'identity-manage',
@@ -49,7 +49,7 @@ const OVERLAYS: OverlayCase[] = [
     name: 'recovery-manage',
     screen: 'recovery',
     open: async (page) => page.getByRole('button', { name: /Manage Recovery/i }).click(),
-    surface: (page) => page.getByRole('dialog', { name: /Manage Recovery/i }),
+    surface: (page) => page.getByRole('dialog', { name: /Manage backups and recovery/i }),
   },
 ];
 
