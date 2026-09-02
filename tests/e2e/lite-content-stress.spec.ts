@@ -106,7 +106,7 @@ test('representative mobile Manage dialogs contain long copy and remain scrollab
   const flows = [
     ['home', /Workspace details/i],
     ['catalog', /^Manage$/i],
-    ['security', /Manage Safety/i],
+    ['security', /Manage Security details/i],
     ['identity', /Manage Access/i],
     ['rules', /Manage Safety Rules/i],
     ['recovery', /Manage Recovery/i],
