@@ -3267,15 +3267,6 @@
       "confidence": "contract-derived",
       "description": "Start Lite App Restore Preview",
       "domain": "apps",
-      "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.previewAppRestore",
-          "resolved": true,
-          "source_module": "src/lite/LiteRecovery.jsx",
-          "usage": "mutation"
-        }
-      ],
       "id": "api:post:/api/lite/apps/{app_id}/restore/preview",
       "method": "POST",
       "name": "POST /api/lite/apps/{app_id}/restore/preview",
@@ -24204,6 +24195,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-phase9-qualification.spec.ts",
+      "name": "tests/e2e/lite-phase9-qualification.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-test-helpers.ts",
       "name": "tests/e2e/lite-test-helpers.ts",
       "source_refs": [
@@ -27341,6 +27342,7 @@
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
+        "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
         "test:tests/e2e/lite-visual.spec.ts",
@@ -28458,6 +28460,7 @@
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
+        "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
         "test:tests/e2e/lite-visual.spec.ts",
@@ -29587,10 +29590,6 @@
         }
       ],
       "api:post:/api/lite/apps/{app_id}/restore/preview": [
-        {
-          "source": "ui:literecovery",
-          "type": "calls"
-        },
         {
           "source": "domain:apps",
           "type": "owns"
@@ -41146,6 +41145,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-phase9-qualification.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-test-helpers.ts": [
         {
           "source": "component:app-catalog",
@@ -49576,6 +49585,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-test-helpers.ts",
           "type": "verified_by"
         },
@@ -51133,6 +51146,10 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
           "type": "verified_by"
         },
         {
@@ -55515,10 +55532,6 @@
         },
         {
           "target": "api:post:/api/lite/apps/{app_id}/backup",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/apps/{app_id}/restore/preview",
           "type": "calls"
         },
         {
@@ -64940,6 +64953,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "id": "rel:51cbe939dd275306",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:51dff6b11581dd55",
@@ -65206,6 +65228,15 @@
       "id": "rel:5515bddfa96932ef",
       "source": "domain:devices",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "id": "rel:551788048c830ff3",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
       "type": "verified_by"
     },
     {
@@ -79920,15 +79951,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRecovery.jsx"
-      ],
-      "id": "rel:df2fc49dfd553a80",
-      "source": "ui:literecovery",
-      "target": "api:post:/api/lite/apps/{app_id}/restore/preview",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:dfad7bc42ae836c4",
@@ -83448,9 +83470,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9cd83cede074459ca3513598ac613e2ddc677eda148b559997fc4e7f66da56c2",
+  "source_fingerprint": "b00abd852b695bc06ae6c9711e7eb18861d1fcf6505360564d7b9245c0ec50ab",
   "statistics": {
-    "entity_count": 1086,
+    "entity_count": 1087,
     "entity_type_counts": {
       "adr": 6,
       "api": 164,
@@ -83467,14 +83489,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 66,
-      "test": 196,
+      "test": 197,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3054,
-    "source_count": 233
+    "relation_count": 3055,
+    "source_count": 234
   }
 }

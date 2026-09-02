@@ -17,6 +17,42 @@ const PREMIUM_SCREENS = [
   ['Rules', 'rules'],
 ] as const;
 
+async function waitForLiveDevices(page) {
+  const devices = page.locator('[data-lite-screen-id="devices"]');
+  await expect(devices).toBeVisible();
+
+  const healthyCard = devices
+    .locator('.lite-device-card')
+    .filter({ hasText: 'Test-Phone-4' });
+
+  await expect(healthyCard).toBeVisible({ timeout: 20_000 });
+
+  const connected = healthyCard.locator(
+    '[data-connection-state="connected"]',
+  );
+
+  // A safe fleet snapshot may legitimately hydrate first and remain fresh
+  // inside TanStack's Devices stale window. Tests that assert current
+  // connection topology must explicitly request current backend truth,
+  // exactly as the user would from the Devices screen.
+  if (!(await connected.isVisible().catch(() => false))) {
+    const refresh = devices.getByRole('button', {
+      name: /^Refresh(?: Devices)?$/i,
+    }).first();
+
+    await expect(refresh).toBeVisible();
+    await refresh.click();
+  }
+
+  await expect(connected).toBeVisible({ timeout: 20_000 });
+  await expect(devices).not.toContainText(
+    'Showing saved device information',
+    { timeout: 20_000 },
+  );
+
+  return devices;
+}
+
 test.describe('Pocket Lab Lite mocked contract path', () => {
   test.beforeEach(async ({ page }) => {
     await installScenario(page, 'healthy');
@@ -35,51 +71,34 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     expect(failed, `unexpected Lite API failures: ${failed.join(', ')}`).toEqual([]);
   });
 
-  test('Home keeps secondary capacity and healthy status detail behind accessible disclosures', async ({ page }) => {
+  test('Home keeps secondary workspace detail in the explicit accessible sheet', async ({ page }) => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
-    const deviceDetails = page.locator('[data-home-device-details="true"]');
-    const statusDetails = page.locator('[data-home-status-details="true"]');
 
-    await expect(home.getByRole('button', { name: 'View device details' })).toHaveAttribute('aria-expanded', 'false');
-    await expect(home.getByRole('button', { name: 'View all areas' })).toHaveAttribute('aria-expanded', 'false');
-    await expect(deviceDetails).toBeHidden();
-    await expect(statusDetails).toBeHidden();
+    await expect(home.getByRole('button', { name: 'Workspace details' })).toBeVisible();
+    await expect(home).not.toContainText(/Storage|Pocket Lab data/i);
 
-    await home.getByRole('button', { name: 'View device details' }).click();
-    await expect(home.getByRole('button', { name: 'Hide device details' })).toHaveAttribute('aria-expanded', 'true');
-    await expect(deviceDetails).toBeVisible();
-    await expect(deviceDetails).toContainText(/Storage|Pocket Lab data/i);
+    const opener = home.getByRole('button', { name: 'Workspace details' });
+    await opener.click();
+    const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    await expect(sheet).toBeVisible();
+    await expect(sheet).toContainText(/Storage|Pocket Lab data/i);
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(opener).toBeFocused();
 
-    await home.getByRole('button', { name: 'View all areas' }).press('Enter');
-    await expect(home.getByRole('button', { name: 'Hide all areas' })).toHaveAttribute('aria-expanded', 'true');
-    await expect(statusDetails).toBeVisible();
-    await expect(statusDetails.locator('.lite-home-premium-service')).toHaveCount(6);
-
-    await home.locator('.lite-home-premium-overview').getByRole('button', { name: 'Open Apps' }).click();
+    await home.getByRole('button', { name: 'Open' }).first().click();
     await expect(page.locator('[data-lite-screen-id="catalog"]')).toBeVisible();
   });
 
-  test('Home gives a ready workspace a smooth, reduced-motion-safe pulse', async ({ page }) => {
+  test('Home keeps a ready workspace calm while respecting reduced-motion preference', async ({ page }) => {
     await page.goto('/?screen=home');
-    const workflow = page.locator('[data-home-workflow-state]');
-
-    await expect(workflow).toBeVisible();
-    await expect(workflow).toContainText('Workspace pulse');
-    await expect(workflow.locator('.lite-home-workflow-node')).toHaveCount(4);
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await workflow.evaluate((element) => {
-      element.classList.remove('motion-rest', 'motion-checking');
-      element.classList.add('motion-live');
-    });
-    const isVerticalWorkflow = (page.viewportSize()?.width || 0) < 768;
-    await expect(workflow.locator('.lite-home-workflow-line i').first()).toHaveCSS(
-      'animation-name',
-      isVerticalWorkflow ? 'liteHomeWorkflowSweepVertical' : 'liteHomeWorkflowSweep',
-    );
+    const home = page.locator('[data-lite-screen-id="home"]');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(workflow.locator('.lite-home-workflow-line i').first()).toHaveCSS('animation-name', 'none');
+    await expect(home).toBeVisible();
+    await expect(home.locator('[data-home-workflow-state]')).toHaveCount(0);
+    expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
   });
 
   test('Home surfaces an attention area without opening healthy workspace detail', async ({ page }) => {
@@ -109,8 +128,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
 
-    await expect(home.locator('.lite-home-premium-service-preview').getByText('Safety needs immediate attention.')).toBeVisible();
-    await expect(home.getByRole('button', { name: 'View all areas' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(home.locator('.lite-operational-story')).toContainText(/attention|safety|review/i);
+    await expect(home.getByRole('button', { name: 'Workspace details' })).toBeVisible();
   });
 
   test('Home keeps saved information truthful while secondary detail remains collapsed', async ({ page }) => {
@@ -119,7 +138,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
     await expect(home).toContainText('Showing saved information');
-    await expect(home.getByRole('button', { name: 'View device details' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(home.getByRole('button', { name: 'Workspace details' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   });
 
@@ -280,7 +299,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toContainText('Passkeys');
     await expect(identity).toContainText('Sessions');
     await expect(identity).toContainText('Recovery');
-    await identity.getByRole('button', { name: 'Manage access' }).click();
+    await identity.getByRole('button', { name: 'Manage access', exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/current and other owner sessions remain distinct/i);
     await expect(identity).not.toContainText('local-admin');
 
@@ -301,7 +320,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const rules = page.locator('[data-lite-screen-id="rules"]');
     await expect(rules.getByRole('heading', { name: 'Rules governance', exact: true })).toBeVisible();
 
-    await rules.getByRole('button', { name: 'Simulate' }).click();
+    await rules.getByRole('button', { name: 'Test a change' }).click();
     await expect(rules.getByText('This does not execute the action', { exact: true })).toBeVisible();
     await expect(rules.getByLabel('Simulation context')).toBeVisible();
     await rules.getByLabel('Target reference').fill('mock-app');
@@ -311,21 +330,22 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rules.getByText('Supported hypothetical facts')).toBeVisible();
     await expect(rules.getByText('Recent passkey assurance')).toBeVisible();
 
-    await rules.getByRole('button', { name: 'Decisions' }).click();
+    await rules.getByRole('button', { name: 'Activity' }).click();
     await expect(rules.getByRole('heading', { name: 'Decision explorer', exact: true })).toBeVisible();
     await expect(rules).not.toContainText('raw policy input');
 
-    await rules.getByRole('button', { name: 'Approvals' }).click();
+    await rules.getByRole('button', { name: 'Requests', exact: true }).click();
     await expect(rules.getByRole('heading', { name: 'Device removal approvals', exact: true })).toBeVisible();
     await expect(rules).toContainText(/exact-target|exact-Rules-revision/i);
     await expect(rules).not.toContainText('Requesting identity ID');
 
-    await rules.getByRole('button', { name: 'Exceptions' }).click();
+    await rules.getByRole('button', { name: 'Temporary access' }).click();
     await expect(rules.getByRole('heading', { name: 'Temporary exceptions', exact: true })).toBeVisible();
     await expect(rules).toContainText(/Expires automatically|Read-only exception view/i);
     await expect(rules).not.toContainText('Human ID');
 
-    await rules.getByRole('button', { name: 'Health' }).click();
+    await rules.getByRole('button', { name: 'Protection' }).click();
+    await rules.getByRole('button', { name: 'Health details' }).click();
     await expect(rules.getByRole('heading', { name: 'Rules health', exact: true })).toBeVisible();
     await expect(rules).toContainText(/Not all conflicts are analyzable by this model|Advanced analysis is not available to this role/i);
     await expect(rules).not.toContainText('package pocketlab');
@@ -352,7 +372,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       }
 
       await openTab(page, 'Identity & Access', 'identity');
-      await page.getByRole('button', { name: 'Manage access' }).click();
+      await page.getByRole('button', { name: 'Manage access', exact: true }).click();
       const identitySheet = page.getByRole('dialog', { name: 'Manage access' });
       await expect(identitySheet).toBeVisible();
       expect(await identitySheet.evaluate((element) => {
@@ -371,7 +391,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await page.keyboard.press('Escape');
 
       await openTab(page, 'Rules', 'rules');
-      await page.getByRole('button', { name: 'Manage Safety Rules' }).click();
+      await page.locator('.lite-rules-operational-story').getByRole('button', { name: 'Manage Safety Rules', exact: true }).click();
       const rulesSheet = page.getByRole('dialog', { name: 'Manage Safety Rules' });
       await expect(rulesSheet).toBeVisible();
       expect(await rulesSheet.evaluate((element) => {
@@ -423,7 +443,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     for (const viewport of PREMIUM_VIEWPORTS) {
       await page.setViewportSize(viewport);
       await page.goto('/?screen=devices');
-      const devices = page.locator('[data-lite-screen-id="devices"]');
+      const devices = await waitForLiveDevices(page);
       await expect(devices).toBeVisible();
       await expect(devices).toContainText(/Remote access\s*(Ready|not ready)/i);
       await expect(devices).toContainText('Devices');
@@ -446,7 +466,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
         return rect.left >= 0 && rect.right <= window.innerWidth + 1;
       })).toBe(true);
 
-      const details = devices.getByRole('button', { name: 'Details' }).first();
+      const details = devices.getByRole('button', { name: 'Manage Test-Phone-4' });
       await details.click();
       const detailPanel = devices.locator('.lite-device-details-panel');
       await expect(detailPanel).toBeVisible();
@@ -459,7 +479,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
   test('Devices keeps healthy cards compact while preserving accessible connection and action state', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices presentation contract is covered once in Chromium.');
     await page.goto('/?screen=devices');
-    const devices = page.locator('[data-lite-screen-id="devices"]');
+    const devices = await waitForLiveDevices(page);
     const healthyCard = devices.locator('.lite-device-card').filter({ hasText: 'Test-Phone-4' });
     const serverCard = devices.locator('.lite-device-card-server');
 
@@ -468,7 +488,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(healthyCard.locator('.lite-device-flow-device')).toContainText('Test-Phone-4');
     await expect(healthyCard.locator('.lite-device-card-disclosure')).not.toHaveAttribute('open', '');
     await expect(healthyCard.locator('.lite-device-trust-strip')).toBeHidden();
-    await expect(healthyCard.getByRole('button', { name: 'Details' })).toBeVisible();
+    await expect(
+      healthyCard.getByRole('button', { name: 'Manage Test-Phone-4' }),
+    ).toBeVisible();
     await expect(healthyCard.getByRole('button', { name: /restart agent|review removal|remove device/i })).toHaveCount(0);
 
     const more = healthyCard.locator('.lite-device-card-disclosure > summary');
@@ -488,10 +510,12 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
   test('Devices makes remote-access and reduced-motion connection states explicit', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices motion contract is covered once in Chromium.');
-    await installScenario(page, 'nats-down');
+    // Use the healthy fleet for topology/motion assertions.
+    // Its prepared remote-access projection is still "not ready" in the
+    // default mock, while device connectivity remains live and testable.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/?screen=devices');
-    const devices = page.locator('[data-lite-screen-id="devices"]');
+    const devices = await waitForLiveDevices(page);
     await expect(devices.locator('.lite-remote-access-not-ready')).toContainText('Remote access not ready');
 
     const connectedSignal = devices.locator('[data-connection-state="connected"] .lite-device-flow-signal').first();
@@ -523,7 +547,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/?screen=devices');
-    const devices = page.locator('[data-lite-screen-id="devices"]');
+    const devices = await waitForLiveDevices(page);
     const connectedSignal = devices.locator('[data-connection-state="connected"] .lite-device-flow-signal').first();
     await expect(connectedSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-horizontal');
     const desktopStart = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-horizontal', .6);
@@ -554,12 +578,20 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.addInitScript((payload) => {
       const originalFetch = window.fetch.bind(window);
       window.fetch = (input, init) => {
-        const url = new URL(typeof input === 'string' ? input : input.url, window.location.origin);
+        const request = new Request(input, init);
+        const url = new URL(request.url, window.location.origin);
+
         if (url.pathname === '/api/lite/fleet') {
+          const readNonce = request.headers.get('X-PocketLab-Read-Nonce') || '';
+
           return Promise.resolve(new Response(JSON.stringify(payload), {
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'X-PocketLab-Read-Nonce': readNonce,
+            },
           }));
         }
+
         return originalFetch(input, init);
       };
     }, repairingFleetPayload);

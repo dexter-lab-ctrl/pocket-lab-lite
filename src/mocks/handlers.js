@@ -587,7 +587,7 @@ export const handlers = [
     challenge_id: '',
     expires_at: '',
   })),
-  http.get('/api/lite/status', () => HttpResponse.json({
+  http.get('/api/lite/status', ({ request }) => HttpResponse.json({
     overall: 'healthy',
     checked_at: new Date().toISOString(),
     device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
@@ -601,6 +601,10 @@ export const handlers = [
       { name: 'Identity & Access', status: 'healthy', summary: 'Vault is ready' },
       { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' }
     ],
+  }, {
+    headers: {
+      'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
+    },
   })),
   http.get('/api/lite/catalog', () => {
     const ready = scenario() === 'catalog-ready';
@@ -749,7 +753,7 @@ export const handlers = [
     });
   }),
   http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
-  http.get('/api/lite/fleet', () => HttpResponse.json({
+  http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
     count: mockLiteDevices().length,
@@ -775,6 +779,14 @@ export const handlers = [
       storage_devices_ready: 1,
     },
     updated_at: new Date().toISOString(),
+  }, {
+    headers: {
+      // The real FastAPI safe-read path echoes this nonce so a
+      // service-worker-controlled client can distinguish current network
+      // truth from an HTTP-cache response. The mocked backend must preserve
+      // the same contract.
+      'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
+    },
   })),
   http.get('/api/lite/policy', () => HttpResponse.json({
     status: 'ready', summary: 'Safety Rules are active and ready for protected changes.',
