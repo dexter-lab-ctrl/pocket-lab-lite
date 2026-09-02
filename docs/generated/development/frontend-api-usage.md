@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ac4441856015574586cb594218828ed0bd64edc83a9e189f41b032c8f7fdc711
+source_fingerprint: 75bba1dc85f710a18576dd92155d709b0719b18003b01fa5682813717dce3066
 schema_revision: 1
 validation_status: generated
 ---
@@ -57,7 +57,6 @@ validation_status: generated
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.enterpriseMembers | GET | `/api/lite/enterprise/identity/members` | query | no | static |
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.updateEnterpriseMember | PUT | `/api/lite/enterprise/identity/members/{param}` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
-| src/lite/LiteRecovery.jsx | liteApi.previewAppRestore | POST | `/api/lite/apps/{param}/restore/preview` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.verifyBackup | POST | `/api/lite/recovery/backups/{param}/verify` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.databaseRecovery | GET | `/api/lite/recovery/database` | query | no | static |
@@ -218,6 +217,7 @@ validation_status: generated
 - `/api/lite/apps/photoprism/storage-mappings/{mapping_id}`
 - `/api/lite/apps/{app_id}/backup/storage-device`
 - `/api/lite/apps/{app_id}/backups/{backup_id}/receipt`
+- `/api/lite/apps/{app_id}/restore/preview`
 - `/api/lite/apps/{app_id}/restore/previews/{preview_id}`
 - `/api/lite/apps/{app_id}/update/apply`
 - `/api/lite/apps/{app_id}/update/receipts/{operation_id}`

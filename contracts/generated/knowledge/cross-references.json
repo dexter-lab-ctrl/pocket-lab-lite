@@ -1005,10 +1005,6 @@
       ],
       "api:post:/api/lite/apps/{app_id}/restore/preview": [
         {
-          "source": "ui:literecovery",
-          "type": "calls"
-        },
-        {
           "source": "domain:apps",
           "type": "owns"
         },
@@ -12563,6 +12559,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-phase9-qualification.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-test-helpers.ts": [
         {
           "source": "component:app-catalog",
@@ -20993,6 +20999,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-test-helpers.ts",
           "type": "verified_by"
         },
@@ -22550,6 +22560,10 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
           "type": "verified_by"
         },
         {
@@ -26935,10 +26949,6 @@
           "type": "calls"
         },
         {
-          "target": "api:post:/api/lite/apps/{app_id}/restore/preview",
-          "type": "calls"
-        },
-        {
           "target": "api:post:/api/lite/recovery/backup",
           "type": "calls"
         },
@@ -27105,6 +27115,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "9cd83cede074459ca3513598ac613e2ddc677eda148b559997fc4e7f66da56c2"
+    "source_fingerprint": "b00abd852b695bc06ae6c9711e7eb18861d1fcf6505360564d7b9245c0ec50ab"
   }
 }

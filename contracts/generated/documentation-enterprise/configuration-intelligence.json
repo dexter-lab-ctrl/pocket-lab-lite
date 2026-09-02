@@ -1217,6 +1217,29 @@
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "LITE_OPERATIONAL_TONES",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lite/LiteUi.jsx"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "LITE_OVERLAY_PRIMITIVES_READY",
       "owner": "frontend",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -3303,6 +3326,7 @@
         "tests/e2e/lite-accessibility.spec.ts",
         "tests/e2e/lite-live.spec.ts",
         "tests/e2e/lite-mocked.spec.ts",
+        "tests/e2e/lite-phase9-qualification.spec.ts",
         "tests/e2e/lite-test-helpers.ts",
         "tests/e2e/lite-visual.spec.ts"
       ],
@@ -14942,7 +14966,7 @@
         ".storybook/preview.jsx",
         "src/mocks/handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-BX0Gdc1B.js",
+        "storybook-static/assets/preview-C0WGbZl1.js",
         "tests/e2e/lite-test-helpers.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"

@@ -11575,6 +11575,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-phase9-qualification.spec.ts",
+      "name": "tests/e2e/lite-phase9-qualification.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-test-helpers.ts",
       "name": "tests/e2e/lite-test-helpers.ts",
       "source_refs": [
@@ -27087,6 +27098,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "id": "rel:51cbe939dd275306",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:51dff6b11581dd55",
@@ -27498,6 +27523,20 @@
       "id": "rel:5515bddfa96932ef",
       "source": "domain:devices",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "id": "rel:551788048c830ff3",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
       "type": "verified_by"
     },
     {
@@ -50304,20 +50343,6 @@
       "source": "journey:documentation-generation",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "src/lite/LiteRecovery.jsx"
-      ],
-      "id": "rel:df2fc49dfd553a80",
-      "source": "ui:literecovery",
-      "target": "api:post:/api/lite/apps/{app_id}/restore/preview",
-      "type": "calls"
     },
     {
       "derivation": {

@@ -47,7 +47,6 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/security/progress` | ui:litesecurity | — | unvalidated |
 | `GET /api/lite/security/summary` | ui:litesecurity | table:security_database_backups, table:security_database_restores, table:security_maintenance_runs, table:security_profile_snapshots, table:security_scan_evidence_refs, table:security_scan_findings, table:security_scan_progress_events, table:security_scan_tool_runs, table:security_store_metadata | contract-derived |
 | `POST /api/lite/apps/{app_id}/backup` | ui:literecovery | — | unvalidated |
-| `POST /api/lite/apps/{app_id}/restore/preview` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/enterprise/rules/approvals/{approval_id}` | ui:literulesenterprise | — | unvalidated |
 | `POST /api/lite/enterprise/rules/exceptions` | ui:literulesenterprise | — | unvalidated |
 | `POST /api/lite/enterprise/rules/exceptions/{exception_id}/revoke` | ui:literulesenterprise | — | unvalidated |

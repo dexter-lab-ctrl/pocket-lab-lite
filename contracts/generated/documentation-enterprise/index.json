@@ -3253,6 +3253,29 @@
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_OPERATIONAL_TONES",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/lite/LiteUi.jsx"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_OVERLAY_PRIMITIVES_READY",
         "owner": "frontend",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -5339,6 +5362,7 @@
           "tests/e2e/lite-accessibility.spec.ts",
           "tests/e2e/lite-live.spec.ts",
           "tests/e2e/lite-mocked.spec.ts",
+          "tests/e2e/lite-phase9-qualification.spec.ts",
           "tests/e2e/lite-test-helpers.ts",
           "tests/e2e/lite-visual.spec.ts"
         ],
@@ -16978,7 +17002,7 @@
           ".storybook/preview.jsx",
           "src/mocks/handlers.js",
           "src/stories/pocketlabTier9MockApi.js",
-          "storybook-static/assets/preview-BX0Gdc1B.js",
+          "storybook-static/assets/preview-C0WGbZl1.js",
           "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -36925,8 +36949,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "377d791545675901535dbc130d93aa35c65a00ed",
-          "head_tree": "78af9c455c47dd0f69ee122ee1ce3e55067bf187",
+          "head": "8c9c817a02d7b67eb555b1960c0aa9dc133ed327",
+          "head_tree": "37452621dedbb4073f2117d2077fbf2bf1c18136",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -38975,7 +38999,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "179c952683b0712ee47270ebbec97e923d332b850800caa182574804592a7c06",
+        "documentation": "0bfbe6288e2ad81432b828f5a8b1602928d7b90632c481596de38fad44a6ebbd",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
       },
@@ -40911,7 +40935,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "77cc632463f99a13efd6e168202fcaa9ae9acca824b15b9a3e9c244485823589"
+          "sha256": "a7aae20bbc54d07d029ffd99c057ce2a777a15357d94824317332dab3b3e50c4"
         },
         {
           "path": "requirements-dev.txt",
@@ -41299,8 +41323,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "377d791545675901535dbc130d93aa35c65a00ed",
-        "head_tree": "78af9c455c47dd0f69ee122ee1ce3e55067bf187",
+        "head": "8c9c817a02d7b67eb555b1960c0aa9dc133ed327",
+        "head_tree": "37452621dedbb4073f2117d2077fbf2bf1c18136",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -105702,5 +105726,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "d9eb0c82ba8c144b61109db2db52a648ded5f0a0bd1f3eb8454f31c2e3ff471d"
+  "source_fingerprint": "5d36d062a2da9781541b635ecd196f498b0cd19b3c6085ac7fcdfd0e5c81ab67"
 }
