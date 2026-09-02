@@ -12,18 +12,18 @@ async function expectNoBlockingAxeViolations(page: Page, selector: string) {
 }
 
 const MANAGE_CASES = [
-  ['home', /Workspace details/i, '[role="dialog"]'],
-  ['catalog', /^Manage$/i, '[role="dialog"]'],
-  ['devices', /Manage Test-Phone-4/i, '.lite-device-details-panel'],
-  ['security', /Manage Security details/i, '[role="dialog"]'],
-  ['identity', /Manage Access/i, '[role="dialog"]'],
-  ['rules', /Manage Safety Rules/i, '[role="dialog"]'],
-  ['recovery', /Manage Recovery/i, '[role="dialog"]'],
+  ['home', 'healthy', /Workspace details/i, '[role="dialog"]'],
+  ['catalog', 'catalog-ready', /^Manage$/i, '[role="dialog"]'],
+  ['devices', 'healthy', /Manage Test-Phone-4/i, '.lite-device-details-panel'],
+  ['security', 'healthy', /Manage Security details/i, '[role="dialog"]'],
+  ['identity', 'healthy', /Manage Access/i, '[role="dialog"]'],
+  ['rules', 'healthy', /Manage Safety Rules/i, '[role="dialog"]'],
+  ['recovery', 'healthy', /Manage Recovery/i, '[role="dialog"]'],
 ] as const;
 
-for (const [screenId, openerName, surfaceSelector] of MANAGE_CASES) {
+for (const [screenId, scenario, openerName, surfaceSelector] of MANAGE_CASES) {
   test(`${screenId} Manage-open state has no serious or critical Axe violations`, async ({ page }) => {
-    await installScenario(page, 'healthy');
+    await installScenario(page, scenario);
     await page.goto(`/?screen=${screenId}`);
     await waitForLiteScreenToSettle(page, screenId);
 
