@@ -27,12 +27,12 @@ for (const [screenId, openerName, surfaceSelector] of MANAGE_CASES) {
     await page.goto(`/?screen=${screenId}`);
     await waitForLiteScreenToSettle(page, screenId);
 
-    const opener = page.getByRole('button', { name: openerName }).locator(':visible').first();
+    const opener = page.getByRole('button', { name: openerName }).first();
     await expect(opener).toBeVisible();
     await opener.focus();
     await opener.click();
 
-    const surface = page.locator(surfaceSelector).locator(':visible').first();
+    const surface = page.locator(`${surfaceSelector}:visible`).first();
     await expect(surface).toBeVisible();
     if (surfaceSelector === '[role="dialog"]') {
       await expect(surface).toHaveAttribute('aria-modal', 'true');
