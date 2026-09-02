@@ -115,7 +115,9 @@ test('representative mobile Manage dialogs contain long copy and remain scrollab
   for (const [screenId, openerName] of flows) {
     await page.goto(`/?screen=${screenId}`);
     await waitForLiteScreenToSettle(page, screenId);
-    await page.getByRole('button', { name: openerName }).locator(':visible').first().click();
+    const opener = page.getByRole('button', { name: openerName }).first();
+    await expect(opener).toBeVisible();
+    await opener.click();
     const dialog = page.locator('[role="dialog"]:visible').first();
     await expect(dialog).toBeVisible();
     await dialog.evaluate((element, longSummary) => {
