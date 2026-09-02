@@ -36,7 +36,8 @@ export const PasswordConfigured = createLiteStory('identity', 'identity-password
 export const PasswordChangeRequired = {
   ...createLiteStory('identity', 'identity-password-change-required', { notes: 'Verified current password-change-required presentation.' }),
   play: async ({ canvasElement }) => {
-    await expect(await expectIdentity(canvasElement).then(() => canvasElement)).toHaveTextContent(/password|change/i);
+    await expectIdentity(canvasElement);
+    await expect(canvasElement).toHaveTextContent(/password|change/i);
   },
 };
 export const IdentityLoading = createLiteStory('identity', 'slow-response', { notes: 'Verified loading/deferred-read presentation only; no authentication ceremony is simulated.' });
