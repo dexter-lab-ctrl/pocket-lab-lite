@@ -4,6 +4,7 @@ import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers'
 type OverlayCase = {
   name: string;
   screen: string;
+  scenario?: string;
   open: (page: Page) => Promise<void>;
   surface: (page: Page) => Locator;
 };
@@ -18,6 +19,7 @@ const OVERLAYS: OverlayCase[] = [
   {
     name: 'apps-manage',
     screen: 'catalog',
+    scenario: 'catalog-ready',
     open: async (page) => page.getByRole('button', { name: /^Manage$/i }).first().click(),
     surface: (page) => page.getByRole('dialog', { name: /Manage PhotoPrism/i }),
   },
@@ -55,7 +57,7 @@ const OVERLAYS: OverlayCase[] = [
 
 for (const item of OVERLAYS) {
   test(`${item.name} responsive Manage surface remains visually stable`, async ({ page }) => {
-    await installScenario(page, 'healthy');
+    await installScenario(page, item.scenario || 'healthy');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(`/?screen=${item.screen}`);
     await waitForLiteScreenToSettle(page, item.screen);
