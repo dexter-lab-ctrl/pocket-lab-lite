@@ -21,7 +21,7 @@
     "test:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:a11y:states": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-accessibility-states.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:content-stress": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-content-stress.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:mock-regression": "npm run test:e2e:mocked && npm run test:phase9:qualification && npm run test:a11y && npm run test:a11y:states && npm run test:content-stress && npm run test:visual && npm run test:visual:states && npm run test:visual:overlays",
+    "test:mock-regression": "npm run build-storybook && npm run test:e2e:mocked && npm run test:phase9:qualification && npm run test:a11y && npm run test:a11y:states && npm run test:content-stress && npm run test:visual && npm run test:visual:states && npm run test:visual:overlays",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build --output-dir storybook-static",
     "lighthouse": "lhci autorun",
