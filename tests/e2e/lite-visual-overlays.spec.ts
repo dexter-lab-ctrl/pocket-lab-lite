@@ -30,7 +30,7 @@ const OVERLAYS: OverlayCase[] = [
   {
     name: 'security-manage',
     screen: 'security',
-    open: async (page) => page.getByRole('button', { name: /Manage Safety/i }).click(),
+    open: async (page) => page.getByRole('button', { name: /Manage Security details/i }).click(),
     surface: (page) => page.getByRole('dialog', { name: /Manage Security/i }),
   },
   {
