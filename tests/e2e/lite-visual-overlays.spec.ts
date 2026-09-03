@@ -38,13 +38,13 @@ const OVERLAYS: OverlayCase[] = [
   {
     name: 'identity-manage',
     screen: 'identity',
-    open: async (page) => page.getByRole('button', { name: /Manage Access/i }).click(),
+    open: async (page) => page.getByRole('button', { name: /Manage Access/i }).first().click(),
     surface: (page) => page.getByRole('dialog', { name: /Manage access/i }),
   },
   {
     name: 'rules-manage',
     screen: 'rules',
-    open: async (page) => page.getByRole('button', { name: /Manage Safety Rules/i }).click(),
+    open: async (page) => page.getByRole('button', { name: /Manage Safety Rules/i }).first().click(),
     surface: (page) => page.getByRole('dialog', { name: /Manage Safety Rules/i }),
   },
   {
