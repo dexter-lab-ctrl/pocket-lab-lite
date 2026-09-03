@@ -112,7 +112,8 @@ test_enterprise_admin_can_use_typed_direct_delegation if {
 		"target": {"type": "device", "id": "old-node", "revision": "assessment-test", "state": {"confirmed": true, "revision_validated": true, "protected_server_host": false}},
 		"continuation": {"matching_independent_approval": false},
 		"request": {},
-	} with data.parameters as {"admin_device_remove_approval": 0, "operator_device_remove_approval": 1}
+	}
+	with data.parameters as {"admin_device_remove_approval": 0, "operator_device_remove_approval": 1}
 	result.allow
 	result.reason_code == "delegated_device_removal_allowed"
 }
