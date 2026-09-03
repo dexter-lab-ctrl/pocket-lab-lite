@@ -87,11 +87,10 @@ def test_typed_revisions_reject_raw_input_and_serialize_activation(policy_runtim
     assert blocked.value.reason_code == "policy_activation_in_progress"
 
 
-def test_rules_api_requires_csrf_enterprise_mode_and_authorized_role(policy_runtime):
+def test_rules_api_requires_csrf_enterprise_mode_and_authorized_role(policy_runtime, monkeypatch):
     from fastapi.testclient import TestClient
-    from api_fastapi.services import lite_enterprise_identity, lite_identity_auth
+    from api_fastapi.services import lite_enterprise_governance
 
-    _, auth = policy_runtime
     client = TestClient(load_fastapi_app())
     signed_in_response = client.post("/api/lite/identity/login", json={"username": "owner", "password": "correct horse battery staple"})
     assert signed_in_response.status_code == 200
@@ -101,6 +100,15 @@ def test_rules_api_requires_csrf_enterprise_mode_and_authorized_role(policy_runt
     missing = client.post("/api/lite/enterprise/rules/revisions", json={"template_id": "baseline", "parameters": {}, "change_summary": "baseline"}, headers={"x-pocket-lab-csrf": signed_in["csrf_token"]})
     assert missing.status_code == 201
     revision_id = missing.json()["revision"]["revision_id"]
+
+    # Root-level Rules activation is fail-closed until the Owner performs a
+    # recent passkey step-up. The test then isolates the lifecycle admission
+    # boundary without faking browser WebAuthn cryptography.
+    step_up_required = client.post("/api/lite/enterprise/rules/activations", json={"revision_id": revision_id}, headers={"x-pocket-lab-csrf": signed_in["csrf_token"]})
+    assert step_up_required.status_code == 428
+    assert step_up_required.json()["detail"]["reason_code"] == "owner_step_up_required"
+    monkeypatch.setattr(lite_enterprise_governance, "require_recent_assurance", lambda _auth, _purpose: None)
+
     activation = client.post("/api/lite/enterprise/rules/activations", json={"revision_id": revision_id}, headers={"x-pocket-lab-csrf": signed_in["csrf_token"]})
     assert activation.status_code == 202
     # The API admitted durable intent only; it did not run a process or switch a pointer.
@@ -120,13 +128,13 @@ def _supervisor_module():
 
 
 def test_supervisor_activation_and_proved_rollback(policy_runtime, monkeypatch):
-    from api_fastapi.db.connection import begin_immediate, connection
+    from api_fastapi.db.connection import connection
     from api_fastapi.services import lite_policy_lifecycle as rules
 
     state, auth = policy_runtime
     good = rules.create_revision(auth_context=auth, template_id="baseline", parameters={}, change_summary="known good")["revision"]
     candidate = rules.create_revision(auth_context=auth, template_id="passkey_step_up", parameters={"max_age_seconds": 600}, change_summary="candidate")["revision"]
-    op = rules.request_activation(auth_context=auth, revision_id=good["revision_id"])["operation"]
+    rules.request_activation(auth_context=auth, revision_id=good["revision_id"])["operation"]
     module = _supervisor_module(); supervisor = module.LiteCoreSupervisor()
     monkeypatch.setattr(supervisor, "restart_pm2", lambda *_args, **_kwargs: {"acted": True})
     monkeypatch.setattr(module, "fetch_json", lambda url, **_kwargs: {} if url.endswith("/health") else {"result": good["revision_id"]})
