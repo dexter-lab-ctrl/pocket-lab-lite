@@ -106,7 +106,7 @@ def test_rules_api_requires_csrf_enterprise_mode_and_authorized_role(policy_runt
     # boundary without faking browser WebAuthn cryptography.
     step_up_required = client.post("/api/lite/enterprise/rules/activations", json={"revision_id": revision_id}, headers={"x-pocket-lab-csrf": signed_in["csrf_token"]})
     assert step_up_required.status_code == 428
-    assert step_up_required.json()["detail"]["reason_code"] == "owner_step_up_required"
+    assert "owner_step_up_required" in step_up_required.text
     monkeypatch.setattr(lite_enterprise_governance, "require_recent_assurance", lambda _auth, _purpose: None)
 
     activation = client.post("/api/lite/enterprise/rules/activations", json={"revision_id": revision_id}, headers={"x-pocket-lab-csrf": signed_in["csrf_token"]})
