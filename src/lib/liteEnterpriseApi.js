@@ -16,17 +16,32 @@ function csrfCookie() {
 
 async function request(path, { method = 'GET', body } = {}) {
   const upper = String(method).toUpperCase();
-  const response = await fetch(endpoint(path), {
-    method: upper,
-    credentials: 'same-origin',
-    cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-      ...(upper === 'GET' ? {} : csrfCookie() ? { 'X-Pocket-Lab-CSRF': csrfCookie() } : {}),
-    },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
+  if (upper !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const error = new Error('Pocket Lab is not reachable. Reconnect before changing Identity or Rules.');
+    error.status = 0;
+    error.payload = { status: 'offline', summary: 'Pocket Lab is not reachable. Reconnect before changing Identity or Rules.' };
+    throw error;
+  }
+  let response;
+  try {
+    response = await fetch(endpoint(path), {
+      method: upper,
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(upper === 'GET' ? {} : csrfCookie() ? { 'X-Pocket-Lab-CSRF': csrfCookie() } : {}),
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+  } catch (networkError) {
+    const error = new Error('Pocket Lab is not reachable. Identity and Rules authority cannot be refreshed.');
+    error.status = 0;
+    error.payload = { status: 'unreachable', summary: 'Pocket Lab is not reachable. Identity and Rules authority cannot be refreshed.' };
+    error.cause = networkError;
+    throw error;
+  }
   const text = await response.text();
   let payload = {};
   try { payload = text ? JSON.parse(text) : {}; }
