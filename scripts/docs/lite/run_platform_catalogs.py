@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
-"""Run the platform catalog generator with additive reason-code metadata.
+"""Supplement-aware entry point for Pocket Lab Lite platform catalogs.
 
-The main documentation-platform metadata remains authoritative. Identity/Rules
-may add exact reason-code entries in a small dedicated supplement when the
-compact fallback semantics (403, non-terminal) are insufficient. This runner
-merges those entries without weakening undocumented-code detection and includes
-the supplement in generated source fingerprints.
+The source generator remains responsible for every catalog. This module applies
+small exact Identity/Rules reason-code overrides before exposing the generator's
+public API or CLI, so Taskfile execution and deterministic regression tests use
+the same canonical metadata view.
 """
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -28,8 +26,7 @@ def _load_generator():
     return module
 
 
-def main() -> int:
-    generator = _load_generator()
+def _configure(generator):
     base_metadata = generator.metadata
     base_fingerprint = generator.fingerprint
 
@@ -62,7 +59,25 @@ def main() -> int:
 
     generator.metadata = merged_metadata
     generator.fingerprint = fingerprint_with_supplement
-    return int(generator.main() or 0)
+    return generator
+
+
+_generator = _configure(_load_generator())
+
+# Expose the source generator's public API so tests and callers can use this
+# entry point exactly as they used generate_platform_catalogs.py. Private
+# helpers remain available through normal module attribute fallback below.
+for _name in dir(_generator):
+    if not _name.startswith("_") and _name not in globals():
+        globals()[_name] = getattr(_generator, _name)
+
+
+def __getattr__(name: str):
+    return getattr(_generator, name)
+
+
+def main() -> int:
+    return int(_generator.main() or 0)
 
 
 if __name__ == "__main__":
