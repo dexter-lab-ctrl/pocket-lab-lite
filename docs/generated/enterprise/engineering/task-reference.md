@@ -519,7 +519,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 ## `lite:docs:codebase-map:check`
 
-**Purpose:** Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift
+**Purpose:** Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and clean structural delta
 
 **Audience:** developer
 
@@ -1571,17 +1571,17 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all`
+- `{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py check --section all`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/docs/lite/generate_platform_catalogs.py
+**Inputs:** scripts/docs/lite/run_platform_catalogs.py
 
 **Outputs:** No explicit file outputs discovered
 
 **Generated artifacts:** None discovered
 
-**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
 
 **Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
 
@@ -1605,11 +1605,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section all`
+- `{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section all`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/docs/lite/generate_platform_catalogs.py
+**Inputs:** scripts/docs/lite/run_platform_catalogs.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -1914,11 +1914,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section reason-codes`
+- `{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section reason-codes`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/docs/lite/generate_platform_catalogs.py
+**Inputs:** scripts/docs/lite/run_platform_catalogs.py
 
 **Outputs:** No explicit file outputs discovered
 

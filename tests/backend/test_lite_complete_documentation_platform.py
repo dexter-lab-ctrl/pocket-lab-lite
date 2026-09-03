@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PLATFORM_PATH = ROOT / "scripts/docs/lite/generate_platform_catalogs.py"
+PLATFORM_RUNNER_PATH = ROOT / "scripts/docs/lite/run_platform_catalogs.py"
 GRAPHVIZ_PATH = ROOT / "scripts/docs/graphviz/generate_lite_diagrams.py"
 SCHEMASPY_PATH = ROOT / "scripts/docs/sqlite/generate_schemaspy.py"
 
@@ -24,7 +25,7 @@ def load_module(name: str, path: Path):
 
 
 def test_platform_outputs_are_deterministic_current_and_safe():
-    platform = load_module("platform_docs_test", PLATFORM_PATH)
+    platform = load_module("platform_docs_test", PLATFORM_RUNNER_PATH)
     first = platform.build_outputs("all")
     second = platform.build_outputs("all")
     assert first == second

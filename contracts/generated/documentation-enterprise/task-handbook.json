@@ -642,7 +642,7 @@
       "name": "lite:docs:codebase-map:check",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift",
+      "purpose": "Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and clean structural delta",
       "related_tasks": [],
       "repository_mutation": true,
       "requires_termux": false,
@@ -1872,7 +1872,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all"
+        "{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py check --section all"
       ],
       "dependencies": [],
       "environment": [],
@@ -1886,21 +1886,21 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/docs/lite/generate_platform_catalogs.py"
+        "scripts/docs/lite/run_platform_catalogs.py"
       ],
       "name": "lite:docs:platform:check",
       "outputs": [],
       "promotes_evidence": false,
       "purpose": "Check all lightweight source-derived catalog drift and safety",
       "related_tasks": [],
-      "repository_mutation": true,
+      "repository_mutation": false,
       "requires_termux": false,
       "requires_wsl2": false,
       "runtime_mutation": false,
       "safe_local": true,
       "side_effects": {
         "network_or_external_tools": false,
-        "repository_mutation": true,
+        "repository_mutation": false,
         "runtime_mutation": false
       },
       "source": "tasks/Taskfile.docs.yml",
@@ -1912,7 +1912,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section all"
+        "{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section all"
       ],
       "dependencies": [],
       "environment": [],
@@ -1926,7 +1926,7 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/docs/lite/generate_platform_catalogs.py"
+        "scripts/docs/lite/run_platform_catalogs.py"
       ],
       "name": "lite:docs:platform:generate",
       "outputs": [],
@@ -2275,7 +2275,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section reason-codes"
+        "{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section reason-codes"
       ],
       "dependencies": [],
       "environment": [],
@@ -2289,7 +2289,7 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/docs/lite/generate_platform_catalogs.py"
+        "scripts/docs/lite/run_platform_catalogs.py"
       ],
       "name": "lite:docs:reason-codes",
       "outputs": [],

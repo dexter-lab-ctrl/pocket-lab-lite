@@ -329,6 +329,31 @@
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "LITE_CONTEXT_HELP_READY",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lite/LiteHelp.jsx",
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "LITE_DEVICES_VIEW_MODEL_VERSION",
       "owner": "frontend",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -523,6 +548,29 @@
       "secret": false,
       "source": [
         "src/lib/liteNativeFeedback.js"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "LITE_HELP_KEYS",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lib/liteHelpContent.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -8875,8 +8923,8 @@
         "tests/backend/test_lite_enterprise_identity_p2.py",
         "tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "tests/backend/test_lite_identity_rules_authorization.py",
-        "tests/backend/test_lite_policy_approvals_p3_1.py",
-        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py",
+        "tests/backend/test_lite_policy_approvals_p3_1.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9300,7 +9348,7 @@
         "tests/backend/test_lite_enterprise_identity_p2.py",
         "tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "tests/backend/test_lite_identity_rules_authorization.py",
-        "tests/backend/test_lite_policy_analysis_p2_3.py"
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -14963,8 +15011,9 @@
       "source": [
         ".storybook/preview.jsx",
         "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-SeCjROj4.js",
+        "storybook-static/assets/preview-XdE-ET_y.js",
         "tests/e2e/lite-test-helpers.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21049,7 +21098,7 @@
         "pocket-lab-final-structure/runtime/tests/test_observability_status.py",
         "tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "tests/backend/test_lite_identity_rules_authorization.py",
-        "tests/pocket_lab_test_utils.py"
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

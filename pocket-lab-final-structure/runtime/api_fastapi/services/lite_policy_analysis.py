@@ -14,7 +14,9 @@ from ..db.connection import connection
 from ..db.migrations import apply_migrations
 from . import lite_enterprise_identity, lite_policy_lifecycle, lite_policy_opa
 
-SIMULATE_ROLES = frozenset({"Owner", "Admin", "Operator"})
+# Simulation is non-executing policy analysis. Auditor may use it as a read-only
+# governance tool; Viewer remains limited to already-recorded evidence.
+SIMULATE_ROLES = frozenset({"Owner", "Admin", "Operator", "Auditor"})
 ANALYZE_ROLES = frozenset({"Owner", "Admin", "Auditor"})
 SYNTHETIC_FIELDS = frozenset({"confirmed", "revision_validated", "protected_server_host", "assurance_recent"})
 ACTION_TARGETS = {"catalog.install": "app", "device.remove": "device", "identity.passkey.revoke": "passkey"}
@@ -71,7 +73,6 @@ def _input(auth: dict[str, Any], action_id: str, target_id: str, synthetic: dict
     if synthetic is not None:
         target_state = {key: value for key, value in synthetic.items() if key != "assurance_recent"}
         assurance = ([{"purpose": "identity.passkey.revoke", "credential_id": "synthetic", "satisfied_at": "synthetic", "expires_at": "synthetic"}] if synthetic.get("assurance_recent") else [])
-    # Reuse the real evaluator's authoritative actor/session transformation.
     derived = dict(auth)
     derived["session"] = {**(auth.get("session") or {}), "assurance": assurance}
     return lite_policy_opa.build_authorization_input(auth_context=derived, action_id=action_id, target_type=target_type, target_id=target_id, target_revision="simulation", target=target_state)
@@ -108,7 +109,6 @@ def simulate(*, auth_context: dict[str, Any], revision_id: str, action_id: str, 
     if input_mode == "real_derived" and scenario is not None:
         raise PolicyAnalysisError("policy_simulation_invalid", "Real-derived simulation does not accept browser scenario facts.", status_code=422)
     input_doc = _input(auth, action, target, synthetic)
-    active = False
     with connection() as conn:
         state = conn.execute("SELECT active_revision_id FROM policy_runtime_state WHERE state_id=1").fetchone()
         active = bool(state and state["active_revision_id"] == revision["revision_id"])
@@ -130,7 +130,6 @@ def analyze(*, auth_context: dict[str, Any], revision_id: str | None = None) -> 
     if selected:
         _revision(selected)
     actions = sorted(lite_policy_opa.PROTECTED_ACTIONS)
-    # Current templates have no ordered rule DSL; only direct action coverage is provable.
     findings = []
     return {"revision_id": selected or None, "status": "complete" if selected else "inconclusive", "complete_typed_analysis": False, "registered_protected_actions": actions, "represented_actions": actions if selected else [], "unmapped_actions": [] if selected else actions, "findings": findings, "finding_categories": [], "unsupported_categories": ["contradiction", "shadowing", "unreachable_rule", "overly_broad_allow", "stale_or_unused_rule"], "proof_rule": "Only direct registered-action coverage is provable because current typed templates do not encode an ordered rule DSL.", "raw_input_exposed": False}
 
@@ -146,5 +145,5 @@ def health(*, auth_context: dict[str, Any]) -> dict[str, Any]:
     elif not active or not observed: consistency, reason = "unavailable", "policy_revision_uncertain"
     elif active != known or active != filesystem or active != observed: consistency, reason = "revision_mismatch", "policy_revision_mismatch"
     else: consistency, reason = "ready", ""
-    analysis = analyze(auth_context=auth_context, revision_id=active) if active else {"status": "inconclusive", "findings": []}
+    analysis = analyze(auth_context=auth_context, revision_id=active) if active and str((lite_enterprise_identity.enrich_auth_context(auth_context).get("authorization") or {}).get("role") or "") in ANALYZE_ROLES else {"status": "not_authorized", "findings": [], "represented_actions": sorted(lite_policy_opa.PROTECTED_ACTIONS) if active else []}
     return {"consistency_state": consistency, "degraded_reason": reason, "db_active_revision": active or None, "filesystem_active_revision": filesystem if filesystem != "unavailable" else None, "opa_observed_revision": observed, "known_good_revision": known or None, "activation_operation_state": op["state"] if op else None, "opa_loopback_configured": lite_policy_opa._opa_endpoint_is_loopback(), "opa_reachable": observed is not None, "manifest_integrity": consistency != "corrupt", "registered_protected_actions": sorted(lite_policy_opa.PROTECTED_ACTIONS), "represented_protected_actions": analysis.get("represented_actions", []), "analysis_status": analysis.get("status"), "deterministic_findings_count": len(analysis.get("findings", [])), "checked_at": _now(), "raw_input_exposed": False}

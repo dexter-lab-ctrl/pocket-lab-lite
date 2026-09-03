@@ -18,6 +18,7 @@ policy_temporary_exceptions
 policy_recovery_resolutions
 policy_approvals
 policy_runtime_state
+human_enrollment_claims
 enterprise_configuration
 device_system_profiles
 device_lifecycle_transactions

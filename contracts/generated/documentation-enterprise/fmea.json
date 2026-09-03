@@ -45,7 +45,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -125,7 +128,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -152,7 +158,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -308,7 +317,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -440,7 +452,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -492,14 +507,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "enterprise_connect_links_retired",
         "webauthn_algorithm_unsupported",
         "webauthn_assertion_invalid",
         "webauthn_attestation_unsupported",
         "webauthn_attested_data_missing",
         "webauthn_authenticator_data_invalid",
         "webauthn_cbor_invalid",
-        "webauthn_challenge_expired",
-        "webauthn_challenge_invalid"
+        "webauthn_challenge_expired"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -526,14 +541,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "enterprise_connect_links_retired",
         "enterprise_final_owner_protected",
         "enterprise_member_invalid",
         "enterprise_member_unknown",
         "enterprise_membership_required",
         "enterprise_membership_status_invalid",
         "enterprise_mode_disabled",
-        "enterprise_mode_required",
-        "enterprise_owner_required"
+        "enterprise_mode_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -560,7 +575,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -690,7 +708,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -868,7 +889,10 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_mode_disabled"
+        "enterprise_connect_links_retired",
+        "enterprise_mode_disabled",
+        "enterprise_owner_authority_required",
+        "enterprise_people_role_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

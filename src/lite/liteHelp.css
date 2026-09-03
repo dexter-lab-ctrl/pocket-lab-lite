@@ -1,0 +1,110 @@
+.lite-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lite-surface, #fff) 86%, transparent);
+  color: inherit;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.lite-help-trigger:hover,
+.lite-help-trigger:focus-visible {
+  background: color-mix(in srgb, var(--lite-surface, #fff) 96%, transparent);
+  border-color: color-mix(in srgb, currentColor 32%, transparent);
+  transform: translateY(-1px);
+}
+
+.lite-help-trigger:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.lite-help-heading {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.lite-help-heading > :first-child {
+  margin: 0;
+}
+
+.lite-help-sheet {
+  max-width: 36rem;
+}
+
+.lite-help-sheet-body {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.lite-help-story {
+  display: grid;
+  gap: 1rem;
+}
+
+.lite-help-story-row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: .75rem;
+  align-items: start;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--lite-surface, #fff) 82%, transparent);
+}
+
+.lite-help-story-row strong {
+  display: block;
+  margin-bottom: .3rem;
+}
+
+.lite-help-story-row p,
+.lite-help-technical p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.lite-help-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.lite-help-technical {
+  padding: .9rem 1rem;
+  border-radius: .9rem;
+  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.lite-help-technical summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.lite-help-technical p {
+  margin-top: .65rem;
+}
+
+@media (max-width: 640px) {
+  .lite-help-trigger {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+  }
+
+  .lite-help-story-row {
+    padding: .9rem;
+  }
+}

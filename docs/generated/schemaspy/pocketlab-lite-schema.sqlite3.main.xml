@@ -953,6 +953,50 @@
             <column ascending="true" name="credential_id"/>
          </index>
       </table>
+      <table name="human_enrollment_claims" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="claim_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="claim_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="requested_role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="installation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="rp_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="origin" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="webauthn_user_handle" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="authority_hash" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="authority_expires_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="claim_id" sequenceNumberInPK="1"/>
+         <index name="human_enrollment_claims_s_pk" unique="true">
+            <column ascending="true" name="claim_id"/>
+         </index>
+         <index name="idx_human_enrollment_claim_expiry" unique="false">
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="completed_at"/>
+            <column ascending="true" name="revoked_at"/>
+         </index>
+         <index name="idx_human_enrollment_claim_hash" unique="false">
+            <column ascending="true" name="claim_hash"/>
+         </index>
+         <index name="idx_human_enrollment_claim_human" unique="false">
+            <column ascending="true" name="human_id"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="sqlite_autoindex_human_enrollment_claims_1" unique="true">
+            <column ascending="true" name="claim_id"/>
+         </index>
+         <index name="sqlite_autoindex_human_enrollment_claims_2" unique="true">
+            <column ascending="true" name="claim_hash"/>
+         </index>
+      </table>
       <table name="human_identities" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="auth_sessions"/>
@@ -961,6 +1005,8 @@
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="enterprise_memberships"/>
             <child column="updated_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="enterprise_memberships"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_credentials"/>
+            <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
+            <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
             <child column="requested_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
             <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
             <child column="initiating_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>

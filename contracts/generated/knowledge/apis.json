@@ -34,6 +34,38 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Remove Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+      "method": "DELETE",
+      "name": "DELETE /api/lite/enterprise/identity/people/{human_id}",
+      "operation_id": "remove_enterprise_person_api_lite_enterprise_identity_people__human_id__delete",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Revoke Lite Passkey",
       "domain": "identity",
       "id": "api:delete:/api/lite/identity/passkeys/{credential_id}",
@@ -791,16 +823,30 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Enterprise Access",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/access",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/access",
+      "operation_id": "enterprise_access_api_lite_enterprise_access_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/access",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Enterprise Identity",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseIdentity",
-          "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -828,15 +874,36 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Legacy Person Claim Status",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/identity/enrollment/status",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/enrollment/status",
+      "operation_id": "legacy_person_claim_status_api_lite_enterprise_identity_enrollment_status_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Enterprise Members",
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseMembers",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
-          "usage": "query"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/enterprise/identity/members",
@@ -858,8 +925,140 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Preview Enterprise Mode",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/mode/preview",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/mode/preview",
+      "operation_id": "preview_enterprise_mode_api_lite_enterprise_identity_mode_preview_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/mode/preview",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise People",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/people",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/people",
+      "operation_id": "enterprise_people_api_lite_enterprise_identity_people_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/people/{human_id}",
+      "operation_id": "enterprise_person_api_lite_enterprise_identity_people__human_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Identity Self",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/self",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/self",
+      "operation_id": "enterprise_identity_self_api_lite_enterprise_identity_self_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/self",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Operation",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/rules/activations/{operation_id}",
       "method": "GET",
       "name": "GET /api/lite/enterprise/rules/activations/{operation_id}",
@@ -884,13 +1083,6 @@
       "description": "Analysis",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRulesAnalysis",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -923,13 +1115,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleApprovals",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -959,13 +1144,6 @@
       "description": "Approval",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleApproval",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -999,11 +1177,11 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleDecisions",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/enterprise/rules/decisions",
@@ -1030,13 +1208,6 @@
       "description": "Decision",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleDecision",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1070,13 +1241,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleExceptions",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1107,13 +1271,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRulesHealth",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1143,13 +1300,6 @@
       "description": "Revisions",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleRevisions",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1202,6 +1352,15 @@
       "confidence": "contract-derived",
       "description": "Revision",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
       "method": "GET",
       "name": "GET /api/lite/enterprise/rules/revisions/{revision_id}",
@@ -1213,6 +1372,36 @@
         "503"
       ],
       "route": "/api/lite/enterprise/rules/revisions/{revision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Templates",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/templates",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/templates",
+      "operation_id": "templates_api_lite_enterprise_rules_templates_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/templates",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -1424,13 +1613,6 @@
       "domain": "identity",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.identity",
-          "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1552,7 +1734,7 @@
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "source_module": "src/mocks/identityRulesCompatibilityHandlers.js",
           "usage": "mock"
         }
       ],
@@ -1579,6 +1761,15 @@
       "confidence": "contract-derived",
       "description": "Get Lite Policy Templates",
       "domain": "rules",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesCompatibilityHandlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/policy/templates",
       "method": "GET",
       "name": "GET /api/lite/policy/templates",
@@ -3197,8 +3388,371 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Legacy Person Claim Consume",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/enrollment/consume",
+      "operation_id": "legacy_person_claim_consume_api_lite_enterprise_identity_enrollment_consume_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/consume",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Legacy Person Claim Passkey Options",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/enrollment/passkey/options",
+      "operation_id": "legacy_person_claim_passkey_options_api_lite_enterprise_identity_enrollment_passkey_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/passkey/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Legacy Person Claim Passkey Verify",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/enrollment/passkey/verify",
+      "operation_id": "legacy_person_claim_passkey_verify_api_lite_enterprise_identity_enrollment_passkey_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Passkey Login Options",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/passkeys/login/options",
+      "operation_id": "enterprise_passkey_login_options_api_lite_enterprise_identity_passkeys_login_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/passkeys/login/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Passkey Login Verify",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/passkeys/login/verify",
+      "operation_id": "enterprise_passkey_login_verify_api_lite_enterprise_identity_passkeys_login_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/passkeys/login/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Create Enterprise Person",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/identity/people",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people",
+      "operation_id": "create_enterprise_person_api_lite_enterprise_identity_people_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Legacy Enterprise Person Invite",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/invite",
+      "operation_id": "legacy_enterprise_person_invite_api_lite_enterprise_identity_people__human_id__invite_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/invite",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Person Managed Passkey Options",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "operation_id": "enterprise_person_managed_passkey_options_api_lite_enterprise_identity_people__human_id__passkey_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Person Managed Passkey Verify",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "operation_id": "enterprise_person_managed_passkey_verify_api_lite_enterprise_identity_people__human_id__passkey_verify_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reactivate Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "operation_id": "reactivate_enterprise_person_api_lite_enterprise_identity_people__human_id__reactivate_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reset Enterprise Person Access",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "operation_id": "reset_enterprise_person_access_api_lite_enterprise_identity_people__human_id__reset_access_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Suspend Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/suspend",
+      "operation_id": "suspend_enterprise_person_api_lite_enterprise_identity_people__human_id__suspend_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Activate",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/activations",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/activations",
@@ -3222,6 +3776,15 @@
       "confidence": "contract-derived",
       "description": "Resolve Activation",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
@@ -3246,13 +3809,6 @@
       "description": "Transition Approval",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.transitionEnterpriseRuleApproval",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3286,13 +3842,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.createEnterpriseRuleException",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -3325,13 +3874,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.revokeEnterpriseRuleException",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -3362,6 +3904,15 @@
       "confidence": "contract-derived",
       "description": "Create Revision",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/revisions",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/revisions",
@@ -3385,6 +3936,15 @@
       "confidence": "contract-derived",
       "description": "Rollback",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/rollbacks",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/rollbacks",
@@ -3408,13 +3968,6 @@
       "description": "Simulate",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.simulateEnterpriseRule",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3685,6 +4238,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/identity/logout",
@@ -3844,13 +4404,6 @@
       "domain": "identity",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.passkeyLoginOptions",
-          "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -3881,13 +4434,6 @@
       "description": "Passkey Login Verify",
       "domain": "identity",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.verifyPasskeyLogin",
-          "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "mutation"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -4151,6 +4697,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/identity/sessions/revoke-others",
@@ -4226,6 +4779,13 @@
           "mocked": false,
           "owner": "liteApi.passkeyStepUpOptions",
           "resolved": true,
+          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
           "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
@@ -4266,6 +4826,13 @@
           "owner": "liteApi.verifyPasskeyStepUp",
           "resolved": true,
           "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -4945,11 +5512,11 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.updateEnterpriseMember",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
-          "usage": "mutation"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:put:/api/lite/enterprise/identity/members/{human_id}",
@@ -4977,11 +5544,11 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.setEnterpriseMode",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "mutation"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:put:/api/lite/enterprise/identity/mode",
@@ -5081,6 +5648,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
+    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
   }
 }

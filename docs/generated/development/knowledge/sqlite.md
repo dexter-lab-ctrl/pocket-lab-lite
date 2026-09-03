@@ -404,6 +404,21 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_human_credentials_active_password, sqlite_autoindex_human_credentials_1 |
 | Confidence | inferred |
 
+## `human_enrollment_claims`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_human_enrollment_claim_expiry, idx_human_enrollment_claim_human, idx_human_enrollment_claim_hash, sqlite_autoindex_human_enrollment_claims_2, sqlite_autoindex_human_enrollment_claims_1 |
+| Confidence | inferred |
+
 ## `human_identities`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.

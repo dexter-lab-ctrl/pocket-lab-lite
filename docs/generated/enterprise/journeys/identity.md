@@ -106,6 +106,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_device_health_d4.py`
 - `test:tests/backend/test_lite_identity_passkeys_rules_p1.py`
 - `test:tests/backend/test_lite_identity_rules_authorization.py`
+- `test:tests/backend/test_lite_identity_rules_enterprise_governance.py`
 - `test:tests/backend/test_lite_identity_rules_ui_projection.py`
 - `test:tests/backend/test_lite_long_gate_submission_recovery.py`
 - `test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py`

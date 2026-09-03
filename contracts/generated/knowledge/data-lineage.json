@@ -30,136 +30,6 @@
       ]
     },
     {
-      "api": "api:get:/api/lite/enterprise/identity",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/identity",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literules"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/identity/members",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/identity/members",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:liteidentityenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/analysis",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/analysis",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/approvals",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/approvals",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/approvals/{approval_id}",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/decisions",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/decisions",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/decisions/{decision_id}",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/exceptions",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/exceptions",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/health",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/health",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/enterprise/rules/revisions",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/enterprise/rules/revisions",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
       "api": "api:get:/api/lite/fleet",
       "confidence": "contract-derived",
       "method": "GET",
@@ -199,19 +69,6 @@
       "sqlite": [],
       "ui": [
         "ui:litedevices"
-      ]
-    },
-    {
-      "api": "api:get:/api/lite/identity",
-      "confidence": "unvalidated",
-      "method": "GET",
-      "route": "/api/lite/identity",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:liteidentity"
       ]
     },
     {
@@ -429,58 +286,6 @@
       ]
     },
     {
-      "api": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
-      "confidence": "unvalidated",
-      "method": "POST",
-      "route": "/api/lite/enterprise/rules/approvals/{approval_id}",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:post:/api/lite/enterprise/rules/exceptions",
-      "confidence": "unvalidated",
-      "method": "POST",
-      "route": "/api/lite/enterprise/rules/exceptions",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-      "confidence": "unvalidated",
-      "method": "POST",
-      "route": "/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
-      "api": "api:post:/api/lite/enterprise/rules/simulations",
-      "confidence": "unvalidated",
-      "method": "POST",
-      "route": "/api/lite/enterprise/rules/simulations",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:literulesenterprise"
-      ]
-    },
-    {
       "api": "api:post:/api/lite/fleet/add-device",
       "confidence": "unvalidated",
       "method": "POST",
@@ -576,32 +381,6 @@
       "confidence": "unvalidated",
       "method": "POST",
       "route": "/api/lite/identity/owner-claim/passkey/verify",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:liteidentity"
-      ]
-    },
-    {
-      "api": "api:post:/api/lite/identity/passkeys/login/options",
-      "confidence": "unvalidated",
-      "method": "POST",
-      "route": "/api/lite/identity/passkeys/login/options",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:liteidentity"
-      ]
-    },
-    {
-      "api": "api:post:/api/lite/identity/passkeys/login/verify",
-      "confidence": "unvalidated",
-      "method": "POST",
-      "route": "/api/lite/identity/passkeys/login/verify",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -712,6 +491,7 @@
       "sqlite": [],
       "ui": [
         "ui:liteidentity",
+        "ui:liteidentityenterprise",
         "ui:literulesenterprise"
       ]
     },
@@ -726,6 +506,7 @@
       "sqlite": [],
       "ui": [
         "ui:liteidentity",
+        "ui:liteidentityenterprise",
         "ui:literulesenterprise"
       ]
     },
@@ -886,32 +667,6 @@
       ]
     },
     {
-      "api": "api:put:/api/lite/enterprise/identity/members/{human_id}",
-      "confidence": "unvalidated",
-      "method": "PUT",
-      "route": "/api/lite/enterprise/identity/members/{human_id}",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:liteidentityenterprise"
-      ]
-    },
-    {
-      "api": "api:put:/api/lite/enterprise/identity/mode",
-      "confidence": "unvalidated",
-      "method": "PUT",
-      "route": "/api/lite/enterprise/identity/mode",
-      "source_refs": [
-        "contracts/generated/lite-openapi.json"
-      ],
-      "sqlite": [],
-      "ui": [
-        "ui:liteidentity"
-      ]
-    },
-    {
       "api": "api:put:/api/lite/identity/passkeys/{credential_id}",
       "confidence": "unvalidated",
       "method": "PUT",
@@ -931,6 +686,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
+    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
   }
 }

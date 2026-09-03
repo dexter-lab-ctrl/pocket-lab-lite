@@ -53,6 +53,10 @@
         "title": "DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-apps-photoprism-storage-mappings-mapping-id"
       },
+      "endpoint:DELETE:/api/lite/enterprise/identity/people/{human_id}": {
+        "title": "DELETE /api/lite/enterprise/identity/people/{human_id}",
+        "url": "../../docs/reference/api/lite-api.md#delete-api-lite-enterprise-identity-people-human-id"
+      },
       "endpoint:DELETE:/api/lite/identity/passkeys/{credential_id}": {
         "title": "DELETE /api/lite/identity/passkeys/{credential_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-identity-passkeys-credential-id"
@@ -153,13 +157,37 @@
         "title": "GET /api/lite/diagnostics/runtime/full",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-diagnostics-runtime-full"
       },
+      "endpoint:GET:/api/lite/enterprise/access": {
+        "title": "GET /api/lite/enterprise/access",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-access"
+      },
       "endpoint:GET:/api/lite/enterprise/identity": {
         "title": "GET /api/lite/enterprise/identity",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity"
       },
+      "endpoint:GET:/api/lite/enterprise/identity/enrollment/status": {
+        "title": "GET /api/lite/enterprise/identity/enrollment/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-enrollment-status"
+      },
       "endpoint:GET:/api/lite/enterprise/identity/members": {
         "title": "GET /api/lite/enterprise/identity/members",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-members"
+      },
+      "endpoint:GET:/api/lite/enterprise/identity/mode/preview": {
+        "title": "GET /api/lite/enterprise/identity/mode/preview",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-mode-preview"
+      },
+      "endpoint:GET:/api/lite/enterprise/identity/people": {
+        "title": "GET /api/lite/enterprise/identity/people",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-people"
+      },
+      "endpoint:GET:/api/lite/enterprise/identity/people/{human_id}": {
+        "title": "GET /api/lite/enterprise/identity/people/{human_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-people-human-id"
+      },
+      "endpoint:GET:/api/lite/enterprise/identity/self": {
+        "title": "GET /api/lite/enterprise/identity/self",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-identity-self"
       },
       "endpoint:GET:/api/lite/enterprise/rules/activations/{operation_id}": {
         "title": "GET /api/lite/enterprise/rules/activations/{operation_id}",
@@ -204,6 +232,10 @@
       "endpoint:GET:/api/lite/enterprise/rules/revisions/{revision_id}": {
         "title": "GET /api/lite/enterprise/rules/revisions/{revision_id}",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-revisions-revision-id"
+      },
+      "endpoint:GET:/api/lite/enterprise/rules/templates": {
+        "title": "GET /api/lite/enterprise/rules/templates",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-templates"
       },
       "endpoint:GET:/api/lite/events": {
         "title": "GET /api/lite/events",
@@ -480,6 +512,54 @@
       "endpoint:POST:/api/lite/diagnostics/frontend-lifecycle": {
         "title": "POST /api/lite/diagnostics/frontend-lifecycle",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-diagnostics-frontend-lifecycle"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/enrollment/consume": {
+        "title": "POST /api/lite/enterprise/identity/enrollment/consume",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-enrollment-consume"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/enrollment/passkey/options": {
+        "title": "POST /api/lite/enterprise/identity/enrollment/passkey/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-enrollment-passkey-options"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/enrollment/passkey/verify": {
+        "title": "POST /api/lite/enterprise/identity/enrollment/passkey/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-enrollment-passkey-verify"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/passkeys/login/options": {
+        "title": "POST /api/lite/enterprise/identity/passkeys/login/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-passkeys-login-options"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/passkeys/login/verify": {
+        "title": "POST /api/lite/enterprise/identity/passkeys/login/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-passkeys-login-verify"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people": {
+        "title": "POST /api/lite/enterprise/identity/people",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people/{human_id}/invite": {
+        "title": "POST /api/lite/enterprise/identity/people/{human_id}/invite",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people-human-id-invite"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people/{human_id}/passkey/options": {
+        "title": "POST /api/lite/enterprise/identity/people/{human_id}/passkey/options",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people-human-id-passkey-options"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people/{human_id}/passkey/verify": {
+        "title": "POST /api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people-human-id-passkey-verify"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people/{human_id}/reactivate": {
+        "title": "POST /api/lite/enterprise/identity/people/{human_id}/reactivate",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people-human-id-reactivate"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people/{human_id}/reset-access": {
+        "title": "POST /api/lite/enterprise/identity/people/{human_id}/reset-access",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people-human-id-reset-access"
+      },
+      "endpoint:POST:/api/lite/enterprise/identity/people/{human_id}/suspend": {
+        "title": "POST /api/lite/enterprise/identity/people/{human_id}/suspend",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-identity-people-human-id-suspend"
       },
       "endpoint:POST:/api/lite/enterprise/rules/activations": {
         "title": "POST /api/lite/enterprise/rules/activations",
@@ -1641,6 +1721,10 @@
         "title": "duplicate_device",
         "url": "../../docs/generated/development/reason-codes.md#duplicate-device"
       },
+      "reason:enterprise_connect_links_retired": {
+        "title": "enterprise_connect_links_retired",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-connect-links-retired"
+      },
       "reason:enterprise_final_owner_protected": {
         "title": "enterprise_final_owner_protected",
         "url": "../../docs/generated/development/reason-codes.md#enterprise-final-owner-protected"
@@ -1669,9 +1753,17 @@
         "title": "enterprise_mode_required",
         "url": "../../docs/generated/development/reason-codes.md#enterprise-mode-required"
       },
+      "reason:enterprise_owner_authority_required": {
+        "title": "enterprise_owner_authority_required",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-owner-authority-required"
+      },
       "reason:enterprise_owner_required": {
         "title": "enterprise_owner_required",
         "url": "../../docs/generated/development/reason-codes.md#enterprise-owner-required"
+      },
+      "reason:enterprise_people_role_required": {
+        "title": "enterprise_people_role_required",
+        "url": "../../docs/generated/development/reason-codes.md#enterprise-people-role-required"
       },
       "reason:enterprise_role_forbidden": {
         "title": "enterprise_role_forbidden",
@@ -2351,6 +2443,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/human_credentials.html",
         "title": "human_credentials"
       },
+      "table:human_enrollment_claims": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#human-enrollment-claims",
+        "schema_url": "../../docs/generated/schemaspy/tables/human_enrollment_claims.html",
+        "title": "human_enrollment_claims"
+      },
       "table:human_identities": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#human-identities",
         "schema_url": "../../docs/generated/schemaspy/tables/human_identities.html",
@@ -2554,7 +2651,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "618bd8198b7e3b24152458e7803a7f2231984ff91bbcead17d859377b10c6c2b",
+    "aggregate_fingerprint": "72dd60f65cbb6230cef3c785dcab8e98339eba1595037527bd8120a31f028ea7",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2564,8 +2661,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
+      "contracts/generated/lite-openapi.json": "64ceebe291cb9a2130a93a2216f0cc9b390798cc57a211df63196e4021ded8df",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "d6e75a0bf450405b0992fbaeb78dd3c2063ff9f40abd0c8eb4d3e565740d5236",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -2595,6 +2693,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql": "fe887f0f99c1180ef479ea6ac45e0b1f7c25dfd3446d090fe5b58ecefbc93dfe",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "generated"

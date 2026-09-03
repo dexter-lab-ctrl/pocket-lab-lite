@@ -5,6 +5,11 @@
       "api": [
         {
           "method": "POST",
+          "operation_id": "legacy_enterprise_person_invite_api_lite_enterprise_identity_people__human_id__invite_post",
+          "path": "/api/lite/enterprise/identity/people/{human_id}/invite"
+        },
+        {
+          "method": "POST",
           "operation_id": "lite_fleet_agent_bootstrap_blocked_api_lite_fleet_agent_bootstrap_blocked_post",
           "path": "/api/lite/fleet/agent/bootstrap-blocked"
         },
@@ -31,7 +36,8 @@
       ],
       "backend_handler": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
       ],
       "error_reason_codes": "contracts/generated/reason-codes.json",
       "events": [
@@ -50,11 +56,14 @@
       ],
       "fastapi_handler": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
       ],
       "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
         "src/mocks/handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -70,16 +79,21 @@
       "source_files": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "src/lib/liteApi.js",
-        "src/mocks/handlers.js"
+        "src/lib/liteEnterpriseApi.js",
+        "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
         "src/mocks/handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
     },
@@ -543,6 +557,11 @@
           "path": "/api/lite/apps/{app_id}/restore/previews/{preview_id}"
         },
         {
+          "method": "GET",
+          "operation_id": "preview_enterprise_mode_api_lite_enterprise_identity_mode_preview_get",
+          "path": "/api/lite/enterprise/identity/mode/preview"
+        },
+        {
           "method": "POST",
           "operation_id": "preview_lite_app_restore_api_lite_recovery_apps__app_id__restore_preview_post",
           "path": "/api/lite/recovery/apps/{app_id}/restore/preview"
@@ -569,7 +588,8 @@
         }
       ],
       "backend_handler": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
       ],
       "error_reason_codes": "contracts/generated/reason-codes.json",
       "events": [
@@ -592,14 +612,17 @@
         "backend result failed/blocked where operation is guarded"
       ],
       "fastapi_handler": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
       ],
       "frontend": [
+        "src/mocks/identityRulesP1Handlers.js",
         "src/mocks/handlers.js",
         "src/lib/liteRecoveryR3R4.test.js",
         "src/lib/liteApi.js",
         "src/lib/liteSafeSnapshots.js",
         "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/lib/liteQueryClient.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
@@ -620,23 +643,28 @@
       "result_event": "canonical lifecycle/event projection when declared",
       "source_files": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/lib/liteOfflineReadPolicy.test.js",
         "src/lib/liteQueryClient.js",
         "src/lib/liteRecoveryR3R4.test.js",
         "src/lib/liteSafeSnapshots.js",
-        "src/mocks/handlers.js"
+        "src/mocks/handlers.js",
+        "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "ui_component": [
+        "src/mocks/identityRulesP1Handlers.js",
         "src/mocks/handlers.js",
         "src/lib/liteRecoveryR3R4.test.js",
         "src/lib/liteApi.js",
         "src/lib/liteSafeSnapshots.js",
         "src/lib/liteOfflineReadPolicy.test.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/lib/liteQueryClient.js"
       ],
       "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
@@ -889,6 +917,16 @@
       "api": [
         {
           "method": "POST",
+          "operation_id": "enterprise_passkey_login_options_api_lite_enterprise_identity_passkeys_login_options_post",
+          "path": "/api/lite/enterprise/identity/passkeys/login/options"
+        },
+        {
+          "method": "POST",
+          "operation_id": "enterprise_passkey_login_verify_api_lite_enterprise_identity_passkeys_login_verify_post",
+          "path": "/api/lite/enterprise/identity/passkeys/login/verify"
+        },
+        {
+          "method": "POST",
           "operation_id": "passkey_login_options_api_lite_identity_passkeys_login_options_post",
           "path": "/api/lite/identity/passkeys/login/options"
         },
@@ -899,6 +937,7 @@
         }
       ],
       "backend_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
       ],
       "error_reason_codes": "contracts/generated/reason-codes.json",
@@ -912,12 +951,14 @@
         "authorization or invariant guard refuses the request"
       ],
       "fastapi_handler": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
       ],
       "frontend": [
         "src/mocks/identityRulesP1Handlers.js",
         "src/mocks/handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -927,8 +968,10 @@
       "related_reason_codes": "contracts/generated/reason-codes.json",
       "result_event": "backend-owned durable state or sanitized API projection",
       "source_files": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/mocks/handlers.js",
         "src/mocks/identityRulesP1Handlers.js"
       ],
@@ -939,7 +982,8 @@
       "ui_component": [
         "src/mocks/identityRulesP1Handlers.js",
         "src/mocks/handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "FastAPI control-plane service"
     },
@@ -1070,6 +1114,26 @@
           "path": "/api/lite/enterprise/identity"
         },
         {
+          "method": "POST",
+          "operation_id": "legacy_person_claim_consume_api_lite_enterprise_identity_enrollment_consume_post",
+          "path": "/api/lite/enterprise/identity/enrollment/consume"
+        },
+        {
+          "method": "POST",
+          "operation_id": "legacy_person_claim_passkey_options_api_lite_enterprise_identity_enrollment_passkey_options_post",
+          "path": "/api/lite/enterprise/identity/enrollment/passkey/options"
+        },
+        {
+          "method": "POST",
+          "operation_id": "legacy_person_claim_passkey_verify_api_lite_enterprise_identity_enrollment_passkey_verify_post",
+          "path": "/api/lite/enterprise/identity/enrollment/passkey/verify"
+        },
+        {
+          "method": "GET",
+          "operation_id": "legacy_person_claim_status_api_lite_enterprise_identity_enrollment_status_get",
+          "path": "/api/lite/enterprise/identity/enrollment/status"
+        },
+        {
           "method": "GET",
           "operation_id": "enterprise_members_api_lite_enterprise_identity_members_get",
           "path": "/api/lite/enterprise/identity/members"
@@ -1083,6 +1147,16 @@
           "method": "PUT",
           "operation_id": "update_enterprise_mode_api_lite_enterprise_identity_mode_put",
           "path": "/api/lite/enterprise/identity/mode"
+        },
+        {
+          "method": "GET",
+          "operation_id": "preview_enterprise_mode_api_lite_enterprise_identity_mode_preview_get",
+          "path": "/api/lite/enterprise/identity/mode/preview"
+        },
+        {
+          "method": "POST",
+          "operation_id": "enterprise_passkey_login_options_api_lite_enterprise_identity_passkeys_login_options_post",
+          "path": "/api/lite/enterprise/identity/passkeys/login/options"
         }
       ],
       "backend_handler": [
@@ -1103,7 +1177,8 @@
       ],
       "frontend": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -1115,6 +1190,7 @@
       "source_files": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
@@ -1123,7 +1199,8 @@
       ],
       "ui_component": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "FastAPI control-plane service"
     },
@@ -1195,7 +1272,8 @@
       ],
       "frontend": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -1210,6 +1288,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
@@ -1218,7 +1297,8 @@
       ],
       "ui_component": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "FastAPI control-plane service"
     },
@@ -1256,7 +1336,8 @@
       ],
       "frontend": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -1269,6 +1350,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
@@ -1277,7 +1359,8 @@
       ],
       "ui_component": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "FastAPI control-plane service"
     },
@@ -1318,7 +1401,8 @@
       ],
       "frontend": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -1330,6 +1414,7 @@
       "source_files": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
@@ -1338,7 +1423,8 @@
       ],
       "ui_component": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "FastAPI control-plane service"
     },
@@ -1381,7 +1467,8 @@
       ],
       "frontend": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
@@ -1394,6 +1481,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
         "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js",
         "src/mocks/identityRulesP1Handlers.js"
       ],
       "tests": [
@@ -1402,7 +1490,8 @@
       ],
       "ui_component": [
         "src/mocks/identityRulesP1Handlers.js",
-        "src/lib/liteApi.js"
+        "src/lib/liteApi.js",
+        "src/lib/liteEnterpriseApi.js"
       ],
       "worker_agent_supervisor": "FastAPI control-plane service"
     }

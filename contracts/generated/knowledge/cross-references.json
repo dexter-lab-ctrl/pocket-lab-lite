@@ -83,6 +83,12 @@
           "type": "owns"
         }
       ],
+      "api:delete:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
           "source": "journey:change-password",
@@ -281,15 +287,23 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/enterprise/access": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/enterprise/identity": [
         {
           "source": "journey:enterprise-identity",
           "type": "calls"
         },
         {
-          "source": "ui:literules",
-          "type": "calls"
-        },
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/enrollment/status": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -301,9 +315,29 @@
           "type": "calls"
         },
         {
-          "source": "ui:liteidentityenterprise",
-          "type": "calls"
-        },
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/mode/preview": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/self": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -321,10 +355,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -335,19 +365,11 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/approvals/{approval_id}": [
-        {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -355,29 +377,17 @@
       ],
       "api:get:/api/lite/enterprise/rules/decisions": [
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/decisions/{decision_id}": [
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/exceptions": [
-        {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -389,10 +399,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -400,10 +406,6 @@
       "api:get:/api/lite/enterprise/rules/revisions": [
         {
           "source": "journey:rules-authorization",
-          "type": "calls"
-        },
-        {
-          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -418,6 +420,12 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/templates": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -510,10 +518,6 @@
         }
       ],
       "api:get:/api/lite/identity": [
-        {
-          "source": "ui:liteidentity",
-          "type": "calls"
-        },
         {
           "source": "domain:identity",
           "type": "owns"
@@ -1049,6 +1053,78 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/enterprise/identity/enrollment/consume": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/options": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/options": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/verify": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/invite": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/enterprise/rules/activations": [
         {
           "source": "journey:rules-authorization",
@@ -1075,10 +1151,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -1089,19 +1161,11 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": [
-        {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -1130,10 +1194,6 @@
       "api:post:/api/lite/enterprise/rules/simulations": [
         {
           "source": "journey:rules-authorization",
-          "type": "calls"
-        },
-        {
-          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -1295,10 +1355,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:liteidentity",
-          "type": "calls"
-        },
-        {
           "source": "domain:identity",
           "type": "owns"
         }
@@ -1306,10 +1362,6 @@
       "api:post:/api/lite/identity/passkeys/login/verify": [
         {
           "source": "journey:change-password",
-          "type": "calls"
-        },
-        {
-          "source": "ui:liteidentity",
           "type": "calls"
         },
         {
@@ -1427,6 +1479,10 @@
           "type": "calls"
         },
         {
+          "source": "ui:liteidentityenterprise",
+          "type": "calls"
+        },
+        {
           "source": "ui:literulesenterprise",
           "type": "calls"
         },
@@ -1442,6 +1498,10 @@
         },
         {
           "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentityenterprise",
           "type": "calls"
         },
         {
@@ -1679,10 +1739,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:liteidentityenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -1690,10 +1746,6 @@
       "api:put:/api/lite/enterprise/identity/mode": [
         {
           "source": "journey:enterprise-identity",
-          "type": "calls"
-        },
-        {
-          "source": "ui:liteidentity",
           "type": "calls"
         },
         {
@@ -3231,6 +3283,12 @@
           "type": "owns"
         }
       ],
+      "reason:enterprise_connect_links_retired": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:enterprise_final_owner_protected": [
         {
           "source": "domain:identity",
@@ -3273,7 +3331,19 @@
           "type": "owns"
         }
       ],
+      "reason:enterprise_owner_authority_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:enterprise_owner_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:enterprise_people_role_required": [
         {
           "source": "domain:identity",
           "type": "owns"
@@ -6315,6 +6385,12 @@
           "type": "owns"
         }
       ],
+      "table:human_enrollment_claims": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:human_identities": [
         {
           "source": "component:api-guards",
@@ -7137,6 +7213,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_connect_links_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_final_owner_protected",
           "type": "verified_by"
         },
@@ -7165,7 +7245,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_people_role_required",
           "type": "verified_by"
         },
         {
@@ -7767,6 +7855,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -7867,11 +7959,35 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/access",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity",
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity/members",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/mode/preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/self",
           "type": "verified_by"
         },
         {
@@ -7916,6 +8032,10 @@
         },
         {
           "source": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/rules/templates",
           "type": "verified_by"
         },
         {
@@ -8192,6 +8312,54 @@
         },
         {
           "source": "api:post:/api/lite/diagnostics/frontend-lifecycle",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
           "type": "verified_by"
         },
         {
@@ -8860,6 +9028,44 @@
         },
         {
           "source": "reason:policy_unavailable",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_identity_rules_enterprise_governance.py": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:enterprise-identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_final_owner_protected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:webauthn_secure_origin_required",
           "type": "verified_by"
         }
       ],
@@ -11185,6 +11391,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_connect_links_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_final_owner_protected",
           "type": "verified_by"
         },
@@ -11213,7 +11423,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_people_role_required",
           "type": "verified_by"
         },
         {
@@ -11923,6 +12141,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_connect_links_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_final_owner_protected",
           "type": "verified_by"
         },
@@ -11951,7 +12173,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_people_role_required",
           "type": "verified_by"
         },
         {
@@ -12653,6 +12883,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -12753,11 +12987,35 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/access",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity",
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity/members",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/mode/preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/self",
           "type": "verified_by"
         },
         {
@@ -12802,6 +13060,10 @@
         },
         {
           "source": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/rules/templates",
           "type": "verified_by"
         },
         {
@@ -13078,6 +13340,54 @@
         },
         {
           "source": "api:post:/api/lite/diagnostics/frontend-lifecycle",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
           "type": "verified_by"
         },
         {
@@ -14013,6 +14323,16 @@
           "type": "verified_by"
         }
       ],
+      "api:delete:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -14343,6 +14663,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/enterprise/access": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/enterprise/identity": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -14353,7 +14683,57 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/enterprise/identity/enrollment/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/enterprise/identity/members": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/mode/preview": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/self": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -14464,6 +14844,16 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/templates": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -15346,6 +15736,126 @@
         }
       ],
       "api:post:/api/lite/diagnostics/frontend-lifecycle": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/consume": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/invite": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -19959,6 +20469,10 @@
           "type": "owns"
         },
         {
+          "target": "table:human_enrollment_claims",
+          "type": "owns"
+        },
+        {
           "target": "table:human_identities",
           "type": "owns"
         },
@@ -20455,11 +20969,39 @@
       ],
       "domain:enterprise": [
         {
+          "target": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/access",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/identity",
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/enterprise/identity/enrollment/status",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/identity/members",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/mode/preview",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/people",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/self",
           "type": "owns"
         },
         {
@@ -20504,6 +21046,58 @@
         },
         {
           "target": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/rules/templates",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
           "type": "owns"
         },
         {
@@ -20743,6 +21337,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:enterprise_connect_links_retired",
+          "type": "owns"
+        },
+        {
           "target": "reason:enterprise_final_owner_protected",
           "type": "owns"
         },
@@ -20763,7 +21361,15 @@
           "type": "owns"
         },
         {
+          "target": "reason:enterprise_owner_authority_required",
+          "type": "owns"
+        },
+        {
           "target": "reason:enterprise_owner_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:enterprise_people_role_required",
           "type": "owns"
         },
         {
@@ -21028,6 +21634,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
         {
@@ -23123,6 +23733,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         },
@@ -23336,6 +23950,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
         {
@@ -23741,6 +24359,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         }
@@ -24137,6 +24759,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         },
@@ -24389,6 +25015,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
           "type": "verified_by"
         },
@@ -24455,6 +25085,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:enterprise_connect_links_retired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:enterprise_final_owner_protected": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -24462,6 +25106,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
         {
@@ -24561,6 +25209,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:enterprise_owner_authority_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:enterprise_owner_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -24568,6 +25234,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:enterprise_people_role_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -26641,6 +27321,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -26937,10 +27621,6 @@
       ],
       "ui:liteidentity": [
         {
-          "target": "api:get:/api/lite/identity",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/identity/owner-claim/status",
           "type": "calls"
         },
@@ -26962,14 +27642,6 @@
         },
         {
           "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/identity/passkeys/login/options",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/identity/passkeys/login/verify",
           "type": "calls"
         },
         {
@@ -27009,21 +27681,17 @@
           "type": "calls"
         },
         {
-          "target": "api:put:/api/lite/enterprise/identity/mode",
-          "type": "calls"
-        },
-        {
           "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "calls"
         }
       ],
       "ui:liteidentityenterprise": [
         {
-          "target": "api:get:/api/lite/enterprise/identity/members",
+          "target": "api:post:/api/lite/identity/step-up/options",
           "type": "calls"
         },
         {
-          "target": "api:put:/api/lite/enterprise/identity/members/{human_id}",
+          "target": "api:post:/api/lite/identity/step-up/verify",
           "type": "calls"
         }
       ],
@@ -27099,65 +27767,13 @@
       ],
       "ui:literules": [
         {
-          "target": "api:get:/api/lite/enterprise/identity",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/policy",
           "type": "calls"
         }
       ],
       "ui:literulesenterprise": [
         {
-          "target": "api:get:/api/lite/enterprise/rules/analysis",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/approvals",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/decisions",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/exceptions",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/health",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/revisions",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/fleet",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/exceptions",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/simulations",
           "type": "calls"
         },
         {
@@ -27211,6 +27827,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
+    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
   }
 }

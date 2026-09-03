@@ -522,6 +522,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:enterprise_connect_links_retired",
+      "name": "enterprise_connect_links_retired",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Ask an Owner or Admin to use Set up passkey for this person."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -662,6 +682,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested Enterprise people change affects Owner or Admin authority and therefore requires an active Owner rather than delegated Admin authority.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_owner_authority_required",
+      "name": "enterprise_owner_authority_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "An Owner must make this access change."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -679,6 +719,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Enterprise people management requires an active Owner or Admin membership resolved by the server.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_people_role_required",
+      "name": "enterprise_people_role_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner or Admin access is required to manage people."
     },
     {
       "confidence": "source-derived",
@@ -3287,6 +3347,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
+    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
   }
 }

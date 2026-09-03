@@ -1,0 +1,274 @@
+.lite-governance-page-story,
+.lite-governance-section {
+  margin-bottom: 1.25rem;
+}
+
+.lite-governance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.lite-governance-card {
+  min-width: 0;
+}
+
+.lite-governance-card-head,
+.lite-governance-title-row,
+.lite-governance-person-head,
+.lite-governance-policy-head,
+.lite-governance-request-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.lite-governance-card-head > div,
+.lite-governance-title-row > div,
+.lite-governance-person-head > div {
+  min-width: 0;
+}
+
+.lite-governance-card strong.lite-governance-value {
+  display: block;
+  margin: .45rem 0 .35rem;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+}
+
+.lite-governance-nav {
+  display: flex;
+  gap: .5rem;
+  overflow-x: auto;
+  padding: .15rem 0 .55rem;
+  scrollbar-width: thin;
+}
+
+.lite-governance-nav button {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 999px;
+  padding: .55rem .8rem;
+  background: color-mix(in srgb, var(--lite-surface, #fff) 82%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.lite-governance-nav button.is-active {
+  border-color: color-mix(in srgb, currentColor 38%, transparent);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--lite-surface, #fff) 100%, transparent);
+}
+
+.lite-governance-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.lite-governance-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .9rem;
+}
+
+.lite-governance-form label,
+.lite-governance-field {
+  display: grid;
+  gap: .35rem;
+}
+
+.lite-governance-form label > span,
+.lite-governance-field > span {
+  font-size: .84rem;
+  font-weight: 650;
+}
+
+.lite-governance-form input,
+.lite-governance-form select,
+.lite-governance-form textarea,
+.lite-governance-field input,
+.lite-governance-field select,
+.lite-governance-field textarea {
+  width: 100%;
+  min-height: 2.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: .8rem;
+  padding: .65rem .75rem;
+  background: color-mix(in srgb, var(--lite-surface, #fff) 92%, transparent);
+  color: inherit;
+  font: inherit;
+}
+
+.lite-governance-form textarea,
+.lite-governance-field textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.lite-governance-form .lite-governance-span-2 {
+  grid-column: 1 / -1;
+}
+
+.lite-governance-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: .65rem !important;
+  min-height: 2.65rem;
+  padding: .65rem .75rem;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: .8rem;
+}
+
+.lite-governance-toggle input {
+  width: auto;
+  min-height: 0;
+}
+
+.lite-governance-people,
+.lite-governance-revisions,
+.lite-governance-matrix,
+.lite-governance-events,
+.lite-governance-requests {
+  display: grid;
+  gap: .75rem;
+}
+
+.lite-governance-person,
+.lite-governance-revision,
+.lite-governance-matrix-row,
+.lite-governance-event,
+.lite-governance-request {
+  padding: .9rem;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: .9rem;
+  background: color-mix(in srgb, var(--lite-surface, #fff) 82%, transparent);
+}
+
+.lite-governance-person-meta,
+.lite-governance-meta,
+.lite-governance-muted {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+  font-size: .86rem;
+}
+
+.lite-governance-actions,
+.lite-governance-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  margin-top: .75rem;
+}
+
+.lite-governance-invite {
+  display: grid;
+  gap: .65rem;
+  margin-top: .8rem;
+  padding: .85rem;
+  border: 1px dashed color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: .85rem;
+}
+
+.lite-governance-invite code {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.lite-governance-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+}
+
+.lite-governance-role-card {
+  padding: .9rem;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: .9rem;
+}
+
+.lite-governance-role-card.is-current {
+  border-color: color-mix(in srgb, currentColor 34%, transparent);
+}
+
+.lite-governance-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1.4fr) repeat(5, minmax(6rem, .7fr));
+  gap: .5rem;
+  align-items: center;
+}
+
+.lite-governance-matrix-cell {
+  text-align: center;
+  font-size: .82rem;
+}
+
+.lite-governance-mode-impact {
+  display: grid;
+  gap: .5rem;
+  margin: .75rem 0;
+  padding-left: 1.2rem;
+}
+
+.lite-governance-policy-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+}
+
+.lite-governance-policy-controls > label {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: .8rem;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: .85rem;
+}
+
+.lite-governance-policy-controls input {
+  margin-top: .15rem;
+}
+
+.lite-governance-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.lite-governance-empty {
+  padding: 1rem;
+  border-radius: .85rem;
+  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+}
+
+@media (max-width: 900px) {
+  .lite-governance-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lite-governance-matrix-row {
+    grid-template-columns: minmax(9rem, 1.2fr) repeat(5, minmax(5.5rem, .7fr));
+    min-width: 44rem;
+  }
+  .lite-governance-matrix {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .lite-governance-grid,
+  .lite-governance-form,
+  .lite-governance-role-grid,
+  .lite-governance-policy-controls {
+    grid-template-columns: 1fr;
+  }
+  .lite-governance-form .lite-governance-span-2 {
+    grid-column: auto;
+  }
+  .lite-governance-card-head,
+  .lite-governance-person-head,
+  .lite-governance-policy-head,
+  .lite-governance-request-head {
+    align-items: flex-start;
+  }
+}

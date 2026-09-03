@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: d3202fa332067380a6310a6c4cbe05a98f889d8d10760cbab50de1d3cf5528e3
+source_fingerprint: fe5b3f6bb86ece3c26a83690d98f05603c23b76bf3d7c19454d1628ed9dbea32
 schema_revision: 1
 validation_status: generated
 ---
@@ -32,16 +32,12 @@ validation_status: generated
 | src/lite/LiteDevices.jsx | liteApi.restartDeviceAgent | POST | `/api/lite/fleet/devices/{param}/restart-agent` | mutation | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.restartDeviceAgentStatus | GET | `/api/lite/fleet/devices/{param}/restart-agent/status` | query | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.removeDevice | POST | `/api/lite/fleet/remove-device` | mutation | no | static |
-| src/lite/LiteIdentity.jsx | liteApi.setEnterpriseMode | PUT | `/api/lite/enterprise/identity/mode` | mutation | no | static |
-| src/lite/LiteIdentity.jsx | liteApi.identity | GET | `/api/lite/identity` | query | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.loginIdentity | POST | `/api/lite/identity/login` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.logoutIdentity | POST | `/api/lite/identity/logout` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.consumeOwnerClaim | POST | `/api/lite/identity/owner-claim/consume` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.ownerClaimPasskeyOptions | POST | `/api/lite/identity/owner-claim/passkey/options` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.verifyOwnerClaimPasskey | POST | `/api/lite/identity/owner-claim/passkey/verify` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.ownerClaimStatus | GET | `/api/lite/identity/owner-claim/status` | query | no | static |
-| src/lite/LiteIdentity.jsx | liteApi.passkeyLoginOptions | POST | `/api/lite/identity/passkeys/login/options` | mutation | no | static |
-| src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyLogin | POST | `/api/lite/identity/passkeys/login/verify` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.passkeyRegistrationOptions | POST | `/api/lite/identity/passkeys/registration/options` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyRegistration | POST | `/api/lite/identity/passkeys/registration/verify` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.revokeIdentityPasskey | GET | `/api/lite/identity/passkeys/{param}` | query | no | dynamic |
@@ -54,8 +50,8 @@ validation_status: generated
 | src/lite/LiteIdentity.jsx | liteApi.setupIdentity | POST | `/api/lite/identity/setup` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
-| src/lite/LiteIdentityEnterprise.jsx | liteApi.enterpriseMembers | GET | `/api/lite/enterprise/identity/members` | query | no | static |
-| src/lite/LiteIdentityEnterprise.jsx | liteApi.updateEnterpriseMember | PUT | `/api/lite/enterprise/identity/members/{param}` | mutation | no | dynamic |
+| src/lite/LiteIdentityEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
+| src/lite/LiteIdentityEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.verifyBackup | POST | `/api/lite/recovery/backups/{param}/verify` | mutation | no | dynamic |
@@ -72,20 +68,7 @@ validation_status: generated
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.applyRelease | POST | `/api/lite/release/apply` | mutation | no | static |
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.checkRelease | POST | `/api/lite/release/check` | mutation | no | static |
 | src/lite/LiteRevisionSyncBridge.jsx | liteApi.domainRevisions | GET | `/api/lite/revisions` | query | no | static |
-| src/lite/LiteRules.jsx | liteApi.enterpriseIdentity | GET | `/api/lite/enterprise/identity` | query | no | static |
 | src/lite/LiteRules.jsx | liteApi.policy | GET | `/api/lite/policy` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRulesAnalysis | GET | `/api/lite/enterprise/rules/analysis` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleApprovals | GET | `/api/lite/enterprise/rules/approvals` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleApproval | GET | `/api/lite/enterprise/rules/approvals/{param}` | query | no | dynamic |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.transitionEnterpriseRuleApproval | POST | `/api/lite/enterprise/rules/approvals/{param}` | mutation | no | dynamic |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleDecisions | GET | `/api/lite/enterprise/rules/decisions` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleDecision | GET | `/api/lite/enterprise/rules/decisions/{param}` | query | no | dynamic |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleExceptions | GET | `/api/lite/enterprise/rules/exceptions` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.createEnterpriseRuleException | POST | `/api/lite/enterprise/rules/exceptions` | mutation | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.revokeEnterpriseRuleException | POST | `/api/lite/enterprise/rules/exceptions/{param}/revoke` | mutation | no | dynamic |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRulesHealth | GET | `/api/lite/enterprise/rules/health` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.enterpriseRuleRevisions | GET | `/api/lite/enterprise/rules/revisions` | query | no | static |
-| src/lite/LiteRulesEnterprise.jsx | liteApi.simulateEnterpriseRule | POST | `/api/lite/enterprise/rules/simulations` | mutation | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.fleet | GET | `/api/lite/fleet` | query | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
@@ -177,20 +160,49 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/security/scan` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/security/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
+| src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
+| src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/templates` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/enterprise/access` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/consume` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/passkey/options` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/passkey/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/status` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity/members` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | PUT | `/api/lite/enterprise/identity/members/:humanId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | PUT | `/api/lite/enterprise/identity/mode` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity/mode/preview` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/passkeys/login/options` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/passkeys/login/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity/people` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/enterprise/identity/people/:humanId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity/people/:humanId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/people/:humanId/invite` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/people/:humanId/reactivate` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/people/:humanId/reset-access` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/people/:humanId/suspend` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity/self` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/activations` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/activations/:operationId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/activations/:operationId/resolve` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/analysis` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/approvals` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/approvals/:approvalId` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/approvals/:approvalId` | mock | yes | static |
-| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/decisions` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/decisions` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/decisions/:decisionId` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/exceptions` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/exceptions` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/exceptions/:exceptionId/revoke` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/health` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/revisions` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/revisions` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/revisions/:revisionId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/rollbacks` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/rules/simulations` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/rules/templates` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/identity` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/logout` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/identity/owner-claim/consume` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/owner-claim/passkey/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/owner-claim/passkey/verify` | mock | yes | static |
@@ -201,11 +213,12 @@ validation_status: generated
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/login/verify` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/registration/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/passkeys/registration/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/identity/recovery/regenerate` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/sessions/:sessionId` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/verify` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/policy` | mock | yes | static |
-| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
-| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/policy/templates` | mock | yes | static |
 
 ## Unsupported frontend route references
 
@@ -226,12 +239,44 @@ validation_status: generated
 - `/api/lite/diagnostics/frontend-lifecycle`
 - `/api/lite/diagnostics/frontend-lifecycle/challenge`
 - `/api/lite/diagnostics/runtime/full`
+- `/api/lite/enterprise/access`
+- `/api/lite/enterprise/identity`
+- `/api/lite/enterprise/identity/enrollment/consume`
+- `/api/lite/enterprise/identity/enrollment/passkey/options`
+- `/api/lite/enterprise/identity/enrollment/passkey/verify`
+- `/api/lite/enterprise/identity/enrollment/status`
+- `/api/lite/enterprise/identity/members`
+- `/api/lite/enterprise/identity/members/{human_id}`
+- `/api/lite/enterprise/identity/mode`
+- `/api/lite/enterprise/identity/mode/preview`
+- `/api/lite/enterprise/identity/passkeys/login/options`
+- `/api/lite/enterprise/identity/passkeys/login/verify`
+- `/api/lite/enterprise/identity/people`
+- `/api/lite/enterprise/identity/people/{human_id}`
+- `/api/lite/enterprise/identity/people/{human_id}/invite`
+- `/api/lite/enterprise/identity/people/{human_id}/passkey/options`
+- `/api/lite/enterprise/identity/people/{human_id}/passkey/verify`
+- `/api/lite/enterprise/identity/people/{human_id}/reactivate`
+- `/api/lite/enterprise/identity/people/{human_id}/reset-access`
+- `/api/lite/enterprise/identity/people/{human_id}/suspend`
+- `/api/lite/enterprise/identity/self`
 - `/api/lite/enterprise/rules/activations`
 - `/api/lite/enterprise/rules/activations/{operation_id}`
 - `/api/lite/enterprise/rules/activations/{operation_id}/resolve`
+- `/api/lite/enterprise/rules/analysis`
+- `/api/lite/enterprise/rules/approvals`
+- `/api/lite/enterprise/rules/approvals/{approval_id}`
+- `/api/lite/enterprise/rules/decisions`
+- `/api/lite/enterprise/rules/decisions/{decision_id}`
+- `/api/lite/enterprise/rules/exceptions`
+- `/api/lite/enterprise/rules/exceptions/{exception_id}/revoke`
+- `/api/lite/enterprise/rules/health`
+- `/api/lite/enterprise/rules/revisions`
 - `/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}`
 - `/api/lite/enterprise/rules/revisions/{revision_id}`
 - `/api/lite/enterprise/rules/rollbacks`
+- `/api/lite/enterprise/rules/simulations`
+- `/api/lite/enterprise/rules/templates`
 - `/api/lite/events`
 - `/api/lite/fleet/agent/bootstrap-blocked`
 - `/api/lite/fleet/agent/bootstrap.env`
@@ -240,7 +285,10 @@ validation_status: generated
 - `/api/lite/fleet/health-summary`
 - `/api/lite/fleet/invites/latest`
 - `/api/lite/fleet/invites/{invite_id}/revoke`
+- `/api/lite/identity`
 - `/api/lite/identity/owner-claim`
+- `/api/lite/identity/passkeys/login/options`
+- `/api/lite/identity/passkeys/login/verify`
 - `/api/lite/identity/rotate`
 - `/api/lite/policy/apply`
 - `/api/lite/policy/decisions/{decision_id}`

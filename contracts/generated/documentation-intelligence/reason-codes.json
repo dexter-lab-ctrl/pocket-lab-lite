@@ -313,6 +313,18 @@
       "user_message": "A matching device or invite already exists."
     },
     {
+      "code": "enterprise_connect_links_retired",
+      "domain": "identity",
+      "http_status": 410,
+      "meaning": "Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "info",
+      "terminal": true,
+      "user_message": "Ask an Owner or Admin to use Set up passkey for this person."
+    },
+    {
       "code": "enterprise_final_owner_protected",
       "domain": "identity",
       "http_status": 403,
@@ -397,6 +409,18 @@
       "user_message": "The requested Identity or Rules action could not continue."
     },
     {
+      "code": "enterprise_owner_authority_required",
+      "domain": "identity",
+      "http_status": 403,
+      "meaning": "The requested Enterprise people change affects Owner or Admin authority and therefore requires an active Owner rather than delegated Admin authority.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "An Owner must make this access change."
+    },
+    {
       "code": "enterprise_owner_required",
       "domain": "identity",
       "http_status": 403,
@@ -407,6 +431,18 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "enterprise_people_role_required",
+      "domain": "identity",
+      "http_status": 403,
+      "meaning": "Enterprise people management requires an active Owner or Admin membership resolved by the server.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Owner or Admin access is required to manage people."
     },
     {
       "code": "enterprise_role_forbidden",
@@ -1974,5 +2010,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "e22f07873f3445931b8b376bee7f2860b2262e3f6d8b843b39b56a710bfe3ee6"
+  "source_fingerprint": "0f69f9c0e3908086575a3d09a5f0440b0e44be7a3b282dbab0b23a415f3c010c"
 }

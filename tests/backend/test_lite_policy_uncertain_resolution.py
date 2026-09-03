@@ -222,7 +222,7 @@ def test_manual_recovery_rejects_opa_revision_mismatch(policy_runtime, monkeypat
 
 def test_resolution_endpoint_requires_csrf_and_accepts_no_recovery_payload(policy_runtime, monkeypatch):
     from fastapi.testclient import TestClient
-    from api_fastapi.services import lite_policy_lifecycle as rules
+    from api_fastapi.services import lite_enterprise_governance, lite_policy_lifecycle as rules
 
     _, auth = policy_runtime
     _, operation_id = _make_uncertain(auth)
@@ -244,6 +244,17 @@ def test_resolution_endpoint_requires_csrf_and_accepts_no_recovery_payload(polic
     )
     assert missing_csrf.status_code == 403
 
+    step_up_required = client.post(
+        f"/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+        headers={"x-pocket-lab-csrf": csrf},
+    )
+    assert step_up_required.status_code == 428
+    assert "owner_step_up_required" in step_up_required.text
+
+    # The recovery-proof contract itself is tested below the WebAuthn boundary.
+    # Keep the production passkey requirement intact while exercising the
+    # endpoint's no-payload recovery semantics.
+    monkeypatch.setattr(lite_enterprise_governance, "require_recent_assurance", lambda _auth, _purpose: None)
     resolved = client.post(
         f"/api/lite/enterprise/rules/activations/{operation_id}/resolve",
         headers={"x-pocket-lab-csrf": csrf},

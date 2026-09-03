@@ -1,128 +1,277 @@
+import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, ShieldCheck, UsersRound } from 'lucide-react';
+import { Activity, ShieldCheck, UserPlus, UsersRound } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
-import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { getLiteReasonPresentation, getLiteStatusPresentation } from '../lib/identityRulesPresentation.js';
-import { GlassCard, LiteButton, LoadingCard, StateSurface, StatusBadge } from './LiteUi.jsx';
+import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
+import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
+import { createLitePasskey, getLitePasskey } from '../lib/liteWebAuthn.js';
+import { getLiteReasonPresentation } from '../lib/identityRulesPresentation.js';
+import { GlassCard, LiteButton, StateSurface, StatusBadge } from './LiteUi.jsx';
+import { LiteSheet } from './LiteOverlay.jsx';
+import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 
 const ROLE_ORDER = ['Owner', 'Admin', 'Operator', 'Auditor', 'Viewer'];
 
-function MemberEditor({ member, roles, disabled, onSave }) {
-  const [draft, setDraft] = useState({ role: member.role || 'Viewer', status: member.status || 'active' });
-  useEffect(() => {
-    setDraft({ role: member.role || 'Viewer', status: member.status || 'active' });
-  }, [member.role, member.status]);
-  const changed = draft.role !== member.role || draft.status !== member.status;
-  const status = getLiteStatusPresentation(member.status);
+function reasonCode(error) {
+  return error?.payload?.detail?.reason_code || error?.payload?.reason_code || '';
+}
+
+function roleTone(role) {
+  if (role === 'Owner') return 'healthy';
+  if (role === 'Admin') return 'ready';
+  if (role === 'Operator') return 'review';
+  return 'neutral';
+}
+
+function PersonRow({ person, currentPersonId, roles, currentRole, busy, onRole, onEnroll, onSuspend, onReactivate, onReset, onRemove }) {
+  const [draftRole, setDraftRole] = useState(person.role || 'Viewer');
+  useEffect(() => setDraftRole(person.role || 'Viewer'), [person.role]);
+  const isCurrent = person.human_id === currentPersonId;
+  const canChangePrivileged = currentRole === 'Owner';
+  const visibleRoles = canChangePrivileged ? roles : roles.filter((role) => !['Owner', 'Admin'].includes(role));
+  const canManageTarget = currentRole === 'Owner' || !['Owner', 'Admin'].includes(person.role);
+  const statusLabel = person.status === 'invited' ? 'Waiting to join' : person.status === 'suspended' ? 'Suspended' : person.status === 'removed' ? 'Removed' : 'Active';
   return (
-    <div className="lite-identity-person-row">
-      <div className="lite-identity-person-main">
+    <div className="lite-governance-person">
+      <div className="lite-governance-person-head">
         <div>
-          <strong>{member.display_name || 'Pocket Lab person'}</strong>
-          <span>{member.role || 'Member'} · updated {member.updated_at ? formatLiteTime(member.updated_at) : 'recently'}</span>
+          <strong>{person.display_name || 'Pocket Lab person'}</strong>
+          <div className="lite-governance-person-meta">@{person.username || 'person'} · {person.role || 'Member'}{isCurrent ? ' · You' : ''}</div>
         </div>
-        <StatusBadge status={status.tone}>{status.label}</StatusBadge>
+        <StatusBadge status={person.status === 'active' ? 'healthy' : person.status === 'suspended' ? 'review' : 'neutral'}>{statusLabel}</StatusBadge>
       </div>
-      <div className="lite-identity-person-controls" aria-label={`Access settings for ${member.display_name || 'Pocket Lab person'}`}>
-        <label>
-          <span>Role</span>
-          <select value={draft.role} disabled={disabled} onChange={(event) => setDraft((value) => ({ ...value, role: event.target.value }))}>
-            {(roles.length ? roles : ROLE_ORDER).map((role) => <option key={role} value={role}>{role}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>Status</span>
-          <select value={draft.status} disabled={disabled} onChange={(event) => setDraft((value) => ({ ...value, status: event.target.value }))}>
-            <option value="active">Active</option>
-            <option value="removed">Inactive</option>
-          </select>
-        </label>
-        <LiteButton variant="secondary" disabled={disabled || !changed} onClick={() => onSave(member, draft)}>Save</LiteButton>
+      <p className="lite-governance-muted">
+        {person.status === 'invited'
+          ? 'This server-created identity is waiting for passkey setup. Pocket Lab does not print an enrollment token; an authorized Owner or Admin starts the platform WebAuthn ceremony.'
+          : `${person.active_passkeys || 0} active passkey${Number(person.active_passkeys || 0) === 1 ? '' : 's'} · ${person.active_sessions || 0} active session${Number(person.active_sessions || 0) === 1 ? '' : 's'} · ${person.recovery_codes_remaining || 0} recovery code${Number(person.recovery_codes_remaining || 0) === 1 ? '' : 's'} remaining`}
+      </p>
+      {person.status !== 'removed' && canManageTarget ? (
+        <div className="lite-governance-inline-actions">
+          <label className="lite-governance-field">
+            <span>Role</span>
+            <select value={draftRole} disabled={Boolean(busy)} onChange={(event) => setDraftRole(event.target.value)}>
+              {(visibleRoles.length ? visibleRoles : ROLE_ORDER).map((role) => <option key={role} value={role}>{role}</option>)}
+            </select>
+          </label>
+          <LiteButton variant="secondary" disabled={Boolean(busy) || draftRole === person.role} onClick={() => onRole(person, draftRole)}>Save role</LiteButton>
+        </div>
+      ) : null}
+      <div className="lite-governance-actions">
+        {person.status === 'invited' && canManageTarget ? <LiteButton onClick={() => onEnroll(person)} disabled={Boolean(busy)}>{busy === `enroll:${person.human_id}` ? 'Opening passkey…' : 'Set up passkey'}</LiteButton> : null}
+        {person.status === 'active' && !isCurrent && canManageTarget ? <LiteButton variant="secondary" onClick={() => onSuspend(person)} disabled={Boolean(busy)}>Suspend access</LiteButton> : null}
+        {person.status === 'suspended' && canManageTarget ? <LiteButton variant="secondary" onClick={() => onReactivate(person)} disabled={Boolean(busy)}>Reactivate</LiteButton> : null}
+        {person.status === 'active' && !isCurrent && canManageTarget ? <LiteButton variant="secondary" onClick={() => onReset(person)} disabled={Boolean(busy)}>Reset sign-in</LiteButton> : null}
+        {person.status !== 'removed' && !isCurrent && canManageTarget ? <LiteButton variant="secondary" onClick={() => onRemove(person)} disabled={Boolean(busy)}>Remove person</LiteButton> : null}
       </div>
     </div>
   );
 }
 
-export default function LiteIdentityEnterprise({ enterprise, recentActivity = [], onIdentityRefresh }) {
-  const currentRole = enterprise?.current_membership?.role || '';
-  const canManagePeople = currentRole === 'Owner';
-  const members = useLiteResource(liteApi.enterpriseMembers, [], { enabled: Boolean(enterprise?.enabled && canManagePeople) });
-  const [busyMember, setBusyMember] = useState('');
+export default function LiteIdentityEnterprise({ enterprise, access: initialAccess = null, currentPerson = null, onIdentityRefresh, onModeChanged }) {
+  const currentRole = enterprise?.current_membership?.role || initialAccess?.current_role || '';
+  const canManagePeople = currentRole === 'Owner' || currentRole === 'Admin';
+  const canChangeMode = currentRole === 'Owner';
+  const [section, setSection] = useState('overview');
+  const [busy, setBusy] = useState('');
   const [notice, setNotice] = useState(null);
-  const activeMembers = useMemo(() => (members.data?.members || []).filter((member) => member.status === 'active'), [members.data]);
+  const [modePreview, setModePreview] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const [draft, setDraft] = useState({ username: '', display_name: '', role: 'Operator' });
+  const access = useLiteResource(liteEnterpriseApi.access, [], { enabled: Boolean(enterprise?.enabled) });
+  const people = useLiteResource(liteEnterpriseApi.people, [], { enabled: Boolean(enterprise?.enabled && canManagePeople) });
+  const accessData = access.data || initialAccess || {};
+  const roleCatalog = accessData.roles || enterprise?.role_catalog || [];
+  const roleIds = roleCatalog.length ? roleCatalog.map((item) => item.id) : ROLE_ORDER;
+  const activePeople = useMemo(() => (people.data?.people || []).filter((item) => item.status === 'active'), [people.data]);
 
-  async function saveMember(member, draft) {
-    setBusyMember(member.human_id);
-    setNotice({ stage: 'pending', title: 'Waiting for Pocket Lab', message: 'The existing access stays in place until the server confirms this change.' });
+  async function execute(name, callback, successMessage, refreshPeople = true) {
+    setBusy(name);
+    setNotice({ title: 'Waiting for Pocket Lab', message: 'The existing authority stays in place until the server confirms this change.' });
     try {
-      await liteApi.updateEnterpriseMember(member.human_id, { role: draft.role, status: draft.status });
-      setNotice({ stage: 'verifying', title: 'Verifying access', message: 'The server accepted the change. Refreshing membership truth now.' });
-      await Promise.all([members.refresh(), onIdentityRefresh?.()]);
-      setNotice({ stage: 'completed', title: 'Access updated', message: `${member.display_name || 'Member'} now has the server-confirmed ${draft.role} / ${draft.status === 'active' ? 'Active' : 'Inactive'} membership.` });
+      const result = await callback();
+      setNotice({ title: 'Server accepted', message: 'Pocket Lab accepted the change. Refreshing Identity and Rules authority now.' });
+      const jobs = [access.refresh?.(), onIdentityRefresh?.()];
+      if (refreshPeople) jobs.push(people.refresh?.());
+      await Promise.all(jobs.filter(Boolean));
+      setNotice({ title: 'Access updated', message: result?.summary || successMessage });
+      return result;
     } catch (error) {
-      const reasonCode = error?.payload?.detail?.reason_code || error?.payload?.reason_code || '';
-      const reason = getLiteReasonPresentation(reasonCode, error?.message || 'Pocket Lab could not update this membership.');
-      setNotice({ stage: 'failed', error: true, title: reason.title, message: reason.message });
+      const reason = getLiteReasonPresentation(reasonCode(error), error?.message || 'Pocket Lab could not complete that access change.');
+      setNotice({ error: true, title: reason.title, message: reason.message });
+      return null;
     } finally {
-      setBusyMember('');
+      setBusy('');
     }
   }
 
+  async function ownerStepUp(callback, purpose) {
+    try {
+      return await callback();
+    } catch (error) {
+      if (error?.status !== 428 && reasonCode(error) !== 'owner_step_up_required') throw error;
+      setNotice({ title: 'Confirm with your passkey', message: 'This root-level change needs recent Owner confirmation before Pocket Lab can continue.' });
+      const options = await liteApi.passkeyStepUpOptions(purpose);
+      const credential = await getLitePasskey(options);
+      await liteApi.verifyPasskeyStepUp({ purpose, challenge: options.publicKey.challenge, credential });
+      return callback();
+    }
+  }
+
+  async function addPerson(event) {
+    event.preventDefault();
+    const result = await execute('person:create', () => liteEnterpriseApi.createPerson(draft), 'Person created. Set up a passkey to finish enrollment.');
+    if (result?.person) setDraft({ username: '', display_name: '', role: 'Operator' });
+  }
+
+  async function enrollPerson(person) {
+    await execute(`enroll:${person.human_id}`, async () => {
+      const options = await liteEnterpriseApi.personPasskeyOptions(person.human_id);
+      const credential = await createLitePasskey(options);
+      return liteEnterpriseApi.verifyPersonPasskey(person.human_id, {
+        challenge: options.publicKey.challenge,
+        credential,
+        friendly_name: 'Primary passkey',
+      });
+    }, `${person.display_name} can now sign in with their own passkey.`);
+  }
+
+  async function changeRole(person, role) {
+    await execute(`role:${person.human_id}`, () => liteEnterpriseApi.updateMember(person.human_id, { role, status: person.membership_status || 'active' }), `${person.display_name} now has ${role} access.`);
+  }
+
+  async function previewPersonalMode() {
+    setBusy('mode:preview');
+    try {
+      setModePreview(await liteEnterpriseApi.modePreview(false));
+      setNotice(null);
+    } catch (error) {
+      const reason = getLiteReasonPresentation(reasonCode(error), error?.message || 'Pocket Lab could not preview this mode change.');
+      setNotice({ error: true, title: reason.title, message: reason.message });
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function switchToPersonalMode() {
+    setConfirm(null);
+    const result = await execute('mode:disable', () => ownerStepUp(() => liteEnterpriseApi.setMode(false), 'enterprise.mode.change'), 'Personal Mode is active.', false);
+    if (result) {
+      clearLiteIdentityCsrf();
+      setModePreview(null);
+      await onModeChanged?.(result);
+    }
+  }
+
+  const topology = accessData.topology || enterprise?.topology || {};
+  const currentRoleInfo = roleCatalog.find((item) => item.id === currentRole);
+
   return (
-    <section className="lite-identity-enterprise" aria-labelledby="identity-enterprise-heading">
-      <div className="lite-identity-section-heading">
-        <div>
-          <span>Enterprise Mode</span>
-          <h2 id="identity-enterprise-heading">Identity & Access governance</h2>
-          <p>Server-managed roles add governance without changing the passkey-first sign-in boundary.</p>
-        </div>
-        <StatusBadge status="healthy">Enabled</StatusBadge>
+    <section className="lite-identity-enterprise lite-governance-section" aria-labelledby="identity-enterprise-heading">
+      <div className="lite-governance-title-row">
+        <div><span>Enterprise Mode</span><h2 id="identity-enterprise-heading">Identity & Access governance</h2><p>People, roles and Safety Rules use the same server-owned authority model.</p></div>
+        <div className="lite-governance-inline-actions"><StatusBadge status="healthy">Enabled</StatusBadge><LiteHelp helpKey="identity.overview" /></div>
       </div>
 
-      <div className="lite-identity-posture-grid">
-        <GlassCard className="lite-identity-card lite-identity-posture-card">
-          <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><ShieldCheck className="h-5 w-5" /></div><StatusBadge status={enterprise?.current_membership?.active ? 'healthy' : 'degraded'}>{enterprise?.current_membership?.active ? 'Active' : 'Needs attention'}</StatusBadge></div>
-          <h3>Your access</h3>
-          <strong className="lite-identity-posture-value">{currentRole || 'No active role'}</strong>
-          <p>Rules approvals and protected actions use this server-resolved role. Browser state cannot grant authority.</p>
-        </GlassCard>
+      {notice ? <StateSurface tone={notice.error ? 'degraded' : 'neutral'} title={notice.title} description={notice.message} className="mt-4" /> : null}
 
-        <GlassCard className="lite-identity-card lite-identity-posture-card">
-          <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><UsersRound className="h-5 w-5" /></div><StatusBadge status={canManagePeople ? 'healthy' : 'neutral'}>{canManagePeople ? `${activeMembers.length || '—'} active` : 'Owner managed'}</StatusBadge></div>
-          <h3>People</h3>
-          <strong className="lite-identity-posture-value">{canManagePeople ? `${(members.data?.members || []).length || 0} memberships` : 'Role-aware access'}</strong>
-          <p>{canManagePeople ? 'Owners can update existing Enterprise memberships. Every change is server-authorized and invalidates affected sessions.' : 'Only an active Owner can change Enterprise memberships. Your current role remains read-only here.'}</p>
-        </GlassCard>
+      <nav className="lite-governance-nav" aria-label="Identity governance sections">
+        {[['overview', 'Overview'], ['people', 'People'], ['roles', 'Roles & access'], ['mode', 'Mode']].map(([id, label]) => <button key={id} type="button" className={section === id ? 'is-active' : ''} aria-current={section === id ? 'page' : undefined} onClick={() => setSection(id)}>{label}</button>)}
+      </nav>
 
-        <GlassCard className="lite-identity-card lite-identity-posture-card">
-          <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><Activity className="h-5 w-5" /></div><span className="lite-identity-soft-badge">Activity</span></div>
-          <h3>Recent identity activity</h3>
-          <strong className="lite-identity-posture-value">{recentActivity.length}</strong>
-          <p>Sanitized sign-in, passkey, session, recovery and membership events remain available without exposing credentials.</p>
-        </GlassCard>
-      </div>
-
-      {canManagePeople ? (
-        <GlassCard className="lite-identity-card mt-5">
-          <div className="lite-identity-card-head"><div className="lite-identity-mini-icon"><UsersRound className="h-5 w-5" /></div><span className="lite-identity-soft-badge">People</span></div>
-          <h3>Enterprise people</h3>
-          <p>Use human-readable roles and status. Pocket Lab keeps internal identity references out of the visible interface and enforces final-Owner protection on the server.</p>
-          {members.loading ? <LoadingCard label="Loading people..." /> : null}
-          {members.error ? <StateSurface tone="degraded" title="People are unavailable" description={members.error} className="mt-3" /> : null}
-          {!members.loading && !members.error && !(members.data?.members || []).length ? <StateSurface tone="neutral" title="No Enterprise memberships" description="Existing Enterprise memberships will appear here after they are created by the supported identity flow." /> : null}
-          <div className="lite-identity-people-list">
-            {(members.data?.members || []).map((member) => (
-              <MemberEditor key={member.human_id} member={member} roles={members.data?.roles || ROLE_ORDER} disabled={Boolean(busyMember)} onSave={saveMember} />
-            ))}
+      {section === 'overview' ? (
+        <div className="lite-governance-stack">
+          <div className="lite-governance-grid">
+            <GlassCard className="lite-governance-card">
+              <div className="lite-governance-card-head"><ShieldCheck className="h-5 w-5" /><LiteHelp helpKey="identity.owner" /></div>
+              <h3>Your authority</h3><strong className="lite-governance-value">{currentRole || 'No active role'}</strong>
+              <p>{currentRoleInfo?.summary || accessData.role?.summary || 'Pocket Lab resolves your access on the server.'}</p>
+              {currentRole === 'Owner' ? <StatusBadge status="healthy">No peer approval</StatusBadge> : null}
+            </GlassCard>
+            <GlassCard className="lite-governance-card">
+              <div className="lite-governance-card-head"><UsersRound className="h-5 w-5" /><LiteHelp helpKey="identity.people" /></div>
+              <h3>People</h3><strong className="lite-governance-value">{topology.active_people ?? activePeople.length} active</strong>
+              <p>{topology.invited_people || topology.invited || 0} waiting to join · {topology.active_owners || topology.owners || 0} Owner{Number(topology.active_owners || topology.owners || 0) === 1 ? '' : 's'}.</p>
+            </GlassCard>
+            <GlassCard className="lite-governance-card">
+              <div className="lite-governance-card-head"><Activity className="h-5 w-5" /><LiteHelp helpKey="identity.roles" /></div>
+              <h3>Rules alignment</h3><strong className="lite-governance-value">Shared authority</strong>
+              <p>Identity answers who you are. Rules uses the same role and policy projection to explain what that role can do.</p>
+            </GlassCard>
           </div>
-        </GlassCard>
-      ) : null}
-
-      {notice ? (
-        <div className="mt-4" role="status" aria-live="polite">
-          <StateSurface tone={notice.error ? 'degraded' : notice.stage === 'completed' ? 'healthy' : 'neutral'} title={notice.title} description={notice.message} />
+          {currentRole === 'Owner' ? <StateSurface tone="healthy" title="Owner is root-equivalent" description="Owner actions do not depend on another human approval. Confirmation, passkey step-up where required, protected Server Host guards, Rules consistency and audit evidence still apply." /> : null}
         </div>
       ) : null}
+
+      {section === 'people' ? (
+        <div className="lite-governance-stack">
+          <GlassCard className="lite-governance-card">
+            <div className="lite-governance-card-head"><LiteHelpHeading title="People" helpKey="identity.people" as="h3" /><StatusBadge status={canManagePeople ? 'healthy' : 'neutral'}>{canManagePeople ? 'Manage' : 'Read only'}</StatusBadge></div>
+            <p>Every person gets a separate identity, passkeys, sessions, recovery state and role. Add Person creates only the server-owned identity; Set up passkey uses the platform WebAuthn ceremony and never prints a Pocket Lab enrollment token.</p>
+            {!canManagePeople ? <StateSurface tone="neutral" title="People management is not available to this role" description="Owner and Admin roles can manage people. Admin cannot create or change Owner/Admin authority." /> : (
+              <form className="lite-governance-form" onSubmit={addPerson}>
+                <label><span>Sign-in name</span><input required maxLength="64" value={draft.username} onChange={(event) => setDraft((value) => ({ ...value, username: event.target.value }))} placeholder="alex" autoComplete="off" /></label>
+                <label><span>Display name</span><input required maxLength="120" value={draft.display_name} onChange={(event) => setDraft((value) => ({ ...value, display_name: event.target.value }))} placeholder="Alex" autoComplete="off" /></label>
+                <label><span>Initial role</span><select value={draft.role} onChange={(event) => setDraft((value) => ({ ...value, role: event.target.value }))}>{roleIds.filter((role) => currentRole === 'Owner' || !['Owner', 'Admin'].includes(role)).map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
+                <div className="lite-governance-actions"><LiteButton type="submit" disabled={Boolean(busy)}><UserPlus className="h-4 w-4" /> {busy === 'person:create' ? 'Creating…' : 'Add person'}</LiteButton></div>
+              </form>
+            )}
+          </GlassCard>
+
+          {people.loading ? <StateSurface tone="neutral" title="Loading people" description="Pocket Lab is reading current server-owned Identity state." /> : null}
+          {people.error ? <StateSurface tone="degraded" title="People are unavailable" description={String(people.error)} /> : null}
+          <div className="lite-governance-people">
+            {(people.data?.people || []).map((person) => <PersonRow
+              key={person.human_id}
+              person={person}
+              currentPersonId={currentPerson?.human_id || ''}
+              roles={roleIds}
+              currentRole={currentRole}
+              busy={busy}
+              onRole={changeRole}
+              onEnroll={enrollPerson}
+              onSuspend={(item) => setConfirm({ title: `Suspend ${item.display_name}?`, description: 'Active sessions and outstanding authority will be invalidated. The identity and audit history are retained.', confirmLabel: 'Suspend access', action: () => execute(`suspend:${item.human_id}`, () => liteEnterpriseApi.suspendPerson(item.human_id), 'Access suspended.') })}
+              onReactivate={(item) => execute(`reactivate:${item.human_id}`, () => liteEnterpriseApi.reactivatePerson(item.human_id), 'Access reactivated.')}
+              onReset={(item) => setConfirm({ title: `Reset sign-in for ${item.display_name}?`, description: 'Existing passkeys, password credentials, recovery codes, sessions and continuations are invalidated. The person returns to Waiting to join, where an authorized Owner/Admin can run Set up passkey again.', confirmLabel: 'Reset sign-in', action: () => execute(`reset:${item.human_id}`, () => liteEnterpriseApi.resetPersonAccess(item.human_id), 'Sign-in reset. Set up a new passkey to finish recovery.') })}
+              onRemove={(item) => setConfirm({ title: `Remove ${item.display_name}?`, description: 'Active authority and sign-in methods are revoked. Identity and audit history are retained so past evidence remains understandable.', confirmLabel: 'Remove person', action: () => execute(`remove:${item.human_id}`, () => liteEnterpriseApi.removePerson(item.human_id), 'Person removed.') })}
+            />)}
+          </div>
+          {!people.loading && !(people.data?.people || []).length ? <StateSurface tone="neutral" title="No people yet" description="Add a person to create a separate server-owned identity and assign its first role." /> : null}
+        </div>
+      ) : null}
+
+      {section === 'roles' ? (
+        <div className="lite-governance-stack">
+          <GlassCard className="lite-governance-card">
+            <div className="lite-governance-card-head"><LiteHelpHeading title="Roles & access" helpKey="identity.roles" as="h3" /><StatusBadge status="healthy">Server owned</StatusBadge></div>
+            <p>The browser displays authority; it does not grant it. Identity and Rules read the same server projection.</p>
+            <div className="lite-governance-role-grid">
+              {roleCatalog.map((role) => <div key={role.id} className={`lite-governance-role-card ${role.id === currentRole ? 'is-current' : ''}`}><div className="lite-governance-card-head"><strong>{role.label || role.id}</strong><StatusBadge status={roleTone(role.id)}>{role.id === currentRole ? 'Your role' : role.id}</StatusBadge></div><p>{role.summary}</p></div>)}
+            </div>
+          </GlassCard>
+          <GlassCard className="lite-governance-card">
+            <div className="lite-governance-card-head"><h3>Effective capability matrix</h3><LiteHelp helpKey="rules.protection" /></div>
+            <div className="lite-governance-matrix">
+              {(accessData.action_matrix || []).map((row) => <div className="lite-governance-matrix-row" key={row.action_id}><div><strong>{row.label}</strong><div className="lite-governance-muted">{row.summary}</div></div>{ROLE_ORDER.map((role) => <div key={role} className="lite-governance-matrix-cell"><strong>{role}</strong><br />{row.roles?.[role] === 'allow' ? 'Direct' : row.roles?.[role] === 'approval' ? 'Review' : row.roles?.[role] === 'step_up' ? 'Passkey' : 'Blocked'}</div>)}</div>)}
+            </div>
+          </GlassCard>
+        </div>
+      ) : null}
+
+      {section === 'mode' ? (
+        <div className="lite-governance-stack">
+          <GlassCard className="lite-governance-card">
+            <div className="lite-governance-card-head"><LiteHelpHeading title="Workspace mode" helpKey="identity.mode" as="h3" /><StatusBadge status="healthy">Enterprise</StatusBadge></div>
+            <p>Enterprise Mode adds separate people, server-owned roles, advanced Rules, requests and temporary access. Personal Mode keeps the local Owner as the only human authority.</p>
+            {!canChangeMode ? <StateSurface tone="neutral" title="Only an Owner can change workspace mode" description="Changing mode changes authority for every person and invalidates active sessions." /> : <LiteButton variant="secondary" onClick={previewPersonalMode} disabled={Boolean(busy)}>{busy === 'mode:preview' ? 'Checking impact…' : 'Review switch to Personal Mode'}</LiteButton>}
+            {modePreview ? <div className="mt-4"><StateSurface tone="neutral" title="What will change" description="Pocket Lab will preserve Enterprise memberships, close Enterprise-only continuations, and sign out active sessions before Personal Mode becomes authoritative." /><ul className="lite-governance-mode-impact">{(modePreview.changes || []).map((item) => <li key={item}>{item}</li>)}</ul><div className="lite-governance-actions"><LiteButton variant="secondary" onClick={() => setModePreview(null)}>Keep Enterprise Mode</LiteButton><LiteButton onClick={() => setConfirm({ title: 'Switch to Personal Mode?', description: 'This is a root-level authorization change. Pocket Lab will require recent Owner passkey confirmation and sign out active sessions after the switch.', confirmLabel: 'Switch to Personal Mode', action: switchToPersonalMode })}>Switch to Personal Mode</LiteButton></div></div> : null}
+          </GlassCard>
+        </div>
+      ) : null}
+
+      <LiteSheet open={Boolean(confirm)} onClose={() => setConfirm(null)} title={confirm?.title || 'Confirm access change'} eyebrow="Confirm" description={confirm?.description || ''} className="lite-identity-sheet">
+        <StateSurface tone="neutral" title="Pocket Lab verifies this on the server" description="No success is shown until server-owned Identity and Rules state confirms the result." />
+        <div className="lite-governance-actions"><LiteButton variant="secondary" onClick={() => setConfirm(null)}>Cancel</LiteButton><LiteButton onClick={async () => { const action = confirm?.action; setConfirm(null); if (action) await action(); }}>{confirm?.confirmLabel || 'Confirm'}</LiteButton></div>
+      </LiteSheet>
     </section>
   );
 }

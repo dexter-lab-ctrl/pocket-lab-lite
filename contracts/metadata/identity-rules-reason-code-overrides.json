@@ -1,0 +1,49 @@
+{
+  "reason_codes": [
+    {
+      "audit_severity": "info",
+      "code": "enterprise_connect_links_retired",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 410,
+      "meaning": "Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "Ask an Owner or Admin to use Set up passkey for this person."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "enterprise_owner_authority_required",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "meaning": "The requested Enterprise people change affects Owner or Admin authority and therefore requires an active Owner rather than delegated Admin authority.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "An Owner must make this access change."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "enterprise_people_role_required",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "meaning": "Enterprise people management requires an active Owner or Admin membership resolved by the server.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Owner or Admin access is required to manage people."
+    }
+  ]
+}

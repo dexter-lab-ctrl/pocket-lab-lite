@@ -139,6 +139,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_identity_passkeys_rules_p1.py`
 - `test:tests/backend/test_lite_identity_rules_authorization.py`
+- `test:tests/backend/test_lite_identity_rules_enterprise_governance.py`
 - `test:tests/backend/test_lite_identity_rules_ui_projection.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`

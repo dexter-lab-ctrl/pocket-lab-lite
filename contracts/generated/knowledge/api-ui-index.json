@@ -7,45 +7,12 @@
       "api:get:/api/lite/devices/{device_id}/removal-assessment": [
         "ui:litedevices"
       ],
-      "api:get:/api/lite/enterprise/identity": [
-        "ui:literules"
-      ],
-      "api:get:/api/lite/enterprise/identity/members": [
-        "ui:liteidentityenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/analysis": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/approvals": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/approvals/{approval_id}": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/decisions": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/decisions/{decision_id}": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/exceptions": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/health": [
-        "ui:literulesenterprise"
-      ],
-      "api:get:/api/lite/enterprise/rules/revisions": [
-        "ui:literulesenterprise"
-      ],
       "api:get:/api/lite/fleet": [
         "ui:litedevices",
         "ui:literulesenterprise"
       ],
       "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status": [
         "ui:litedevices"
-      ],
-      "api:get:/api/lite/identity": [
-        "ui:liteidentity"
       ],
       "api:get:/api/lite/identity/owner-claim/status": [
         "ui:liteidentity"
@@ -89,18 +56,6 @@
       "api:post:/api/lite/apps/{app_id}/backup": [
         "ui:literecovery"
       ],
-      "api:post:/api/lite/enterprise/rules/approvals/{approval_id}": [
-        "ui:literulesenterprise"
-      ],
-      "api:post:/api/lite/enterprise/rules/exceptions": [
-        "ui:literulesenterprise"
-      ],
-      "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": [
-        "ui:literulesenterprise"
-      ],
-      "api:post:/api/lite/enterprise/rules/simulations": [
-        "ui:literulesenterprise"
-      ],
       "api:post:/api/lite/fleet/add-device": [
         "ui:litedevices"
       ],
@@ -123,12 +78,6 @@
         "ui:liteidentity"
       ],
       "api:post:/api/lite/identity/owner-claim/passkey/verify": [
-        "ui:liteidentity"
-      ],
-      "api:post:/api/lite/identity/passkeys/login/options": [
-        "ui:liteidentity"
-      ],
-      "api:post:/api/lite/identity/passkeys/login/verify": [
         "ui:liteidentity"
       ],
       "api:post:/api/lite/identity/passkeys/registration/options": [
@@ -154,10 +103,12 @@
       ],
       "api:post:/api/lite/identity/step-up/options": [
         "ui:liteidentity",
+        "ui:liteidentityenterprise",
         "ui:literulesenterprise"
       ],
       "api:post:/api/lite/identity/step-up/verify": [
         "ui:liteidentity",
+        "ui:liteidentityenterprise",
         "ui:literulesenterprise"
       ],
       "api:post:/api/lite/recovery/backup": [
@@ -196,12 +147,6 @@
       "api:post:/api/lite/security/check": [
         "ui:litesecurity"
       ],
-      "api:put:/api/lite/enterprise/identity/members/{human_id}": [
-        "ui:liteidentityenterprise"
-      ],
-      "api:put:/api/lite/enterprise/identity/mode": [
-        "ui:liteidentity"
-      ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         "ui:liteidentity"
       ]
@@ -219,15 +164,12 @@
         "api:post:/api/lite/fleet/remove-device"
       ],
       "ui:liteidentity": [
-        "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
         "api:post:/api/lite/identity/owner-claim/consume",
         "api:post:/api/lite/identity/owner-claim/passkey/options",
         "api:post:/api/lite/identity/owner-claim/passkey/verify",
-        "api:post:/api/lite/identity/passkeys/login/options",
-        "api:post:/api/lite/identity/passkeys/login/verify",
         "api:post:/api/lite/identity/passkeys/registration/options",
         "api:post:/api/lite/identity/passkeys/registration/verify",
         "api:post:/api/lite/identity/password",
@@ -237,12 +179,11 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
-        "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/identity/passkeys/{credential_id}"
       ],
       "ui:liteidentityenterprise": [
-        "api:get:/api/lite/enterprise/identity/members",
-        "api:put:/api/lite/enterprise/identity/members/{human_id}"
+        "api:post:/api/lite/identity/step-up/options",
+        "api:post:/api/lite/identity/step-up/verify"
       ],
       "ui:literecovery": [
         "api:get:/api/lite/recovery/database",
@@ -267,23 +208,10 @@
         "api:get:/api/lite/revisions"
       ],
       "ui:literules": [
-        "api:get:/api/lite/enterprise/identity",
         "api:get:/api/lite/policy"
       ],
       "ui:literulesenterprise": [
-        "api:get:/api/lite/enterprise/rules/analysis",
-        "api:get:/api/lite/enterprise/rules/approvals",
-        "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
-        "api:get:/api/lite/enterprise/rules/decisions",
-        "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
-        "api:get:/api/lite/enterprise/rules/exceptions",
-        "api:get:/api/lite/enterprise/rules/health",
-        "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/fleet",
-        "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
-        "api:post:/api/lite/enterprise/rules/exceptions",
-        "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-        "api:post:/api/lite/enterprise/rules/simulations",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify"
       ],
@@ -305,6 +233,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
+    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
   }
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f46b96021c3034bc1c3149b2d9918012029891f3f5f9a5c11dfb2a6e0b4ff380
+source_fingerprint: 1ace5fdb01b79e97809d09f6a89f47c5fc5f62b7a65c9db013d8cd2d4db16714
 schema_revision: 1
 validation_status: generated
 ---
@@ -43,7 +43,7 @@ validation_status: generated
 | `pocket-lab-lite-identity-identityloading` | identity | `slow-response` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-identityloading-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-identityunavailable` | identity | `api-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-identityunavailable-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-mobile320` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-mobile320-{viewport}.png` | fixture-dependent |
-| `pocket-lab-lite-identity-enterpriseroleawarefixture` | identity | `identity-role-aware-fixture` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-enterpriseroleawarefixture-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-enterprisemobile` | identity | `identity-enterprise-owner` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-enterprisemobile-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-nobackupsyet` | recovery | `recovery-no-backups` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-nobackupsyet-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-backupfailed` | recovery | `recovery-backup-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-backupfailed-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-savedofflinesnapshot` | recovery | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-savedofflinesnapshot-{viewport}.png` | fixture-dependent |
@@ -54,7 +54,7 @@ validation_status: generated
 | `pocket-lab-lite-rules-ruleexecutionpending` | rules | `rules-execution-pending` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-ruleexecutionpending-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-rules-rulesunavailable` | rules | `api-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-rulesunavailable-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-rules-mobile320` | rules | `rules-enabled` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-mobile320-{viewport}.png` | fixture-dependent |
-| `pocket-lab-lite-rules-enterpriseapprovalfixture` | rules | `rules-approval-required` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-enterpriseapprovalfixture-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-rules-enterprisemobile` | rules | `rules-enterprise-owner` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-enterprisemobile-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-noscanhistory` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-noscanhistory-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-profiledatastale` | security | `security-profile-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-profiledatastale-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-progressstages` | security | `security-progress` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-progressstages-{viewport}.png` | fixture-dependent |

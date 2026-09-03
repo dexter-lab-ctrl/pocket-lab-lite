@@ -7,7 +7,7 @@
 <line class="e" x1="444" y1="68" x2="610" y2="68"/>
 <polygon points="610,68 600,62 600,74" fill="#667085"/>
 <rect class="b" x="620" y="50" width="430" height="36" rx="7"/>
-<text class="t s" x="632" y="73">POST /api/lite/fleet/agent/bootstrap-blocked → backend execution</text>
+<text class="t s" x="632" y="73">POST /api/lite/enterprise/identity/people/{human_id}/invite → back</text>
 <rect class="b" x="24" y="104" width="420" height="36" rx="7"/>
 <text class="t s" x="36" y="127">Restart Agent</text>
 <line class="e" x1="444" y1="122" x2="610" y2="122"/>
@@ -67,7 +67,7 @@
 <line class="e" x1="444" y1="608" x2="610" y2="608"/>
 <polygon points="610,608 600,602 600,614" fill="#667085"/>
 <rect class="b" x="620" y="590" width="430" height="36" rx="7"/>
-<text class="t s" x="632" y="613">POST /api/lite/identity/passkeys/login/options → backend execution</text>
+<text class="t s" x="632" y="613">POST /api/lite/enterprise/identity/passkeys/login/options → backen</text>
 <rect class="b" x="24" y="644" width="420" height="36" rx="7"/>
 <text class="t s" x="36" y="667">Passkey step-up</text>
 <line class="e" x1="444" y1="662" x2="610" y2="662"/>
