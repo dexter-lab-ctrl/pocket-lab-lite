@@ -7,9 +7,10 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .. import deps
-from ..services import lite_policy_lifecycle, lite_policy_analysis, lite_policy_opa, lite_policy_approvals
+from ..services import lite_enterprise_governance, lite_policy_analysis, lite_policy_approvals, lite_policy_lifecycle, lite_policy_opa
 
 router = APIRouter(prefix="/api/lite/enterprise/rules", tags=["lite-enterprise-rules"])
+lite_enterprise_governance.ensure_policy_templates()
 
 
 class RevisionRequest(BaseModel):
@@ -45,10 +46,38 @@ class TemporaryExceptionRequest(BaseModel):
 def _call(response: Response, callback: Any) -> Any:
     try:
         result = callback()
-    except (lite_policy_lifecycle.PolicyLifecycleError, lite_policy_analysis.PolicyAnalysisError, lite_policy_approvals.ApprovalError) as exc:
+    except (lite_policy_lifecycle.PolicyLifecycleError, lite_policy_analysis.PolicyAnalysisError, lite_policy_approvals.ApprovalError, lite_enterprise_governance.GovernanceError) as exc:
         raise HTTPException(status_code=exc.status_code, headers={"Cache-Control": "no-store"}, detail={"reason_code": exc.reason_code, "message": exc.message}) from exc
     response.headers["Cache-Control"] = "no-store"
     return result
+
+
+def _owner_step_up(request: Request, purpose: str) -> dict[str, Any]:
+    auth = deps.require_auth(request, write=True)
+    lite_enterprise_governance.require_recent_assurance(auth, purpose)
+    return auth
+
+
+@router.get("/templates")
+def templates(request: Request, response: Response) -> dict[str, Any]:
+    auth = deps.require_auth(request, write=False)
+    access = lite_enterprise_governance.access_projection(auth)
+    response.headers["Cache-Control"] = "no-store"
+    return {
+        "templates": [
+            {
+                "template_id": lite_enterprise_governance.POLICY_TEMPLATE_ID,
+                "label": "Enterprise governance",
+                "summary": "Typed role behavior for protected device removal. Owner authority stays direct; Admin and Operator approval requirements are configurable.",
+                "parameters": {
+                    "admin_device_remove_approval": {"type": "boolean", "default": True, "label": "Require review for Admin device removal"},
+                    "operator_device_remove_approval": {"type": "boolean", "default": True, "label": "Require review for Operator device removal"},
+                },
+            }
+        ],
+        "effective_parameters": access["policy_parameters"],
+        "free_form_rego": False,
+    }
 
 
 @router.get("/revisions")
@@ -58,7 +87,12 @@ def revisions(request: Request, response: Response) -> dict[str, Any]:
 
 @router.post("/revisions", status_code=201)
 def create_revision(payload: RevisionRequest, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_lifecycle.create_revision(auth_context=deps.require_auth(request, write=True), template_id=payload.template_id, parameters=payload.parameters, change_summary=payload.change_summary))
+    params = dict(payload.parameters or {})
+    if payload.template_id == lite_enterprise_governance.POLICY_TEMPLATE_ID:
+        for key in ("admin_device_remove_approval", "operator_device_remove_approval"):
+            if key in params and isinstance(params[key], bool):
+                params[key] = 1 if params[key] else 0
+    return _call(response, lambda: lite_policy_lifecycle.create_revision(auth_context=deps.require_auth(request, write=True), template_id=payload.template_id, parameters=params, change_summary=payload.change_summary))
 
 
 @router.get("/revisions/{revision_id}")
@@ -68,29 +102,22 @@ def revision(revision_id: str, request: Request, response: Response) -> dict[str
 
 @router.get("/revisions/{left_revision_id}/compare/{right_revision_id}")
 def compare(left_revision_id: str, right_revision_id: str, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_lifecycle.compare_revisions(
-        auth_context=deps.require_auth(request, write=False),
-        left_revision_id=left_revision_id,
-        right_revision_id=right_revision_id,
-    ))
+    return _call(response, lambda: lite_policy_lifecycle.compare_revisions(auth_context=deps.require_auth(request, write=False), left_revision_id=left_revision_id, right_revision_id=right_revision_id))
 
 
 @router.post("/activations", status_code=202)
 def activate(payload: ActivationRequest, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_lifecycle.request_activation(auth_context=deps.require_auth(request, write=True), revision_id=payload.revision_id, correlation_id=uuid.uuid4().hex))
+    return _call(response, lambda: lite_policy_lifecycle.request_activation(auth_context=_owner_step_up(request, "policy.rules.activate"), revision_id=payload.revision_id, correlation_id=uuid.uuid4().hex))
 
 
 @router.post("/activations/{operation_id}/resolve")
 def resolve_activation(operation_id: str, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_lifecycle.resolve_uncertain_operation(
-        auth_context=deps.require_auth(request, write=True),
-        operation_id=operation_id,
-    ))
+    return _call(response, lambda: lite_policy_lifecycle.resolve_uncertain_operation(auth_context=_owner_step_up(request, "policy.rules.activate"), operation_id=operation_id))
 
 
 @router.post("/rollbacks", status_code=202)
 def rollback(request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_lifecycle.request_rollback(auth_context=deps.require_auth(request, write=True), correlation_id=uuid.uuid4().hex))
+    return _call(response, lambda: lite_policy_lifecycle.request_rollback(auth_context=_owner_step_up(request, "policy.rules.rollback"), correlation_id=uuid.uuid4().hex))
 
 
 @router.get("/activations/{operation_id}")
@@ -125,10 +152,7 @@ def exceptions(request: Request, response: Response) -> dict[str, Any]:
 
 @router.post("/exceptions", status_code=201)
 def create_exception(payload: TemporaryExceptionRequest, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_approvals.create_exception(
-        auth_context=deps.require_auth(request, write=True), app_id=payload.app_id, device_id=payload.device_id,
-        human_id=payload.human_id, reason=payload.reason, duration_minutes=payload.duration_minutes,
-    ))
+    return _call(response, lambda: lite_policy_approvals.create_exception(auth_context=deps.require_auth(request, write=True), app_id=payload.app_id, device_id=payload.device_id, human_id=payload.human_id, reason=payload.reason, duration_minutes=payload.duration_minutes))
 
 
 @router.post("/exceptions/{exception_id}/revoke")
