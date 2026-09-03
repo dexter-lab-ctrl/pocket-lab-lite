@@ -12,6 +12,10 @@ authenticated_actor if {
 	input.actor.type in {"human", "service", "test"}
 }
 
+governance_parameters := object.get(data, "parameters", {})
+admin_device_remove_approval := object.get(governance_parameters, "admin_device_remove_approval", 1)
+operator_device_remove_approval := object.get(governance_parameters, "operator_device_remove_approval", 1)
+
 decision := {
 	"allow": true,
 	"constraints": ["authenticated_actor"],
@@ -59,6 +63,18 @@ enterprise_device_removal_safe if {
 	input.target.state.protected_server_host == false
 }
 
+# Owner is Pocket Lab's root-equivalent human authority. Owner never depends on
+# another human approval, but the hard target/revision/server-host invariants
+# above remain mandatory and the decision remains observable/auditable.
+decision := {
+	"allow": true,
+	"constraints": ["confirmed_retirement", "validated_revision", "owner_authority"],
+	"reason_code": "owner_authority_device_removal",
+} if {
+	enterprise_device_removal_safe
+	input.actor.role == "Owner"
+}
+
 decision := {
 	"allow": false,
 	"constraints": ["enterprise_role_not_eligible"],
@@ -75,7 +91,20 @@ decision := {
 	"requirements": {"required_approver_roles": ["Owner", "Admin"], "required_assurance": "policy.approval.device.remove", "approval_lifetime_seconds": 900},
 } if {
 	enterprise_device_removal_safe
-	input.actor.role in {"Owner", "Admin", "Operator"}
+	input.actor.role == "Admin"
+	admin_device_remove_approval != 0
+	not input.continuation.matching_independent_approval
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["independent_approval", "active_owner_or_admin", "passkey_step_up"],
+	"reason_code": "approval_required",
+	"requirements": {"required_approver_roles": ["Owner", "Admin"], "required_assurance": "policy.approval.device.remove", "approval_lifetime_seconds": 900},
+} if {
+	enterprise_device_removal_safe
+	input.actor.role == "Operator"
+	operator_device_remove_approval != 0
 	not input.continuation.matching_independent_approval
 }
 
@@ -85,8 +114,28 @@ decision := {
 	"reason_code": "independent_approval_satisfied",
 } if {
 	enterprise_device_removal_safe
-	input.actor.role in {"Owner", "Admin", "Operator"}
+	input.actor.role in {"Admin", "Operator"}
 	input.continuation.matching_independent_approval == true
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["confirmed_retirement", "validated_revision", "delegated_direct_authority"],
+	"reason_code": "delegated_device_removal_allowed",
+} if {
+	enterprise_device_removal_safe
+	input.actor.role == "Admin"
+	admin_device_remove_approval == 0
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["confirmed_retirement", "validated_revision", "delegated_direct_authority"],
+	"reason_code": "delegated_device_removal_allowed",
+} if {
+	enterprise_device_removal_safe
+	input.actor.role == "Operator"
+	operator_device_remove_approval == 0
 }
 
 recent_passkey_step_up if {
