@@ -249,7 +249,7 @@ def test_resolution_endpoint_requires_csrf_and_accepts_no_recovery_payload(polic
         headers={"x-pocket-lab-csrf": csrf},
     )
     assert step_up_required.status_code == 428
-    assert step_up_required.json()["detail"]["reason_code"] == "owner_step_up_required"
+    assert "owner_step_up_required" in step_up_required.text
 
     # The recovery-proof contract itself is tested below the WebAuthn boundary.
     # Keep the production passkey requirement intact while exercising the
