@@ -11531,10 +11531,32 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-accessibility-states.spec.ts",
+      "name": "tests/e2e/lite-accessibility-states.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-accessibility-states.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-accessibility.spec.ts",
       "name": "tests/e2e/lite-accessibility.spec.ts",
       "source_refs": [
         "tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-content-stress.spec.ts",
+      "name": "tests/e2e/lite-content-stress.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-content-stress.spec.ts"
       ],
       "type": "test"
     },
@@ -11601,6 +11623,28 @@
       "name": "tests/e2e/lite-visual-devices.spec.ts",
       "source_refs": [
         "tests/e2e/lite-visual-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "name": "tests/e2e/lite-visual-overlays.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-states.spec.ts",
+      "name": "tests/e2e/lite-visual-states.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-states.spec.ts"
       ],
       "type": "test"
     },
@@ -13558,6 +13602,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "id": "rel:04f0887eb74990d0",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:05173a654fb98343",
@@ -13831,6 +13889,20 @@
       "id": "rel:06218759e3e3bc29",
       "source": "component:atomic-promotion",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "id": "rel:062a540d4e171122",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
       "type": "verified_by"
     },
     {
@@ -26915,6 +26987,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:500fade5ee4ad394",
+      "source": "component:app-catalog",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:502de961b112838f",
@@ -33996,6 +34082,20 @@
       "id": "rel:7c054ff88e6ec5ea",
       "source": "reason:webauthn_assertion_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:7c1d8794e3318ab4",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
       "type": "verified_by"
     },
     {
@@ -45051,6 +45151,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-accessibility-states.spec.ts"
+      ],
+      "id": "rel:bf0edbdfbc6ca3aa",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:bf21635be9ca4a47",
@@ -45744,6 +45858,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "id": "rel:c3d5a48edc5909c2",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:c3dd501321a57d47",
@@ -46300,6 +46428,20 @@
       "id": "rel:c84aca71a2206491",
       "source": "api:get:/api/lite/recovery/restore/runs/{restore_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-visual-states.spec.ts"
+      ],
+      "id": "rel:c8654b242876ac79",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-visual-states.spec.ts",
       "type": "verified_by"
     },
     {
@@ -47143,6 +47285,20 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "table:device_system_profiles",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:ccee2a1b2efc2af1",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -54270,6 +54426,20 @@
       "id": "rel:f5e7c70ba853f2e9",
       "source": "api:get:/api/lite/security/evidence/{run_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:f600be28d6f4c327",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
       "type": "verified_by"
     },
     {

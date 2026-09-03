@@ -24155,10 +24155,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-accessibility-states.spec.ts",
+      "name": "tests/e2e/lite-accessibility-states.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-accessibility-states.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-accessibility.spec.ts",
       "name": "tests/e2e/lite-accessibility.spec.ts",
       "source_refs": [
         "tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-content-stress.spec.ts",
+      "name": "tests/e2e/lite-content-stress.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-content-stress.spec.ts"
       ],
       "type": "test"
     },
@@ -24219,6 +24239,26 @@
       "name": "tests/e2e/lite-visual-devices.spec.ts",
       "source_refs": [
         "tests/e2e/lite-visual-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "name": "tests/e2e/lite-visual-overlays.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-states.spec.ts",
+      "name": "tests/e2e/lite-visual-states.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-states.spec.ts"
       ],
       "type": "test"
     },
@@ -27338,13 +27378,17 @@
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
+        "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
+        "test:tests/e2e/lite-visual-overlays.spec.ts",
+        "test:tests/e2e/lite-visual-states.spec.ts",
         "test:tests/e2e/lite-visual.spec.ts",
         "test:tests/nats/test_subject_permissions.py",
         "test:tests/parity/test_api_contract_fences.py",
@@ -28456,13 +28500,17 @@
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
+        "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
+        "test:tests/e2e/lite-visual-overlays.spec.ts",
+        "test:tests/e2e/lite-visual-states.spec.ts",
         "test:tests/e2e/lite-visual.spec.ts",
         "test:tests/nats/test_subject_permissions.py",
         "test:tests/parity/test_api_contract_fences.py",
@@ -41109,6 +41157,30 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-accessibility-states.spec.ts": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-content-stress.spec.ts": [
+        {
+          "source": "component:app-catalog",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-live.spec.ts": [
         {
           "source": "reason:disabled",
@@ -41170,6 +41242,26 @@
         }
       ],
       "test:tests/e2e/lite-visual-devices.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-visual-overlays.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-visual-states.spec.ts": [
         {
           "source": "reason:disabled",
           "type": "verified_by"
@@ -45069,6 +45161,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
@@ -46794,6 +46890,14 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
           "type": "verified_by"
         },
         {
@@ -49581,6 +49685,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
@@ -51145,6 +51253,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
@@ -51154,6 +51270,10 @@
         },
         {
           "target": "test:tests/e2e/lite-test-helpers.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
           "type": "verified_by"
         },
         {
@@ -52928,6 +53048,14 @@
         },
         {
           "target": "test:tests/e2e/lite-visual-devices.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-visual-states.spec.ts",
           "type": "verified_by"
         },
         {
@@ -56218,6 +56346,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "id": "rel:04f0887eb74990d0",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:05173a654fb98343",
@@ -56396,6 +56533,15 @@
       "id": "rel:06218759e3e3bc29",
       "source": "component:atomic-promotion",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "id": "rel:062a540d4e171122",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
       "type": "verified_by"
     },
     {
@@ -64835,6 +64981,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:500fade5ee4ad394",
+      "source": "component:app-catalog",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:502de961b112838f",
@@ -69401,6 +69556,15 @@
       "id": "rel:7c054ff88e6ec5ea",
       "source": "reason:webauthn_assertion_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:7c1d8794e3318ab4",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
       "type": "verified_by"
     },
     {
@@ -76531,6 +76695,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-accessibility-states.spec.ts"
+      ],
+      "id": "rel:bf0edbdfbc6ca3aa",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:bf21635be9ca4a47",
@@ -76979,6 +77152,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "id": "rel:c3d5a48edc5909c2",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:c3dd501321a57d47",
@@ -77340,6 +77522,15 @@
       "id": "rel:c84aca71a2206491",
       "source": "api:get:/api/lite/recovery/restore/runs/{restore_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-visual-states.spec.ts"
+      ],
+      "id": "rel:c8654b242876ac79",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-visual-states.spec.ts",
       "type": "verified_by"
     },
     {
@@ -77883,6 +78074,15 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "table:device_system_profiles",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:ccee2a1b2efc2af1",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -82489,6 +82689,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-content-stress.spec.ts"
+      ],
+      "id": "rel:f600be28d6f4c327",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:f61036110f9adea1",
@@ -83470,9 +83679,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "b00abd852b695bc06ae6c9711e7eb18861d1fcf6505360564d7b9245c0ec50ab",
+  "source_fingerprint": "eec6e869a001302956ba5d3d6cc163edff88c29343eb35e5e04a422662d9acea",
   "statistics": {
-    "entity_count": 1087,
+    "entity_count": 1091,
     "entity_type_counts": {
       "adr": 6,
       "api": 164,
@@ -83489,14 +83698,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 66,
-      "test": 197,
+      "test": 201,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3055,
-    "source_count": 234
+    "relation_count": 3064,
+    "source_count": 238
   }
 }

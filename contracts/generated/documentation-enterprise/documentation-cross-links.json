@@ -1179,6 +1179,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:apps:5ce5edbedf953ddb",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:apps:5ffae20326909c3f",
       "relation_type": "recovers_with",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1459,17 +1470,6 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "boundary:messaging-execution",
       "target_type": "boundary"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:apps:a6946cca1d045a4a",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/backend/test_lite_worker_recovery.py",
-      "target_type": "test"
     },
     {
       "depth": 2,

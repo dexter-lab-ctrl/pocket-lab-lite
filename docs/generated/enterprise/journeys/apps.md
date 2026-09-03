@@ -109,10 +109,10 @@ Execution ownership: FastAPI → NATS/JetStream → worker; FastAPI/Caddy read p
 - `test:tests/backend/test_lite_projection_semantic_hardening.py`
 - `test:tests/backend/test_lite_security_s8_recovery.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
-- `test:tests/backend/test_lite_worker_recovery.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`
+- `test:tests/e2e/lite-content-stress.spec.ts`
 - `test:tests/e2e/lite-mocked.spec.ts`
 - `test:tests/e2e/lite-test-helpers.ts`
 - `test:tests/parity/test_api_contract_fences.py`

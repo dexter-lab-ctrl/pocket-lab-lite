@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 3801b6fe0ea2368be18900890c51a303dedbd7ce9d4056857d3c940ed7ca6e42
+source_fingerprint: f123b0aaf69edce56c29e6a6996a7a306fdf54a239bca07b574491fe48229bde
 schema_revision: 1
 validation_status: generated
 ---
@@ -33,6 +33,10 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `RouteNotReady`
 - `PreparedProjectionStale`
 - `SavedOfflineSnapshot`
+- `InstalledManageOpen`
+- `InstallAvailableManageOpen`
+- `ActionFailedManageOpen`
+- `Mobile320`
 
 ## LiteDevices
 
@@ -50,6 +54,10 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `InviteExpired`
 - `InviteIdentityMismatch`
 - `SavedOfflineSnapshot`
+- `HealthyDeviceManageOpen`
+- `MobileVerticalConnection`
+- `DesktopHorizontalConnection`
+- `RepairingManageOpen`
 
 ## LiteHome
 
@@ -60,17 +68,40 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `ReleaseCheckFailed`
 - `SavedOfflineSnapshot`
 - `APIUnavailable`
+- `HealthyManageOpen`
+- `AttentionManageOpen`
+- `SavedOfflineManageOpen`
+- `Narrow320`
 - `Mobile`
 - `Desktop`
 
 ## LiteIdentity
 
 - `IdentitySummary`
+- `OwnerReady`
 - `PasswordConfigured`
 - `PasswordChangeRequired`
 - `IdentityLoading`
 - `IdentityUnavailable`
+- `ManageAccessOpen`
+- `Mobile320`
+- `EnterpriseRoleAwareFixture`
 - `FutureRoleAwareState`
+
+## LitePrimitives
+
+- `OperationalReady`
+- `OperationalAttention`
+- `OperationalSaved`
+- `LongCopy`
+- `ActionRowReady`
+- `ActionRowBlocked`
+- `OutcomeFailed`
+- `FlowWorking`
+- `FlowFailed`
+- `ManageSheetOpen`
+- `ManageSheetMobile`
+- `DetailsPanelOpen`
 
 ## LiteRecovery
 
@@ -86,6 +117,12 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `NoStorageNodeConfigured`
 - `RepositoryUnavailable`
 - `SavedOfflineSnapshot`
+- `ManageOverview`
+- `ManageBackups`
+- `ManageRestore`
+- `ManageRestoreBlocked`
+- `OfflineSavedManage`
+- `Mobile320`
 
 ## LiteRecoveryParity
 
@@ -109,11 +146,16 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 
 - `NoRules`
 - `RulesPresent`
+- `ProtectionHealthy`
 - `RuleEnabled`
 - `RuleDisabled`
 - `RuleValidationError`
 - `RuleExecutionPending`
 - `RulesUnavailable`
+- `ManageRulesOpen`
+- `ValidationErrorOpen`
+- `Mobile320`
+- `EnterpriseApprovalFixture`
 - `FutureApprovalRequired`
 
 ## LiteSecurity
@@ -129,3 +171,13 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `ScannerUnavailable`
 - `UnsupportedAppProfileRoute`
 - `SavedOfflineSnapshot`
+- `HealthyManageOverview`
+- `ManageChanges`
+- `ManageIssues`
+- `ManageCheckPath`
+- `ManageEvidence`
+- `ManageHistory`
+- `ManageTechnicalDetails`
+- `UrgentFindingManageOpen`
+- `ScannerUnavailableManageOpen`
+- `OfflineSavedManageOpen`
