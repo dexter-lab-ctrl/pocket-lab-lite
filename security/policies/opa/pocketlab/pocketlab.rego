@@ -12,7 +12,10 @@ authenticated_actor if {
 	input.actor.type in {"human", "service", "test"}
 }
 
-governance_parameters := object.get(data, "parameters", {})
+default governance_parameters := {}
+
+governance_parameters := data.pocketlab_policy_parameters
+
 admin_device_remove_approval := object.get(governance_parameters, "admin_device_remove_approval", 1)
 operator_device_remove_approval := object.get(governance_parameters, "operator_device_remove_approval", 1)
 
@@ -88,7 +91,11 @@ decision := {
 	"allow": false,
 	"constraints": ["independent_approval", "active_owner_or_admin", "passkey_step_up"],
 	"reason_code": "approval_required",
-	"requirements": {"required_approver_roles": ["Owner", "Admin"], "required_assurance": "policy.approval.device.remove", "approval_lifetime_seconds": 900},
+	"requirements": {
+		"required_approver_roles": ["Owner", "Admin"],
+		"required_assurance": "policy.approval.device.remove",
+		"approval_lifetime_seconds": 900,
+	},
 } if {
 	enterprise_device_removal_safe
 	input.actor.role == "Admin"
@@ -100,7 +107,11 @@ decision := {
 	"allow": false,
 	"constraints": ["independent_approval", "active_owner_or_admin", "passkey_step_up"],
 	"reason_code": "approval_required",
-	"requirements": {"required_approver_roles": ["Owner", "Admin"], "required_assurance": "policy.approval.device.remove", "approval_lifetime_seconds": 900},
+	"requirements": {
+		"required_approver_roles": ["Owner", "Admin"],
+		"required_assurance": "policy.approval.device.remove",
+		"approval_lifetime_seconds": 900,
+	},
 } if {
 	enterprise_device_removal_safe
 	input.actor.role == "Operator"
