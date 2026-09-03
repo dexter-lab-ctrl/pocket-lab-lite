@@ -116,6 +116,7 @@ def _healthy_observed(*, caddy_tcp=True, caddy_upstream=True):
             "pocket-nats": "online",
             "pocket-api": "online",
             "pocket-worker": "online",
+            "pocket-opa": "online",
             "caddy-proxy": "online",
             "pocket-telemetry": "online",
         },

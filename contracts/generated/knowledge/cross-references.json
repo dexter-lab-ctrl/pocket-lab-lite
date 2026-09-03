@@ -8973,6 +8973,14 @@
         {
           "source": "journey:startup",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_activation_pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_revision_uncertain",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py": [
@@ -25533,6 +25541,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -25802,6 +25814,10 @@
       "reason:policy_revision_uncertain": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
           "type": "verified_by"
         },
         {
@@ -27195,6 +27211,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "eec6e869a001302956ba5d3d6cc163edff88c29343eb35e5e04a422662d9acea"
+    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
   }
 }

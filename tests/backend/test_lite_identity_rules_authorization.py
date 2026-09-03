@@ -339,6 +339,7 @@ def test_identity_rules_frontend_and_opa_source_contracts():
     rego = Path("security/policies/opa/pocketlab/pocketlab.rego").read_text()
     installer = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh").read_text()
     start = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
+    opa_start = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh").read_text()
 
     assert "setupIdentity" in identity
     assert "loginIdentity" in identity
@@ -354,8 +355,9 @@ def test_identity_rules_frontend_and_opa_source_contracts():
     assert 'input.action.id == "catalog.install"' in rego
     assert 'input.action.id == "device.remove"' in rego
     assert "06680087ed236c8c6aaa021660d83178db829a2ad30bdb3482481fada6791b2a" in installer
-    assert "--addr=127.0.0.1:8181" in start
-    assert "pocket-opa" in start
+    assert 'bash "$OPA_RUNTIME_START"' in start
+    assert "--addr=127.0.0.1:8181" in opa_start
+    assert "pocket-opa" in opa_start
 
 
 def _setup_owner_and_session(lite_identity_auth, *, source="expanded-tests"):
