@@ -471,7 +471,9 @@ def unified_identity_projection(auth_context: dict[str, Any] | None) -> dict[str
         local_owner = conn.execute("SELECT human_id FROM human_identities WHERE status='active' ORDER BY created_at ASC LIMIT 1").fetchone()
         if local_owner and str(local_owner["human_id"]) == actor_id:
             owner = base.get("owner") if isinstance(base.get("owner"), dict) else {}
-            base["person"] = {"human_id": actor_id, "username": owner.get("username"), "display_name": owner.get("display_name"), "status": owner.get("status", "active"), "role": (base.get("enterprise") or {}).get("current_membership", {}).get("role") or "Owner", "is_local_owner": True}
+            enterprise = base.get("enterprise") if isinstance(base.get("enterprise"), dict) else {}
+            membership = enterprise.get("current_membership") or {}
+            base["person"] = {"human_id": actor_id, "username": owner.get("username"), "display_name": owner.get("display_name"), "status": owner.get("status", "active"), "role": membership.get("role") or "Owner", "is_local_owner": True}
             return base
         human = conn.execute("SELECT * FROM human_identities WHERE human_id=? AND status='active'", (actor_id,)).fetchone()
         if not human:
