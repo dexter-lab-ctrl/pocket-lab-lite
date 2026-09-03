@@ -1720,6 +1720,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_generation.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
@@ -5688,6 +5690,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/db/connection.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
@@ -10183,6 +10187,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
       ],
@@ -10258,6 +10263,99 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_REPOSITORY_STAGED_REVISION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_STARTUP_LOCK_TIMEOUT_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_STARTUP_MODE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
+      ],
+      "safe_default": "blocked",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_STARTUP_REASON_CODE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
+      ],
+      "safe_default": "policy_startup_blocked",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OPA_STARTUP_REVISION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -13438,6 +13536,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_gate_faults.py",
@@ -15096,6 +15196,7 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
       ],
@@ -15572,7 +15673,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "f983b6d9743b954def1ab819789cfd537c8819e7bb9ce187c97e7aca25c0f494",
+    "aggregate_fingerprint": "453f39f54af31e0ebfffa2bfe634dbc3da741d420305816a706398c33f5e31fb",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15583,6 +15684,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py": "870e6814c70b5eb7da3c11c8dc994dd89748be67ab48c121ff5c07415b8d6b3d",
       "pocket-lab-final-structure/runtime/agents/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/agents/lite_system_profile.py": "559c1f44fe21f63cc9da0f4978d01fea67cd9ee2c436633f28ac3b0d7aff7b86",
       "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py": "a07f4bbb091b0b6d6bdc7a4c3c4d32d3c78749e1f2fb510d335f59ba6a6eb2f1",

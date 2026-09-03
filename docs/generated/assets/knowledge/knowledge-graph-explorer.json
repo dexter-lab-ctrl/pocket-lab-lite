@@ -35935,6 +35935,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:86a2363d50c2d43f",
+      "source": "reason:policy_revision_uncertain",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "scripts/docs/runtime/capture_termux_runtime.sh",
         "scripts/docs/runtime/promote_termux_runtime.py"
       ],
@@ -45648,6 +45662,20 @@
       "id": "rel:c28c928e2500cf23",
       "source": "reason:identity_login_throttled",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "id": "rel:c290d6e06ec45c69",
+      "source": "reason:policy_activation_pending",
+      "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
       "type": "verified_by"
     },
     {

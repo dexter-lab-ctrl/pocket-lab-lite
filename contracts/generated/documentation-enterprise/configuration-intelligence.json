@@ -4874,7 +4874,6 @@
     },
     {
       "affected_components": [
-        "FastAPI",
         "bootstrap/runtime"
       ],
       "affects_release": true,
@@ -4895,9 +4894,9 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_generation.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10132,8 +10131,7 @@
     {
       "affected_components": [
         "FastAPI",
-        "bootstrap/runtime",
-        "repository tooling"
+        "bootstrap/runtime"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -10150,12 +10148,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/db/connection.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py",
-        "scripts/dev/benchmark-lite-control-plane-sqlite.py",
-        "scripts/dev/check-lite-security-p2b-reboot-generation-server-phone.sh"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -16028,6 +16026,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
         "tests/backend/test_lite_identity_rules_authorization.py",
@@ -16128,6 +16127,128 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_OPA_REPOSITORY_STAGED_REVISION",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_OPA_STARTUP_LOCK_TIMEOUT_SECONDS",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_OPA_STARTUP_MODE",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_OPA_STARTUP_REASON_CODE",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "bootstrap/runtime"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_OPA_STARTUP_REVISION",
+      "owner": "bootstrap/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
+        "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -20331,7 +20452,6 @@
     },
     {
       "affected_components": [
-        "FastAPI",
         "bootstrap/runtime",
         "repository tooling"
       ],
@@ -20354,8 +20474,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
