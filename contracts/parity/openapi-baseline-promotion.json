@@ -1,16 +1,20 @@
 {
   "approved_change_classes": [
     "add opt-in Enterprise Mode identity configuration and authoritative local membership/role API operations while preserving Personal Mode as the default",
+    "add Owner/Admin-managed Enterprise person lifecycle and WebAuthn passkey enrollment without exposing browser-held Pocket Lab enrollment tokens or connect links",
+    "retire legacy Enterprise person connect-link and bearer-claim enrollment endpoints with explicit 410 compatibility responses",
+    "add a shared server-owned Enterprise governance projection covering Owner, Admin, Operator, Auditor, and Viewer capability modes while preserving Owner root-equivalent supported authority and hard safety invariants",
     "add immutable typed Safety Rules revision, activation, rollback, health, simulation, deterministic analysis, and bounded decision-explorer API operations with backend-local OPA ownership",
+    "require recent Owner passkey assurance for root-level Rules activation, rollback, uncertain-resolution, and Enterprise mode changes without introducing peer-approval deadlock",
     "add policy-derived independent approval lifecycle operations for Enterprise device.remove with purpose-bound passkey step-up, expiry, explicit retry, and replay protection",
     "add bounded expiring and revocable catalog.install temporary-exception API operations scoped to exact app, device, identity, and policy revision",
     "add an Owner/Admin + CSRF-protected P2.2 uncertain-activation resolution operation that accepts only the operation ID, proves an already-recovered local policy state, preserves original incident reason evidence, and does not perform shell, PM2, pointer, OPA mutation, or browser-supplied recovery-state actions",
-    "preserve FastAPI hard safeguards, sanitized evidence, backend-only policy input, and existing local passkey/password/recovery authentication while leaving OIDC and scoped service identities unimplemented"
+    "preserve FastAPI hard safeguards, sanitized evidence, backend-only policy input, managed WebAuthn, existing local password/passkey/recovery authentication, and Personal Mode defaults while leaving OIDC and scoped service identities unimplemented"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "8f222db8c0cc83414c5fd5bbc989180e99956369410a914594e648d5ed35208a",
-  "promoted_sha256": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
+  "previous_sha256": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
+  "promoted_sha256": "64ceebe291cb9a2130a93a2216f0cc9b390798cc57a211df63196e4021ded8df",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -19,7 +23,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "fix/p2-2-uncertain-resolution",
+  "source_revision": "fix/identity-rules-enterprise-governance",
   "status": "promoted",
-  "validation_status": "dev-pc-qualified-p2-2-uncertain-resolution-contract"
+  "validation_status": "dev-pc-qualified-enterprise-identity-rules-governance-contract"
 }
