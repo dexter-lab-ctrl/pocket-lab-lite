@@ -232,6 +232,38 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Remove Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+      "method": "DELETE",
+      "name": "DELETE /api/lite/enterprise/identity/people/{human_id}",
+      "operation_id": "remove_enterprise_person_api_lite_enterprise_identity_people__human_id__delete",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Revoke Lite Passkey",
       "domain": "identity",
       "id": "api:delete:/api/lite/identity/passkeys/{credential_id}",
@@ -989,16 +1021,30 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Enterprise Access",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/access",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/access",
+      "operation_id": "enterprise_access_api_lite_enterprise_access_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/access",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Enterprise Identity",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseIdentity",
-          "resolved": true,
-          "source_module": "src/lite/LiteRules.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1026,15 +1072,36 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Legacy Person Claim Status",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/identity/enrollment/status",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/enrollment/status",
+      "operation_id": "legacy_person_claim_status_api_lite_enterprise_identity_enrollment_status_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Enterprise Members",
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseMembers",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
-          "usage": "query"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/enterprise/identity/members",
@@ -1056,8 +1123,140 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Preview Enterprise Mode",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/mode/preview",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/mode/preview",
+      "operation_id": "preview_enterprise_mode_api_lite_enterprise_identity_mode_preview_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/mode/preview",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise People",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/people",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/people",
+      "operation_id": "enterprise_people_api_lite_enterprise_identity_people_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/people/{human_id}",
+      "operation_id": "enterprise_person_api_lite_enterprise_identity_people__human_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Identity Self",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/identity/self",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/identity/self",
+      "operation_id": "enterprise_identity_self_api_lite_enterprise_identity_self_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/self",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Operation",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/rules/activations/{operation_id}",
       "method": "GET",
       "name": "GET /api/lite/enterprise/rules/activations/{operation_id}",
@@ -1082,13 +1281,6 @@
       "description": "Analysis",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRulesAnalysis",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1121,13 +1313,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleApprovals",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1157,13 +1342,6 @@
       "description": "Approval",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleApproval",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1197,11 +1375,11 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleDecisions",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/enterprise/rules/decisions",
@@ -1228,13 +1406,6 @@
       "description": "Decision",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleDecision",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1268,13 +1439,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleExceptions",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1305,13 +1469,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRulesHealth",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1341,13 +1498,6 @@
       "description": "Revisions",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.enterpriseRuleRevisions",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "query"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -1400,6 +1550,15 @@
       "confidence": "contract-derived",
       "description": "Revision",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
       "method": "GET",
       "name": "GET /api/lite/enterprise/rules/revisions/{revision_id}",
@@ -1411,6 +1570,36 @@
         "503"
       ],
       "route": "/api/lite/enterprise/rules/revisions/{revision_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Templates",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/enterprise/rules/templates",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/templates",
+      "operation_id": "templates_api_lite_enterprise_rules_templates_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/templates",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -1622,13 +1811,6 @@
       "domain": "identity",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.identity",
-          "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "query"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -1750,7 +1932,7 @@
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "source_module": "src/mocks/identityRulesCompatibilityHandlers.js",
           "usage": "mock"
         }
       ],
@@ -1777,6 +1959,15 @@
       "confidence": "contract-derived",
       "description": "Get Lite Policy Templates",
       "domain": "rules",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesCompatibilityHandlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/policy/templates",
       "method": "GET",
       "name": "GET /api/lite/policy/templates",
@@ -3395,8 +3586,371 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Legacy Person Claim Consume",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/enrollment/consume",
+      "operation_id": "legacy_person_claim_consume_api_lite_enterprise_identity_enrollment_consume_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/consume",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Legacy Person Claim Passkey Options",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/enrollment/passkey/options",
+      "operation_id": "legacy_person_claim_passkey_options_api_lite_enterprise_identity_enrollment_passkey_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/passkey/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Legacy Person Claim Passkey Verify",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/enrollment/passkey/verify",
+      "operation_id": "legacy_person_claim_passkey_verify_api_lite_enterprise_identity_enrollment_passkey_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Passkey Login Options",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/passkeys/login/options",
+      "operation_id": "enterprise_passkey_login_options_api_lite_enterprise_identity_passkeys_login_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/passkeys/login/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Passkey Login Verify",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/passkeys/login/verify",
+      "operation_id": "enterprise_passkey_login_verify_api_lite_enterprise_identity_passkeys_login_verify_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/passkeys/login/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Create Enterprise Person",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/identity/people",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people",
+      "operation_id": "create_enterprise_person_api_lite_enterprise_identity_people_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Legacy Enterprise Person Invite",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/invite",
+      "operation_id": "legacy_enterprise_person_invite_api_lite_enterprise_identity_people__human_id__invite_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/invite",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Person Managed Passkey Options",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "operation_id": "enterprise_person_managed_passkey_options_api_lite_enterprise_identity_people__human_id__passkey_options_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Enterprise Person Managed Passkey Verify",
+      "domain": "enterprise",
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "operation_id": "enterprise_person_managed_passkey_verify_api_lite_enterprise_identity_people__human_id__passkey_verify_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reactivate Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "operation_id": "reactivate_enterprise_person_api_lite_enterprise_identity_people__human_id__reactivate_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reset Enterprise Person Access",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "operation_id": "reset_enterprise_person_access_api_lite_enterprise_identity_people__human_id__reset_access_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Suspend Enterprise Person",
+      "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "method": "POST",
+      "name": "POST /api/lite/enterprise/identity/people/{human_id}/suspend",
+      "operation_id": "suspend_enterprise_person_api_lite_enterprise_identity_people__human_id__suspend_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-identity"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Activate",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/activations",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/activations",
@@ -3420,6 +3974,15 @@
       "confidence": "contract-derived",
       "description": "Resolve Activation",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/activations/{operation_id}/resolve",
@@ -3444,13 +4007,6 @@
       "description": "Transition Approval",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.transitionEnterpriseRuleApproval",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3484,13 +4040,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.createEnterpriseRuleException",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -3523,13 +4072,6 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.revokeEnterpriseRuleException",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -3560,6 +4102,15 @@
       "confidence": "contract-derived",
       "description": "Create Revision",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/revisions",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/revisions",
@@ -3583,6 +4134,15 @@
       "confidence": "contract-derived",
       "description": "Rollback",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/enterprise/rules/rollbacks",
       "method": "POST",
       "name": "POST /api/lite/enterprise/rules/rollbacks",
@@ -3606,13 +4166,6 @@
       "description": "Simulate",
       "domain": "enterprise",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.simulateEnterpriseRule",
-          "resolved": true,
-          "source_module": "src/lite/LiteRulesEnterprise.jsx",
-          "usage": "mutation"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -3883,6 +4436,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/identity/logout",
@@ -4042,13 +4602,6 @@
       "domain": "identity",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.passkeyLoginOptions",
-          "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "mutation"
-        },
-        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -4079,13 +4632,6 @@
       "description": "Passkey Login Verify",
       "domain": "identity",
       "frontend_clients": [
-        {
-          "mocked": false,
-          "owner": "liteApi.verifyPasskeyLogin",
-          "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "mutation"
-        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -4349,6 +4895,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/identity/sessions/revoke-others",
@@ -4424,6 +4977,13 @@
           "mocked": false,
           "owner": "liteApi.passkeyStepUpOptions",
           "resolved": true,
+          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
           "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "mutation"
         },
@@ -4464,6 +5024,13 @@
           "owner": "liteApi.verifyPasskeyStepUp",
           "resolved": true,
           "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
           "usage": "mutation"
         },
         {
@@ -5143,11 +5710,11 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.updateEnterpriseMember",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteIdentityEnterprise.jsx",
-          "usage": "mutation"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:put:/api/lite/enterprise/identity/members/{human_id}",
@@ -5175,11 +5742,11 @@
       "domain": "enterprise",
       "frontend_clients": [
         {
-          "mocked": false,
-          "owner": "liteApi.setEnterpriseMode",
+          "mocked": true,
+          "owner": "MSW handler",
           "resolved": true,
-          "source_module": "src/lite/LiteIdentity.jsx",
-          "usage": "mutation"
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:put:/api/lite/enterprise/identity/mode",
@@ -12220,6 +12787,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:enterprise_connect_links_retired",
+      "name": "enterprise_connect_links_retired",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Ask an Owner or Admin to use Set up passkey for this person."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -12360,6 +12947,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested Enterprise people change affects Owner or Admin authority and therefore requires an active Owner rather than delegated Admin authority.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_owner_authority_required",
+      "name": "enterprise_owner_authority_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "An Owner must make this access change."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -12377,6 +12984,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Enterprise people management requires an active Owner or Admin membership resolved by the server.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:enterprise_people_role_required",
+      "name": "enterprise_people_role_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner or Admin access is required to manage people."
     },
     {
       "confidence": "source-derived",
@@ -21271,6 +21898,37 @@
       "writer": "source-defined control-plane service"
     },
     {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:human_enrollment_claims",
+      "indexes": [
+        "idx_human_enrollment_claim_expiry",
+        "idx_human_enrollment_claim_human",
+        "idx_human_enrollment_claim_hash",
+        "sqlite_autoindex_human_enrollment_claims_2",
+        "sqlite_autoindex_human_enrollment_claims_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
+      ],
+      "name": "human_enrollment_claims",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "authority_hash",
+        "claim_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "internal operational metadata",
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -21286,7 +21944,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -21300,7 +21959,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -22829,6 +23489,16 @@
       "name": "tests/backend/test_lite_identity_rules_authorization.py",
       "source_refs": [
         "tests/backend/test_lite_identity_rules_authorization.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "name": "tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "source_refs": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
       ],
       "type": "test"
     },
@@ -26459,6 +27129,7 @@
         "table:enterprise_configuration",
         "table:enterprise_memberships",
         "table:human_credentials",
+        "table:human_enrollment_claims",
         "table:human_identities",
         "table:identity_audit_events",
         "table:lite_revision_events",
@@ -26594,8 +27265,15 @@
         "runbook:drift_detect_approve_apply"
       ],
       "enterprise": [
+        "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+        "api:get:/api/lite/enterprise/access",
         "api:get:/api/lite/enterprise/identity",
+        "api:get:/api/lite/enterprise/identity/enrollment/status",
         "api:get:/api/lite/enterprise/identity/members",
+        "api:get:/api/lite/enterprise/identity/mode/preview",
+        "api:get:/api/lite/enterprise/identity/people",
+        "api:get:/api/lite/enterprise/identity/people/{human_id}",
+        "api:get:/api/lite/enterprise/identity/self",
         "api:get:/api/lite/enterprise/rules/activations/{operation_id}",
         "api:get:/api/lite/enterprise/rules/analysis",
         "api:get:/api/lite/enterprise/rules/approvals",
@@ -26607,6 +27285,19 @@
         "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
         "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+        "api:get:/api/lite/enterprise/rules/templates",
+        "api:post:/api/lite/enterprise/identity/enrollment/consume",
+        "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+        "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+        "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+        "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+        "api:post:/api/lite/enterprise/identity/people",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
         "api:post:/api/lite/enterprise/rules/activations",
         "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
         "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
@@ -26674,12 +27365,15 @@
         "reason:authentication_required",
         "reason:claim_verified",
         "reason:csrf_required",
+        "reason:enterprise_connect_links_retired",
         "reason:enterprise_final_owner_protected",
         "reason:enterprise_member_invalid",
         "reason:enterprise_member_unknown",
         "reason:enterprise_membership_status_invalid",
         "reason:enterprise_mode_disabled",
+        "reason:enterprise_owner_authority_required",
         "reason:enterprise_owner_required",
+        "reason:enterprise_people_role_required",
         "reason:enterprise_role_invalid",
         "reason:human_session_required",
         "reason:identity_current_password_invalid",
@@ -27246,6 +27940,7 @@
         "test:tests/backend/test_lite_hot_path_profiler.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
@@ -27510,6 +28205,7 @@
       ],
       "api": [
         "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+        "api:delete:/api/lite/enterprise/identity/people/{human_id}",
         "api:delete:/api/lite/identity/passkeys/{credential_id}",
         "api:delete:/api/lite/identity/sessions/{session_id}",
         "api:get:/api/lite/apps/lifecycle",
@@ -27535,8 +28231,14 @@
         "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
         "api:get:/api/lite/diagnostics/runtime",
         "api:get:/api/lite/diagnostics/runtime/full",
+        "api:get:/api/lite/enterprise/access",
         "api:get:/api/lite/enterprise/identity",
+        "api:get:/api/lite/enterprise/identity/enrollment/status",
         "api:get:/api/lite/enterprise/identity/members",
+        "api:get:/api/lite/enterprise/identity/mode/preview",
+        "api:get:/api/lite/enterprise/identity/people",
+        "api:get:/api/lite/enterprise/identity/people/{human_id}",
+        "api:get:/api/lite/enterprise/identity/self",
         "api:get:/api/lite/enterprise/rules/activations/{operation_id}",
         "api:get:/api/lite/enterprise/rules/analysis",
         "api:get:/api/lite/enterprise/rules/approvals",
@@ -27548,6 +28250,7 @@
         "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
         "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+        "api:get:/api/lite/enterprise/rules/templates",
         "api:get:/api/lite/events",
         "api:get:/api/lite/fleet",
         "api:get:/api/lite/fleet/agent/bootstrap.sh",
@@ -27617,6 +28320,18 @@
         "api:post:/api/lite/catalog/install",
         "api:post:/api/lite/catalog/remove",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
+        "api:post:/api/lite/enterprise/identity/enrollment/consume",
+        "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+        "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+        "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+        "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+        "api:post:/api/lite/enterprise/identity/people",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
         "api:post:/api/lite/enterprise/rules/activations",
         "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
         "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
@@ -27881,6 +28596,7 @@
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
+        "reason:enterprise_connect_links_retired",
         "reason:enterprise_final_owner_protected",
         "reason:enterprise_member_invalid",
         "reason:enterprise_member_unknown",
@@ -27888,7 +28604,9 @@
         "reason:enterprise_membership_status_invalid",
         "reason:enterprise_mode_disabled",
         "reason:enterprise_mode_required",
+        "reason:enterprise_owner_authority_required",
         "reason:enterprise_owner_required",
+        "reason:enterprise_people_role_required",
         "reason:enterprise_role_forbidden",
         "reason:enterprise_role_invalid",
         "reason:enterprise_rules_role_required",
@@ -28285,6 +29003,7 @@
         "table:enterprise_configuration",
         "table:enterprise_memberships",
         "table:human_credentials",
+        "table:human_enrollment_claims",
         "table:human_identities",
         "table:identity_audit_events",
         "table:lite_installed_release_identity",
@@ -28368,6 +29087,7 @@
         "test:tests/backend/test_lite_hot_path_profiler.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
@@ -28717,6 +29437,12 @@
           "type": "owns"
         }
       ],
+      "api:delete:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
           "source": "journey:change-password",
@@ -28915,15 +29641,23 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/enterprise/access": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/enterprise/identity": [
         {
           "source": "journey:enterprise-identity",
           "type": "calls"
         },
         {
-          "source": "ui:literules",
-          "type": "calls"
-        },
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/enrollment/status": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -28935,9 +29669,29 @@
           "type": "calls"
         },
         {
-          "source": "ui:liteidentityenterprise",
-          "type": "calls"
-        },
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/mode/preview": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/self": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -28955,10 +29709,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -28969,19 +29719,11 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/approvals/{approval_id}": [
-        {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -28989,29 +29731,17 @@
       ],
       "api:get:/api/lite/enterprise/rules/decisions": [
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/decisions/{decision_id}": [
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:get:/api/lite/enterprise/rules/exceptions": [
-        {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -29023,10 +29753,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -29034,10 +29760,6 @@
       "api:get:/api/lite/enterprise/rules/revisions": [
         {
           "source": "journey:rules-authorization",
-          "type": "calls"
-        },
-        {
-          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -29052,6 +29774,12 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/templates": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -29144,10 +29872,6 @@
         }
       ],
       "api:get:/api/lite/identity": [
-        {
-          "source": "ui:liteidentity",
-          "type": "calls"
-        },
         {
           "source": "domain:identity",
           "type": "owns"
@@ -29683,6 +30407,78 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/enterprise/identity/enrollment/consume": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/options": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/options": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/verify": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/invite": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/enterprise/rules/activations": [
         {
           "source": "journey:rules-authorization",
@@ -29709,10 +30505,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -29723,19 +30515,11 @@
           "type": "calls"
         },
         {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke": [
-        {
-          "source": "ui:literulesenterprise",
-          "type": "calls"
-        },
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -29764,10 +30548,6 @@
       "api:post:/api/lite/enterprise/rules/simulations": [
         {
           "source": "journey:rules-authorization",
-          "type": "calls"
-        },
-        {
-          "source": "ui:literulesenterprise",
           "type": "calls"
         },
         {
@@ -29929,10 +30709,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:liteidentity",
-          "type": "calls"
-        },
-        {
           "source": "domain:identity",
           "type": "owns"
         }
@@ -29940,10 +30716,6 @@
       "api:post:/api/lite/identity/passkeys/login/verify": [
         {
           "source": "journey:change-password",
-          "type": "calls"
-        },
-        {
-          "source": "ui:liteidentity",
           "type": "calls"
         },
         {
@@ -30061,6 +30833,10 @@
           "type": "calls"
         },
         {
+          "source": "ui:liteidentityenterprise",
+          "type": "calls"
+        },
+        {
           "source": "ui:literulesenterprise",
           "type": "calls"
         },
@@ -30076,6 +30852,10 @@
         },
         {
           "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "ui:liteidentityenterprise",
           "type": "calls"
         },
         {
@@ -30313,10 +31093,6 @@
           "type": "calls"
         },
         {
-          "source": "ui:liteidentityenterprise",
-          "type": "calls"
-        },
-        {
           "source": "domain:enterprise",
           "type": "owns"
         }
@@ -30324,10 +31100,6 @@
       "api:put:/api/lite/enterprise/identity/mode": [
         {
           "source": "journey:enterprise-identity",
-          "type": "calls"
-        },
-        {
-          "source": "ui:liteidentity",
           "type": "calls"
         },
         {
@@ -31865,6 +32637,12 @@
           "type": "owns"
         }
       ],
+      "reason:enterprise_connect_links_retired": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:enterprise_final_owner_protected": [
         {
           "source": "domain:identity",
@@ -31907,7 +32685,19 @@
           "type": "owns"
         }
       ],
+      "reason:enterprise_owner_authority_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:enterprise_owner_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:enterprise_people_role_required": [
         {
           "source": "domain:identity",
           "type": "owns"
@@ -34949,6 +35739,12 @@
           "type": "owns"
         }
       ],
+      "table:human_enrollment_claims": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:human_identities": [
         {
           "source": "component:api-guards",
@@ -35771,6 +36567,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_connect_links_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_final_owner_protected",
           "type": "verified_by"
         },
@@ -35799,7 +36599,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_people_role_required",
           "type": "verified_by"
         },
         {
@@ -36401,6 +37209,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -36501,11 +37313,35 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/access",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity",
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity/members",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/mode/preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/self",
           "type": "verified_by"
         },
         {
@@ -36550,6 +37386,10 @@
         },
         {
           "source": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/rules/templates",
           "type": "verified_by"
         },
         {
@@ -36826,6 +37666,54 @@
         },
         {
           "source": "api:post:/api/lite/diagnostics/frontend-lifecycle",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
           "type": "verified_by"
         },
         {
@@ -37494,6 +38382,44 @@
         },
         {
           "source": "reason:policy_unavailable",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_identity_rules_enterprise_governance.py": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:enterprise-identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_final_owner_protected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:webauthn_secure_origin_required",
           "type": "verified_by"
         }
       ],
@@ -39819,6 +40745,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_connect_links_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_final_owner_protected",
           "type": "verified_by"
         },
@@ -39847,7 +40777,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_people_role_required",
           "type": "verified_by"
         },
         {
@@ -40557,6 +41495,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_connect_links_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_final_owner_protected",
           "type": "verified_by"
         },
@@ -40585,7 +41527,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:enterprise_owner_authority_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:enterprise_owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:enterprise_people_role_required",
           "type": "verified_by"
         },
         {
@@ -41287,6 +42237,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -41387,11 +42341,35 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/access",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity",
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/identity/members",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/mode/preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/identity/self",
           "type": "verified_by"
         },
         {
@@ -41436,6 +42414,10 @@
         },
         {
           "source": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/rules/templates",
           "type": "verified_by"
         },
         {
@@ -41712,6 +42694,54 @@
         },
         {
           "source": "api:post:/api/lite/diagnostics/frontend-lifecycle",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
           "type": "verified_by"
         },
         {
@@ -42647,6 +43677,16 @@
           "type": "verified_by"
         }
       ],
+      "api:delete:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -42977,6 +44017,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/enterprise/access": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/enterprise/identity": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -42987,7 +44037,57 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/enterprise/identity/enrollment/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/enterprise/identity/members": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/mode/preview": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/people/{human_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/identity/self": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -43098,6 +44198,16 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/templates": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -43980,6 +45090,126 @@
         }
       ],
       "api:post:/api/lite/diagnostics/frontend-lifecycle": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/consume": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/passkeys/login/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/invite": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -48593,6 +49823,10 @@
           "type": "owns"
         },
         {
+          "target": "table:human_enrollment_claims",
+          "type": "owns"
+        },
+        {
           "target": "table:human_identities",
           "type": "owns"
         },
@@ -49089,11 +50323,39 @@
       ],
       "domain:enterprise": [
         {
+          "target": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/access",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/identity",
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/enterprise/identity/enrollment/status",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/identity/members",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/mode/preview",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/people",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/identity/self",
           "type": "owns"
         },
         {
@@ -49138,6 +50400,58 @@
         },
         {
           "target": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/enterprise/rules/templates",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
           "type": "owns"
         },
         {
@@ -49377,6 +50691,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:enterprise_connect_links_retired",
+          "type": "owns"
+        },
+        {
           "target": "reason:enterprise_final_owner_protected",
           "type": "owns"
         },
@@ -49397,7 +50715,15 @@
           "type": "owns"
         },
         {
+          "target": "reason:enterprise_owner_authority_required",
+          "type": "owns"
+        },
+        {
           "target": "reason:enterprise_owner_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:enterprise_people_role_required",
           "type": "owns"
         },
         {
@@ -49662,6 +50988,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
         {
@@ -51757,6 +53087,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         },
@@ -51970,6 +53304,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
         {
@@ -52375,6 +53713,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         }
@@ -52771,6 +54113,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
         },
@@ -53023,6 +54369,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
           "type": "verified_by"
         },
@@ -53089,6 +54439,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:enterprise_connect_links_retired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:enterprise_final_owner_protected": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -53096,6 +54460,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
         {
@@ -53195,6 +54563,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:enterprise_owner_authority_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:enterprise_owner_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -53202,6 +54588,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:enterprise_people_role_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -55275,6 +56675,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -55571,10 +56975,6 @@
       ],
       "ui:liteidentity": [
         {
-          "target": "api:get:/api/lite/identity",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/identity/owner-claim/status",
           "type": "calls"
         },
@@ -55596,14 +56996,6 @@
         },
         {
           "target": "api:post:/api/lite/identity/owner-claim/passkey/verify",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/identity/passkeys/login/options",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/identity/passkeys/login/verify",
           "type": "calls"
         },
         {
@@ -55643,21 +57035,17 @@
           "type": "calls"
         },
         {
-          "target": "api:put:/api/lite/enterprise/identity/mode",
-          "type": "calls"
-        },
-        {
           "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "calls"
         }
       ],
       "ui:liteidentityenterprise": [
         {
-          "target": "api:get:/api/lite/enterprise/identity/members",
+          "target": "api:post:/api/lite/identity/step-up/options",
           "type": "calls"
         },
         {
-          "target": "api:put:/api/lite/enterprise/identity/members/{human_id}",
+          "target": "api:post:/api/lite/identity/step-up/verify",
           "type": "calls"
         }
       ],
@@ -55733,65 +57121,13 @@
       ],
       "ui:literules": [
         {
-          "target": "api:get:/api/lite/enterprise/identity",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/policy",
           "type": "calls"
         }
       ],
       "ui:literulesenterprise": [
         {
-          "target": "api:get:/api/lite/enterprise/rules/analysis",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/approvals",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/decisions",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/exceptions",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/health",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/enterprise/rules/revisions",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/fleet",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/exceptions",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-          "type": "calls"
-        },
-        {
-          "target": "api:post:/api/lite/enterprise/rules/simulations",
           "type": "calls"
         },
         {
@@ -56341,15 +57677,6 @@
       "source": "journey:runtime-capture",
       "target": "component:node-agent",
       "type": "uses"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:0475047d87b94097",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/approvals/{approval_id}",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -56932,6 +58259,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:09dc1fa3ed7e99dc",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:0a0b904d1fe55852",
@@ -57145,15 +58481,6 @@
       "source": "component:last-known-good",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:0bf2b1a131ba3abd",
-      "source": "ui:literulesenterprise",
-      "target": "api:post:/api/lite/enterprise/rules/exceptions/{exception_id}/revoke",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -57818,6 +59145,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:11418bcfb814b36e",
+      "source": "reason:enterprise_people_role_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:1154bd05a18ce501",
@@ -58025,6 +59361,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:12cb4f34f8107e72",
+      "source": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:12eaa9509381aaa3",
@@ -58075,6 +59420,15 @@
       "id": "rel:136ff4cec9be9905",
       "source": "api:get:/api/lite/enterprise/rules/exceptions",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:138c93d820326eca",
+      "source": "reason:enterprise_people_role_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -58192,6 +59546,15 @@
       "id": "rel:143d926f6e31e4cf",
       "source": "component:lite-api",
       "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:1449df55508cee1f",
+      "source": "api:get:/api/lite/enterprise/rules/templates",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -58427,6 +59790,15 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.release.available",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:16207f828682a2f3",
+      "source": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -59504,6 +60876,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:1f95aa1b31e74632",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/identity/enrollment/status",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:1f98091e84390e3a",
@@ -59612,6 +60993,15 @@
       "id": "rel:215c27949d80723b",
       "source": "reason:queue_full",
       "target": "test:tests/backend/test_workflow_projection_process_isolation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:2168fc697110ccfa",
+      "source": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -59818,6 +61208,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:2360259893cb3b7a",
+      "source": "api:get:/api/lite/enterprise/identity/self",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:23a11a886051680e",
@@ -59935,6 +61334,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2440081d732c9fe7",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/identity/people",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:2458024253d1b597",
@@ -60025,21 +61433,21 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:24e5b7170500ef50",
+      "source": "api:get:/api/lite/enterprise/identity/mode/preview",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:24e814c352d1bf91",
       "source": "component:opa-policy-engine",
       "target": "table:policy_decisions",
       "type": "depends_on"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:24ee6314c903dea8",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/health",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -60248,6 +61656,15 @@
       "source": "domain:identity",
       "target": "reason:webauthn_signature_invalid",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:2638bf3196b37efc",
+      "source": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -60629,6 +62046,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:29e01481481372ee",
+      "source": "reason:enterprise_owner_authority_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py"
       ],
@@ -60708,6 +62134,15 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.restore.health_validated",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:2a91f03249332ba4",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -60927,6 +62362,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2cd5499c9c794801",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:2cf42f40d8bfa7a0",
@@ -61033,15 +62477,6 @@
       "source": "domain:documentation",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteIdentity.jsx"
-      ],
-      "id": "rel:2e1be7f805246bd1",
-      "source": "ui:liteidentity",
-      "target": "api:post:/api/lite/identity/passkeys/login/verify",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -61163,6 +62598,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:2f00f1d05677b5a2",
+      "source": "api:get:/api/lite/enterprise/identity/people",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:2f0b8cb53c2ce9fd",
@@ -61253,15 +62697,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:2ff78beaf06c15fb",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:3004962585c3af64",
@@ -61304,6 +62739,15 @@
       "source": "journey:app-installation",
       "target": "api:post:/api/lite/catalog/install",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:30c834d30f562197",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -61858,21 +63302,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:3522bb6c9b42f815",
+      "source": "domain:control_plane",
+      "target": "table:human_enrollment_claims",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:352cbcfaa5d272f3",
+      "source": "domain:identity",
+      "target": "reason:enterprise_owner_authority_required",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:3531fccf1cf0b34f",
       "source": "domain:command",
       "target": "subject:pocketlab.events.command.queued",
       "type": "owns"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteIdentity.jsx"
-      ],
-      "id": "rel:35790517a968b0a7",
-      "source": "ui:liteidentity",
-      "target": "api:get:/api/lite/identity",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -62038,6 +63491,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:36d5b323eab90510",
+      "source": "api:get:/api/lite/enterprise/identity/people",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:36e6479c6caa2803",
@@ -62062,6 +63524,15 @@
       "source": "domain:identity",
       "target": "reason:passkey_registration",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:36ff182863dddb13",
+      "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -62143,15 +63614,6 @@
       "source": "reason:webauthn_type_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:37864fd2f45e2b42",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/decisions",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -62856,6 +64318,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:3ca1add3dd3227ed",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/rules/templates",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:3cce8754d04614c0",
@@ -62906,6 +64377,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:3d134889f3b3e9ea",
+      "source": "api:get:/api/lite/enterprise/identity/self",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:3d1d563ff6bc599c",
@@ -62929,6 +64409,15 @@
       "id": "rel:3d477095d0ab8aea",
       "source": "reason:enterprise_membership_status_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:3da2f8805c8b47f4",
+      "source": "api:post:/api/lite/enterprise/identity/people",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -63212,6 +64701,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:408d93fc04b86b24",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:40a32ea01f69bb69",
@@ -63384,6 +64882,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:41bc67ded0b07410",
+      "source": "reason:enterprise_connect_links_retired",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:41cd580330ed5b9c",
@@ -63498,6 +65005,15 @@
       "source": "domain:rules",
       "target": "reason:test_bypass_explicit",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "id": "rel:429b4bd12456782f",
+      "source": "ui:liteidentityenterprise",
+      "target": "api:post:/api/lite/identity/step-up/verify",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -63913,15 +65429,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:45d71d51b19c9b96",
-      "source": "ui:literulesenterprise",
-      "target": "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:460b16da249ca472",
@@ -64167,6 +65674,15 @@
       ],
       "id": "rel:489cc631a8deb0dc",
       "source": "reason:policy_activation_not_uncertain",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:48b13c58bd23769f",
+      "source": "reason:enterprise_connect_links_retired",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
@@ -64898,6 +66414,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:4f9b7d4a1126aec8",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/access",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "src/lite/LiteDevices.jsx"
       ],
       "id": "rel:4f9f2487eff6fd29",
@@ -65489,15 +67014,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteIdentityEnterprise.jsx"
-      ],
-      "id": "rel:55e9e8d5b67a8b09",
-      "source": "ui:liteidentityenterprise",
-      "target": "api:put:/api/lite/enterprise/identity/members/{human_id}",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:55fb36d45bb68a94",
@@ -65648,6 +67164,15 @@
       "source": "reason:passkey_step_up_satisfied",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5723eb2431caed2b",
+      "source": "domain:identity",
+      "target": "reason:enterprise_people_role_required",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -66315,6 +67840,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:5d16f85dc9405def",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:5d31b86ca528f46e",
@@ -66711,15 +68245,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:61e965f4c1d0e76f",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/approvals",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:61f02f451b36e7f8",
@@ -67012,15 +68537,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:657ce687770f52f5",
-      "source": "ui:literulesenterprise",
-      "target": "api:post:/api/lite/enterprise/rules/simulations",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:65c098ea006fbd5d",
@@ -67115,6 +68631,15 @@
       ],
       "id": "rel:6611f105fbf34ac2",
       "source": "domain:security",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:66134dda50948c19",
+      "source": "api:get:/api/lite/enterprise/rules/templates",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
@@ -67512,6 +69037,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:698fb2ed2c3c9a35",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:69b2f11559b9aef4",
@@ -67823,6 +69357,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6bfe9092392fbdb9",
+      "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:6c00dd889788b88c",
@@ -68000,6 +69543,15 @@
       "source": "component:release-staging",
       "target": "subject:pocketlab.events.release.stage.failed",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:6cc2d58acaca8e31",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -68307,6 +69859,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:6fab833ef19dd0c8",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_policy_uncertain_resolution.py"
       ],
       "id": "rel:6fb24cbdb425a59e",
@@ -68348,6 +69909,15 @@
       "id": "rel:6ffb9ecd128ad457",
       "source": "domain:documentation",
       "target": "test:tests/docs/test_documentation_ia.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6ffc41ac8122fdc2",
+      "source": "api:get:/api/lite/enterprise/access",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -69666,6 +71236,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:7cd6a16fc19633f9",
+      "source": "journey:change-password",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_s7_saved_state_history.py"
       ],
       "id": "rel:7cdb8dea3e91a53f",
@@ -69707,6 +71286,15 @@
       "id": "rel:7d061a1a0ba4122e",
       "source": "component:browser",
       "target": "test:tests/backend/test_lite_n6b_install_surface.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:7d0637f9e4ddd6ca",
+      "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -70084,6 +71672,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:80048f9b4a8d0a54",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:80196d3f80c59e28",
@@ -70108,6 +71705,15 @@
       "source": "component:lite-api",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:801bca3717974298",
+      "source": "journey:rules-authorization",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -70161,6 +71767,15 @@
       "id": "rel:80641a440fca2c1c",
       "source": "reason:invite_identity_mismatch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:80708f65f335eec9",
+      "source": "reason:approval_required",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
       "type": "verified_by"
     },
     {
@@ -70225,6 +71840,15 @@
       "source": "api:get:/api/lite/security/profiles/{profile}",
       "target": "table:security_database_restores",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:81214baacf41138d",
+      "source": "api:post:/api/lite/enterprise/identity/people",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -70811,6 +72435,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:86e2c44fe86bf4fa",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:870117e4ada61b01",
@@ -71273,6 +72906,15 @@
       "source": "component:frontend-state",
       "target": "boundary:browser",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:8ac62a1b343036f5",
+      "source": "reason:enterprise_connect_links_retired",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -71745,15 +73387,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:8f5c98c85f75a2af",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/revisions",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:8f63b3d63d331f35",
@@ -71948,6 +73581,15 @@
       "id": "rel:9106f6645eb7f294",
       "source": "component:opa-policy-engine",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:91223be272943ce7",
+      "source": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -72164,20 +73806,20 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:939b0014ac3647b3",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/exceptions",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:939d043bf4aba935",
       "source": "reason:webauthn_counter_replay",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:93c647f47deb19b2",
+      "source": "reason:enterprise_owner_authority_required",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
       "type": "verified_by"
     },
     {
@@ -72341,6 +73983,15 @@
       "source": "domain:rules",
       "target": "reason:approval_continuation_unavailable",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:951fdbd5fe6243ca",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -72961,15 +74612,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteIdentityEnterprise.jsx"
-      ],
-      "id": "rel:9b614fbcc16c9c17",
-      "source": "ui:liteidentityenterprise",
-      "target": "api:get:/api/lite/enterprise/identity/members",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/backend/test_lite_policy_uncertain_resolution.py"
       ],
       "id": "rel:9b7f398b352832a8",
@@ -73132,6 +74774,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:9c9009bcab1d73bd",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_workload_admission.py"
       ],
       "id": "rel:9cd2f927cc9e1384",
@@ -73289,6 +74940,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:9deabca287210e33",
+      "source": "reason:enterprise_final_owner_protected",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:9df8998ce84b2334",
@@ -73330,6 +74990,15 @@
       "id": "rel:9e78ce9a736adf20",
       "source": "reason:exception_unusable",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:9e7abe64043b0e56",
+      "source": "api:get:/api/lite/enterprise/identity/mode/preview",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -73484,6 +75153,15 @@
       "source": "component:workflow-execution",
       "target": "table:workflow_event_index",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:9fcf70a32285b509",
+      "source": "api:get:/api/lite/enterprise/access",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -73893,6 +75571,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a427214aad76eadb",
+      "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:a42d12913eff02f6",
@@ -74096,6 +75783,15 @@
       "id": "rel:a5e81c90853de2d7",
       "source": "reason:diagnostics_not_active",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a5eadc5e43b8ad1d",
+      "source": "reason:enterprise_people_role_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -74456,6 +76152,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:a8e22088c8a14484",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
@@ -74467,6 +76172,15 @@
       "source": "journey:rules-authorization",
       "target": "component:api-domain-surfaces",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:a920acbc96a5b384",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -74587,12 +76301,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:aa96a5cd6814adf6",
+      "source": "domain:identity",
+      "target": "reason:enterprise_connect_links_retired",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:aa97debf134af45a",
       "source": "component:post-switch-health",
       "target": "boundary:server-host",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:aa9b353e76da9d3f",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/enrollment/consume",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -74961,6 +76693,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ad94bc6837ee6d27",
+      "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:ad999b7e89502c15",
@@ -75002,6 +76743,15 @@
       "id": "rel:addff8101f7adf65",
       "source": "component:remote-readiness",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ade041abaff83c6a",
+      "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -75487,6 +77237,15 @@
       "source": "reason:policy_endpoint_not_loopback",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:b2cccf442a73d4fa",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -75985,6 +77744,15 @@
       "id": "rel:b80e701cc7f5ddad",
       "source": "domain:rules",
       "target": "reason:policy_endpoint_not_loopback",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:b812036f1fcb4816",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/identity/self",
       "type": "owns"
     },
     {
@@ -76648,6 +78416,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:be2af2d1163e5e96",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:be42b64b0a4306ce",
@@ -76965,11 +78742,29 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:c106a7ed782f6f1d",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:c10b9c4475d59fad",
       "source": "component:completion-evidence",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:c1452ec352b7108a",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -76998,6 +78793,15 @@
       "source": "component:command-lifecycle",
       "target": "subject:pocketlab.events.command.queued",
       "type": "related_to"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:c19da73b98f6adb2",
+      "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77723,6 +79527,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:c9b7d869f5283abd",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:c9df8a6caeb0429a",
@@ -78120,6 +79933,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:ccfaddd534b331be",
+      "source": "domain:identity",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:cd0470de0b2ff88d",
@@ -78384,6 +80206,15 @@
       "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
+      "id": "rel:cf6810e8cb9b29e4",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
       "id": "rel:cf6f2755e7f9d6fe",
       "source": "api:get:/api/lite/system/nats-readiness",
       "target": "test:tests/parity/test_api_contract_fences.py",
@@ -78424,15 +80255,6 @@
       "source": "component:agent-signals",
       "target": "test:tests/backend/test_lite_devices_production_readiness.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteIdentity.jsx"
-      ],
-      "id": "rel:cfa0c4e08250ad6e",
-      "source": "ui:liteidentity",
-      "target": "api:put:/api/lite/enterprise/identity/mode",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -78582,6 +80404,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d10b0d383ec5d85e",
+      "source": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_devices_production_readiness.py"
       ],
       "id": "rel:d129b42f8d1e55c5",
@@ -78624,6 +80455,15 @@
       "source": "component:worker",
       "target": "subject:pocketlab.commands.runbook.approve",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d1757d2c302fc75e",
+      "source": "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -78755,6 +80595,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:d3269b9788fedf7b",
+      "source": "reason:webauthn_secure_origin_required",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d329a3734509c409",
@@ -78860,6 +80709,15 @@
       "source": "reason:webauthn_challenge_replayed",
       "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:d443f97d6e653804",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -79742,12 +81600,12 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
+        "contracts/generated/lite-openapi.json"
       ],
-      "id": "rel:db71f92373a533d6",
-      "source": "ui:literulesenterprise",
-      "target": "api:post:/api/lite/enterprise/rules/exceptions",
-      "type": "calls"
+      "id": "rel:db6714db7d8ece10",
+      "source": "domain:enterprise",
+      "target": "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -79882,6 +81740,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:dc485bf7f8cd5eb0",
+      "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:dc8ff918a0ba4ee9",
@@ -79940,15 +81807,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteIdentity.jsx"
-      ],
-      "id": "rel:dd011380d7716e4f",
-      "source": "ui:liteidentity",
-      "target": "api:post:/api/lite/identity/passkeys/login/options",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:dd031fd144ad4981",
@@ -79964,6 +81822,15 @@
       "source": "journey:security-review",
       "target": "test:tests/backend/test_lite_api.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:dd6678a52df258fa",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/identity/mode/preview",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -80230,6 +82097,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:e014f7e12bcb123e",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:e0384422ed96a9d2",
@@ -80347,15 +82223,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRulesEnterprise.jsx"
-      ],
-      "id": "rel:e13ca2d2a2681962",
-      "source": "ui:literulesenterprise",
-      "target": "api:get:/api/lite/enterprise/rules/analysis",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:e183538766e2362c",
@@ -80461,15 +82328,6 @@
       "source": "reason:passkey_step_up_required",
       "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
       "type": "verified_by"
-    },
-    {
-      "evidence": [
-        "src/lite/LiteRules.jsx"
-      ],
-      "id": "rel:e2acb983f6ff2042",
-      "source": "ui:literules",
-      "target": "api:get:/api/lite/enterprise/identity",
-      "type": "calls"
     },
     {
       "evidence": [
@@ -80685,6 +82543,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "id": "rel:e4522cfe40d4c26d",
+      "source": "journey:enterprise-identity",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteRevisionSyncBridge.jsx"
       ],
       "id": "rel:e4533be8b6493995",
@@ -80767,6 +82634,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:e5176f443f0fc902",
+      "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:e538a20caf0207ab",
@@ -80790,6 +82666,15 @@
       "id": "rel:e551d3fb71217826",
       "source": "component:post-switch-health",
       "target": "test:tests/backend/test_lite_native_release.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e57255e08dbe6e41",
+      "source": "reason:enterprise_owner_authority_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -81037,6 +82922,24 @@
       ],
       "id": "rel:e7380d752c9d89fa",
       "source": "reason:exception_expiry_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:e766b74231d8e66b",
+      "source": "domain:enterprise",
+      "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e775b13cc5ea42f0",
+      "source": "reason:enterprise_owner_authority_required",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
@@ -81406,6 +83309,15 @@
       "id": "rel:ea6611e6b9cbe7b5",
       "source": "journey:change-password",
       "target": "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ea6e43c4af2bcca7",
+      "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -82840,6 +84752,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentityEnterprise.jsx"
+      ],
+      "id": "rel:f73115f18e008fa0",
+      "source": "ui:liteidentityenterprise",
+      "target": "api:post:/api/lite/identity/step-up/options",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1103"
       ],
       "id": "rel:f7355da6626b1e82",
@@ -83713,33 +85634,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621",
+  "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65",
   "statistics": {
-    "entity_count": 1091,
+    "entity_count": 1116,
     "entity_type_counts": {
       "adr": 6,
-      "api": 164,
+      "api": 184,
       "capability": 5,
       "component": 58,
       "domain": 47,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 164,
+      "reason-code": 167,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 201,
-      "table": 66,
-      "test": 201,
+      "table": 67,
+      "test": 202,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3066,
-    "source_count": 238
+    "relation_count": 3131,
+    "source_count": 239
   }
 }

@@ -3389,6 +3389,28 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:identity:2ca062e1c5d97a69",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:2fd58cd6dad02137",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:identity:341e48b85054d812",
       "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/identity",
@@ -3936,17 +3958,6 @@
       "target_type": "test"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:d6a0dc4a94650938",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/parity/test_api_contract_fences.py",
-      "target_type": "test"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -4076,17 +4087,6 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:fa0d338b0a644cad",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
@@ -7579,6 +7579,17 @@
       "target_type": "api"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:rules:36265f0962d99c47",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -7874,17 +7885,6 @@
       "source": "page:generated/enterprise/journeys/rules",
       "target": "api:get:/api/lite/policy",
       "target_type": "api"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:rules:8729f8f4cd119516",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/rules",
-      "target": "threat-model:control-api",
-      "target_type": "threat-model"
     },
     {
       "depth": 2,

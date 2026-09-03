@@ -2,7 +2,7 @@
   "database": "temporary data-free SQLite generated from repository migrations",
   "generated_at": "uncommitted",
   "generator": "scripts/docs/sqlite/generate_schemaspy.py",
-  "migration_count": 29,
+  "migration_count": 30,
   "migration_fingerprints": {
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -32,7 +32,8 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql": "4bd3777a3ddc9a6e5097d3e63ea393edd17e84f276f0007997ae0a4d9d75801d",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql": "723a17c645395d747499aecbc441ae28f60d557ba2ef1a50065d92f6b453772d",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql": "fe887f0f99c1180ef479ea6ac45e0b1f7c25dfd3446d090fe5b58ecefbc93dfe"
   },
   "migrations": [
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
@@ -63,7 +64,8 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
   ],
   "row_count_enforced": 0,
   "schema_revision": 1,

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "15f00d75ca3c70257645ce2c1b22a4552fe90aa53aac48b765f02cdd4b7aeab9",
+    "aggregate_fingerprint": "dbc7617134391c3b2070c00154b6ab9528b05ede6b9a023074b55a7c13dc8bf3",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15,11 +15,11 @@
       "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
       "src/lite/LiteDevices.stories.jsx": "52645408dc21a3db93149aeace0f42b18763758c55684829093d6b2ed026a05a",
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",
-      "src/lite/LiteIdentity.stories.jsx": "58ca5c3e602dc4c73d210ca20625874beac389b473996019ef208972fbdb83fc",
+      "src/lite/LiteIdentity.stories.jsx": "e50a10161b3e12eca92c19100bfb076531a0e772595b23c30f5ea8d3d9880fc0",
       "src/lite/LitePrimitives.stories.jsx": "7c5e2879ea4785426ba23b45f820bde10ad64955d2ad5a4ad2e85ef3ff6c22e9",
       "src/lite/LiteRecovery.stories.jsx": "f4bef77b77d3f6e9e51ef219f2f4f629e5cf4027bc605c339cc823b64d2d81d8",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
-      "src/lite/LiteRules.stories.jsx": "b926fdfa2d66ad1b27d62c9d7af23fe3c5bc03d282f1a62ddfb28d01840835fb",
+      "src/lite/LiteRules.stories.jsx": "44b78ac3977a1f1a7837310d7aa7b760235673ee1ddfb7fd1005606a11602666",
       "src/lite/LiteSecurity.stories.jsx": "79f05679742bc975fca3e92795870e4d425415c83c83096a380c58467e74f2d5",
       "src/mocks/handlers.js": "effffc215f6eb5a80452b84fd1115634065c319854d4fea8b6b4262164bff2a7"
     },
@@ -2299,18 +2299,18 @@
           "/api/workflows/status",
           "/ready"
         ],
-        "canonical_expected_state": "EnterpriseRoleAwareFixture",
+        "canonical_expected_state": "EnterpriseMobile",
         "component": "LiteIdentity",
-        "fixture": "identity-role-aware-fixture",
+        "fixture": "identity-enterprise-owner",
         "offline_support": "fixture-dependent",
         "query_keys": [
           "identity"
         ],
         "responsive_support": true,
-        "screenshot_path": "docs/generated/ui/screenshots/pocket-lab-lite-identity-enterpriseroleawarefixture-{viewport}.png",
+        "screenshot_path": "docs/generated/ui/screenshots/pocket-lab-lite-identity-enterprisemobile-{viewport}.png",
         "source": "src/lite/LiteIdentity.stories.jsx",
-        "story_id": "pocket-lab-lite-identity-enterpriseroleawarefixture",
-        "story_title": "Pocket Lab Lite/Identity/EnterpriseRoleAwareFixture",
+        "story_id": "pocket-lab-lite-identity-enterprisemobile",
+        "story_title": "Pocket Lab Lite/Identity/EnterpriseMobile",
         "tab": "identity",
         "viewport": [
           "mobile",
@@ -3443,18 +3443,18 @@
           "/api/workflows/status",
           "/ready"
         ],
-        "canonical_expected_state": "EnterpriseApprovalFixture",
+        "canonical_expected_state": "EnterpriseMobile",
         "component": "LiteRules",
-        "fixture": "rules-approval-required",
+        "fixture": "rules-enterprise-owner",
         "offline_support": "fixture-dependent",
         "query_keys": [
           "rules"
         ],
         "responsive_support": true,
-        "screenshot_path": "docs/generated/ui/screenshots/pocket-lab-lite-rules-enterpriseapprovalfixture-{viewport}.png",
+        "screenshot_path": "docs/generated/ui/screenshots/pocket-lab-lite-rules-enterprisemobile-{viewport}.png",
         "source": "src/lite/LiteRules.stories.jsx",
-        "story_id": "pocket-lab-lite-rules-enterpriseapprovalfixture",
-        "story_title": "Pocket Lab Lite/Rules/EnterpriseApprovalFixture",
+        "story_id": "pocket-lab-lite-rules-enterprisemobile",
+        "story_title": "Pocket Lab Lite/Rules/EnterpriseMobile",
         "tab": "rules",
         "viewport": [
           "mobile",

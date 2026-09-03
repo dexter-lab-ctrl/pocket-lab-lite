@@ -1389,6 +1389,12 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py"
         },
         {
@@ -1527,6 +1533,12 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:enterprise-identity",
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:enterprise-identity",
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py"
         },
         {
@@ -1708,18 +1720,6 @@
           "relation_type": "verified_by",
           "source": "api:post:/api/lite/identity/step-up/verify",
           "target": "test:tests/parity/test_api_contract_fences.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
-          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
-          "target": "test:tests/parity/test_api_contract_fences.py"
         }
       ],
       "expansion": {
@@ -1752,6 +1752,7 @@
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
@@ -3653,6 +3654,12 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:rules-authorization",
+          "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:rules-authorization",
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py"
         },
         {
@@ -3990,12 +3997,6 @@
           "relation_type": "protected_by",
           "source": "component:api-guards",
           "target": "boundary:control-api"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:api-guards",
-          "target": "threat-model:control-api"
         }
       ],
       "expansion": {
@@ -4033,6 +4034,7 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -16112,7 +16114,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "8abcf2307a062037133b55eb790ca243341fd65313f64d31e6c892f887858002",
+  "source_fingerprint": "fb4a964e4439847ae6d0c06e804878c3fb7c1abd5603080c2d8f630cc2785d06",
   "top_level": [
     "start-here",
     "use",

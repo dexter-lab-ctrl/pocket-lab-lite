@@ -356,6 +356,7 @@
     {
       "entities": [
         "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+        "api:delete:/api/lite/enterprise/identity/people/{human_id}",
         "api:delete:/api/lite/identity/passkeys/{credential_id}",
         "api:delete:/api/lite/identity/sessions/{session_id}",
         "api:get:/api/lite/apps/lifecycle",
@@ -381,8 +382,14 @@
         "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
         "api:get:/api/lite/diagnostics/runtime",
         "api:get:/api/lite/diagnostics/runtime/full",
+        "api:get:/api/lite/enterprise/access",
         "api:get:/api/lite/enterprise/identity",
+        "api:get:/api/lite/enterprise/identity/enrollment/status",
         "api:get:/api/lite/enterprise/identity/members",
+        "api:get:/api/lite/enterprise/identity/mode/preview",
+        "api:get:/api/lite/enterprise/identity/people",
+        "api:get:/api/lite/enterprise/identity/people/{human_id}",
+        "api:get:/api/lite/enterprise/identity/self",
         "api:get:/api/lite/enterprise/rules/activations/{operation_id}",
         "api:get:/api/lite/enterprise/rules/analysis",
         "api:get:/api/lite/enterprise/rules/approvals",
@@ -394,6 +401,7 @@
         "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
         "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+        "api:get:/api/lite/enterprise/rules/templates",
         "api:get:/api/lite/events",
         "api:get:/api/lite/fleet",
         "api:get:/api/lite/fleet/agent/bootstrap.sh",
@@ -463,6 +471,18 @@
         "api:post:/api/lite/catalog/install",
         "api:post:/api/lite/catalog/remove",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
+        "api:post:/api/lite/enterprise/identity/enrollment/consume",
+        "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
+        "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
+        "api:post:/api/lite/enterprise/identity/passkeys/login/options",
+        "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+        "api:post:/api/lite/enterprise/identity/people",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/invite",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/reactivate",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/reset-access",
+        "api:post:/api/lite/enterprise/identity/people/{human_id}/suspend",
         "api:post:/api/lite/enterprise/rules/activations",
         "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
         "api:post:/api/lite/enterprise/rules/approvals/{approval_id}",
@@ -623,6 +643,7 @@
         "table:enterprise_configuration",
         "table:enterprise_memberships",
         "table:human_credentials",
+        "table:human_enrollment_claims",
         "table:human_identities",
         "table:identity_audit_events",
         "table:lite_installed_release_identity",
@@ -717,6 +738,7 @@
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
+        "reason:enterprise_connect_links_retired",
         "reason:enterprise_final_owner_protected",
         "reason:enterprise_member_invalid",
         "reason:enterprise_member_unknown",
@@ -724,7 +746,9 @@
         "reason:enterprise_membership_status_invalid",
         "reason:enterprise_mode_disabled",
         "reason:enterprise_mode_required",
+        "reason:enterprise_owner_authority_required",
         "reason:enterprise_owner_required",
+        "reason:enterprise_people_role_required",
         "reason:enterprise_role_forbidden",
         "reason:enterprise_role_invalid",
         "reason:enterprise_rules_role_required",
@@ -965,6 +989,7 @@
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
+        "reason:enterprise_connect_links_retired",
         "reason:enterprise_final_owner_protected",
         "reason:enterprise_member_invalid",
         "reason:enterprise_member_unknown",
@@ -972,7 +997,9 @@
         "reason:enterprise_membership_status_invalid",
         "reason:enterprise_mode_disabled",
         "reason:enterprise_mode_required",
+        "reason:enterprise_owner_authority_required",
         "reason:enterprise_owner_required",
+        "reason:enterprise_people_role_required",
         "reason:enterprise_role_forbidden",
         "reason:enterprise_role_invalid",
         "reason:enterprise_rules_role_required",
@@ -1575,6 +1602,13 @@
         "table:policy_recovery_resolutions"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql"
+    },
+    {
+      "entities": [
+        "table:human_enrollment_claims",
+        "table:human_identities"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
     },
     {
       "entities": [
@@ -2616,6 +2650,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_identity_rules_enterprise_governance.py"
+      ],
+      "source": "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_identity_rules_ui_projection.py"
       ],
       "source": "tests/backend/test_lite_identity_rules_ui_projection.py"
@@ -3581,6 +3621,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ea0e6e734c33e93fe3e701bd22554cfbd67f89ee542a36371877b21a979ec621"
+    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
   }
 }

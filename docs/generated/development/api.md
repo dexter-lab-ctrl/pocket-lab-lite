@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: f123b0aaf69edce56c29e6a6996a7a306fdf54a239bca07b574491fe48229bde
+source_fingerprint: b0623b31b04ce41a55376b18ea9e4ff415b8ab8c8a1a1f646a850efd655a8527
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the generated Lite-only view.
 
-## Lite paths (158)
+## Lite paths (176)
 
 - `/api/lite/apps/lifecycle`
 - `/api/lite/apps/lifecycle/{app_id}`
@@ -54,10 +54,27 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/diagnostics/frontend-lifecycle/challenge`
 - `/api/lite/diagnostics/runtime`
 - `/api/lite/diagnostics/runtime/full`
+- `/api/lite/enterprise/access`
 - `/api/lite/enterprise/identity`
+- `/api/lite/enterprise/identity/enrollment/consume`
+- `/api/lite/enterprise/identity/enrollment/passkey/options`
+- `/api/lite/enterprise/identity/enrollment/passkey/verify`
+- `/api/lite/enterprise/identity/enrollment/status`
 - `/api/lite/enterprise/identity/members`
 - `/api/lite/enterprise/identity/members/{human_id}`
 - `/api/lite/enterprise/identity/mode`
+- `/api/lite/enterprise/identity/mode/preview`
+- `/api/lite/enterprise/identity/passkeys/login/options`
+- `/api/lite/enterprise/identity/passkeys/login/verify`
+- `/api/lite/enterprise/identity/people`
+- `/api/lite/enterprise/identity/people/{human_id}`
+- `/api/lite/enterprise/identity/people/{human_id}/invite`
+- `/api/lite/enterprise/identity/people/{human_id}/passkey/options`
+- `/api/lite/enterprise/identity/people/{human_id}/passkey/verify`
+- `/api/lite/enterprise/identity/people/{human_id}/reactivate`
+- `/api/lite/enterprise/identity/people/{human_id}/reset-access`
+- `/api/lite/enterprise/identity/people/{human_id}/suspend`
+- `/api/lite/enterprise/identity/self`
 - `/api/lite/enterprise/rules/activations`
 - `/api/lite/enterprise/rules/activations/{operation_id}`
 - `/api/lite/enterprise/rules/activations/{operation_id}/resolve`
@@ -74,6 +91,7 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/enterprise/rules/revisions/{revision_id}`
 - `/api/lite/enterprise/rules/rollbacks`
 - `/api/lite/enterprise/rules/simulations`
+- `/api/lite/enterprise/rules/templates`
 - `/api/lite/events`
 - `/api/lite/fleet`
 - `/api/lite/fleet/add-device`

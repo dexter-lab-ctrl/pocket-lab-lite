@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9b68d1279aa95429310a5a9abdf295eb663b2ff07716613afc8983fa9c32f9e8
+source_fingerprint: 6ed2a64883bc569af4659f06b723fdee1dbd3001b89188a25d417807f14bb6b9
 schema_revision: 1
 validation_status: generated
 ---
@@ -48,6 +48,7 @@ validation_status: generated
 | `diagnostics_not_active` | validation | Diagnostics are not active. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `disabled` | system | The requested capability is disabled. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `duplicate_device` | devices | A matching device or invite already exists. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `enterprise_connect_links_retired` | identity | Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser. | no | yes | 410 | info | pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py |
 | `enterprise_final_owner_protected` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_member_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_member_unknown` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
@@ -55,7 +56,9 @@ validation_status: generated
 | `enterprise_membership_status_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_mode_disabled` | identity | An Enterprise-only Identity or Rules capability was requested while Pocket Lab remains in Personal Mode. | yes | no | 404 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py and Enterprise Rules services |
 | `enterprise_mode_required` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `enterprise_owner_authority_required` | identity | The requested Enterprise people change affects Owner or Admin authority and therefore requires an active Owner rather than delegated Admin authority. | yes | no | 403 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py |
 | `enterprise_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `enterprise_people_role_required` | identity | Enterprise people management requires an active Owner or Admin membership resolved by the server. | yes | no | 403 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py |
 | `enterprise_role_forbidden` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_role_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_rules_role_required` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

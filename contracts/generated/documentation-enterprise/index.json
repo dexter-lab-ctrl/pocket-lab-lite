@@ -404,6 +404,11 @@
         "api": [
           {
             "method": "POST",
+            "operation_id": "legacy_enterprise_person_invite_api_lite_enterprise_identity_people__human_id__invite_post",
+            "path": "/api/lite/enterprise/identity/people/{human_id}/invite"
+          },
+          {
+            "method": "POST",
             "operation_id": "lite_fleet_agent_bootstrap_blocked_api_lite_fleet_agent_bootstrap_blocked_post",
             "path": "/api/lite/fleet/agent/bootstrap-blocked"
           },
@@ -430,7 +435,8 @@
         ],
         "backend_handler": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
         ],
         "error_reason_codes": "contracts/generated/reason-codes.json",
         "events": [
@@ -449,11 +455,14 @@
         ],
         "fastapi_handler": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
         ],
         "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
           "src/mocks/handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -469,16 +478,21 @@
         "source_files": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
           "src/lib/liteApi.js",
-          "src/mocks/handlers.js"
+          "src/lib/liteEnterpriseApi.js",
+          "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
           "test:tests/backend/test_lite_development_documentation_platform.py",
           "test:tests/parity/test_api_contract_fences.py"
         ],
         "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
           "src/mocks/handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
       },
@@ -942,6 +956,11 @@
             "path": "/api/lite/apps/{app_id}/restore/previews/{preview_id}"
           },
           {
+            "method": "GET",
+            "operation_id": "preview_enterprise_mode_api_lite_enterprise_identity_mode_preview_get",
+            "path": "/api/lite/enterprise/identity/mode/preview"
+          },
+          {
             "method": "POST",
             "operation_id": "preview_lite_app_restore_api_lite_recovery_apps__app_id__restore_preview_post",
             "path": "/api/lite/recovery/apps/{app_id}/restore/preview"
@@ -968,7 +987,8 @@
           }
         ],
         "backend_handler": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
         ],
         "error_reason_codes": "contracts/generated/reason-codes.json",
         "events": [
@@ -991,14 +1011,17 @@
           "backend result failed/blocked where operation is guarded"
         ],
         "fastapi_handler": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
         ],
         "frontend": [
+          "src/mocks/identityRulesP1Handlers.js",
           "src/mocks/handlers.js",
           "src/lib/liteRecoveryR3R4.test.js",
           "src/lib/liteApi.js",
           "src/lib/liteSafeSnapshots.js",
           "src/lib/liteOfflineReadPolicy.test.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/lib/liteQueryClient.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
@@ -1019,23 +1042,28 @@
         "result_event": "canonical lifecycle/event projection when declared",
         "source_files": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/lib/liteOfflineReadPolicy.test.js",
           "src/lib/liteQueryClient.js",
           "src/lib/liteRecoveryR3R4.test.js",
           "src/lib/liteSafeSnapshots.js",
-          "src/mocks/handlers.js"
+          "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
           "test:tests/backend/test_lite_development_documentation_platform.py",
           "test:tests/parity/test_api_contract_fences.py"
         ],
         "ui_component": [
+          "src/mocks/identityRulesP1Handlers.js",
           "src/mocks/handlers.js",
           "src/lib/liteRecoveryR3R4.test.js",
           "src/lib/liteApi.js",
           "src/lib/liteSafeSnapshots.js",
           "src/lib/liteOfflineReadPolicy.test.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/lib/liteQueryClient.js"
         ],
         "worker_agent_supervisor": "worker for queued domain actions; node agent/supervisor for device execution/recovery; exact owner remains endpoint-specific"
@@ -1288,6 +1316,16 @@
         "api": [
           {
             "method": "POST",
+            "operation_id": "enterprise_passkey_login_options_api_lite_enterprise_identity_passkeys_login_options_post",
+            "path": "/api/lite/enterprise/identity/passkeys/login/options"
+          },
+          {
+            "method": "POST",
+            "operation_id": "enterprise_passkey_login_verify_api_lite_enterprise_identity_passkeys_login_verify_post",
+            "path": "/api/lite/enterprise/identity/passkeys/login/verify"
+          },
+          {
+            "method": "POST",
             "operation_id": "passkey_login_options_api_lite_identity_passkeys_login_options_post",
             "path": "/api/lite/identity/passkeys/login/options"
           },
@@ -1298,6 +1336,7 @@
           }
         ],
         "backend_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
         ],
         "error_reason_codes": "contracts/generated/reason-codes.json",
@@ -1311,12 +1350,14 @@
           "authorization or invariant guard refuses the request"
         ],
         "fastapi_handler": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py"
         ],
         "frontend": [
           "src/mocks/identityRulesP1Handlers.js",
           "src/mocks/handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -1326,8 +1367,10 @@
         "related_reason_codes": "contracts/generated/reason-codes.json",
         "result_event": "backend-owned durable state or sanitized API projection",
         "source_files": [
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/mocks/handlers.js",
           "src/mocks/identityRulesP1Handlers.js"
         ],
@@ -1338,7 +1381,8 @@
         "ui_component": [
           "src/mocks/identityRulesP1Handlers.js",
           "src/mocks/handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "FastAPI control-plane service"
       },
@@ -1469,6 +1513,26 @@
             "path": "/api/lite/enterprise/identity"
           },
           {
+            "method": "POST",
+            "operation_id": "legacy_person_claim_consume_api_lite_enterprise_identity_enrollment_consume_post",
+            "path": "/api/lite/enterprise/identity/enrollment/consume"
+          },
+          {
+            "method": "POST",
+            "operation_id": "legacy_person_claim_passkey_options_api_lite_enterprise_identity_enrollment_passkey_options_post",
+            "path": "/api/lite/enterprise/identity/enrollment/passkey/options"
+          },
+          {
+            "method": "POST",
+            "operation_id": "legacy_person_claim_passkey_verify_api_lite_enterprise_identity_enrollment_passkey_verify_post",
+            "path": "/api/lite/enterprise/identity/enrollment/passkey/verify"
+          },
+          {
+            "method": "GET",
+            "operation_id": "legacy_person_claim_status_api_lite_enterprise_identity_enrollment_status_get",
+            "path": "/api/lite/enterprise/identity/enrollment/status"
+          },
+          {
             "method": "GET",
             "operation_id": "enterprise_members_api_lite_enterprise_identity_members_get",
             "path": "/api/lite/enterprise/identity/members"
@@ -1482,6 +1546,16 @@
             "method": "PUT",
             "operation_id": "update_enterprise_mode_api_lite_enterprise_identity_mode_put",
             "path": "/api/lite/enterprise/identity/mode"
+          },
+          {
+            "method": "GET",
+            "operation_id": "preview_enterprise_mode_api_lite_enterprise_identity_mode_preview_get",
+            "path": "/api/lite/enterprise/identity/mode/preview"
+          },
+          {
+            "method": "POST",
+            "operation_id": "enterprise_passkey_login_options_api_lite_enterprise_identity_passkeys_login_options_post",
+            "path": "/api/lite/enterprise/identity/passkeys/login/options"
           }
         ],
         "backend_handler": [
@@ -1502,7 +1576,8 @@
         ],
         "frontend": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -1514,6 +1589,7 @@
         "source_files": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
@@ -1522,7 +1598,8 @@
         ],
         "ui_component": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "FastAPI control-plane service"
       },
@@ -1594,7 +1671,8 @@
         ],
         "frontend": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -1609,6 +1687,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
@@ -1617,7 +1696,8 @@
         ],
         "ui_component": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "FastAPI control-plane service"
       },
@@ -1655,7 +1735,8 @@
         ],
         "frontend": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -1668,6 +1749,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
@@ -1676,7 +1758,8 @@
         ],
         "ui_component": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "FastAPI control-plane service"
       },
@@ -1717,7 +1800,8 @@
         ],
         "frontend": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -1729,6 +1813,7 @@
         "source_files": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
@@ -1737,7 +1822,8 @@
         ],
         "ui_component": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "FastAPI control-plane service"
       },
@@ -1780,7 +1866,8 @@
         ],
         "frontend": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "frontend_projection": "FastAPI/TanStack safe read projection",
         "implementation_status": "implemented",
@@ -1793,6 +1880,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
           "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js",
           "src/mocks/identityRulesP1Handlers.js"
         ],
         "tests": [
@@ -1801,7 +1889,8 @@
         ],
         "ui_component": [
           "src/mocks/identityRulesP1Handlers.js",
-          "src/lib/liteApi.js"
+          "src/lib/liteApi.js",
+          "src/lib/liteEnterpriseApi.js"
         ],
         "worker_agent_supervisor": "FastAPI control-plane service"
       }
@@ -2365,6 +2454,31 @@
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_CONTEXT_HELP_READY",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/lite/LiteHelp.jsx",
+          "tests/backend/test_lite_identity_rules_enterprise_governance.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_DEVICES_VIEW_MODEL_VERSION",
         "owner": "frontend",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -2559,6 +2673,29 @@
         "secret": false,
         "source": [
           "src/lib/liteNativeFeedback.js"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_HELP_KEYS",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/lib/liteHelpContent.js"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -10911,8 +11048,8 @@
           "tests/backend/test_lite_enterprise_identity_p2.py",
           "tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "tests/backend/test_lite_identity_rules_authorization.py",
-          "tests/backend/test_lite_policy_approvals_p3_1.py",
-          "tests/backend/test_lite_policy_lifecycle_p2_2.py"
+          "tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "tests/backend/test_lite_policy_approvals_p3_1.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11336,7 +11473,7 @@
           "tests/backend/test_lite_enterprise_identity_p2.py",
           "tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "tests/backend/test_lite_identity_rules_authorization.py",
-          "tests/backend/test_lite_policy_analysis_p2_3.py"
+          "tests/backend/test_lite_identity_rules_enterprise_governance.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -16999,8 +17136,9 @@
         "source": [
           ".storybook/preview.jsx",
           "src/mocks/handlers.js",
+          "src/mocks/identityRulesP1Handlers.js",
           "src/stories/pocketlabTier9MockApi.js",
-          "storybook-static/assets/preview-SeCjROj4.js",
+          "storybook-static/assets/preview-XdE-ET_y.js",
           "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -23085,7 +23223,7 @@
           "pocket-lab-final-structure/runtime/tests/test_observability_status.py",
           "tests/backend/test_lite_identity_passkeys_rules_p1.py",
           "tests/backend/test_lite_identity_rules_authorization.py",
-          "tests/pocket_lab_test_utils.py"
+          "tests/backend/test_lite_identity_rules_enterprise_governance.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -33955,7 +34093,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34035,7 +34176,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34062,7 +34206,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34218,7 +34365,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34350,7 +34500,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34402,14 +34555,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "enterprise_connect_links_retired",
           "webauthn_algorithm_unsupported",
           "webauthn_assertion_invalid",
           "webauthn_attestation_unsupported",
           "webauthn_attested_data_missing",
           "webauthn_authenticator_data_invalid",
           "webauthn_cbor_invalid",
-          "webauthn_challenge_expired",
-          "webauthn_challenge_invalid"
+          "webauthn_challenge_expired"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34436,14 +34589,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "enterprise_connect_links_retired",
           "enterprise_final_owner_protected",
           "enterprise_member_invalid",
           "enterprise_member_unknown",
           "enterprise_membership_required",
           "enterprise_membership_status_invalid",
           "enterprise_mode_disabled",
-          "enterprise_mode_required",
-          "enterprise_owner_required"
+          "enterprise_mode_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34470,7 +34623,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34600,7 +34756,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34778,7 +34937,10 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "enterprise_mode_disabled"
+          "enterprise_connect_links_retired",
+          "enterprise_mode_disabled",
+          "enterprise_owner_authority_required",
+          "enterprise_people_role_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -37069,8 +37231,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "17132549bbaf7b5876b3c9e56507f8c6ba3abf2d",
-          "head_tree": "7a9f38d33cba8b2cbc2e7080ea4e36712e426a45",
+          "head": "c46203af4134ba1fee30e47378b5b8cb61c7a330",
+          "head_tree": "c7d7351c360a34c7206d7800922a833867970eed",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -39119,9 +39281,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "145fac4ec4065bfffa4fe8792794d82923fa6573933543c9718f27b76feb35ed",
-        "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
-        "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
+        "documentation": "75a0aeea64450813e9093327811eac12feff8a202868cedc761bb382d9a2d656",
+        "openapi": "64ceebe291cb9a2130a93a2216f0cc9b390798cc57a211df63196e4021ded8df",
+        "operational_health": "01fbfc38d101b646a2a570f28d3d3dbfac38adbe871c1a213dcf372415ca2e3b"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -41443,8 +41605,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "17132549bbaf7b5876b3c9e56507f8c6ba3abf2d",
-        "head_tree": "7a9f38d33cba8b2cbc2e7080ea4e36712e426a45",
+        "head": "c46203af4134ba1fee30e47378b5b8cb61c7a330",
+        "head_tree": "c7d7351c360a34c7206d7800922a833867970eed",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -80141,7 +80303,7 @@
         "name": "lite:docs:codebase-map:check",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift",
+        "purpose": "Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and clean structural delta",
         "related_tasks": [],
         "repository_mutation": true,
         "requires_termux": false,
@@ -81371,7 +81533,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all"
+          "{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py check --section all"
         ],
         "dependencies": [],
         "environment": [],
@@ -81385,21 +81547,21 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/docs/lite/generate_platform_catalogs.py"
+          "scripts/docs/lite/run_platform_catalogs.py"
         ],
         "name": "lite:docs:platform:check",
         "outputs": [],
         "promotes_evidence": false,
         "purpose": "Check all lightweight source-derived catalog drift and safety",
         "related_tasks": [],
-        "repository_mutation": true,
+        "repository_mutation": false,
         "requires_termux": false,
         "requires_wsl2": false,
         "runtime_mutation": false,
         "safe_local": true,
         "side_effects": {
           "network_or_external_tools": false,
-          "repository_mutation": true,
+          "repository_mutation": false,
           "runtime_mutation": false
         },
         "source": "tasks/Taskfile.docs.yml",
@@ -81411,7 +81573,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section all"
+          "{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section all"
         ],
         "dependencies": [],
         "environment": [],
@@ -81425,7 +81587,7 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/docs/lite/generate_platform_catalogs.py"
+          "scripts/docs/lite/run_platform_catalogs.py"
         ],
         "name": "lite:docs:platform:generate",
         "outputs": [],
@@ -81774,7 +81936,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section reason-codes"
+          "{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section reason-codes"
         ],
         "dependencies": [],
         "environment": [],
@@ -81788,7 +81950,7 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/docs/lite/generate_platform_catalogs.py"
+          "scripts/docs/lite/run_platform_catalogs.py"
         ],
         "name": "lite:docs:reason-codes",
         "outputs": [],
@@ -105846,5 +106008,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "21fb043d0e9d37b45946268085ecf1ed210cf28887c758425f8c4ff695b84ce1"
+  "source_fingerprint": "56d4f9b30d930033e5d992a02f33af6f62f40e55b056481a1f157bcd4a2d2b19"
 }

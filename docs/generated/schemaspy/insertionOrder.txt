@@ -44,6 +44,7 @@ device_health_transitions
 device_lifecycle_transactions
 device_system_profiles
 enterprise_configuration
+human_enrollment_claims
 policy_runtime_state
 policy_approvals
 policy_recovery_resolutions
