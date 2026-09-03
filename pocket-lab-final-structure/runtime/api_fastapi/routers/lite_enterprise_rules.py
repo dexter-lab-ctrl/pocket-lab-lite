@@ -173,7 +173,7 @@ def analysis(request: Request, response: Response, revision_id: str | None = Non
 @router.get("/decisions")
 def decisions(request: Request, response: Response, action_id: str = "", allowed: bool | None = None, reason_code: str = "", policy_revision: str = "", target_type: str = "", limit: int = 50, cursor: int | None = None) -> dict[str, Any]:
     def _list() -> dict[str, Any]:
-        lite_policy_analysis._authorize(deps.require_auth(request, write=False), frozenset({"Owner", "Admin", "Operator", "Auditor"}))
+        lite_policy_analysis._authorize(deps.require_auth(request, write=False), frozenset({"Owner", "Admin", "Operator", "Auditor", "Viewer"}))
         return lite_policy_opa.list_decisions(action_id=action_id, allowed=allowed, reason_code=reason_code, policy_revision=policy_revision, target_type=target_type, limit=limit, cursor=cursor)
     return _call(response, _list)
 
@@ -181,7 +181,7 @@ def decisions(request: Request, response: Response, action_id: str = "", allowed
 @router.get("/decisions/{decision_id}")
 def decision(decision_id: str, request: Request, response: Response) -> dict[str, Any]:
     def _read() -> dict[str, Any]:
-        lite_policy_analysis._authorize(deps.require_auth(request, write=False), frozenset({"Owner", "Admin", "Operator", "Auditor"}))
+        lite_policy_analysis._authorize(deps.require_auth(request, write=False), frozenset({"Owner", "Admin", "Operator", "Auditor", "Viewer"}))
         result = lite_policy_opa.decision_detail(decision_id)
         if not result:
             raise lite_policy_analysis.PolicyAnalysisError("policy_decision_not_found", "That Safety Rules decision is no longer available.", status_code=404)
