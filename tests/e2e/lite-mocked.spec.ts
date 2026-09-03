@@ -308,8 +308,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rules).toBeVisible();
     await expect(rules).toContainText('Safety Rules');
     await expect(rules).toContainText('Protected');
-    await expect(rules).toContainText('Sensitive changes are checked first');
-    await expect(rules).toContainText('Apps, devices, and identity changes are evaluated by Pocket Lab before they continue.');
+    await expect(rules).toContainText('Protected changes are checked first');
+    await expect(rules).toContainText('Pocket Lab evaluates sensitive changes on the server before they continue.');
+    await expect(rules).toContainText('Protected app, device and Identity changes are checked before they continue.');
     await expect(rules).not.toContainText('Open Policy Agent');
     await expect(rules).not.toContainText('Rego');
     await expect(rules).not.toContainText('package pocketlab');
@@ -324,17 +325,17 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const rules = page.locator('[data-lite-screen-id="rules"]');
     await expect(rules.getByRole('heading', { name: 'Rules governance', exact: true })).toBeVisible();
 
-    await rules.getByRole('button', { name: 'Test a change' }).click();
+    await rules.getByRole('button', { name: 'Test a change', exact: true }).click();
     await expect(rules.getByText('This never executes the real action', { exact: true })).toBeVisible();
     await expect(rules.getByLabel('Context')).toBeVisible();
     await rules.getByLabel('Target reference').fill('mock-app');
-    await rules.getByRole('button', { name: 'Run simulation' }).click();
+    await rules.getByRole('button', { name: 'Run simulation', exact: true }).click();
     await expect(rules).toContainText(/Allowed in this simulation|Blocked in this simulation|Passkey confirmation would be required/i);
     await rules.getByLabel('Context').selectOption('synthetic');
     await expect(rules.getByText('Supported hypothetical facts')).toBeVisible();
     await expect(rules.getByText('Recent passkey assurance')).toBeVisible();
 
-    await rules.getByRole('button', { name: 'Activity' }).click();
+    await rules.getByRole('button', { name: 'Activity', exact: true }).click();
     await expect(rules.getByRole('heading', { name: 'Rules activity', exact: true })).toBeVisible();
     await expect(rules).not.toContainText('raw policy input');
 
@@ -343,14 +344,14 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rules).toContainText(/exact-target|exact-Rules-revision/i);
     await expect(rules).not.toContainText('Requesting identity ID');
 
-    await rules.getByRole('button', { name: 'Temporary access' }).click();
+    await rules.getByRole('button', { name: 'Temporary access', exact: true }).click();
     await expect(rules.getByRole('heading', { name: 'Temporary access', exact: true })).toBeVisible();
     await expect(rules).toContainText(/Exact scope only|Expires/i);
     await expect(rules).not.toContainText('Human ID');
 
-    await rules.getByRole('button', { name: 'Protection' }).click();
+    await rules.getByRole('button', { name: 'Protection', exact: true }).click();
     await expect(rules.getByRole('heading', { name: 'Runtime facts', exact: true })).toBeVisible();
-    await expect(rules).toContainText(/Analysis boundary|Only the deterministic categories implemented by the typed model are claimed/i);
+    await expect(rules).toContainText(/Analysis boundary|Only direct registered-action coverage is provable/i);
     await expect(rules).not.toContainText('package pocketlab');
   });
 
