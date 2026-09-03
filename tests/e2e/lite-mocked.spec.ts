@@ -299,8 +299,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toContainText('Passkeys');
     await expect(identity).toContainText('Sessions');
     await expect(identity).toContainText('Recovery');
-    await identity.getByRole('button', { name: 'Manage access', exact: true }).click();
-    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/current and other owner sessions remain distinct/i);
+    await identity.getByRole('button', { name: /Manage access/i }).click();
+    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Manage your own passkeys, sessions, recovery/i);
     await expect(identity).not.toContainText('local-admin');
 
     await page.goto('/?screen=rules');
@@ -316,38 +316,41 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
   });
 
   test('Enterprise Rules simulation, approvals and exception UX remain bounded', async ({ page }) => {
+    // Enterprise-only assertions use an explicit Enterprise Owner fixture. The
+    // default healthy mock remains Personal Mode so Enterprise never becomes
+    // the accidental default Lite UX.
+    await installScenario(page, 'identity-enterprise-owner');
     await page.goto('/?screen=rules');
     const rules = page.locator('[data-lite-screen-id="rules"]');
     await expect(rules.getByRole('heading', { name: 'Rules governance', exact: true })).toBeVisible();
 
     await rules.getByRole('button', { name: 'Test a change' }).click();
-    await expect(rules.getByText('This does not execute the action', { exact: true })).toBeVisible();
-    await expect(rules.getByLabel('Simulation context')).toBeVisible();
+    await expect(rules.getByText('This never executes the real action', { exact: true })).toBeVisible();
+    await expect(rules.getByLabel('Context')).toBeVisible();
     await rules.getByLabel('Target reference').fill('mock-app');
     await rules.getByRole('button', { name: 'Run simulation' }).click();
-    await expect(rules).toContainText(/Allowed in this simulation|Blocked in this simulation|Passkey confirmation required/i);
-    await rules.getByLabel('Simulation context').selectOption('synthetic');
+    await expect(rules).toContainText(/Allowed in this simulation|Blocked in this simulation|Passkey confirmation would be required/i);
+    await rules.getByLabel('Context').selectOption('synthetic');
     await expect(rules.getByText('Supported hypothetical facts')).toBeVisible();
     await expect(rules.getByText('Recent passkey assurance')).toBeVisible();
 
     await rules.getByRole('button', { name: 'Activity' }).click();
-    await expect(rules.getByRole('heading', { name: 'Decision explorer', exact: true })).toBeVisible();
+    await expect(rules.getByRole('heading', { name: 'Rules activity', exact: true })).toBeVisible();
     await expect(rules).not.toContainText('raw policy input');
 
     await rules.getByRole('button', { name: 'Requests', exact: true }).click();
-    await expect(rules.getByRole('heading', { name: 'Device removal approvals', exact: true })).toBeVisible();
+    await expect(rules.getByRole('heading', { name: 'Review requests', exact: true })).toBeVisible();
     await expect(rules).toContainText(/exact-target|exact-Rules-revision/i);
     await expect(rules).not.toContainText('Requesting identity ID');
 
     await rules.getByRole('button', { name: 'Temporary access' }).click();
-    await expect(rules.getByRole('heading', { name: 'Temporary exceptions', exact: true })).toBeVisible();
-    await expect(rules).toContainText(/Expires automatically|Read-only exception view/i);
+    await expect(rules.getByRole('heading', { name: 'Temporary access', exact: true })).toBeVisible();
+    await expect(rules).toContainText(/Exact scope only|Expires/i);
     await expect(rules).not.toContainText('Human ID');
 
     await rules.getByRole('button', { name: 'Protection' }).click();
-    await rules.getByRole('button', { name: 'Health details' }).click();
-    await expect(rules.getByRole('heading', { name: 'Rules health', exact: true })).toBeVisible();
-    await expect(rules).toContainText(/Not all conflicts are analyzable by this model|Advanced analysis is not available to this role/i);
+    await expect(rules.getByRole('heading', { name: 'Runtime facts', exact: true })).toBeVisible();
+    await expect(rules).toContainText(/Analysis boundary|Only the deterministic categories implemented by the typed model are claimed/i);
     await expect(rules).not.toContainText('package pocketlab');
   });
 
@@ -372,7 +375,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       }
 
       await openTab(page, 'Identity & Access', 'identity');
-      await page.getByRole('button', { name: 'Manage access', exact: true }).click();
+      await page.getByRole('button', { name: /Manage access/i }).click();
       const identitySheet = page.getByRole('dialog', { name: 'Manage access' });
       await expect(identitySheet).toBeVisible();
       expect(await identitySheet.evaluate((element) => {
