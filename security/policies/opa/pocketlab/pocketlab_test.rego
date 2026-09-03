@@ -104,18 +104,17 @@ test_enterprise_operator_removal_requires_independent_approval_by_default if {
 	result.reason_code == "approval_required"
 }
 
-test_enterprise_admin_can_use_typed_direct_delegation if {
+test_enterprise_admin_matching_independent_approval_allows_removal if {
 	result := decision with input as {
 		"actor": {"type": "human", "id": "human-admin", "role": "Admin", "enterprise_enabled": true},
 		"session": {"authenticated": true, "auth_method": "passkey"},
 		"action": {"id": "device.remove"},
 		"target": {"type": "device", "id": "old-node", "revision": "assessment-test", "state": {"confirmed": true, "revision_validated": true, "protected_server_host": false}},
-		"continuation": {"matching_independent_approval": false},
+		"continuation": {"matching_independent_approval": true},
 		"request": {},
 	}
-	with data.parameters as {"admin_device_remove_approval": 0, "operator_device_remove_approval": 1}
 	result.allow
-	result.reason_code == "delegated_device_removal_allowed"
+	result.reason_code == "independent_approval_satisfied"
 }
 
 test_enterprise_device_removal_allows_only_server_derived_approval_fact if {
