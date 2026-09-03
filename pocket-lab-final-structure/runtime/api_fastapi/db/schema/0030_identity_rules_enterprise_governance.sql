@@ -27,3 +27,17 @@ ON human_enrollment_claims(human_id, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_human_enrollment_claim_expiry
 ON human_enrollment_claims(expires_at, completed_at, revoked_at);
+
+-- The raw connect claim is single-use. The service first exchanges its hash for
+-- a short-lived HTTP-only enrollment authority. Once consumed, replace the
+-- reusable lookup hash with a non-secret deterministic tombstone so replaying
+-- the original URL can no longer resolve the claim while the authority cookie
+-- can still complete the passkey ceremony.
+CREATE TRIGGER IF NOT EXISTS trg_human_enrollment_claim_single_use
+AFTER UPDATE OF consumed_at ON human_enrollment_claims
+WHEN OLD.consumed_at IS NULL AND NEW.consumed_at IS NOT NULL
+BEGIN
+    UPDATE human_enrollment_claims
+    SET claim_hash = 'consumed:' || NEW.claim_id
+    WHERE claim_id = NEW.claim_id;
+END;
