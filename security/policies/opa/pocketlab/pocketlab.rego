@@ -58,6 +58,7 @@ decision := {
 }
 
 enterprise_device_removal_safe if {
+	input.actor.enterprise_enabled == true
 	input.action.id == "device.remove"
 	authenticated_actor
 	input.target.type == "device"
