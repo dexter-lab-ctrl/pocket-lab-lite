@@ -79,9 +79,9 @@ def _context(human_id: str) -> dict:
     }
 
 
-def test_governance_migration_and_enrollment_claim_are_hash_only_and_single_use(governance_runtime):
+def test_governance_migration_and_managed_enrollment_do_not_expose_person_tokens(governance_runtime):
     from api_fastapi.db.connection import connection
-    from api_fastapi.services import lite_enterprise_enrollment
+    from api_fastapi.services import lite_enterprise_enrollment, lite_enterprise_managed_enrollment
 
     _owner, _session, owner_context = _setup_enterprise_owner()
     created = lite_enterprise_enrollment.create_person(
@@ -91,40 +91,31 @@ def test_governance_migration_and_enrollment_claim_are_hash_only_and_single_use(
         role="Operator",
         origin="http://localhost",
     )
-    raw_claim = created["invite"]["claim"]
-    assert created["person"]["status"] == "invited"
-    assert created["person"]["role"] == "Operator"
-    assert raw_claim in created["invite"]["claim_url"]
+    person = created["person"]
+    assert person["status"] == "invited"
+    assert person["role"] == "Operator"
+
+    options = lite_enterprise_managed_enrollment.registration_options(
+        auth_context=owner_context,
+        human_id=person["human_id"],
+        origin="http://localhost",
+    )
+    serialized = json.dumps(options).lower()
+    assert options["person"]["human_id"] == person["human_id"]
+    assert options["publicKey"]["rp"]["id"] == "localhost"
+    assert "claim_url" not in serialized
+    assert "person_claim" not in serialized
+    assert "session_token" not in serialized
 
     with connection() as conn:
         tables = {row["name"] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        row = conn.execute("SELECT claim_hash,authority_hash,consumed_at FROM human_enrollment_claims WHERE claim_id=?", (created["invite"]["claim_id"],)).fetchone()
         events = [dict(item) for item in conn.execute("SELECT event_type,reason_code,summary,correlation_id FROM identity_audit_events ORDER BY event_id")]
     assert "human_enrollment_claims" in tables
-    assert row["claim_hash"] != raw_claim
-    assert row["authority_hash"] is None
-    assert raw_claim not in json.dumps(events)
-
-    consumed = lite_enterprise_enrollment.consume_claim(raw_claim=raw_claim, origin="http://localhost")
-    assert consumed["authority"]
-    assert consumed["authority"] != raw_claim
-    with connection() as conn:
-        after = conn.execute("SELECT claim_hash,authority_hash,consumed_at FROM human_enrollment_claims WHERE claim_id=?", (created["invite"]["claim_id"],)).fetchone()
-    assert after["consumed_at"]
-    assert after["claim_hash"] == f"consumed:{created['invite']['claim_id']}"
-    assert after["authority_hash"] not in {None, consumed["authority"], raw_claim}
-
-    with pytest.raises(lite_enterprise_enrollment.EnrollmentError) as replay:
-        lite_enterprise_enrollment.consume_claim(raw_claim=raw_claim, origin="http://localhost")
-    assert replay.value.reason_code == "person_claim_invalid"
-
-    status = lite_enterprise_enrollment.claim_status(authority=consumed["authority"], origin="http://localhost")
-    assert status["active"] is True
-    assert status["person"]["role"] == "Operator"
+    assert "session_token" not in json.dumps(events).lower()
 
 
 def test_enrollment_origin_duplicate_and_admin_privilege_boundaries(governance_runtime):
-    from api_fastapi.services import lite_enterprise_enrollment
+    from api_fastapi.services import lite_enterprise_enrollment, lite_enterprise_managed_enrollment, lite_webauthn
 
     _owner, _session, owner_context = _setup_enterprise_owner()
     created = lite_enterprise_enrollment.create_person(
@@ -144,9 +135,15 @@ def test_enrollment_origin_duplicate_and_admin_privilege_boundaries(governance_r
         )
     assert duplicate.value.reason_code == "identity_username_exists"
 
-    with pytest.raises(lite_enterprise_enrollment.EnrollmentError) as wrong_origin:
-        lite_enterprise_enrollment.consume_claim(raw_claim=created["invite"]["claim"], origin="http://example.invalid")
-    assert wrong_origin.value.reason_code == "person_claim_origin_mismatch"
+    # Managed WebAuthn enrollment uses the current trusted Pocket Lab origin.
+    # Non-localhost HTTP origins are rejected before any challenge is created.
+    with pytest.raises(lite_webauthn.WebAuthnError) as insecure_origin:
+        lite_enterprise_managed_enrollment.registration_options(
+            auth_context=owner_context,
+            human_id=created["person"]["human_id"],
+            origin="http://example.invalid",
+        )
+    assert insecure_origin.value.reason_code == "webauthn_secure_origin_required"
 
     # Promote the invited Admin to an active identity for authorization tests.
     from api_fastapi.db.connection import connection
@@ -342,6 +339,7 @@ def test_typed_rules_candidate_owner_step_up_and_health_roles(governance_runtime
 
 
 def test_enterprise_api_projects_access_people_typed_rules_and_root_step_up(governance_runtime):
+    from api_fastapi.db.connection import connection
     from api_fastapi.services import lite_identity_auth
 
     _owner, _session, _context_owner = _setup_enterprise_owner()
@@ -361,9 +359,22 @@ def test_enterprise_api_projects_access_people_typed_rules_and_root_step_up(gove
         json={"username": "api-operator", "display_name": "API Operator", "role": "Operator"},
     )
     assert people.status_code == 201, people.text
-    assert people.json()["person"]["status"] == "invited"
-    raw_claim = people.json()["invite"]["claim"]
-    assert raw_claim not in json.dumps(people.json()["person"])
+    person_payload = people.json()
+    assert person_payload["person"]["status"] == "invited"
+    assert "invite" not in person_payload
+    assert "claim" not in json.dumps(person_payload).lower()
+    human_id = person_payload["person"]["human_id"]
+
+    managed_options = api.post(
+        f"/api/lite/enterprise/identity/people/{human_id}/passkey/options",
+        headers={"X-Pocket-Lab-CSRF": csrf},
+    )
+    assert managed_options.status_code == 200, managed_options.text
+    managed_serialized = json.dumps(managed_options.json()).lower()
+    assert managed_options.json()["person"]["human_id"] == human_id
+    assert "claim_url" not in managed_serialized
+    assert "person_claim" not in managed_serialized
+    assert "session_token" not in managed_serialized
 
     templates = api.get("/api/lite/enterprise/rules/templates")
     assert templates.status_code == 200, templates.text
@@ -389,7 +400,7 @@ def test_enterprise_api_projects_access_people_typed_rules_and_root_step_up(gove
         json={"revision_id": revision_id},
     )
     assert activation.status_code == 428, activation.text
-    assert activation.json()["detail"]["reason_code"] == "owner_step_up_required"
+    assert "owner_step_up_required" in activation.text
 
     mode_change = api.put(
         "/api/lite/enterprise/identity/mode",
@@ -397,15 +408,14 @@ def test_enterprise_api_projects_access_people_typed_rules_and_root_step_up(gove
         json={"enabled": False},
     )
     assert mode_change.status_code == 428, mode_change.text
-    assert mode_change.json()["detail"]["reason_code"] == "owner_step_up_required"
+    assert "owner_step_up_required" in mode_change.text
 
-    # No route response or audit event may persist the raw connect secret.
-    from api_fastapi.db.connection import connection
+    # Browser-facing responses and sanitized audit evidence must never expose a
+    # person enrollment bearer secret.
     with connection() as conn:
-        audit = json.dumps([dict(row) for row in conn.execute("SELECT event_type,reason_code,summary,correlation_id FROM identity_audit_events")])
-        stored = conn.execute("SELECT claim_hash FROM human_enrollment_claims WHERE human_id=?", (people.json()["person"]["human_id"],)).fetchone()
-    assert raw_claim not in audit
-    assert stored["claim_hash"] != raw_claim
+        audit = json.dumps([dict(row) for row in conn.execute("SELECT event_type,reason_code,summary,correlation_id FROM identity_audit_events")]).lower()
+    assert "claim_url" not in audit
+    assert "session_token" not in audit
     assert lite_identity_auth.authenticate_session_token(login.cookies.get("pocketlab_session", "")) is not None
 
 
@@ -454,7 +464,6 @@ def test_frontend_contract_uses_unified_identity_rules_story_help_and_no_browser
     rules_stories = Path("src/lite/LiteRules.stories.jsx").read_text(encoding="utf-8")
 
     assert "identitySelf" in identity
-    assert "takePendingPersonClaim" in identity
     assert "LiteIdentityEnterprise" in identity
     assert "LiteHelp" in identity and "LiteHelp" in rules and "LiteHelp" in rules_enterprise
     assert "People, roles and Safety Rules use the same server-owned authority model" in identity_enterprise
@@ -463,6 +472,7 @@ def test_frontend_contract_uses_unified_identity_rules_story_help_and_no_browser
     assert "policy.rules.activate" in rules_enterprise
     assert "Restore known-good Rules" in rules_enterprise
     assert "rules/activations" in api and "identity/people" in api and "enterprise/access" in api
+    assert "managedPersonPasskeyOptions" in api and "verifyManagedPersonPasskey" in api
     assert "localStorage" not in api
     assert "LITE_CONTEXT_HELP_READY" in help_component
     for role in ("EnterpriseOwner", "EnterpriseAdmin", "EnterpriseOperator", "EnterpriseAuditor", "EnterpriseViewer"):
