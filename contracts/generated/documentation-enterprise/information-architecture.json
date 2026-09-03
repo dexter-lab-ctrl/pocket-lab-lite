@@ -291,6 +291,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:app-catalog",
+          "target": "test:tests/e2e/lite-content-stress.spec.ts"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:app-catalog",
           "target": "test:tests/e2e/lite-mocked.spec.ts"
         },
         {
@@ -544,12 +550,6 @@
           "relation_type": "verified_by",
           "source": "component:app-lifecycle-worker",
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:app-lifecycle-worker",
-          "target": "test:tests/backend/test_lite_worker_recovery.py"
         }
       ],
       "expansion": {
@@ -588,10 +588,10 @@
         "test:tests/backend/test_lite_projection_semantic_hardening.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
-        "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_api_contract_fences.py"
@@ -16112,7 +16112,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "a844a48d19c913410f1d96bd4b0c49a4e65308903bc788c99ebb8c151e221cb9",
+  "source_fingerprint": "8abcf2307a062037133b55eb790ca243341fd65313f64d31e6c892f887858002",
   "top_level": [
     "start-here",
     "use",

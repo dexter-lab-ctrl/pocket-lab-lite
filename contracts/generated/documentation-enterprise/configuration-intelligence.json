@@ -3324,11 +3324,11 @@
       "secret": false,
       "source": [
         "tests/e2e/lite-accessibility.spec.ts",
+        "tests/e2e/lite-content-stress.spec.ts",
         "tests/e2e/lite-live.spec.ts",
         "tests/e2e/lite-mocked.spec.ts",
         "tests/e2e/lite-phase9-qualification.spec.ts",
-        "tests/e2e/lite-test-helpers.ts",
-        "tests/e2e/lite-visual.spec.ts"
+        "tests/e2e/lite-test-helpers.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -14966,7 +14966,7 @@
         ".storybook/preview.jsx",
         "src/mocks/handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-C0WGbZl1.js",
+        "storybook-static/assets/preview-SeCjROj4.js",
         "tests/e2e/lite-test-helpers.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"

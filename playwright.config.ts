@@ -56,12 +56,12 @@ export default defineConfig({
   projects: [
     {
       name: 'mocked-desktop',
-      testMatch: /lite-(mocked|accessibility|phase9-qualification|visual(?:-devices)?|parity)\.spec\.ts/,
+      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|visual(?:-(?:devices|states|overlays))?|parity)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], ...commonUse, recordHar: mockedHar('mocked-desktop') },
     },
     {
       name: 'mocked-mobile',
-      testMatch: /lite-(mocked|accessibility|phase9-qualification|visual(?:-devices)?|parity)\.spec\.ts/,
+      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|visual(?:-(?:devices|states|overlays))?|parity)\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...commonUse, recordHar: mockedHar('mocked-mobile') },
     },
     {

@@ -5360,11 +5360,11 @@
         "secret": false,
         "source": [
           "tests/e2e/lite-accessibility.spec.ts",
+          "tests/e2e/lite-content-stress.spec.ts",
           "tests/e2e/lite-live.spec.ts",
           "tests/e2e/lite-mocked.spec.ts",
           "tests/e2e/lite-phase9-qualification.spec.ts",
-          "tests/e2e/lite-test-helpers.ts",
-          "tests/e2e/lite-visual.spec.ts"
+          "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -17002,7 +17002,7 @@
           ".storybook/preview.jsx",
           "src/mocks/handlers.js",
           "src/stories/pocketlabTier9MockApi.js",
-          "storybook-static/assets/preview-C0WGbZl1.js",
+          "storybook-static/assets/preview-SeCjROj4.js",
           "tests/e2e/lite-test-helpers.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -36949,8 +36949,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "8c9c817a02d7b67eb555b1960c0aa9dc133ed327",
-          "head_tree": "37452621dedbb4073f2117d2077fbf2bf1c18136",
+          "head": "18695e2a2a3e930c9dda42584b40cbdb99859f46",
+          "head_tree": "97866ecc930b3bbf5c47f6401664950837f4e837",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -38999,7 +38999,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "0bfbe6288e2ad81432b828f5a8b1602928d7b90632c481596de38fad44a6ebbd",
+        "documentation": "4c82cd6147199dc565b8d61af2682554d66709b2e578b5e66c90264232074625",
         "openapi": "b02f7f82235d479a75739f86f57bb3f94e268051b9d1dee7e334d39007c773e0",
         "operational_health": "2abf53321709b7584d549655369e2f0a582fb023fa8e1ede4c3752b2cdf2f32b"
       },
@@ -40935,7 +40935,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "a7aae20bbc54d07d029ffd99c057ce2a777a15357d94824317332dab3b3e50c4"
+          "sha256": "b9a19d60282bc3428b44b53b90b580587eeb52a5e63e880ce22b0ec16870cb9d"
         },
         {
           "path": "requirements-dev.txt",
@@ -41323,8 +41323,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "8c9c817a02d7b67eb555b1960c0aa9dc133ed327",
-        "head_tree": "37452621dedbb4073f2117d2077fbf2bf1c18136",
+        "head": "18695e2a2a3e930c9dda42584b40cbdb99859f46",
+        "head_tree": "97866ecc930b3bbf5c47f6401664950837f4e837",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -105726,5 +105726,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "5d36d062a2da9781541b635ecd196f498b0cd19b3c6085ac7fcdfd0e5c81ab67"
+  "source_fingerprint": "e0769cfa86ed72a614ab0142ebba5ee243aa1bd6e28a1e67596ed3c783b68f56"
 }

@@ -1733,10 +1733,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-accessibility-states.spec.ts",
+      "name": "tests/e2e/lite-accessibility-states.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-accessibility-states.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-accessibility.spec.ts",
       "name": "tests/e2e/lite-accessibility.spec.ts",
       "source_refs": [
         "tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-content-stress.spec.ts",
+      "name": "tests/e2e/lite-content-stress.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-content-stress.spec.ts"
       ],
       "type": "test"
     },
@@ -1797,6 +1817,26 @@
       "name": "tests/e2e/lite-visual-devices.spec.ts",
       "source_refs": [
         "tests/e2e/lite-visual-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "name": "tests/e2e/lite-visual-overlays.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-overlays.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-visual-states.spec.ts",
+      "name": "tests/e2e/lite-visual-states.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-visual-states.spec.ts"
       ],
       "type": "test"
     },
@@ -1977,6 +2017,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b00abd852b695bc06ae6c9711e7eb18861d1fcf6505360564d7b9245c0ec50ab"
+    "source_fingerprint": "eec6e869a001302956ba5d3d6cc163edff88c29343eb35e5e04a422662d9acea"
   }
 }
