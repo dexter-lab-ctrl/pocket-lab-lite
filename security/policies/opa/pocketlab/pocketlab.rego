@@ -14,7 +14,7 @@ authenticated_actor if {
 
 default governance_parameters := {}
 
-governance_parameters := data.pocketlab_policy_parameters
+governance_parameters := data.parameters
 
 admin_device_remove_approval := object.get(governance_parameters, "admin_device_remove_approval", 1)
 operator_device_remove_approval := object.get(governance_parameters, "operator_device_remove_approval", 1)
