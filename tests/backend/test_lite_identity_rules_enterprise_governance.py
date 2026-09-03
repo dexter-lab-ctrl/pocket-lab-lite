@@ -362,7 +362,10 @@ def test_enterprise_api_projects_access_people_typed_rules_and_root_step_up(gove
     person_payload = people.json()
     assert person_payload["person"]["status"] == "invited"
     assert "invite" not in person_payload
-    assert "claim" not in json.dumps(person_payload).lower()
+    person_serialized = json.dumps(person_payload).lower()
+    assert "claim_url" not in person_serialized
+    assert "person_claim" not in person_serialized
+    assert "authority_hash" not in person_serialized
     human_id = person_payload["person"]["human_id"]
 
     managed_options = api.post(
@@ -472,7 +475,7 @@ def test_frontend_contract_uses_unified_identity_rules_story_help_and_no_browser
     assert "policy.rules.activate" in rules_enterprise
     assert "Restore known-good Rules" in rules_enterprise
     assert "rules/activations" in api and "identity/people" in api and "enterprise/access" in api
-    assert "managedPersonPasskeyOptions" in api and "verifyManagedPersonPasskey" in api
+    assert "personPasskeyOptions" in api and "verifyPersonPasskey" in api
     assert "localStorage" not in api
     assert "LITE_CONTEXT_HELP_READY" in help_component
     for role in ("EnterpriseOwner", "EnterpriseAdmin", "EnterpriseOperator", "EnterpriseAuditor", "EnterpriseViewer"):
