@@ -104,7 +104,7 @@ tasks:
   lite:docs:reason-codes:
     desc: Generate and validate the canonical reason-code registry
     cmds:
-      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section reason-codes'
+      - '{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section reason-codes'
 
   lite:docs:sqlite:
     desc: Generate data-free SQLite metadata and normalized SchemaSpy documentation
@@ -231,12 +231,12 @@ tasks:
   lite:docs:platform:generate:
     desc: Generate all lightweight source-derived catalogs in one bounded process
     cmds:
-      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section all'
+      - '{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py generate --section all'
 
   lite:docs:platform:check:
     desc: Check all lightweight source-derived catalog drift and safety
     cmds:
-      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all'
+      - '{{.PYTHON}} scripts/docs/lite/run_platform_catalogs.py check --section all'
 
   lite:docs:knowledge:generate:
     desc: Generate the living Pocket Lab Lite knowledge graph, AI export, Development/Production pages, and Enterprise Knowledgebase graph projection
@@ -254,7 +254,7 @@ tasks:
       - '{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py generate'
 
   lite:docs:codebase-map:check:
-    desc: Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and generated drift
+    desc: Check Codebase Map schema, Git inventory parity, relationships, redaction, browser projection, and clean structural delta
     cmds:
       - '{{.PYTHON}} scripts/docs/knowledge/generate_codebase_map.py check'
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_codebase_map.py'
