@@ -114,7 +114,19 @@ decision := {
 	"reason_code": "independent_approval_satisfied",
 } if {
 	enterprise_device_removal_safe
-	input.actor.role in {"Admin", "Operator"}
+	input.actor.role == "Admin"
+	admin_device_remove_approval != 0
+	input.continuation.matching_independent_approval == true
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["confirmed_retirement", "validated_revision", "independent_approval_consumed"],
+	"reason_code": "independent_approval_satisfied",
+} if {
+	enterprise_device_removal_safe
+	input.actor.role == "Operator"
+	operator_device_remove_approval != 0
 	input.continuation.matching_independent_approval == true
 }
 
