@@ -56,16 +56,38 @@ async function assertLastControlReachable(page: Page, screenId: string) {
   const count = await controls.count();
   if (!count) return;
   const target = controls.nth(count - 1);
-  await target.scrollIntoViewIfNeeded();
+
+  // scrollIntoViewIfNeeded() only guarantees viewport intersection. A fixed
+  // mobile dock can still cover an intersecting control, especially at 200%
+  // text. Model a user's deliberate scroll instead and center the target.
+  await target.evaluate((element) => element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' }));
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await expect(target).toBeVisible();
-  const reachable = await target.evaluate((element) => {
+
+  const reachability = await target.evaluate((element) => {
     const rect = element.getBoundingClientRect();
-    const nav = document.querySelector('.mobile-bottom-nav, .lite-bottom-nav, [data-lite-bottom-nav]');
+    const nav = document.querySelector('.pocket-nav-dock, .mobile-bottom-nav, .lite-bottom-nav, [data-lite-bottom-nav]');
     const navRect = nav?.getBoundingClientRect();
-    const visibleBottom = navRect && navRect.height > 0 ? Math.min(window.innerHeight, navRect.top) : window.innerHeight;
-    return rect.width > 0 && rect.height > 0 && rect.top < visibleBottom && rect.bottom > 0;
+    const navVisible = Boolean(
+      navRect
+      && navRect.width > 0
+      && navRect.height > 0
+      && navRect.bottom > 0
+      && navRect.top < window.innerHeight
+    );
+    const visibleBottom = navVisible && navRect ? Math.min(window.innerHeight, navRect.top) : window.innerHeight;
+    return {
+      reachable: rect.width > 0 && rect.height > 0 && rect.top < visibleBottom && rect.bottom > 0,
+      rect: { top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left, width: rect.width, height: rect.height },
+      visibleBottom,
+      nav: navRect ? { top: navRect.top, bottom: navRect.bottom, height: navRect.height } : null,
+    };
   });
-  expect(reachable, `${screenId}: last meaningful control should remain reachable above fixed navigation`).toBe(true);
+
+  expect(
+    reachability.reachable,
+    `${screenId}: last meaningful control should remain reachable above fixed navigation. Geometry: ${JSON.stringify(reachability)}`,
+  ).toBe(true);
 }
 
 for (const viewport of VIEWPORTS) {
