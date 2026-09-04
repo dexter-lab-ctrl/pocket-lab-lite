@@ -13,6 +13,15 @@ async function expectInViewport(locator, page) {
   expect(box!.y + Math.min(box!.height, viewport!.height)).toBeLessThanOrEqual(viewport!.height + 1);
 }
 
+async function expectPortalOwned(locator) {
+  const ownership = await locator.evaluate((element) => ({
+    inAppShell: Boolean(element.closest('.pocket-app-shell')),
+    inScreenStage: Boolean(element.closest('.lite-screen-stage')),
+  }));
+  expect(ownership.inAppShell).toBe(true);
+  expect(ownership.inScreenStage).toBe(false);
+}
+
 test('Devices progressive connection flow remains visually intentional', async ({ page }) => {
   await installScenario(page, 'healthy');
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -39,6 +48,7 @@ test('Manage stays in the current viewport and returns focus to its device', asy
 
   const panel = page.locator('.lite-device-details-focus-anchor');
   await expectInViewport(panel, page);
+  await expectPortalOwned(panel);
   await expect(panel).toBeFocused();
 
   await page.keyboard.press('Escape');
@@ -91,6 +101,7 @@ test('Removal review opens as a contextual sheet and restores the initiating act
 
   const panel = page.locator('.lite-device-remove-panel');
   await expectInViewport(panel, page);
+  await expectPortalOwned(panel);
   await expect(panel).toBeFocused();
   await expect(panel).toHaveAttribute('role', 'region');
   await expect(panel).toHaveAttribute('aria-label', /Remove old device:/);
