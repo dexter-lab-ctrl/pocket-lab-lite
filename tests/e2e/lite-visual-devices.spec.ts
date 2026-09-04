@@ -22,44 +22,17 @@ async function expectPortalOwned(locator) {
   expect(ownership.inScreenStage).toBe(false);
 }
 
-test('Devices progressive connection flow remains visually intentional', async ({ page }) => {
-  await installScenario(page, 'healthy');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/?screen=devices');
-  await waitForLiteScreenToSettle(page, 'devices');
-
-  const devices = page.locator('[data-lite-screen-id="devices"]');
-  await expect(devices).toHaveScreenshot('devices-progressive-flow.png', {
-    animations: 'disabled',
-    caret: 'hide',
-    maxDiffPixelRatio: 0.02,
+async function backgroundAlpha(locator) {
+  return locator.evaluate((element) => {
+    const value = window.getComputedStyle(element).backgroundColor.trim();
+    const rgba = value.match(/^rgba\([^,]+,[^,]+,[^,]+,\s*([0-9.]+)\)$/i);
+    if (rgba) return Number(rgba[1]);
+    if (/^rgb\(/i.test(value)) return 1;
+    return 0;
   });
-});
+}
 
-test('Manage stays in the current viewport and returns focus to its device', async ({ page }) => {
-  await installScenario(page, 'healthy');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/?screen=devices');
-  await waitForLiteScreenToSettle(page, 'devices');
-
-  const manage = page.getByRole('button', { name: /^Manage / }).first();
-  await manage.scrollIntoViewIfNeeded();
-  await manage.click();
-
-  const panel = page.locator('.lite-device-details-focus-anchor');
-  await expectInViewport(panel, page);
-  await expectPortalOwned(panel);
-  await expect(panel).toBeFocused();
-
-  await page.keyboard.press('Escape');
-  await expect(panel).toHaveCount(0);
-  await expect(manage).toBeFocused();
-});
-
-test('Removal review opens as a contextual sheet and restores the initiating action focus', async ({ page }) => {
-  await installScenario(page, 'healthy');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-
+async function installRemovalAssessment(page, warningCount = 1) {
   await page.route('**/api/lite/devices/*/removal-assessment', async (route) => {
     const match = route.request().url().match(/\/devices\/([^/]+)\/removal-assessment/);
     const nodeId = decodeURIComponent(match?.[1] || 'old-device');
@@ -77,19 +50,20 @@ test('Removal review opens as a contextual sheet and restores the initiating act
         assessment_revision: 'visual-assessment-1',
         awareness_revision: 7,
         blockers: [],
-        warnings: [{
-          code: 'historical_join_blocked',
-          summary: 'A previous mismatched join was blocked. The enrolled device record can still be removed after confirmation.',
-        }],
+        warnings: Array.from({ length: warningCount }, (_, index) => ({
+          code: index === 0 ? 'historical_join_blocked' : `review_warning_${index + 1}`,
+          summary: index === 0
+            ? 'A previous mismatched join was blocked. The enrolled device record can still be removed after confirmation.'
+            : `Additional removal review item ${index + 1} must remain reachable before confirmation.`,
+        })),
         recommended_actions: [],
         staleness_state: 'stale',
       }),
     });
   });
+}
 
-  await page.goto('/?screen=devices');
-  await waitForLiteScreenToSettle(page, 'devices');
-
+async function openFirstRemovalReview(page) {
   await page.locator('.lite-device-card-disclosure').evaluateAll((items) => {
     items.forEach((item) => { (item as HTMLDetailsElement).open = true; });
   });
@@ -98,6 +72,58 @@ test('Removal review opens as a contextual sheet and restores the initiating act
   await expect(removeAction).toBeVisible();
   await removeAction.scrollIntoViewIfNeeded();
   await removeAction.click();
+  return removeAction;
+}
+
+test('Devices progressive connection flow remains visually intentional', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?screen=devices');
+  await waitForLiteScreenToSettle(page, 'devices');
+
+  const devices = page.locator('[data-lite-screen-id="devices"]');
+  await expect(devices).toHaveScreenshot('devices-progressive-flow.png', {
+    animations: 'disabled',
+    caret: 'hide',
+    maxDiffPixelRatio: 0.02,
+  });
+});
+
+test('Manage stays legible in the current viewport and returns focus to its device', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?screen=devices');
+  await waitForLiteScreenToSettle(page, 'devices');
+
+  const manage = page.getByRole('button', { name: /^Manage / }).first();
+  await manage.scrollIntoViewIfNeeded();
+  await manage.click();
+
+  const panel = page.locator('.lite-device-details-focus-anchor');
+  const detailsCard = panel.locator('.lite-device-details-panel');
+  const backdrop = page.locator('.lite-device-action-backdrop');
+  await expectInViewport(panel, page);
+  await expectPortalOwned(panel);
+  await expect(panel).toBeFocused();
+  await expect(detailsCard).toBeVisible();
+  await expect(backdrop).toBeVisible();
+  expect(await backgroundAlpha(panel)).toBeGreaterThanOrEqual(0.98);
+  expect(await backgroundAlpha(detailsCard)).toBeGreaterThanOrEqual(0.98);
+  expect(await backgroundAlpha(backdrop)).toBeGreaterThanOrEqual(0.30);
+
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  await expect(manage).toBeFocused();
+});
+
+test('Removal review opens as a contextual sheet and restores the initiating action focus', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await installRemovalAssessment(page);
+
+  await page.goto('/?screen=devices');
+  await waitForLiteScreenToSettle(page, 'devices');
+  const removeAction = await openFirstRemovalReview(page);
 
   const panel = page.locator('.lite-device-remove-panel');
   await expectInViewport(panel, page);
@@ -105,8 +131,46 @@ test('Removal review opens as a contextual sheet and restores the initiating act
   await expect(panel).toBeFocused();
   await expect(panel).toHaveAttribute('role', 'region');
   await expect(panel).toHaveAttribute('aria-label', /Remove old device:/);
+  await expect(panel).toHaveCSS('overflow-y', 'auto');
 
   await page.getByRole('button', { name: 'Keep device' }).click();
   await expect(panel).toHaveCount(0);
   await expect(removeAction).toBeFocused();
+});
+
+test('Removal review remains scrollable and keeps destructive actions reachable on a short mobile viewport', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mocked-mobile', 'Constrained mobile scroll reachability is qualified once in the mobile project.');
+  await installScenario(page, 'healthy');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 568 });
+  await installRemovalAssessment(page, 8);
+
+  await page.goto('/?screen=devices');
+  await waitForLiteScreenToSettle(page, 'devices');
+  await openFirstRemovalReview(page);
+
+  const panel = page.locator('.lite-device-remove-panel');
+  await expectInViewport(panel, page);
+  await expect(panel).toHaveCSS('overflow-y', 'auto');
+
+  const scrollMetrics = await panel.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
+
+  await panel.evaluate((element) => {
+    element.scrollTo({ top: element.scrollHeight, behavior: 'instant' });
+  });
+  await expect(panel.getByText('Additional removal review item 8 must remain reachable before confirmation.')).toBeVisible();
+
+  const continueButton = panel.getByRole('button', { name: 'Continue to confirmation' });
+  await expectInViewport(continueButton, page);
+  await continueButton.focus();
+  await expect(continueButton).toBeFocused();
+  await expectInViewport(continueButton, page);
+  await continueButton.click();
+
+  const confirmButton = panel.getByRole('button', { name: 'Confirm removal' });
+  await expectInViewport(confirmButton, page);
 });
