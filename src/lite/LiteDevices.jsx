@@ -87,6 +87,7 @@ import {
   safeRestartSteps
 } from './LiteUi.jsx';
 import DeviceCard from './devices/DeviceCard.jsx';
+import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
 
@@ -315,8 +316,7 @@ export default function DevicesScreen() {
   useEffect(() => {
     if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
     const frame = window.requestAnimationFrame(() => {
-      const panel = detailsPanelRef.current;
-      panel?.focus?.({ preventScroll: true });
+      detailsPanelRef.current?.focus?.({ preventScroll: true });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [activeDetailsDevice?.id]);
@@ -786,100 +786,104 @@ export default function DevicesScreen() {
           ) : null}
 
           {removeCandidate ? (
-            <GlassCard
-              className="lite-device-remove-panel lite-device-action-surface"
-              tabIndex={-1}
-              role="region"
-              aria-label={`Remove old device: ${removeCandidate.name || removeCandidate.hostname || removeCandidate.id || 'Selected device'}`}
-            >
-              <div className="lite-device-remove-panel-head">
-                <div>
-                  <span>Remove old device</span>
-                  <h3>{removeCandidate.name || 'Selected device'}</h3>
-                </div>
-                <button
-                  type="button"
-                  className="lite-device-remove-close"
-                  onClick={closeRemovalReview}
-                  aria-label="Close remove old device review"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <p className="lite-device-remove-copy">
-                Pocket Lab checks hosted apps, backups, command delivery, recovery, and protected server responsibilities before removal.
-              </p>
-
-              <div className="lite-device-remove-facts">
-                <div><span>Status</span><strong>{deviceStatusLabel(removeCandidate.status)}</strong></div>
-                <div><span>Connection</span><strong>{deviceConnectionLabel(removeCandidate)}</strong></div>
-                <div><span>Role</span><strong>{removeCandidate.role_label || roleLabel(removeCandidate.role)}</strong></div>
-                <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
-              </div>
-
-              <ul className="lite-device-remove-safety">
-                <li>This removes the saved record from this Pocket Lab server.</li>
-                <li>It does not wipe the phone.</li>
-                <li>It does not uninstall Pocket Lab.</li>
-                <li>It does not stop a running agent on that device.</li>
-              </ul>
-
-              {removeAssessmentLoading ? <p className="lite-device-remove-assessment-state">Checking device responsibilities…</p> : null}
-
-              {Array.isArray(removeAssessment?.blockers) && removeAssessment.blockers.length ? (
-                <div className="lite-device-removal-impact is-blocked">
-                  <strong>Removal blocked</strong>
-                  <ul>{removeAssessment.blockers.map((item) => <li key={item.code || item.summary}>{item.summary}</li>)}</ul>
-                </div>
-              ) : null}
-
-              {Array.isArray(removeAssessment?.warnings) && removeAssessment.warnings.length ? (
-                <div className="lite-device-removal-impact is-warning">
-                  <strong>Review before removal</strong>
-                  <ul>{removeAssessment.warnings.map((item) => <li key={item.code || item.summary}>{item.summary}</li>)}</ul>
-                </div>
-              ) : null}
-
-              {removalFlow.isConfirming ? (
-                <p className="lite-device-remove-final-warning" role="alert">
-                  Confirm that you want to remove this saved device record. The remote agent is not stopped or uninstalled.
-                </p>
-              ) : null}
-
-              <div className="lite-device-remove-actions">
-                {removalFlow.isConfirming ? (
-                  <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
-                    {removeBusy ? 'Removing...' : 'Confirm removal'}
-                  </LiteButton>
-                ) : (
-                  <LiteButton
-                    tone="danger"
-                    onClick={removalFlow.confirm}
-                    disabled={removeAssessmentLoading || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove) || removeBusy || savedStateOnly || backendReachable === false}
+            <DeviceActionPortal>
+              <GlassCard
+                className="lite-device-remove-panel lite-device-action-surface"
+                tabIndex={-1}
+                role="region"
+                aria-label={`Remove old device: ${removeCandidate.name || removeCandidate.hostname || removeCandidate.id || 'Selected device'}`}
+              >
+                <div className="lite-device-remove-panel-head">
+                  <div>
+                    <span>Remove old device</span>
+                    <h3>{removeCandidate.name || 'Selected device'}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    className="lite-device-remove-close"
+                    onClick={closeRemovalReview}
+                    aria-label="Close remove old device review"
                   >
-                    Continue to confirmation
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <p className="lite-device-remove-copy">
+                  Pocket Lab checks hosted apps, backups, command delivery, recovery, and protected server responsibilities before removal.
+                </p>
+
+                <div className="lite-device-remove-facts">
+                  <div><span>Status</span><strong>{deviceStatusLabel(removeCandidate.status)}</strong></div>
+                  <div><span>Connection</span><strong>{deviceConnectionLabel(removeCandidate)}</strong></div>
+                  <div><span>Role</span><strong>{removeCandidate.role_label || roleLabel(removeCandidate.role)}</strong></div>
+                  <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
+                </div>
+
+                <ul className="lite-device-remove-safety">
+                  <li>This removes the saved record from this Pocket Lab server.</li>
+                  <li>It does not wipe the phone.</li>
+                  <li>It does not uninstall Pocket Lab.</li>
+                  <li>It does not stop a running agent on that device.</li>
+                </ul>
+
+                {removeAssessmentLoading ? <p className="lite-device-remove-assessment-state">Checking device responsibilities…</p> : null}
+
+                {Array.isArray(removeAssessment?.blockers) && removeAssessment.blockers.length ? (
+                  <div className="lite-device-removal-impact is-blocked">
+                    <strong>Removal blocked</strong>
+                    <ul>{removeAssessment.blockers.map((item) => <li key={item.code || item.summary}>{item.summary}</li>)}</ul>
+                  </div>
+                ) : null}
+
+                {Array.isArray(removeAssessment?.warnings) && removeAssessment.warnings.length ? (
+                  <div className="lite-device-removal-impact is-warning">
+                    <strong>Review before removal</strong>
+                    <ul>{removeAssessment.warnings.map((item) => <li key={item.code || item.summary}>{item.summary}</li>)}</ul>
+                  </div>
+                ) : null}
+
+                {removalFlow.isConfirming ? (
+                  <p className="lite-device-remove-final-warning" role="alert">
+                    Confirm that you want to remove this saved device record. The remote agent is not stopped or uninstalled.
+                  </p>
+                ) : null}
+
+                <div className="lite-device-remove-actions">
+                  {removalFlow.isConfirming ? (
+                    <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
+                      {removeBusy ? 'Removing...' : 'Confirm removal'}
+                    </LiteButton>
+                  ) : (
+                    <LiteButton
+                      tone="danger"
+                      onClick={removalFlow.confirm}
+                      disabled={removeAssessmentLoading || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove) || removeBusy || savedStateOnly || backendReachable === false}
+                    >
+                      Continue to confirmation
+                    </LiteButton>
+                  )}
+                  <LiteButton tone="secondary" onClick={closeRemovalReview} disabled={removeBusy}>
+                    Keep device
                   </LiteButton>
-                )}
-                <LiteButton tone="secondary" onClick={closeRemovalReview} disabled={removeBusy}>
-                  Keep device
-                </LiteButton>
-              </div>
-            </GlassCard>
+                </div>
+              </GlassCard>
+            </DeviceActionPortal>
           ) : null}
 
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
           {activeDetailsDevice ? (
-            <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor lite-device-action-surface">
-              <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
-                <DeviceDetailsLazy
-                  device={activeDetailsDevice}
-                  onClose={closeDeviceDetails}
-                  onChooseModel={() => { setDeviceModelPickerId(activeDetailsDevice?.id); }}
-                />
-              </Suspense>
-            </div>
+            <DeviceActionPortal>
+              <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor lite-device-action-surface">
+                <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
+                  <DeviceDetailsLazy
+                    device={activeDetailsDevice}
+                    onClose={closeDeviceDetails}
+                    onChooseModel={() => { setDeviceModelPickerId(activeDetailsDevice?.id); }}
+                  />
+                </Suspense>
+              </div>
+            </DeviceActionPortal>
           ) : null}
 
           {modelPickerDevice ? (
