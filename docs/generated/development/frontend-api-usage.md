@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: fe5b3f6bb86ece3c26a83690d98f05603c23b76bf3d7c19454d1628ed9dbea32
+source_fingerprint: 81c5891ac38cb6bbe3ace96452316bf7a0144d437e05e85180c110f96d6acafd
 schema_revision: 1
 validation_status: generated
 ---
@@ -68,6 +68,8 @@ validation_status: generated
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.applyRelease | POST | `/api/lite/release/apply` | mutation | no | static |
 | src/lite/LiteReleaseUpdateCard.jsx | liteApi.checkRelease | POST | `/api/lite/release/check` | mutation | no | static |
 | src/lite/LiteRevisionSyncBridge.jsx | liteApi.domainRevisions | GET | `/api/lite/revisions` | query | no | static |
+| src/lite/LiteRules.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
+| src/lite/LiteRules.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRules.jsx | liteApi.policy | GET | `/api/lite/policy` | query | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.fleet | GET | `/api/lite/fleet` | query | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
@@ -276,6 +278,7 @@ validation_status: generated
 - `/api/lite/enterprise/rules/revisions/{revision_id}`
 - `/api/lite/enterprise/rules/rollbacks`
 - `/api/lite/enterprise/rules/simulations`
+- `/api/lite/enterprise/rules/source-sync`
 - `/api/lite/enterprise/rules/templates`
 - `/api/lite/events`
 - `/api/lite/fleet/agent/bootstrap-blocked`

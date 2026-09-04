@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 30,
+    "migration_count": 31,
     "objects": [
       {
         "checks": [],
@@ -4146,7 +4146,8 @@
         ],
         "indexes": [],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
         ],
         "name": "enterprise_configuration",
         "projection_owner": "not a prepared projection",
@@ -4276,7 +4277,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
         ],
         "name": "enterprise_memberships",
         "projection_owner": "not a prepared projection",
@@ -4708,7 +4710,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -5995,7 +5998,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
         ],
         "name": "policy_approvals",
         "projection_owner": "not a prepared projection",
@@ -10588,7 +10592,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "b7e15b52517743b19efce815f1149e56358d93a1cae83037fec1bb3479dd525a",
+    "aggregate_fingerprint": "b24d59bbcb72f63d7e59ee3e8f85558df18f034eb5edc2d3c7ab4f90fc292a29",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10599,7 +10603,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "d6e75a0bf450405b0992fbaeb78dd3c2063ff9f40abd0c8eb4d3e565740d5236",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -10630,6 +10634,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql": "fe887f0f99c1180ef479ea6ac45e0b1f7c25dfd3446d090fe5b58ecefbc93dfe",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql": "8e128d0c96d0751ba80e1636665a5e49bd5501c0597747caa96ff6654729287b",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "generated"

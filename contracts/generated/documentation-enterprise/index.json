@@ -34096,7 +34096,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34179,7 +34183,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34209,7 +34217,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34288,7 +34300,8 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "command_undeliverable"
+          "command_undeliverable",
+          "policy_source_update_pending"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34368,7 +34381,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34474,7 +34491,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "policy_source_update_pending"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
         "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -34503,7 +34522,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34626,7 +34649,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34759,7 +34786,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -34813,12 +34844,12 @@
         "reason_codes": [
           "policy_unavailable",
           "generic_policy_toggle_retired",
+          "owner_approval_policy_inconsistent",
           "policy_action_not_registered",
           "policy_activation_in_progress",
           "policy_activation_not_uncertain",
           "policy_activation_pending",
-          "policy_activation_state_changed",
-          "policy_activation_unknown"
+          "policy_activation_state_changed"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34847,12 +34878,12 @@
         "reason_codes": [
           "generic_policy_toggle_retired",
           "human_session_required",
+          "owner_approval_policy_inconsistent",
           "policy_action_not_registered",
           "policy_activation_in_progress",
           "policy_activation_not_uncertain",
           "policy_activation_pending",
-          "policy_activation_state_changed",
-          "policy_activation_unknown"
+          "policy_activation_state_changed"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34879,7 +34910,8 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
-          "independent_approval_satisfied"
+          "independent_approval_satisfied",
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -34940,7 +34972,11 @@
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
           "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_people_role_required",
+          "owner_approval_policy_inconsistent",
+          "policy_source_contract_invalid",
+          "policy_source_contract_missing",
+          "policy_source_revision_conflict"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -37231,8 +37267,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "b5d44a45960b5a30cb11b0d798dd249ad5c0bc4f",
-          "head_tree": "95f2f36d7628acf12358cd89542db8dc312e78d7",
+          "head": "0e07adaaad373726c27f42b89ef8d6aebdfb1848",
+          "head_tree": "9d470b8fc675025637d4790312bc4258d9ae99ac",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -39281,9 +39317,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "4028d70bc90de1d2519a6c619022826a8be82b75aaf7f86742bd3b6892d01aca",
-        "documentation": "5774a20dcb1e45d2d0f7ba964fd559799e5e87fa633f3c4cee63c64df775bbb7",
-        "openapi": "64ceebe291cb9a2130a93a2216f0cc9b390798cc57a211df63196e4021ded8df",
-        "operational_health": "197025f9e66cef56d555c33f845ff9cbb97dabc7f97b2f5394f0a2814b52c635"
+        "documentation": "46d46bd1dd8f0e9e476aaf2f33ebad803bd7687492e9788a5f45314ae62223be",
+        "openapi": "702680c5e1443588db70b4bad12e29c448a56a8c64f5bb68f4bb468120d73c73",
+        "operational_health": "ecb00d73d6ad6f34ad3e2deea4a37bcc8d2f4dc86dec51da87cbc10c0a050d64"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -41605,8 +41641,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "b5d44a45960b5a30cb11b0d798dd249ad5c0bc4f",
-        "head_tree": "95f2f36d7628acf12358cd89542db8dc312e78d7",
+        "head": "0e07adaaad373726c27f42b89ef8d6aebdfb1848",
+        "head_tree": "9d470b8fc675025637d4790312bc4258d9ae99ac",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -106008,5 +106044,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "c221e6edceada35c969a7e1114dddd497e15e3558877d9dd90a8e6d6d3893ad9"
+  "source_fingerprint": "8b800b58baac61829905518cdbb2eeb3fc60cb02267e472c87fa9af307f1977f"
 }

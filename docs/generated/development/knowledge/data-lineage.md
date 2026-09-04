@@ -51,8 +51,8 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/identity/recovery/regenerate` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/sessions/revoke-others` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/setup` | ui:liteidentity | — | unvalidated |
-| `POST /api/lite/identity/step-up/options` | ui:liteidentity, ui:liteidentityenterprise, ui:literulesenterprise | — | unvalidated |
-| `POST /api/lite/identity/step-up/verify` | ui:liteidentity, ui:liteidentityenterprise, ui:literulesenterprise | — | unvalidated |
+| `POST /api/lite/identity/step-up/options` | ui:liteidentity, ui:liteidentityenterprise, ui:literules, ui:literulesenterprise | — | unvalidated |
+| `POST /api/lite/identity/step-up/verify` | ui:liteidentity, ui:liteidentityenterprise, ui:literules, ui:literulesenterprise | — | unvalidated |
 | `POST /api/lite/recovery/backup` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/backups/{backup_id}/verify` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/database/backup` | ui:literecovery | — | unvalidated |

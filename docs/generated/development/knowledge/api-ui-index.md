@@ -152,6 +152,7 @@ generator_version: 3
 | `POST /api/lite/enterprise/rules/revisions` | enterprise | — | create_revision_api_lite_enterprise_rules_revisions_post | contract-derived |
 | `POST /api/lite/enterprise/rules/rollbacks` | enterprise | — | rollback_api_lite_enterprise_rules_rollbacks_post | contract-derived |
 | `POST /api/lite/enterprise/rules/simulations` | enterprise | — | simulate_api_lite_enterprise_rules_simulations_post | contract-derived |
+| `POST /api/lite/enterprise/rules/source-sync` | enterprise | — | source_sync_api_lite_enterprise_rules_source_sync_post | contract-derived |
 | `POST /api/lite/fleet/add-device` | devices | LiteDevices | add_lite_device_api_lite_fleet_add_device_post | contract-derived |
 | `POST /api/lite/fleet/agent/bootstrap-blocked` | devices | — | lite_fleet_agent_bootstrap_blocked_api_lite_fleet_agent_bootstrap_blocked_post | contract-derived |
 | `POST /api/lite/fleet/agent/bootstrap.env` | devices | — | lite_fleet_agent_bootstrap_env_api_lite_fleet_agent_bootstrap_env_post | contract-derived |
@@ -174,8 +175,8 @@ generator_version: 3
 | `POST /api/lite/identity/rotate` | identity | — | rotate_lite_identity_api_lite_identity_rotate_post | contract-derived |
 | `POST /api/lite/identity/sessions/revoke-others` | identity | LiteIdentity | revoke_other_lite_identity_sessions_api_lite_identity_sessions_revoke_others_post | contract-derived |
 | `POST /api/lite/identity/setup` | identity | LiteIdentity | setup_lite_identity_api_lite_identity_setup_post | contract-derived |
-| `POST /api/lite/identity/step-up/options` | identity | LiteIdentity, LiteIdentityEnterprise, LiteRulesEnterprise | passkey_step_up_options_api_lite_identity_step_up_options_post | contract-derived |
-| `POST /api/lite/identity/step-up/verify` | identity | LiteIdentity, LiteIdentityEnterprise, LiteRulesEnterprise | passkey_step_up_verify_api_lite_identity_step_up_verify_post | contract-derived |
+| `POST /api/lite/identity/step-up/options` | identity | LiteIdentity, LiteIdentityEnterprise, LiteRules, LiteRulesEnterprise | passkey_step_up_options_api_lite_identity_step_up_options_post | contract-derived |
+| `POST /api/lite/identity/step-up/verify` | identity | LiteIdentity, LiteIdentityEnterprise, LiteRules, LiteRulesEnterprise | passkey_step_up_verify_api_lite_identity_step_up_verify_post | contract-derived |
 | `POST /api/lite/policy/apply` | rules | — | apply_lite_policy_api_lite_policy_apply_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/backup` | recovery | — | backup_lite_app_api_lite_recovery_apps__app_id__backup_post | contract-derived |
 | `POST /api/lite/recovery/apps/{app_id}/backup-to-target` | recovery | — | backup_lite_app_to_target_api_lite_recovery_apps__app_id__backup_to_target_post | contract-derived |
@@ -212,6 +213,6 @@ generator_version: 3
 | LiteRecovery | GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
 | LiteReleaseUpdateCard | GET /api/lite/release, POST /api/lite/release/apply, POST /api/lite/release/check |
 | LiteRevisionSyncBridge | GET /api/lite/revisions |
-| LiteRules | GET /api/lite/policy |
+| LiteRules | GET /api/lite/policy, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRulesEnterprise | GET /api/lite/fleet, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |
