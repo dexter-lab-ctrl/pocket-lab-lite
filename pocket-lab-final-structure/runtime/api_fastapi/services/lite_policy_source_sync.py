@@ -165,7 +165,13 @@ def _public_state(state: dict[str, Any]) -> dict[str, Any]:
 def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | None = None) -> dict[str, Any]:
     """Record an Owner-confirmed source synchronization for supervisor execution."""
     apply_migrations()
-    _resolved, actor_id = lite_enterprise_governance.require_root_owner(auth_context)
+    # The service repeats the root-owner + recent-passkey check rather than
+    # relying only on the HTTP router, so future internal callers cannot bypass
+    # the same assurance boundary.
+    _resolved, actor_id = lite_enterprise_governance.require_recent_assurance(
+        auth_context,
+        "policy.rules.activate",
+    )
 
     # Owner-originated peer approvals are impossible under the authority model.
     # Clean up legacy rows produced by stale policy before considering a new
