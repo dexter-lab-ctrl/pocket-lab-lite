@@ -237,26 +237,21 @@ def test_final_owner_is_protected_and_role_change_revokes_authorization(governan
 
 def test_enterprise_mode_is_reversible_and_closes_enterprise_only_continuations(governance_runtime):
     from api_fastapi.db.connection import connection
-    from api_fastapi.services import lite_enterprise_enrollment, lite_enterprise_identity, lite_identity_auth
+    from api_fastapi.services import lite_enterprise_identity, lite_identity_auth
 
     _owner, signed_in, owner_context = _setup_enterprise_owner()
-    invited = lite_enterprise_enrollment.create_person(
-        auth_context=owner_context,
-        username="operator-two",
-        display_name="Operator Two",
-        role="Operator",
-        origin="http://localhost",
-    )["person"]
+    operator_id = "human-operator-two"
+    _insert_person(human_id=operator_id, username="operator-two", role="Operator")
     with connection() as conn:
         conn.execute(
             """INSERT INTO policy_approvals(approval_id,originating_decision_id,correlation_id,action_id,target_type,target_id,initiating_human_id,initiating_role,required_approver_roles_json,required_assurance,policy_revision,status,created_at,expires_at,reason_code,evidence_ref)
                VALUES ('apr-mode','decision-mode','corr-mode','device.remove','device','old-phone',?,'Operator','[\"Admin\",\"Owner\"]','policy.approval.device.remove','revision-test','pending',?,?,'approval_required','policy:decision-mode')""",
-            (invited["human_id"], _iso(), _iso(15)),
+            (operator_id, _iso(), _iso(15)),
         )
         conn.execute(
             """INSERT INTO policy_temporary_exceptions(exception_id,action_id,app_id,device_id,human_id,policy_revision,reason,created_by_human_id,status,created_at,expires_at)
                VALUES ('exc-mode','catalog.install','photoprism','phone',?,'revision-test','short maintenance',?,'active',?,?)""",
-            (invited["human_id"], owner_context["actor"]["identity_id"], _iso(), _iso(30)),
+            (operator_id, owner_context["actor"]["identity_id"], _iso(), _iso(30)),
         )
         conn.commit()
 
@@ -270,7 +265,7 @@ def test_enterprise_mode_is_reversible_and_closes_enterprise_only_continuations(
     assert disabled["continuations"] == {"approvals_cancelled": 1, "exceptions_revoked": 1}
     assert lite_identity_auth.authenticate_session_token(signed_in["session_token"]) is None
     with connection() as conn:
-        membership = conn.execute("SELECT role,status FROM enterprise_memberships WHERE human_id=?", (invited["human_id"],)).fetchone()
+        membership = conn.execute("SELECT role,status FROM enterprise_memberships WHERE human_id=?", (operator_id,)).fetchone()
         approval = conn.execute("SELECT status FROM policy_approvals WHERE approval_id='apr-mode'").fetchone()
         exception = conn.execute("SELECT status FROM policy_temporary_exceptions WHERE exception_id='exc-mode'").fetchone()
     assert dict(membership) == {"role": "Operator", "status": "active"}
@@ -283,7 +278,7 @@ def test_enterprise_mode_is_reversible_and_closes_enterprise_only_continuations(
     enabled = lite_enterprise_identity.set_enterprise_enabled(auth_context=personal_context, enabled=True, correlation_id="reenable-enterprise")
     assert enabled["enabled"] is True
     with connection() as conn:
-        retained = conn.execute("SELECT role,status FROM enterprise_memberships WHERE human_id=?", (invited["human_id"],)).fetchone()
+        retained = conn.execute("SELECT role,status FROM enterprise_memberships WHERE human_id=?", (operator_id,)).fetchone()
     assert dict(retained) == {"role": "Operator", "status": "active"}
 
 
