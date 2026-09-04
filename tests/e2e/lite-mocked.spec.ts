@@ -208,9 +208,6 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     ));
     await page.getByRole('button', { name: 'Run Quick Scan' }).click();
     await acceptedScan;
-    // The click opens the screen-local stream while the request is in flight.
-    // Once the server accepts the run, the root stream replaces it before any
-    // navigation occurs; capture that settled owner rather than the transient.
     await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
       .filter((source) => source.url.includes('/api/lite/security/events')).length)).toBeGreaterThanOrEqual(2);
     await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
@@ -278,8 +275,6 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/No urgent safety issues|Protected|Safety score/i);
     await expect(completionToast).toHaveCount(1);
 
-    // A historical result delivered after the accepted observation is cleared
-    // must remain presentation-only and never recreate the global notice.
     await page.evaluate(() => window.dispatchEvent(new CustomEvent('security:scan-completed', {
       detail: {
         run_id: 'security-historical-mock-000',
@@ -317,9 +312,6 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
   });
 
   test('Enterprise Rules simulation, approvals and exception UX remain bounded', async ({ page }) => {
-    // Enterprise-only assertions use an explicit Enterprise Owner fixture. The
-    // default healthy mock remains Personal Mode so Enterprise never becomes
-    // the accidental default Lite UX.
     await installScenario(page, 'identity-enterprise-owner');
     await page.goto('/?screen=rules');
     const rules = page.locator('[data-lite-screen-id="rules"]');
@@ -472,8 +464,13 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
       const details = devices.getByRole('button', { name: 'Manage Test-Phone-4' });
       await details.click();
-      const detailPanel = devices.locator('.lite-device-details-panel');
+      const detailSurface = page.locator('.lite-device-details-focus-anchor');
+      const detailPanel = detailSurface.locator('.lite-device-details-panel');
+      await expect(detailSurface).toBeVisible();
       await expect(detailPanel).toBeVisible();
+      await expect(detailSurface).toBeFocused();
+      expect(await detailSurface.evaluate((element) => Boolean(element.closest('.pocket-app-shell')))).toBe(true);
+      expect(await detailSurface.evaluate((element) => Boolean(element.closest('.lite-screen-stage')))).toBe(false);
       await page.keyboard.press('Escape');
       await expect(details).toBeFocused();
       expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
@@ -514,9 +511,6 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
   test('Devices makes remote-access and reduced-motion connection states explicit', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The Devices motion contract is covered once in Chromium.');
-    // Use the healthy fleet for topology/motion assertions.
-    // Its prepared remote-access projection is still "not ready" in the
-    // default mock, while device connectivity remains live and testable.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/?screen=devices');
     const devices = await waitForLiveDevices(page);
