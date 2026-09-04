@@ -64,6 +64,32 @@ def _owner_step_up(request: Request, purpose: str) -> dict[str, Any]:
     return auth
 
 
+def _source_sync_status() -> dict[str, Any]:
+    """Return only bounded lifecycle metadata needed for truthful progress UX."""
+    state = lite_policy_source_sync.source_state()
+    operation = state.get("activation_operation") if isinstance(state.get("activation_operation"), dict) else None
+    return {
+        "source": {
+            "durable": bool(state.get("durable")),
+            "active_revision": str(state.get("active_revision") or "")[:80],
+            "known_good_revision": str(state.get("known_good_revision") or "")[:80],
+            "repository_revision": str(state.get("repository_revision") or "")[:80],
+            "source_update_required": bool(state.get("source_update_required")),
+            "activation_in_progress": bool(state.get("activation_in_progress")),
+            "activation_operation": {
+                "operation_id": str(operation.get("operation_id") or "")[:120],
+                "candidate_revision_id": str(operation.get("candidate_revision_id") or "")[:80],
+                "state": str(operation.get("state") or "")[:40],
+                "created_at": operation.get("created_at"),
+                "updated_at": operation.get("updated_at"),
+            } if operation else None,
+        },
+        "sanitized": True,
+        "policy_source_exposed": False,
+        "runtime_command_exposed": False,
+    }
+
+
 @router.get("/templates")
 def templates(request: Request, response: Response) -> dict[str, Any]:
     auth = deps.require_auth(request, write=False)
@@ -121,7 +147,7 @@ def source_sync(request: Request, response: Response) -> dict[str, Any]:
     """Queue repository-source reconciliation for Personal or Enterprise Owner.
 
     The route lives with Rules governance, but root-owner verification explicitly
-    supports both workspace modes.  FastAPI records intent only; the core
+    supports both workspace modes. FastAPI records intent only; the core
     supervisor remains the sole pointer/OPA activation authority.
     """
     return _call(
@@ -131,6 +157,13 @@ def source_sync(request: Request, response: Response) -> dict[str, Any]:
             correlation_id=uuid.uuid4().hex,
         ),
     )
+
+
+@router.get("/source-sync/status")
+def source_sync_status(request: Request, response: Response) -> dict[str, Any]:
+    """Project current governed source-sync progress without exposing authority."""
+    deps.require_auth(request, write=False)
+    return _call(response, _source_sync_status)
 
 
 @router.post("/activations/{operation_id}/resolve")
