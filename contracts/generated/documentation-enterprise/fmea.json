@@ -48,7 +48,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -131,7 +135,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -161,7 +169,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -240,7 +252,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "command_undeliverable"
+        "command_undeliverable",
+        "policy_source_update_pending"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -320,7 +333,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -426,7 +443,9 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "policy_source_update_pending"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
       "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -455,7 +474,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -578,7 +601,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -711,7 +738,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -765,12 +796,12 @@
       "reason_codes": [
         "policy_unavailable",
         "generic_policy_toggle_retired",
+        "owner_approval_policy_inconsistent",
         "policy_action_not_registered",
         "policy_activation_in_progress",
         "policy_activation_not_uncertain",
         "policy_activation_pending",
-        "policy_activation_state_changed",
-        "policy_activation_unknown"
+        "policy_activation_state_changed"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -799,12 +830,12 @@
       "reason_codes": [
         "generic_policy_toggle_retired",
         "human_session_required",
+        "owner_approval_policy_inconsistent",
         "policy_action_not_registered",
         "policy_activation_in_progress",
         "policy_activation_not_uncertain",
         "policy_activation_pending",
-        "policy_activation_state_changed",
-        "policy_activation_unknown"
+        "policy_activation_state_changed"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -831,7 +862,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "independent_approval_satisfied"
+        "independent_approval_satisfied",
+        "owner_approval_policy_inconsistent"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -892,7 +924,11 @@
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_people_role_required",
+        "owner_approval_policy_inconsistent",
+        "policy_source_contract_invalid",
+        "policy_source_contract_missing",
+        "policy_source_revision_conflict"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

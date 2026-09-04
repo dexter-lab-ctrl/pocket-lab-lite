@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "6885e49b0c7f5516938f73850af43f186083ed81ee4915778415447aec34ce5a",
+    "aggregate_fingerprint": "a0679d07d002d18092c6ee6a5e70c6b6e43c616d2cd278806cc39b2417588826",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11,7 +11,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "d6e75a0bf450405b0992fbaeb78dd3c2063ff9f40abd0c8eb4d3e565740d5236",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py": "7cc0e25e120d19c2131ece46ef672323e89b78f160d950044884288637337b8c",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py": "63f7aeb898fe2d8f15ca609fa190192a543ff8e03649e6099b9bdbab3c0f1caf",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"

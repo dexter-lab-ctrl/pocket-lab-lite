@@ -651,6 +651,34 @@
           "src/lite/LiteRules.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.passkeyStepUpOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/options",
+        "source_module": "src/lite/LiteRules.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRules.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyPasskeyStepUp",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/verify",
+        "source_module": "src/lite/LiteRules.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRules.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "GET",
         "mocked": false,
         "owner": "liteApi.policy",
@@ -2692,6 +2720,7 @@
       "/api/lite/enterprise/rules/revisions/{revision_id}",
       "/api/lite/enterprise/rules/rollbacks",
       "/api/lite/enterprise/rules/simulations",
+      "/api/lite/enterprise/rules/source-sync",
       "/api/lite/enterprise/rules/templates",
       "/api/lite/events",
       "/api/lite/fleet/agent/bootstrap-blocked",
@@ -2751,7 +2780,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "860e1eee38528f7612e5c16ee4014bdddcfc36861ff5dfbf855a0a873350b7ae",
+    "aggregate_fingerprint": "e391bff42135e3b5d27c2e422a63bdd8b7e410e2c596f25b36ca68216be48368",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2761,9 +2790,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "64ceebe291cb9a2130a93a2216f0cc9b390798cc57a211df63196e4021ded8df",
+      "contracts/generated/lite-openapi.json": "702680c5e1443588db70b4bad12e29c448a56a8c64f5bb68f4bb468120d73c73",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "d6e75a0bf450405b0992fbaeb78dd3c2063ff9f40abd0c8eb4d3e565740d5236",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353",
       "src/lib/liteApi.js": "cef8ecf7027611150c3f1bb20ddbf9513262fb4821a4aa5b93e233841000f553",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
@@ -2789,7 +2818,7 @@
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
       "src/lite/LiteRevisionSyncBridge.jsx": "ee30715c8a9d7b152d70ad99ca1761d8208ca2cf0d2ddea0980848afc8001720",
-      "src/lite/LiteRules.jsx": "4b9d222e611a88716fd47f9746f8c8f5bf107a233f30f5492ce0e82ad07babad",
+      "src/lite/LiteRules.jsx": "1bf4a9ee0656df432f46ecc3f65ca14f5b832c3d7b267795d0406204b6e2cca0",
       "src/lite/LiteRules.stories.jsx": "44b78ac3977a1f1a7837310d7aa7b760235673ee1ddfb7fd1005606a11602666",
       "src/lite/LiteRulesEnterprise.jsx": "0f388763330a4c651fb8ee2491636d70f306f3e32f18529a07c77e0097447942",
       "src/lite/LiteScreenBoundary.jsx": "933ae31bc9100302cbce4a037093a2fc876338571d6c104941b4826de365bc95",

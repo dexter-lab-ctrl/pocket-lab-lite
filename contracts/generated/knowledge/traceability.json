@@ -1497,6 +1497,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/enterprise/rules/source-sync",
+      "name": "POST /api/lite/enterprise/rules/source-sync",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/fleet/add-device",
       "name": "POST /api/lite/fleet/add-device",
       "note": "A test link does not by itself prove runtime verification.",
@@ -3887,6 +3898,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "cc75daccae5521622386e15776693b1ab63475f8911600431c6833c00c652da4"
+    "source_fingerprint": "97bfc81333f118a1b263c78329b12866cd9aa54813d96e1c2fb62f523f3b99c2"
   }
 }

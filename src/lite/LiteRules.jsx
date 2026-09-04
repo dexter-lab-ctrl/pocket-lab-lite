@@ -5,6 +5,7 @@ import { FileCheck, ShieldCheck } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
+import { getLitePasskey } from '../lib/liteWebAuthn.js';
 import { buildLiteRulesOverview, getLiteReasonPresentation, getLiteRulesActionLabel } from '../lib/identityRulesPresentation.js';
 import {
   GlassCard,
@@ -25,6 +26,10 @@ function actionLabel(action = '') {
   return getLiteRulesActionLabel(action) || String(action || '').replaceAll('.', ' · ');
 }
 
+function errorCode(error) {
+  return error?.payload?.detail?.reason_code || error?.payload?.reason_code || '';
+}
+
 export default function RulesScreen() {
   const policy = useLiteResource(liteApi.policy, []);
   const identity = useLiteResource(liteEnterpriseApi.identitySelf, []);
@@ -43,10 +48,14 @@ export default function RulesScreen() {
   } = policy;
   const [advancedOpen, setAdvancedOpen] = React.useState(false);
   const [manageOpen, setManageOpen] = React.useState(false);
+  const [sourceSyncBusy, setSourceSyncBusy] = React.useState(false);
+  const [sourceSyncNotice, setSourceSyncNotice] = React.useState(null);
   const enterpriseEnabled = Boolean(identity.data?.enterprise?.enabled);
   const role = identity.data?.enterprise?.current_membership?.role || identity.data?.person?.role || (identity.data?.person?.is_local_owner ? 'Owner' : '');
   const rulesReadOnly = savedStateOnly || !backendReachable;
   const ready = data?.status === 'ready' && data?.engine?.healthy && data?.engine?.loopback_only;
+  const sourceUpdateRequired = Boolean(data?.active_policy?.source_update_required);
+  const activationInProgress = Boolean(data?.active_policy?.activation_in_progress) || data?.degraded_reason === 'policy_activation_pending';
   const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions.slice(0, 4) : [];
   const templates = Array.isArray(data?.templates) ? data.templates : [];
   const degraded = getLiteReasonPresentation(data?.degraded_reason, data?.summary || 'Safety Rules need attention.');
@@ -58,6 +67,34 @@ export default function RulesScreen() {
   }), [data, savedStateOnly, backendReachable, lastUpdatedLabel, isExpired]);
 
   const manageLabel = enterpriseEnabled ? 'Review core Safety Rules' : 'Manage Safety Rules';
+
+  async function updateSafetyRules() {
+    setSourceSyncBusy(true);
+    setSourceSyncNotice({ title: 'Waiting for Pocket Lab', message: 'Current protection stays fail-closed while the Rules update is prepared.' });
+    try {
+      let result;
+      try {
+        result = await liteEnterpriseApi.syncRuleSource();
+      } catch (firstError) {
+        if (firstError?.status !== 428 && errorCode(firstError) !== 'owner_step_up_required') throw firstError;
+        setSourceSyncNotice({ title: 'Confirm with your passkey', message: 'Owner confirmation is required before Pocket Lab can activate updated Safety Rules.' });
+        const options = await liteApi.passkeyStepUpOptions('policy.rules.activate');
+        const credential = await getLitePasskey(options);
+        await liteApi.verifyPasskeyStepUp({ purpose: 'policy.rules.activate', challenge: options.publicKey.challenge, credential });
+        result = await liteEnterpriseApi.syncRuleSource();
+      }
+      setSourceSyncNotice({
+        title: result?.accepted ? 'Safety Rules update requested' : 'Safety Rules already current',
+        message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
+      });
+      await refresh();
+    } catch (syncError) {
+      const reason = getLiteReasonPresentation(errorCode(syncError), syncError?.message || 'Pocket Lab could not start the Safety Rules update.');
+      setSourceSyncNotice({ error: true, title: reason.title, message: reason.message });
+    } finally {
+      setSourceSyncBusy(false);
+    }
+  }
 
   return (
     <>
@@ -77,7 +114,18 @@ export default function RulesScreen() {
 
       {loading ? <LoadingCard label="Checking Safety Rules..." /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Safety Rules are unavailable" description={String(error)} className="mb-5" /> : null}
-      {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Safety Rules need attention" description={degraded.message} className="mb-5" /> : null}
+      {backendDegraded && backendReachable && !sourceUpdateRequired && !activationInProgress ? <StateSurface tone="degraded" title="Safety Rules need attention" description={degraded.message} className="mb-5" /> : null}
+      {sourceSyncNotice ? <StateSurface tone={sourceSyncNotice.error ? 'degraded' : 'neutral'} title={sourceSyncNotice.title} description={sourceSyncNotice.message} className="mb-5" /> : null}
+
+      {sourceUpdateRequired ? (
+        <GlassCard className="lite-rules-card mb-5">
+          <div className="lite-rules-card-head"><LiteHelpHeading title="Safety Rules update ready" helpKey="rules.protection" as="h2" /><StatusBadge status="review">Owner confirmation</StatusBadge></div>
+          <p>Pocket Lab detected that the installed app contains newer Safety Rules than the durable rules currently running. Protected changes remain blocked until the new revision is staged, restarted and proved.</p>
+          {role === 'Owner' && !rulesReadOnly ? <div className="lite-governance-actions"><LiteButton onClick={updateSafetyRules} disabled={sourceSyncBusy}>{sourceSyncBusy ? 'Updating Safety Rules…' : 'Update Safety Rules'}</LiteButton></div> : <p>An active Owner must confirm this Rules update. No policy source, pointer, command or secret is exposed to the browser.</p>}
+        </GlassCard>
+      ) : null}
+
+      {activationInProgress ? <StateSurface tone="neutral" title="Safety Rules update in progress" description="Pocket Lab is staging, restarting and proving the requested Rules revision. Protected changes remain blocked until the supervisor proves the exact running revision or safely rolls back." className="mb-5" /> : null}
 
       {!loading && data ? (
         <>
@@ -138,7 +186,7 @@ export default function RulesScreen() {
                 <div className="lite-rules-template-grid">{templates.map((template) => <div key={template.id} className="lite-rules-template-card"><div><strong>{template.label}</strong><StatusBadge status={template.status === 'active' ? 'healthy' : 'neutral'}>{template.status === 'active' ? 'Active' : 'Available'}</StatusBadge></div><p>{template.summary}</p></div>)}{!templates.length ? <StateSurface tone="neutral" title="No safeguard summaries" description="Pocket Lab will show current safe templates here when the server returns them." /> : null}</div>
               </section>
 
-              <details className="lite-rules-advanced-details" onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}><summary>Technical status</summary>{advancedOpen ? <div className="mt-3"><div className="lite-rules-facts"><div><span>Policy engine</span><strong>{data?.engine?.name || 'Local policy runtime'}</strong></div><div><span>Runtime version</span><strong>{data?.engine?.version || 'unknown'}</strong></div><div><span>Network boundary</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs attention'}</strong></div><div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected exposure' : 'Not exposed'}</strong></div><div><span>Rules package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div><div><span>Revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div></div>{data?.degraded_reason ? <p>Reason code: <code>{data.degraded_reason}</code></p> : null}</div> : null}</details>
+              <details className="lite-rules-advanced-details" onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}><summary>Technical status</summary>{advancedOpen ? <div className="mt-3"><div className="lite-rules-facts"><div><span>Policy engine</span><strong>{data?.engine?.name || 'Local policy runtime'}</strong></div><div><span>Runtime version</span><strong>{data?.engine?.version || 'unknown'}</strong></div><div><span>Network boundary</span><strong>{data?.engine?.loopback_only ? 'Local only' : 'Needs attention'}</strong></div><div><span>Browser access</span><strong>{data?.engine?.endpoint_exposed_to_browser ? 'Unexpected exposure' : 'Not exposed'}</strong></div><div><span>Rules package</span><strong>{data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready'}</strong></div><div><span>Running revision</span><strong className="lite-mono-value">{data?.active_policy?.revision || 'unavailable'}</strong></div><div><span>Repository revision</span><strong className="lite-mono-value">{data?.active_policy?.repository_revision || 'unavailable'}</strong></div></div>{data?.degraded_reason ? <p>Reason code: <code>{data.degraded_reason}</code></p> : null}</div> : null}</details>
             </div>
           </LiteSheet>
         </>

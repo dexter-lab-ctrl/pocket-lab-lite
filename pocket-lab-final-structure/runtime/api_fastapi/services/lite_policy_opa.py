@@ -53,7 +53,11 @@ def _policy_root() -> Path:
     state_dir = os.environ.get("POCKETLAB_STATE_DIR", "").strip()
     if state_dir:
         return Path(state_dir).expanduser() / "opa" / "active"
-    return Path.home() / ".pocket_lab" / "state" / "opa" / "active"
+    # Align the no-env fallback with the lifecycle/supervisor state root while
+    # retaining read compatibility with the older nested `state/` layout.
+    primary = Path.home() / ".pocket_lab" / "opa" / "active"
+    legacy = Path.home() / ".pocket_lab" / "state" / "opa" / "active"
+    return primary if primary.exists() or not legacy.exists() else legacy
 
 
 def _safe_revision() -> str:
@@ -86,10 +90,11 @@ def _observed_opa_revision() -> str | None:
 
 
 def _policy_consistency() -> tuple[bool, str, str | None]:
-    """Require durable, filesystem and OPA-loaded revision agreement in Enterprise Mode.
+    """Require DB, pointers, loaded OPA and current repository source to agree.
 
-    Absence of P2.2 state is deliberately compatible with Personal Mode and the
-    existing P1 rules runtime.  A present state is strict/fail-closed.
+    A repository update is never silently activated over durable state.  When
+    source drift exists, protected actions fail closed until a root Owner records
+    a governed source-sync intent and the supervisor proves the new revision.
     """
     try:
         with connection() as conn:
@@ -107,9 +112,26 @@ def _policy_consistency() -> tuple[bool, str, str | None]:
     observed = _observed_opa_revision()
     if observed != expected:
         return False, "policy_revision_mismatch" if observed else "policy_revision_uncertain", observed
+    try:
+        from . import lite_policy_source_sync
+
+        source = lite_policy_source_sync.source_state()
+    except Exception:
+        return False, "policy_source_validation_unavailable", observed
+    repository_revision = str(source.get("repository_revision") or "")
+    if source.get("durable") and repository_revision and repository_revision != expected:
+        return False, "policy_source_update_pending", observed
     return True, "", observed
 
 
+def _consistency_message(reason_code: str) -> str:
+    if reason_code == "policy_source_update_pending":
+        return "Safety Rules have an update waiting for Owner confirmation, so this protected action was not started."
+    if reason_code == "policy_activation_pending":
+        return "Safety Rules are being updated and verified, so this protected action was not started."
+    if reason_code == "policy_source_validation_unavailable":
+        return "Pocket Lab could not verify the current Safety Rules source, so this protected action was not started."
+    return "Safety Rules revision consistency is not proved, so this protected action was not started."
 
 
 def _opa_endpoint_is_loopback() -> bool:
@@ -135,6 +157,7 @@ def _require_loopback_opa() -> None:
             "Safety Rules are configured with a non-local policy endpoint, so protected actions are blocked.",
             status_code=503,
         )
+
 
 def _http_json(method: str, path: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None) -> tuple[int, dict[str, Any]]:
     bounded = timeout if timeout is not None else float(os.environ.get("POCKETLAB_OPA_TIMEOUT_SECONDS", "0.35"))
@@ -273,17 +296,18 @@ def _validate_result(raw: Any) -> dict[str, Any]:
 
 
 def _server_continuation_facts(input_doc: dict[str, Any]) -> tuple[str | None, str | None]:
-    """Resolve continuation state exclusively from durable server records.
-
-    The browser never supplies an approval or exception claim.  An approval is
-    scoped to the active candidate revision before OPA evaluates the retry.
-    """
+    """Resolve continuation state exclusively from durable server records."""
     actor = input_doc["actor"]
     try:
         from . import lite_policy_approvals
 
         revision = _safe_revision()
-        if input_doc["action"]["id"] == "device.remove" and input_doc["target"]["type"] == "device" and actor.get("role") in {"Owner", "Admin", "Operator"}:
+        if (
+            input_doc["action"]["id"] == "device.remove"
+            and input_doc["target"]["type"] == "device"
+            and actor.get("enterprise_enabled") is True
+            and actor.get("role") in {"Admin", "Operator"}
+        ):
             return lite_policy_approvals.matching_approved(
                 initiating_human_id=str(actor["id"]), action_id="device.remove", target_type="device",
                 target_id=str(input_doc["target"]["id"]), policy_revision=revision,
@@ -295,8 +319,7 @@ def _server_continuation_facts(input_doc: dict[str, Any]) -> tuple[str | None, s
                     human_id=str(actor["id"]), app_id=str(input_doc["target"]["id"]), device_id=device_id, policy_revision=revision,
                 )
     except Exception:
-        # An unavailable continuation store must not become a grant.  OPA will
-        # return approval_required and the original action remains blocked.
+        # An unavailable continuation store must not become a grant.
         pass
     return None, None
 
@@ -314,18 +337,9 @@ def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], eva
                        target_type,target_id,target_revision,allow,reason_code,policy_revision,evaluation_ms
                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
-                    _now_iso(),
-                    decision_id,
-                    correlation_id[:80],
-                    actor["type"],
-                    actor["id"],
-                    input_doc["action"]["id"],
-                    target["type"],
-                    target["id"],
-                    target["revision"],
-                    1 if decision["allow"] else 0,
-                    decision["reason_code"],
-                    decision["policy_revision"],
+                    _now_iso(), decision_id, correlation_id[:80], actor["type"], actor["id"],
+                    input_doc["action"]["id"], target["type"], target["id"], target["revision"],
+                    1 if decision["allow"] else 0, decision["reason_code"], decision["policy_revision"],
                     round(max(0.0, evaluation_ms), 3),
                 ),
             )
@@ -340,10 +354,21 @@ def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], eva
                     (decision_id, json.dumps(decision.get("constraints") or [], separators=(",", ":")), f"policy:{decision_id}"),
                 )
             except Exception:
-                # Migration may not be present during a rolling upgrade; the core
-                # deny/allow decision must remain authoritative and fail-closed.
                 pass
     return {**decision, "decision_id": decision_id, "correlation_id": correlation_id, "evaluation_ms": round(max(0.0, evaluation_ms), 3)}
+
+
+def _approval_requirement_is_valid(input_doc: dict[str, Any], decision: dict[str, Any]) -> bool:
+    actor = input_doc.get("actor") or {}
+    requirements = decision.get("requirements") if isinstance(decision.get("requirements"), dict) else {}
+    return bool(
+        input_doc.get("action", {}).get("id") == "device.remove"
+        and actor.get("type") == "human"
+        and actor.get("enterprise_enabled") is True
+        and actor.get("role") in {"Admin", "Operator"}
+        and requirements.get("required_assurance") == "policy.approval.device.remove"
+        and requirements.get("required_approver_roles")
+    )
 
 
 def evaluate_authorization(
@@ -380,7 +405,7 @@ def evaluate_authorization(
         _require_loopback_opa()
         consistent, consistency_reason, observed_revision = _policy_consistency()
         if not consistent:
-            raise PolicyDecisionError(consistency_reason, "Safety Rules revision consistency is not proved, so this protected action was not started.", status_code=503)
+            raise PolicyDecisionError(consistency_reason, _consistency_message(consistency_reason), status_code=503)
         if test is not None:
             normalized = _validate_result(test)
         else:
@@ -394,12 +419,7 @@ def evaluate_authorization(
         elapsed = (time.monotonic() - started) * 1000.0
         failed = _record_decision(
             input_doc=input_doc,
-            decision={
-                "allow": False,
-                "constraints": [],
-                "reason_code": exc.reason_code,
-                "policy_revision": _safe_revision(),
-            },
+            decision={"allow": False, "constraints": [], "reason_code": exc.reason_code, "policy_revision": _safe_revision()},
             evaluation_ms=elapsed,
             correlation_id=str(correlation_id or uuid.uuid4().hex),
         )
@@ -408,12 +428,7 @@ def evaluate_authorization(
         elapsed = (time.monotonic() - started) * 1000.0
         failed = _record_decision(
             input_doc=input_doc,
-            decision={
-                "allow": False,
-                "constraints": [],
-                "reason_code": "policy_unavailable",
-                "policy_revision": _safe_revision(),
-            },
+            decision={"allow": False, "constraints": [], "reason_code": "policy_unavailable", "policy_revision": _safe_revision()},
             evaluation_ms=elapsed,
             correlation_id=str(correlation_id or uuid.uuid4().hex),
         )
@@ -431,12 +446,21 @@ def evaluate_authorization(
         recorded["continuation_exception_id"] = exception_id
     if not recorded["allow"]:
         if recorded.get("reason_code") == "approval_required":
+            actor = input_doc.get("actor") or {}
+            if not _approval_requirement_is_valid(input_doc, recorded):
+                reason = "owner_approval_policy_inconsistent" if actor.get("role") == "Owner" else "policy_approval_inconsistent"
+                raise PolicyDecisionError(
+                    reason,
+                    "Safety Rules returned an approval requirement that does not match the current authority. No approval request was created.",
+                    status_code=503,
+                    decision=recorded,
+                )
             try:
                 from . import lite_policy_approvals
 
                 approval = lite_policy_approvals.create_from_decision(
                     decision_id=recorded["decision_id"],
-                    initiating_role=str(input_doc["actor"].get("role") or ""),
+                    initiating_role=str(actor.get("role") or ""),
                 )["approval"]
             except Exception as exc:
                 raise PolicyDecisionError(
@@ -578,6 +602,23 @@ def policy_status() -> dict[str, Any]:
         error_code = exc.reason_code
     except Exception:
         healthy = False
+
+    source_state: dict[str, Any] = {}
+    consistency_ok = False
+    consistency_reason = error_code or "policy_engine_unavailable"
+    observed_revision = None
+    if healthy:
+        consistency_ok, consistency_reason, observed_revision = _policy_consistency()
+        try:
+            from . import lite_policy_source_sync
+
+            source_state = lite_policy_source_sync.source_state()
+        except Exception:
+            source_state = {}
+            if consistency_ok:
+                consistency_ok = False
+                consistency_reason = "policy_source_validation_unavailable"
+
     recent: list[dict[str, Any]] = []
     try:
         with connection() as conn:
@@ -588,28 +629,34 @@ def policy_status() -> dict[str, Any]:
             ).fetchall()
             recent = [
                 {
-                    "occurred_at": row["occurred_at"],
-                    "decision_id": row["decision_id"],
-                    "correlation_id": row["correlation_id"],
-                    "actor_type": row["actor_type"],
-                    "action_id": row["action_id"],
-                    "target_type": row["target_type"],
-                    "target_id": row["target_id"],
-                    "allow": bool(row["allow"]),
-                    "reason_code": row["reason_code"],
-                    "policy_revision": row["policy_revision"],
+                    "occurred_at": row["occurred_at"], "decision_id": row["decision_id"],
+                    "correlation_id": row["correlation_id"], "actor_type": row["actor_type"],
+                    "action_id": row["action_id"], "target_type": row["target_type"],
+                    "target_id": row["target_id"], "allow": bool(row["allow"]),
+                    "reason_code": row["reason_code"], "policy_revision": row["policy_revision"],
                     "evaluation_ms": row["evaluation_ms"],
                 }
                 for row in rows
             ]
     except Exception:
         recent = []
-    ready = healthy and revision != "unavailable"
+
+    ready = healthy and revision != "unavailable" and consistency_ok
+    source_update_required = bool(source_state.get("source_update_required"))
+    activation_in_progress = bool(source_state.get("activation_in_progress"))
+    if ready:
+        summary = "Safety Rules are active and ready for protected changes."
+    elif consistency_reason == "policy_source_update_pending":
+        summary = "A Safety Rules update is ready. The Owner must confirm it before protected changes can continue."
+    elif consistency_reason == "policy_activation_pending" or activation_in_progress:
+        summary = "Safety Rules are being updated and verified. Protected changes remain fail-closed until verification finishes."
+    else:
+        summary = "Safety Rules are not ready. Protected changes fail closed until they recover."
     last_decision_at = recent[0]["occurred_at"] if recent else None
     return {
         "status": "ready" if ready else "degraded",
-        "summary": "Safety Rules are active and ready for protected changes." if ready else "Safety Rules are not ready. Protected changes fail closed until they recover.",
-        "degraded_reason": "" if ready else (error_code or "policy_not_activated"),
+        "summary": summary,
+        "degraded_reason": "" if ready else (consistency_reason or error_code or "policy_not_activated"),
         "engine": {
             "name": "Open Policy Agent",
             "version": engine_version,
@@ -617,14 +664,20 @@ def policy_status() -> dict[str, Any]:
             "loopback_only": _opa_endpoint_is_loopback(),
             "endpoint_exposed_to_browser": False,
             "reason_code": error_code,
+            "observed_revision": observed_revision,
         },
         "active_policy": {
             "revision": revision,
+            "repository_revision": str(source_state.get("repository_revision") or "")[:80],
+            "known_good_revision": str(source_state.get("known_good_revision") or "")[:80],
             "bundle_ready": revision != "unavailable",
             "package_status": "active" if revision != "unavailable" else "unavailable",
             "protected_actions": sorted(PROTECTED_ACTIONS),
-            "activation_model": "atomic_local_copy",
-            "last_known_good": revision != "unavailable",
+            "activation_model": "supervisor_governed",
+            "last_known_good": bool(source_state.get("known_good_revision") == revision) if source_state.get("durable") else revision != "unavailable",
+            "source_update_required": source_update_required,
+            "source_update_available": source_update_required,
+            "activation_in_progress": activation_in_progress,
         },
         "last_decision_at": last_decision_at,
         "policy_groups": [

@@ -2872,8 +2872,8 @@
     },
     {
       "path": "source-metadata.json",
-      "sha256": "a1a82b6ffb1a60ea541e3dc118cf78cf036d57c43468286564717500868bf082",
-      "size_bytes": 8628
+      "sha256": "a0fb5530376c82e26f75a81fdae01f3899e9094e5a8233137e20fd3069792724",
+      "size_bytes": 8916
     },
     {
       "path": "tables/app_action_lifecycle.html",

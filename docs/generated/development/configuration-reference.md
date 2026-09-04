@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 4a5a97304dcd659c997f8eec015aaba0e5f135fd7b71074bc49585d6c791fcc8
+source_fingerprint: aa4dad8431cc9b814627773930ca6c5688d18a5687684ac3041ad9ad1f3ea87b
 schema_revision: 1
 validation_status: generated
 ---
@@ -865,5 +865,6 @@ No current environment values are read or emitted. Secret-like names are classif
 | `SOURCE_REAL` | configuration | source-defined or empty | no | component-dependent | scripts/dev/sync-wsl-to-windows.sh |
 | `SOURCE_RELEASE_BADGE` | configuration | source-defined or empty | no | component-dependent | scripts/docs/knowledge/generate_knowledge.py |
 | `SOURCE_ROOT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/setup-wsl-ubuntu-dev.sh |
+| `SOURCE_SYNC_SUMMARY` | configuration | source-defined or empty | no | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
 | `SOURCE_TREE_HASH` | configuration | source-defined or empty | no | component-dependent | scripts/docs/enterprise/enterprise_completion.py, scripts/docs/enterprise/generate_enterprise_documentation.py |
 | `SOURCE_TYPE_LABELS` | configuration | source-defined or empty | no | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_storage.py |

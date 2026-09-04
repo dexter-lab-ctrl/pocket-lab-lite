@@ -12,7 +12,7 @@ from typing import Any
 
 from ..db.connection import connection
 from ..db.migrations import apply_migrations
-from . import lite_enterprise_identity, lite_policy_lifecycle, lite_policy_opa
+from . import lite_enterprise_identity, lite_policy_lifecycle, lite_policy_opa, lite_policy_source_sync
 
 # Simulation is non-executing policy analysis. Auditor may use it as a read-only
 # governance tool; Viewer remains limited to already-recorded evidence.
@@ -141,9 +141,41 @@ def health(*, auth_context: dict[str, Any]) -> dict[str, Any]:
         op = conn.execute("SELECT state FROM policy_activation_operations WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back','uncertain') ORDER BY created_at DESC LIMIT 1").fetchone()
     filesystem = lite_policy_opa._safe_revision(); observed = lite_policy_opa._observed_opa_revision()
     active = str(state["active_revision_id"] if state else ""); known = str(state["known_good_revision_id"] if state else "")
-    if op: consistency, reason = ("uncertain", "policy_revision_uncertain") if op["state"] == "uncertain" else ("activation_pending", "policy_activation_pending")
-    elif not active or not observed: consistency, reason = "unavailable", "policy_revision_uncertain"
-    elif active != known or active != filesystem or active != observed: consistency, reason = "revision_mismatch", "policy_revision_mismatch"
-    else: consistency, reason = "ready", ""
+    source: dict[str, Any] = {}
+    if op:
+        consistency, reason = ("uncertain", "policy_revision_uncertain") if op["state"] == "uncertain" else ("activation_pending", "policy_activation_pending")
+    elif not active or not observed:
+        consistency, reason = "unavailable", "policy_revision_uncertain"
+    elif active != known or active != filesystem or active != observed:
+        consistency, reason = "revision_mismatch", "policy_revision_mismatch"
+    else:
+        try:
+            source = lite_policy_source_sync.source_state()
+        except Exception:
+            consistency, reason = "source_validation_unavailable", "policy_source_validation_unavailable"
+        else:
+            if source.get("source_update_required"):
+                consistency, reason = "source_update_pending", "policy_source_update_pending"
+            else:
+                consistency, reason = "ready", ""
     analysis = analyze(auth_context=auth_context, revision_id=active) if active and str((lite_enterprise_identity.enrich_auth_context(auth_context).get("authorization") or {}).get("role") or "") in ANALYZE_ROLES else {"status": "not_authorized", "findings": [], "represented_actions": sorted(lite_policy_opa.PROTECTED_ACTIONS) if active else []}
-    return {"consistency_state": consistency, "degraded_reason": reason, "db_active_revision": active or None, "filesystem_active_revision": filesystem if filesystem != "unavailable" else None, "opa_observed_revision": observed, "known_good_revision": known or None, "activation_operation_state": op["state"] if op else None, "opa_loopback_configured": lite_policy_opa._opa_endpoint_is_loopback(), "opa_reachable": observed is not None, "manifest_integrity": consistency != "corrupt", "registered_protected_actions": sorted(lite_policy_opa.PROTECTED_ACTIONS), "represented_protected_actions": analysis.get("represented_actions", []), "analysis_status": analysis.get("status"), "deterministic_findings_count": len(analysis.get("findings", [])), "checked_at": _now(), "raw_input_exposed": False}
+    return {
+        "consistency_state": consistency,
+        "degraded_reason": reason,
+        "db_active_revision": active or None,
+        "filesystem_active_revision": filesystem if filesystem != "unavailable" else None,
+        "opa_observed_revision": observed,
+        "known_good_revision": known or None,
+        "repository_revision": str(source.get("repository_revision") or "")[:80] or None,
+        "source_update_required": bool(source.get("source_update_required")),
+        "activation_operation_state": op["state"] if op else None,
+        "opa_loopback_configured": lite_policy_opa._opa_endpoint_is_loopback(),
+        "opa_reachable": observed is not None,
+        "manifest_integrity": consistency not in {"corrupt", "source_validation_unavailable"},
+        "registered_protected_actions": sorted(lite_policy_opa.PROTECTED_ACTIONS),
+        "represented_protected_actions": analysis.get("represented_actions", []),
+        "analysis_status": analysis.get("status"),
+        "deterministic_findings_count": len(analysis.get("findings", [])),
+        "checked_at": _now(),
+        "raw_input_exposed": False,
+    }

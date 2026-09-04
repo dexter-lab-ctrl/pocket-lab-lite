@@ -8,6 +8,7 @@ the same canonical metadata view.
 """
 from __future__ import annotations
 
+import ast
 import importlib.util
 from pathlib import Path
 from typing import Any, Iterable
@@ -15,6 +16,10 @@ from typing import Any, Iterable
 HERE = Path(__file__).resolve().parent
 GENERATOR_PATH = HERE / "generate_platform_catalogs.py"
 SUPPLEMENT_PATH = HERE.parents[2] / "contracts/metadata/identity-rules-reason-code-overrides.json"
+POLICY_SOURCE_SYNC_PATH = (
+    HERE.parents[2]
+    / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py"
+)
 
 
 def _load_generator():
@@ -29,6 +34,7 @@ def _load_generator():
 def _configure(generator):
     base_metadata = generator.metadata
     base_fingerprint = generator.fingerprint
+    base_discovered_reason_codes = generator.discovered_reason_codes
 
     def merged_metadata() -> dict[str, Any]:
         data = dict(base_metadata())
@@ -57,8 +63,35 @@ def _configure(generator):
             values.append(SUPPLEMENT_PATH)
         return base_fingerprint(values)
 
+    def discovered_reason_codes_with_source_sync() -> set[str]:
+        """Keep typed source-sync API failures inside documentation coverage."""
+        values = set(base_discovered_reason_codes())
+        if not POLICY_SOURCE_SYNC_PATH.exists():
+            return values
+        try:
+            tree = ast.parse(POLICY_SOURCE_SYNC_PATH.read_text(encoding="utf-8", errors="ignore"))
+        except SyntaxError:
+            return values
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            name = (
+                node.func.id
+                if isinstance(node.func, ast.Name)
+                else node.func.attr
+                if isinstance(node.func, ast.Attribute)
+                else ""
+            )
+            if name != "PolicySourceSyncError" or not node.args:
+                continue
+            first = node.args[0]
+            if isinstance(first, ast.Constant) and isinstance(first.value, str):
+                values.add(first.value)
+        return values
+
     generator.metadata = merged_metadata
     generator.fingerprint = fingerprint_with_supplement
+    generator.discovered_reason_codes = discovered_reason_codes_with_source_sync
     return generator
 
 

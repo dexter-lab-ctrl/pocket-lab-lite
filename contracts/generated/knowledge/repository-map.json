@@ -491,6 +491,7 @@
         "api:post:/api/lite/enterprise/rules/revisions",
         "api:post:/api/lite/enterprise/rules/rollbacks",
         "api:post:/api/lite/enterprise/rules/simulations",
+        "api:post:/api/lite/enterprise/rules/source-sync",
         "api:post:/api/lite/fleet/add-device",
         "api:post:/api/lite/fleet/agent/bootstrap-blocked",
         "api:post:/api/lite/fleet/agent/bootstrap.env",
@@ -785,6 +786,7 @@
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
+        "reason:owner_approval_policy_inconsistent",
         "reason:owner_claim_authority_expired",
         "reason:owner_claim_authority_invalid",
         "reason:owner_claim_expired",
@@ -831,7 +833,13 @@
         "reason:policy_revision_unknown",
         "reason:policy_simulation_invalid",
         "reason:policy_simulation_revision_unavailable",
+        "reason:policy_source_contract_invalid",
+        "reason:policy_source_contract_missing",
+        "reason:policy_source_revision_conflict",
+        "reason:policy_source_state_changed",
         "reason:policy_source_unavailable",
+        "reason:policy_source_update_pending",
+        "reason:policy_source_validation_unavailable",
         "reason:policy_template_unknown",
         "reason:policy_unavailable",
         "reason:projection_too_old",
@@ -1036,6 +1044,7 @@
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
+        "reason:owner_approval_policy_inconsistent",
         "reason:owner_claim_authority_expired",
         "reason:owner_claim_authority_invalid",
         "reason:owner_claim_expired",
@@ -1082,7 +1091,13 @@
         "reason:policy_revision_unknown",
         "reason:policy_simulation_invalid",
         "reason:policy_simulation_revision_unavailable",
+        "reason:policy_source_contract_invalid",
+        "reason:policy_source_contract_missing",
+        "reason:policy_source_revision_conflict",
+        "reason:policy_source_state_changed",
         "reason:policy_source_unavailable",
+        "reason:policy_source_update_pending",
+        "reason:policy_source_validation_unavailable",
         "reason:policy_template_unknown",
         "reason:policy_unavailable",
         "reason:projection_too_old",
@@ -1609,6 +1624,15 @@
         "table:human_identities"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql"
+    },
+    {
+      "entities": [
+        "table:enterprise_configuration",
+        "table:enterprise_memberships",
+        "table:human_identities",
+        "table:policy_approvals"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
     },
     {
       "entities": [
@@ -3184,6 +3208,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_policy_source_reconciliation.py"
+      ],
+      "source": "tests/backend/test_policy_source_reconciliation.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py"
       ],
       "source": "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
@@ -3627,6 +3657,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "cc75daccae5521622386e15776693b1ab63475f8911600431c6833c00c652da4"
+    "source_fingerprint": "97bfc81333f118a1b263c78329b12866cd9aa54813d96e1c2fb62f523f3b99c2"
   }
 }

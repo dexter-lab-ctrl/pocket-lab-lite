@@ -593,6 +593,10 @@
         "title": "POST /api/lite/enterprise/rules/simulations",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-simulations"
       },
+      "endpoint:POST:/api/lite/enterprise/rules/source-sync": {
+        "title": "POST /api/lite/enterprise/rules/source-sync",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-enterprise-rules-source-sync"
+      },
       "endpoint:POST:/api/lite/fleet/add-device": {
         "title": "POST /api/lite/fleet/add-device",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-add-device"
@@ -1909,6 +1913,10 @@
         "title": "not_found_in_restored_snapshot",
         "url": "../../docs/generated/development/reason-codes.md#not-found-in-restored-snapshot"
       },
+      "reason:owner_approval_policy_inconsistent": {
+        "title": "owner_approval_policy_inconsistent",
+        "url": "../../docs/generated/development/reason-codes.md#owner-approval-policy-inconsistent"
+      },
       "reason:owner_claim_authority_expired": {
         "title": "owner_claim_authority_expired",
         "url": "../../docs/generated/development/reason-codes.md#owner-claim-authority-expired"
@@ -2093,9 +2101,33 @@
         "title": "policy_simulation_revision_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#policy-simulation-revision-unavailable"
       },
+      "reason:policy_source_contract_invalid": {
+        "title": "policy_source_contract_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-contract-invalid"
+      },
+      "reason:policy_source_contract_missing": {
+        "title": "policy_source_contract_missing",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-contract-missing"
+      },
+      "reason:policy_source_revision_conflict": {
+        "title": "policy_source_revision_conflict",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-revision-conflict"
+      },
+      "reason:policy_source_state_changed": {
+        "title": "policy_source_state_changed",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-state-changed"
+      },
       "reason:policy_source_unavailable": {
         "title": "policy_source_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#policy-source-unavailable"
+      },
+      "reason:policy_source_update_pending": {
+        "title": "policy_source_update_pending",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-update-pending"
+      },
+      "reason:policy_source_validation_unavailable": {
+        "title": "policy_source_validation_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#policy-source-validation-unavailable"
       },
       "reason:policy_template_unknown": {
         "title": "policy_template_unknown",
@@ -2651,7 +2683,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "72dd60f65cbb6230cef3c785dcab8e98339eba1595037527bd8120a31f028ea7",
+    "aggregate_fingerprint": "e938f405d2f755af45f68f7d5d447825bfec1ca184cddfb886357606261869d5",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2661,9 +2693,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "64ceebe291cb9a2130a93a2216f0cc9b390798cc57a211df63196e4021ded8df",
+      "contracts/generated/lite-openapi.json": "702680c5e1443588db70b4bad12e29c448a56a8c64f5bb68f4bb468120d73c73",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "d6e75a0bf450405b0992fbaeb78dd3c2063ff9f40abd0c8eb4d3e565740d5236",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -2694,6 +2726,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql": "c0e1b39f4b0a40928ff994aaf47491c6986c2deab7673e6d64eb6fd87e9ebfc7",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql": "8c05ac611001787121ad52cadf660cb7731dbce9970623988cce578fc8f5f06f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql": "fe887f0f99c1180ef479ea6ac45e0b1f7c25dfd3446d090fe5b58ecefbc93dfe",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql": "8e128d0c96d0751ba80e1636665a5e49bd5501c0597747caa96ff6654729287b",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
     },
     "validation_state": "generated"

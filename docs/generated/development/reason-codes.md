@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 1f565fdc15f220c50ee82ad9194511a1369905c1e54b74d85a16aa7bc2a5159e
+source_fingerprint: 9f404609f75395c6d7f7900e6756d3357ea81ad1cee738e14e5048d240e197d2
 schema_revision: 1
 validation_status: generated
 ---
@@ -95,6 +95,7 @@ validation_status: generated
 | `metadata_only` | validation | Only metadata was evaluated. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `no_active_generation` | projections | There is no active generation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `owner_approval_policy_inconsistent` | rules | Safety Rules returned an independent device-removal approval requirement for the root Owner, which contradicts the Owner authority contract. Pocket Lab fails closed and refuses to create or continue that impossible peer-approval workflow until Safety Rules are synchronized. | yes | no | 503 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py |
 | `owner_claim_authority_expired` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `owner_claim_authority_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `owner_claim_expired` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
@@ -141,7 +142,13 @@ validation_status: generated
 | `policy_revision_unknown` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `policy_simulation_invalid` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `policy_simulation_revision_unavailable` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `policy_source_contract_invalid` | rules | The durable Safety Rules parameters cannot be converted into a verified repository-source candidate, so Pocket Lab fails closed rather than activating or authorizing from an unproved contract. | yes | no | 503 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
+| `policy_source_contract_missing` | rules | Durable policy runtime state references an active revision whose immutable source contract is missing, so repository reconciliation cannot proceed safely. | yes | no | 503 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
+| `policy_source_revision_conflict` | rules | The repository-derived Safety Rules candidate conflicts with an immutable revision record for the same revision identifier. Pocket Lab refuses activation instead of replacing recorded policy evidence. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
+| `policy_source_state_changed` | rules | Durable Safety Rules state changed after the repository candidate was inspected but before the synchronization operation could be recorded, so the stale request is rejected. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
 | `policy_source_unavailable` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `policy_source_update_pending` | rules | The repository contains a newer Safety Rules revision than the proved durable and loaded OPA revision. Protected actions fail closed until the Owner confirms synchronization and the supervisor proves activation. | yes | no | 503 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py |
+| `policy_source_validation_unavailable` | rules | Pocket Lab could not derive or verify the repository Safety Rules revision. Protected actions and source synchronization fail closed until source validation is available. | yes | no | 503 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
 | `policy_template_unknown` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `policy_unavailable` | rules | The loopback OPA decision path is unavailable or invalid, so the protected action fails closed before execution. | yes | no | 503 | error | structured reason/failure fields in Lite backend or contracts metadata |
 | `projection_too_old` | projections | The last committed projection is too old for a safe write. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
