@@ -14,6 +14,7 @@ import {
 } from '../LiteUi.jsx';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { selectDeviceOperationalStory } from '../../lib/liteViewModels.js';
+import './deviceActionFocus.css';
 
 const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
 const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
@@ -114,6 +115,46 @@ function DeviceCard({
   const showHealthAttention = Boolean(proactiveHealth && (healthAttentionCount > 0 || !['healthy', 'unknown'].includes(String(proactiveHealth.status || '').toLowerCase())));
   const lastSeen = device?.last_seen_state?.last_seen_at || device?.last_seen;
   const story = selectDeviceOperationalStory(device, { savedStateOnly });
+  const removeActionButtonRef = React.useRef(null);
+  const removalPanelRef = React.useRef(null);
+  const removalInitiatedRef = React.useRef(false);
+
+  function syncRemovalFocus() {
+    if (!removalInitiatedRef.current || typeof document === 'undefined') return;
+    const panel = document.querySelector('.lite-device-remove-panel');
+    if (panel) {
+      if (removalPanelRef.current !== panel) {
+        removalPanelRef.current = panel;
+        panel.setAttribute('tabindex', '-1');
+        panel.setAttribute('role', 'region');
+        panel.setAttribute('aria-label', `Remove old device: ${deviceName}`);
+        panel.focus?.({ preventScroll: true });
+      }
+      return;
+    }
+    if (!removalPanelRef.current) return;
+    removalPanelRef.current = null;
+    removalInitiatedRef.current = false;
+    const trigger = removeActionButtonRef.current;
+    if (trigger?.isConnected) {
+      window.requestAnimationFrame(() => trigger.focus?.({ preventScroll: true }));
+    }
+  }
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return undefined;
+    const observer = new MutationObserver(syncRemovalFocus);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  function openRemovalReview() {
+    removalInitiatedRef.current = true;
+    onRemoveDevice?.();
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(syncRemovalFocus);
+    }
+  }
 
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
@@ -211,7 +252,7 @@ function DeviceCard({
               {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
                 <RefreshCw className="h-4 w-4" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
               </LiteButton> : null}
-              {canRemove ? <LiteButton tone="danger" onClick={onRemoveDevice} disabled={removeBusy}>
+              {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeActionButtonRef}>
                 <Trash2 className="h-4 w-4" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
               </LiteButton> : null}
             </div> : null}
