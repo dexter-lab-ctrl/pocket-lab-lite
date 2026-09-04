@@ -34,6 +34,8 @@ _SAFE_TEXT_RE = re.compile(
 )
 _TERMINAL_TRUST = {"verified", "protected_server_host"}
 _TERMINAL_ENROLLMENT = {"ready", "invite_expired", "invite_revoked", "join_blocked"}
+_LIVE_INVITE_STATES = frozenset({"pending", "invited", "invite_sent", "accepted", "joining", "waiting"})
+_TERMINAL_INVITE_STATES = frozenset({"used", "joined", "revoked", "expired", "removed", "cancelled", "canceled", "failed"})
 
 CAPABILITY_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("host_apps", "Can host apps"),
@@ -129,6 +131,50 @@ def _matches_device(record: dict[str, Any], keys: set[str]) -> bool:
         _normalize_id(record.get("intended_node_id")),
     }
     return bool(keys.intersection({value for value in record_keys if value != "unknown-node"}))
+
+
+def _invite_status(record: dict[str, Any]) -> str:
+    return str(record.get("status") or "pending").strip().lower().replace("-", "_")
+
+
+def _invite_is_live(record: dict[str, Any], *, now_epoch: float | None = None) -> bool:
+    """Return True only for an invite that can still represent a live join dependency.
+
+    Historical/terminal invite rows remain useful audit evidence, but they must not
+    keep an already-enrolled stale device permanently non-removable.
+    """
+    status = _invite_status(record)
+    if status in _TERMINAL_INVITE_STATES:
+        return False
+    now = time.time() if now_epoch is None else float(now_epoch)
+    try:
+        expires = float(record.get("expires_at_epoch") or 0)
+    except (TypeError, ValueError):
+        expires = 0
+    if expires and expires <= now:
+        return False
+    return status in _LIVE_INVITE_STATES
+
+
+def _joined_device_evidence(device: dict[str, Any]) -> bool:
+    """Detect durable evidence that this record represents an enrolled device.
+
+    Accepted-invite fallback rows deliberately synthesize ``last_seen_at`` from
+    invite acceptance, so that source is excluded unless a real heartbeat or a
+    successful-join timestamp exists. This prevents an unjoined accepted invite
+    from being mistaken for a removable enrolled device while allowing older
+    fleet rows that predate ``first_heartbeat_at`` to use their real heartbeat /
+    last-seen evidence.
+    """
+    source = str(device.get("source") or "").strip().lower()
+    if device.get("first_heartbeat_at") or device.get("last_heartbeat_at") or device.get("last_successful_join_at"):
+        return True
+    if device.get("identity_verified_at") and source != "accepted-invite":
+        return True
+    status = str(device.get("status") or device.get("connection") or "").strip().lower()
+    if source != "accepted-invite" and status not in {"waiting", "pending", "invited", "joining", "accepted"}:
+        return bool(device.get("last_seen_at") or device.get("last_seen"))
+    return False
 
 
 def _latest_timestamp(values: Iterable[tuple[str, Any]]) -> tuple[str | None, str]:
@@ -439,6 +485,7 @@ def _normalize_event(record: dict[str, Any], device_id: str) -> dict[str, Any]:
         "summary": summary,
         "occurred_at": str(occurred_at),
         "status": _safe_text(record.get("status") or ("blocked" if "blocked" in event_type else "recorded"), 32),
+        "invite_id": _safe_text(record.get("invite_id"), 120) or None,
         "sanitized": True,
     }
 
@@ -470,6 +517,7 @@ def enrich_device(
     matching_invites = [item for item in context.get("invites", []) if _matches_device(item, keys)]
     matching_invites.sort(key=lambda item: _epoch_ms(item.get("updated_at") or item.get("created_at")), reverse=True)
     invite = matching_invites[0] if matching_invites else {}
+    live_invites = [item for item in matching_invites if _invite_is_live(item)]
     recent_events = [
         _normalize_event(item, device_id)
         for item in context.get("events", [])
@@ -492,29 +540,41 @@ def enrich_device(
     # local server may use fresh local supervisor evidence as a bounded fallback.
     online = bool(heartbeat_fresh or (protected and supervisor_fresh))
     first_heartbeat = device.get("first_heartbeat_at")
+    joined_evidence = _joined_device_evidence(device)
     accepted_at = invite.get("accepted_at") or device.get("accepted_at")
     identity_status = str(device.get("identity_status") or "").lower()
+    repair_reason = str(device.get("repair_reason_code") or device.get("last_identity_reason_code") or "").strip().lower()
+    historical_mismatch = bool(mismatch_events and joined_evidence)
+    # A mismatch event proves that a join attempt was rejected; it does not
+    # invalidate a canonical device that already has enrollment/heartbeat truth.
+    # This distinction is essential when another enrolled phone attempts to use
+    # an invite intended for a stale device.
     if protected:
         identity_status = "protected_server_host"
+    elif joined_evidence:
+        identity_status = "verified"
     elif identity_status not in _TERMINAL_TRUST:
-        if mismatch_events and not first_heartbeat:
+        if mismatch_events:
             identity_status = "join_blocked"
-        elif first_heartbeat or (online and accepted_at):
-            identity_status = "verified"
         elif accepted_at:
             identity_status = "pending"
         else:
             identity_status = "not_enrolled"
 
-    invite_status = str(invite.get("status") or "").lower()
+    invite_status = _invite_status(invite) if invite else ""
+    explicit_non_identity_repair = bool(
+        device.get("repair_required")
+        and repair_reason
+        and repair_reason not in {"invite_identity_mismatch", "identity_mismatch", "identity_mismatch_blocked"}
+    )
     if protected:
+        enrollment_status = "ready"
+    elif explicit_non_identity_repair:
+        enrollment_status = "repair_required"
+    elif joined_evidence and identity_status == "verified":
         enrollment_status = "ready"
     elif identity_status == "join_blocked":
         enrollment_status = "join_blocked"
-    elif device.get("repair_required"):
-        enrollment_status = "repair_required"
-    elif identity_status == "verified" and (online or first_heartbeat):
-        enrollment_status = "ready"
     elif accepted_at:
         enrollment_status = "waiting_for_heartbeat"
     elif invite_status == "revoked":
@@ -523,7 +583,7 @@ def enrich_device(
         invite.get("expires_at_epoch") and float(invite.get("expires_at_epoch") or 0) <= time.time()
     ):
         enrollment_status = "invite_expired"
-    elif invite:
+    elif live_invites:
         enrollment_status = "invite_pending"
     else:
         enrollment_status = "not_enrolled"
@@ -582,12 +642,29 @@ def enrich_device(
     recommended_actions: list[str] = []
     if protected:
         blockers.append({"code": "protected_server_host", "summary": "This protected server host cannot be removed."})
-    if not protected and enrollment_status in {
-        "invite_pending", "waiting_for_heartbeat", "join_blocked", "repair_required"
-    }:
+    live_join_dependency = bool(
+        not joined_evidence
+        and (live_invites or enrollment_status in {"invite_pending", "waiting_for_heartbeat", "join_blocked"})
+    )
+    if not protected and live_join_dependency:
         blockers.append({
-            "code": "enrollment_incomplete",
+            "code": "active_join_flow",
             "summary": "Finish or cancel the current join flow before removing this device record.",
+        })
+    if not protected and enrollment_status == "repair_required":
+        blockers.append({
+            "code": "device_repair_required",
+            "summary": "Finish the current device repair before removing this saved record.",
+        })
+    if historical_mismatch and not protected:
+        warnings.append({
+            "code": "historical_join_blocked",
+            "summary": "A previous mismatched join was blocked. The enrolled device record can still be removed after confirmation.",
+        })
+    if joined_evidence and live_invites and not protected:
+        warnings.append({
+            "code": "matching_invite_cleanup",
+            "summary": "A matching invite will be retired with this old device record.",
         })
     if online and not protected:
         warnings.append({
@@ -645,7 +722,7 @@ def enrich_device(
         "last_blocked_reason": device.get("last_identity_reason_code") or (mismatch_events[0]["reason_code"] if mismatch_events else ""),
         "blocked_join_count": max(int(device.get("blocked_join_count") or 0), len(mismatch_events)),
         "last_blocked_join_at": device.get("last_blocked_join_at") or (mismatch_events[0]["occurred_at"] if mismatch_events else None),
-        "repair_required": bool(device.get("repair_required") or identity_status in {"join_blocked", "needs_review"}),
+        "repair_required": bool(explicit_non_identity_repair or (not joined_evidence and identity_status in {"join_blocked", "needs_review"})),
         "repair_reason_code": _safe_text(device.get("repair_reason_code"), 80),
     }
     enrollment = {

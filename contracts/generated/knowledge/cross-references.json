@@ -6985,6 +6985,20 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_device_removal_invite_reconciliation.py": [
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_api.py": [
         {
           "source": "component:app-catalog",
@@ -25753,6 +25767,10 @@
       ],
       "reason:identity_mismatch": [
         {
+          "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
         },
@@ -26000,6 +26018,10 @@
         }
       ],
       "reason:invite_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -27040,6 +27062,10 @@
         }
       ],
       "reason:protected_server_host": [
+        {
+          "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
@@ -28237,6 +28263,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94"
+    "source_fingerprint": "e4384ef0ae78734805940238c48332bcde2165ef1d000e54c147113eacf0bc52"
   }
 }
