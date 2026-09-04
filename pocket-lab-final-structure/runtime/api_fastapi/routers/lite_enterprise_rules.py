@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .. import deps
-from ..services import lite_enterprise_governance, lite_policy_analysis, lite_policy_approvals, lite_policy_lifecycle, lite_policy_opa
+from ..services import lite_enterprise_governance, lite_policy_analysis, lite_policy_approvals, lite_policy_lifecycle, lite_policy_opa, lite_policy_source_sync
 
 router = APIRouter(prefix="/api/lite/enterprise/rules", tags=["lite-enterprise-rules"])
 lite_enterprise_governance.ensure_policy_templates()
@@ -46,7 +46,13 @@ class TemporaryExceptionRequest(BaseModel):
 def _call(response: Response, callback: Any) -> Any:
     try:
         result = callback()
-    except (lite_policy_lifecycle.PolicyLifecycleError, lite_policy_analysis.PolicyAnalysisError, lite_policy_approvals.ApprovalError, lite_enterprise_governance.GovernanceError) as exc:
+    except (
+        lite_policy_lifecycle.PolicyLifecycleError,
+        lite_policy_analysis.PolicyAnalysisError,
+        lite_policy_approvals.ApprovalError,
+        lite_enterprise_governance.GovernanceError,
+        lite_policy_source_sync.PolicySourceSyncError,
+    ) as exc:
         raise HTTPException(status_code=exc.status_code, headers={"Cache-Control": "no-store"}, detail={"reason_code": exc.reason_code, "message": exc.message}) from exc
     response.headers["Cache-Control"] = "no-store"
     return result
@@ -108,6 +114,23 @@ def compare(left_revision_id: str, right_revision_id: str, request: Request, res
 @router.post("/activations", status_code=202)
 def activate(payload: ActivationRequest, request: Request, response: Response) -> dict[str, Any]:
     return _call(response, lambda: lite_policy_lifecycle.request_activation(auth_context=_owner_step_up(request, "policy.rules.activate"), revision_id=payload.revision_id, correlation_id=uuid.uuid4().hex))
+
+
+@router.post("/source-sync", status_code=202)
+def source_sync(request: Request, response: Response) -> dict[str, Any]:
+    """Queue repository-source reconciliation for Personal or Enterprise Owner.
+
+    The route lives with Rules governance, but root-owner verification explicitly
+    supports both workspace modes.  FastAPI records intent only; the core
+    supervisor remains the sole pointer/OPA activation authority.
+    """
+    return _call(
+        response,
+        lambda: lite_policy_source_sync.request_source_sync(
+            auth_context=_owner_step_up(request, "policy.rules.activate"),
+            correlation_id=uuid.uuid4().hex,
+        ),
+    )
 
 
 @router.post("/activations/{operation_id}/resolve")
