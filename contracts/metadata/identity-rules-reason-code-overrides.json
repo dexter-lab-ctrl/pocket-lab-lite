@@ -44,6 +44,21 @@
       "terminal": false,
       "ui_mapping": [],
       "user_message": "Owner or Admin access is required to manage people."
+    },
+    {
+      "audit_severity": "error",
+      "code": "owner_approval_policy_inconsistent",
+      "deprecated_aliases": [],
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "Safety Rules returned an independent device-removal approval requirement for the root Owner, which contradicts the Owner authority contract. Pocket Lab fails closed and refuses to create or continue that impossible peer-approval workflow until Safety Rules are synchronized.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Safety Rules need an update. Owner device removal cannot require peer approval."
     }
   ]
 }
