@@ -1580,6 +1580,27 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Source Sync Status",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "method": "GET",
+      "name": "GET /api/lite/enterprise/rules/source-sync/status",
+      "operation_id": "source_sync_status_api_lite_enterprise_rules_source_sync_status_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/enterprise/rules/source-sync/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-enterprise-rules"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Templates",
       "domain": "enterprise",
       "frontend_clients": [
@@ -24549,6 +24570,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_opa_policy_staging.py",
+      "name": "tests/backend/test_opa_policy_staging.py",
+      "source_refs": [
+        "tests/backend/test_opa_policy_staging.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_operation_contract.py",
       "name": "tests/backend/test_operation_contract.py",
       "source_refs": [
@@ -24623,6 +24654,16 @@
       "name": "tests/backend/test_reliability.py",
       "source_refs": [
         "tests/backend/test_reliability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_rules_source_sync_progress.py",
+      "name": "tests/backend/test_rules_source_sync_progress.py",
+      "source_refs": [
+        "tests/backend/test_rules_source_sync_progress.py"
       ],
       "type": "test"
     },
@@ -25093,6 +25134,16 @@
       "name": "tests/e2e/lite-phase9-qualification.spec.ts",
       "source_refs": [
         "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+      "name": "tests/e2e/lite-rules-activation-progress.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
       ],
       "type": "test"
     },
@@ -27489,6 +27540,7 @@
         "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
         "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+        "api:get:/api/lite/enterprise/rules/source-sync/status",
         "api:get:/api/lite/enterprise/rules/templates",
         "api:post:/api/lite/enterprise/identity/enrollment/consume",
         "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
@@ -28239,6 +28291,7 @@
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/backend/test_nats_required.py",
         "test:tests/backend/test_nats_status_semantics.py",
+        "test:tests/backend/test_opa_policy_staging.py",
         "test:tests/backend/test_operation_contract.py",
         "test:tests/backend/test_operations.py",
         "test:tests/backend/test_policy_source_reconciliation.py",
@@ -28247,6 +28300,7 @@
         "test:tests/backend/test_release.py",
         "test:tests/backend/test_release_process_isolation.py",
         "test:tests/backend/test_reliability.py",
+        "test:tests/backend/test_rules_source_sync_progress.py",
         "test:tests/backend/test_runbook_execution.py",
         "test:tests/backend/test_security.py",
         "test:tests/backend/test_state_migration.py",
@@ -28294,6 +28348,7 @@
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
+        "test:tests/e2e/lite-rules-activation-progress.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
@@ -28464,6 +28519,7 @@
         "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
         "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+        "api:get:/api/lite/enterprise/rules/source-sync/status",
         "api:get:/api/lite/enterprise/rules/templates",
         "api:get:/api/lite/events",
         "api:get:/api/lite/fleet",
@@ -29396,6 +29452,7 @@
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/backend/test_nats_required.py",
         "test:tests/backend/test_nats_status_semantics.py",
+        "test:tests/backend/test_opa_policy_staging.py",
         "test:tests/backend/test_operation_contract.py",
         "test:tests/backend/test_operations.py",
         "test:tests/backend/test_policy_source_reconciliation.py",
@@ -29404,6 +29461,7 @@
         "test:tests/backend/test_release.py",
         "test:tests/backend/test_release_process_isolation.py",
         "test:tests/backend/test_reliability.py",
+        "test:tests/backend/test_rules_source_sync_progress.py",
         "test:tests/backend/test_runbook_execution.py",
         "test:tests/backend/test_security.py",
         "test:tests/backend/test_state_migration.py",
@@ -29451,6 +29509,7 @@
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
+        "test:tests/e2e/lite-rules-activation-progress.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
@@ -29998,6 +30057,12 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/source-sync/status": [
         {
           "source": "domain:enterprise",
           "type": "owns"
@@ -37697,6 +37762,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/rules/templates",
           "type": "verified_by"
         },
@@ -42589,6 +42658,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-rules-activation-progress.spec.ts": [
+        {
+          "source": "reason:policy_activation_pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_source_update_pending",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-test-helpers.ts": [
         {
           "source": "component:app-catalog",
@@ -42818,6 +42897,10 @@
         },
         {
           "source": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
           "type": "verified_by"
         },
         {
@@ -44606,6 +44689,16 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/source-sync/status": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -50821,6 +50914,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/enterprise/rules/source-sync/status",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/rules/templates",
           "type": "owns"
         },
@@ -56069,6 +56166,10 @@
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+          "type": "verified_by"
         }
       ],
       "reason:policy_activation_state_changed": [
@@ -56478,6 +56579,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
           "type": "verified_by"
         }
       ],
@@ -67363,6 +67468,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:51f106bc885a5637",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:5211889a0af1cda9",
@@ -69510,6 +69624,15 @@
       "source": "journey:device-reconnect",
       "target": "api:get:/api/lite/fleet",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:676a7e225bf6682d",
+      "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -71716,6 +71839,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "id": "rel:7a254ecc08e604c1",
+      "source": "reason:policy_activation_pending",
+      "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:7a305e65b5a1d3cc",
@@ -71838,6 +71970,15 @@
       "id": "rel:7b35d9058413fe4c",
       "source": "reason:policy_parameters_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:7b5bca4ce3c68a03",
+      "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -80972,6 +81113,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "id": "rel:ce8d5928e1578cc1",
+      "source": "reason:policy_source_update_pending",
+      "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:ce9a21682a7d445c",
@@ -86591,12 +86741,12 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "97bfc81333f118a1b263c78329b12866cd9aa54813d96e1c2fb62f523f3b99c2",
+  "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94",
   "statistics": {
-    "entity_count": 1126,
+    "entity_count": 1130,
     "entity_type_counts": {
       "adr": 6,
-      "api": 185,
+      "api": 186,
       "capability": 5,
       "component": 58,
       "domain": 47,
@@ -86610,14 +86760,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 67,
-      "test": 204,
+      "test": 207,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3172,
-    "source_count": 241
+    "relation_count": 3177,
+    "source_count": 244
   }
 }

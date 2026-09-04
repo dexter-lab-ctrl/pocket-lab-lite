@@ -425,6 +425,12 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/enterprise/rules/source-sync/status": [
+        {
+          "source": "domain:enterprise",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/enterprise/rules/templates": [
         {
           "source": "domain:enterprise",
@@ -8119,6 +8125,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/enterprise/rules/templates",
           "type": "verified_by"
         },
@@ -13011,6 +13021,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-rules-activation-progress.spec.ts": [
+        {
+          "source": "reason:policy_activation_pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:policy_source_update_pending",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-test-helpers.ts": [
         {
           "source": "component:app-catalog",
@@ -13240,6 +13260,10 @@
         },
         {
           "source": "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
           "type": "verified_by"
         },
         {
@@ -15028,6 +15052,16 @@
         }
       ],
       "api:get:/api/lite/enterprise/rules/revisions/{revision_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/enterprise/rules/source-sync/status": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -21243,6 +21277,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/enterprise/rules/source-sync/status",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/enterprise/rules/templates",
           "type": "owns"
         },
@@ -26491,6 +26529,10 @@
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+          "type": "verified_by"
         }
       ],
       "reason:policy_activation_state_changed": [
@@ -26900,6 +26942,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
           "type": "verified_by"
         }
       ],
@@ -28191,6 +28237,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "97bfc81333f118a1b263c78329b12866cd9aa54813d96e1c2fb62f523f3b99c2"
+    "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94"
   }
 }

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "bd8d273eed2abb8ab92608ff6118c5818fccaf94705b2ecaf5c89ccc819ba99a",
+    "aggregate_fingerprint": "c4171613065cca9fdda8e27f00e03f9aeaffc6382b175f78eae205cd23784259",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,7 +10,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "702680c5e1443588db70b4bad12e29c448a56a8c64f5bb68f4bb468120d73c73",
+      "contracts/generated/lite-openapi.json": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "546f9a1e2b0326cad546126ba2ce4d7e5f845a8f3a13d10c488e59ba66b38b4e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "16171c44e96581755494034508fc1f0a69a118ed2166e83431bc14d662c80aa8",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py": "d582006b8a4fc9e5123952e3e2f3334c8661d1720f54934e8c434daf95cb0d7e",

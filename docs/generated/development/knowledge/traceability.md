@@ -60,6 +60,7 @@ generator_version: 3
 | GET /api/lite/enterprise/rules/revisions | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/enterprise/rules/revisions/{revision_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/enterprise/rules/source-sync/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/enterprise/rules/templates | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/events | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |

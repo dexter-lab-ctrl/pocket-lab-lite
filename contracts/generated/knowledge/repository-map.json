@@ -401,6 +401,7 @@
         "api:get:/api/lite/enterprise/rules/revisions",
         "api:get:/api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}",
         "api:get:/api/lite/enterprise/rules/revisions/{revision_id}",
+        "api:get:/api/lite/enterprise/rules/source-sync/status",
         "api:get:/api/lite/enterprise/rules/templates",
         "api:get:/api/lite/events",
         "api:get:/api/lite/fleet",
@@ -3196,6 +3197,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_opa_policy_staging.py"
+      ],
+      "source": "tests/backend/test_opa_policy_staging.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_operation_contract.py"
       ],
       "source": "tests/backend/test_operation_contract.py"
@@ -3241,6 +3248,12 @@
         "test:tests/backend/test_reliability.py"
       ],
       "source": "tests/backend/test_reliability.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_rules_source_sync_progress.py"
+      ],
+      "source": "tests/backend/test_rules_source_sync_progress.py"
     },
     {
       "entities": [
@@ -3526,6 +3539,12 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "source": "tests/e2e/lite-rules-activation-progress.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-test-helpers.ts"
       ],
       "source": "tests/e2e/lite-test-helpers.ts"
@@ -3657,6 +3676,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "97bfc81333f118a1b263c78329b12866cd9aa54813d96e1c2fb62f523f3b99c2"
+    "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94"
   }
 }

@@ -1283,6 +1283,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_opa_policy_staging.py",
+      "name": "tests/backend/test_opa_policy_staging.py",
+      "source_refs": [
+        "tests/backend/test_opa_policy_staging.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_operation_contract.py",
       "name": "tests/backend/test_operation_contract.py",
       "source_refs": [
@@ -1357,6 +1367,16 @@
       "name": "tests/backend/test_reliability.py",
       "source_refs": [
         "tests/backend/test_reliability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_rules_source_sync_progress.py",
+      "name": "tests/backend/test_rules_source_sync_progress.py",
+      "source_refs": [
+        "tests/backend/test_rules_source_sync_progress.py"
       ],
       "type": "test"
     },
@@ -1833,6 +1853,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+      "name": "tests/e2e/lite-rules-activation-progress.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-test-helpers.ts",
       "name": "tests/e2e/lite-test-helpers.ts",
       "source_refs": [
@@ -2047,6 +2077,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "97bfc81333f118a1b263c78329b12866cd9aa54813d96e1c2fb62f523f3b99c2"
+    "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94"
   }
 }
