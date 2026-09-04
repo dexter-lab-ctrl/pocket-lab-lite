@@ -7565,7 +7565,7 @@
       "name": "pocketlab.events.fleet.bootstrap_blocked",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
       ],
@@ -7639,7 +7639,7 @@
       "name": "pocketlab.events.fleet.invite_accepted",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
       ],
       "type": "subject"
@@ -7653,7 +7653,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
       ],
@@ -10066,6 +10066,17 @@
       "name": "tests/backend/test_catalog.py",
       "source_refs": [
         "tests/backend/test_catalog.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "name": "tests/backend/test_device_removal_invite_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
       ],
       "type": "test"
     },
@@ -32781,7 +32792,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449"
       ],
       "id": "rel:6dd1943235e7c111",
       "source": "component:api-guards",
@@ -41647,6 +41658,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "id": "rel:a160f37508a377b2",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:a166126d718df0ba",
@@ -46744,6 +46769,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "id": "rel:bf2c7c6617762f40",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:bf2ef20fea4f860f",
@@ -47499,6 +47538,20 @@
       "source": "component:api-domain-surfaces",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "id": "rel:c414e391b3b6d327",
+      "source": "reason:invite_identity_mismatch",
+      "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -50011,7 +50064,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448"
       ],
       "id": "rel:d26bbc1a35434e34",
       "source": "component:api-guards",
@@ -55051,7 +55104,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447"
       ],
       "id": "rel:eeb008f1a7a3f08f",
       "source": "component:api-guards",

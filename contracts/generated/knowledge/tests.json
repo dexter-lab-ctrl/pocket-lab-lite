@@ -63,6 +63,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "name": "tests/backend/test_device_removal_invite_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_drift.py",
       "name": "tests/backend/test_drift.py",
       "source_refs": [
@@ -2077,6 +2087,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94"
+    "source_fingerprint": "e4384ef0ae78734805940238c48332bcde2165ef1d000e54c147113eacf0bc52"
   }
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 189aec7d079446051782ca67a5e68503204c7287177ccf313e8a602df85727fd
+source_fingerprint: 04f2101b92fb6f1218eedf43603d6a49baeb6e27b7adfffe606a09785074c545
 schema_revision: 1
 validation_status: generated
 ---
@@ -95,14 +95,14 @@ Missing delivery metadata is explicitly marked `incomplete`; the generator does 
 | `pocketlab.events.drift.scan_started` | drift | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:130 |
 | `pocketlab.events.drift.{action}` | drift | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:216 |
 | `pocketlab.events.drift.{action}_started` | drift | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:208 |
-| `pocketlab.events.fleet.bootstrap_blocked` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714 |
+| `pocketlab.events.fleet.bootstrap_blocked` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714 |
 | `pocketlab.events.fleet.config_updated` | fleet | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:279 |
 | `pocketlab.events.fleet.device_health_sampled` | fleet | event | live_status.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:627 |
 | `pocketlab.events.fleet.device_removed` | fleet | event | fleet_registry.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1562 |
 | `pocketlab.events.fleet.health_changed` | fleet | event | live_status.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:598 |
 | `pocketlab.events.fleet.health_sampled` | fleet | event | live_status.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:594 |
-| `pocketlab.events.fleet.invite_accepted` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874 |
-| `pocketlab.events.fleet.invite_created` | fleet | event | domain_commands.py, lite_invites.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251, pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908 |
+| `pocketlab.events.fleet.invite_accepted` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874 |
+| `pocketlab.events.fleet.invite_created` | fleet | event | domain_commands.py, lite_invites.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251, pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908 |
 | `pocketlab.events.fleet.invite_revoked` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:600 |
 | `pocketlab.events.fleet.invite_started` | fleet | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:229 |
 | `pocketlab.events.fleet.node_` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590, pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754 |

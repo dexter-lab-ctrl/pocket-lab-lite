@@ -1233,7 +1233,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
       ],
@@ -1335,7 +1335,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -1355,7 +1355,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
       ],

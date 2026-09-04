@@ -18580,7 +18580,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
       ],
@@ -18706,7 +18706,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
       ],
       "stream": "incomplete",
@@ -18730,7 +18730,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
       ],
@@ -23344,6 +23344,16 @@
       "name": "tests/backend/test_catalog.py",
       "source_refs": [
         "tests/backend/test_catalog.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "name": "tests/backend/test_device_removal_invite_reconciliation.py",
+      "source_refs": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
       ],
       "type": "test"
     },
@@ -28169,6 +28179,7 @@
         "test:tests/backend/__init__.py",
         "test:tests/backend/test_architecture_contract.py",
         "test:tests/backend/test_catalog.py",
+        "test:tests/backend/test_device_removal_invite_reconciliation.py",
         "test:tests/backend/test_drift.py",
         "test:tests/backend/test_fault_degraded_mode.py",
         "test:tests/backend/test_fixture_simulation.py",
@@ -29330,6 +29341,7 @@
         "test:tests/backend/__init__.py",
         "test:tests/backend/test_architecture_contract.py",
         "test:tests/backend/test_catalog.py",
+        "test:tests/backend/test_device_removal_invite_reconciliation.py",
         "test:tests/backend/test_drift.py",
         "test:tests/backend/test_fault_degraded_mode.py",
         "test:tests/backend/test_fixture_simulation.py",
@@ -36619,6 +36631,20 @@
       "test:src/__tests__/liteLifecycleDiagnostics.test.js": [
         {
           "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_device_removal_invite_reconciliation.py": [
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
           "type": "verified_by"
         }
       ],
@@ -55390,6 +55416,10 @@
       ],
       "reason:identity_mismatch": [
         {
+          "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
         },
@@ -55637,6 +55667,10 @@
         }
       ],
       "reason:invite_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -56677,6 +56711,10 @@
         }
       ],
       "reason:protected_server_host": [
+        {
+          "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
@@ -70475,7 +70513,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449"
       ],
       "id": "rel:6dd1943235e7c111",
       "source": "component:api-guards",
@@ -76191,6 +76229,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "id": "rel:a160f37508a377b2",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:a166126d718df0ba",
@@ -79478,6 +79525,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "id": "rel:bf2c7c6617762f40",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:bf2ef20fea4f860f",
@@ -79968,6 +80024,15 @@
       "source": "component:api-domain-surfaces",
       "target": "threat-model:control-api",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_device_removal_invite_reconciliation.py"
+      ],
+      "id": "rel:c414e391b3b6d327",
+      "source": "reason:invite_identity_mismatch",
+      "target": "test:tests/backend/test_device_removal_invite_reconciliation.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -81585,7 +81650,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448"
       ],
       "id": "rel:d26bbc1a35434e34",
       "source": "component:api-guards",
@@ -84840,7 +84905,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447"
       ],
       "id": "rel:eeb008f1a7a3f08f",
       "source": "component:api-guards",
@@ -86741,9 +86806,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "4152c5a8dca120bfd22e0d3ad6f6fd8ea9bba8db5d52f58a24f4d4e1d49d6c94",
+  "source_fingerprint": "e4384ef0ae78734805940238c48332bcde2165ef1d000e54c147113eacf0bc52",
   "statistics": {
-    "entity_count": 1130,
+    "entity_count": 1131,
     "entity_type_counts": {
       "adr": 6,
       "api": 186,
@@ -86760,14 +86825,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 67,
-      "test": 207,
+      "test": 208,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3177,
-    "source_count": 244
+    "relation_count": 3180,
+    "source_count": 245
   }
 }
