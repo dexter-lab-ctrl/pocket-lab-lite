@@ -88,6 +88,7 @@ export const liteEnterpriseApi = {
   createRuleRevision: (payload) => post('/api/lite/enterprise/rules/revisions', payload),
   compareRuleRevisions: (left, right) => get(`/api/lite/enterprise/rules/revisions/${encodeURIComponent(left || '')}/compare/${encodeURIComponent(right || '')}`),
   activateRuleRevision: (revisionId) => post('/api/lite/enterprise/rules/activations', { revision_id: revisionId }),
+  syncRuleSource: () => post('/api/lite/enterprise/rules/source-sync', {}),
   resolveRuleActivation: (operationId) => post(`/api/lite/enterprise/rules/activations/${encodeURIComponent(operationId || '')}/resolve`, {}),
   ruleActivation: (operationId) => get(`/api/lite/enterprise/rules/activations/${encodeURIComponent(operationId || '')}`),
   rollbackRules: () => post('/api/lite/enterprise/rules/rollbacks', {}),
