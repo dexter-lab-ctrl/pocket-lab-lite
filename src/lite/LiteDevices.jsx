@@ -234,6 +234,7 @@ export default function DevicesScreen() {
   const setDetailsDeviceId = useLiteUiStore((state) => state.setActiveDeviceDetailsId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsButtonRefs = useRef(new Map());
+  const removeButtonRefs = useRef(new Map());
   const detailsPanelRef = useRef(null);
   const deviceCompletionFeedback = useRef(createLiteFeedbackDeduper());
   const pendingInviteId = useRef('');
@@ -315,16 +316,14 @@ export default function DevicesScreen() {
     if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
     const frame = window.requestAnimationFrame(() => {
       const panel = detailsPanelRef.current;
-      const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-      panel?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
       panel?.focus?.({ preventScroll: true });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [activeDetailsDevice?.id]);
   const closeDeviceDetails = () => {
     const trigger = detailsButtonRefs.current.get(detailsDeviceId);
-    trigger?.focus?.({ preventScroll: true });
     setDetailsDeviceId('');
+    window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
   };
   useEffect(() => {
     if (!activeDetailsDevice) return undefined;
@@ -336,7 +335,13 @@ export default function DevicesScreen() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [activeDetailsDevice, detailsDeviceId]);
-
+  useEffect(() => {
+    if (!removeCandidate) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      document.querySelector('.lite-device-remove-panel')?.focus?.({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [removeCandidate?.id]);
 
   async function addDevice() {
     const validation = addDeviceFlow.validateName(candidateDeviceName, selectedRole);
@@ -477,9 +482,12 @@ export default function DevicesScreen() {
 
   function closeRemovalReview() {
     if (removeBusy) return;
+    const candidateId = String(removeCandidate?.id || '');
+    const trigger = removeButtonRefs.current.get(candidateId);
     removalFlow.cancel();
     setRemoveCandidate(null);
     setRemoveAssessment(null);
+    window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
   }
 
   async function removeOldDevice() {
@@ -778,7 +786,12 @@ export default function DevicesScreen() {
           ) : null}
 
           {removeCandidate ? (
-            <GlassCard className="lite-device-remove-panel">
+            <GlassCard
+              className="lite-device-remove-panel lite-device-action-surface"
+              tabIndex={-1}
+              role="region"
+              aria-label={`Remove old device: ${removeCandidate.name || removeCandidate.hostname || removeCandidate.id || 'Selected device'}`}
+            >
               <div className="lite-device-remove-panel-head">
                 <div>
                   <span>Remove old device</span>
@@ -858,7 +871,7 @@ export default function DevicesScreen() {
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
           {activeDetailsDevice ? (
-            <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor">
+            <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor lite-device-action-surface">
               <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
                 <DeviceDetailsLazy
                   device={activeDetailsDevice}
@@ -913,6 +926,10 @@ export default function DevicesScreen() {
                   detailsButtonRef={(node) => {
                     if (node) detailsButtonRefs.current.set(key, node);
                     else detailsButtonRefs.current.delete(key);
+                  }}
+                  removeButtonRef={(node) => {
+                    if (node) removeButtonRefs.current.set(key, node);
+                    else removeButtonRefs.current.delete(key);
                   }}
                   onRestartAgent={() => restartAgent(device)}
                   onRemoveDevice={() => loadRemovalAssessment(device)}
