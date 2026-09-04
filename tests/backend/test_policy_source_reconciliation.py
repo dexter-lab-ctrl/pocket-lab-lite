@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 
 import pytest
 
@@ -90,10 +91,13 @@ def _install_stale_durable_revision(owner_id: str) -> str:
 
 
 def _insert_legacy_owner_approval(owner_id: str, revision: str, *, approval_id: str = "apr-legacy-owner") -> None:
+    """Simulate an Owner row that existed before migration 0031 was installed."""
     from api_fastapi.db.connection import begin_immediate, connection
 
     with connection() as conn:
         with begin_immediate(conn) as tx:
+            tx.execute("DROP TRIGGER IF EXISTS trg_policy_approvals_delegated_requester_insert")
+            tx.execute("DROP TRIGGER IF EXISTS trg_policy_approvals_delegated_requester_update")
             tx.execute(
                 """INSERT INTO policy_approvals(
                        approval_id,originating_decision_id,correlation_id,action_id,target_type,target_id,
@@ -118,7 +122,7 @@ def _insert_legacy_owner_approval(owner_id: str, revision: str, *, approval_id: 
 def test_repository_source_drift_fails_closed_before_stale_opa(policy_runtime, monkeypatch):
     from api_fastapi.services import lite_policy_opa, lite_policy_source_sync
 
-    owner, _context = _owner_context()
+    owner, context = _owner_context()
     stale_revision = _install_stale_durable_revision(owner["human_id"])
 
     source = lite_policy_source_sync.source_state()
@@ -133,6 +137,28 @@ def test_repository_source_drift_fails_closed_before_stale_opa(policy_runtime, m
     assert consistent is False
     assert reason == "policy_source_update_pending"
     assert observed == stale_revision
+
+    called = {"opa_post": False}
+
+    def _unexpected_opa(*args, **kwargs):
+        called["opa_post"] = True
+        raise AssertionError("stale OPA must not be queried after source drift is detected")
+
+    monkeypatch.setattr(lite_policy_opa, "_require_loopback_opa", lambda: None)
+    monkeypatch.setattr(lite_policy_opa, "_http_json", _unexpected_opa)
+    with pytest.raises(lite_policy_opa.PolicyDecisionError) as error:
+        lite_policy_opa.evaluate_authorization(
+            auth_context=context,
+            action_id="device.remove",
+            target_type="device",
+            target_id="old-phone",
+            target_revision="assessment-old-phone",
+            target={"confirmed": True, "revision_validated": True, "protected_server_host": False},
+            correlation_id="source-drift-fail-closed",
+        )
+    assert error.value.reason_code == "policy_source_update_pending"
+    assert error.value.status_code == 503
+    assert called["opa_post"] is False
 
 
 def test_source_sync_cancels_impossible_owner_request_and_queues_supervisor_operation(policy_runtime):
@@ -178,6 +204,46 @@ def test_source_sync_cancels_impossible_owner_request_and_queues_supervisor_oper
     assert candidate["validation_status"] == "pending"
     assert evidence["event_type"] == "approval.invalidated"
     assert evidence["reason_code"] == "owner_authority_policy_inconsistency"
+
+
+def test_source_sync_requires_recent_owner_passkey_assurance(policy_runtime):
+    from api_fastapi.services import lite_enterprise_governance, lite_policy_source_sync
+
+    owner, context = _owner_context()
+    _install_stale_durable_revision(owner["human_id"])
+    context["session"]["assurance"] = []
+
+    with pytest.raises(lite_enterprise_governance.GovernanceError) as error:
+        lite_policy_source_sync.request_source_sync(
+            auth_context=context,
+            correlation_id="source-sync-step-up-required",
+        )
+    assert error.value.reason_code == "owner_step_up_required"
+    assert error.value.status_code == 428
+
+
+def test_source_sync_is_idempotent_while_same_candidate_is_pending(policy_runtime):
+    from api_fastapi.db.connection import connection
+    from api_fastapi.services import lite_policy_source_sync
+
+    owner, context = _owner_context()
+    _install_stale_durable_revision(owner["human_id"])
+    first = lite_policy_source_sync.request_source_sync(
+        auth_context=context,
+        correlation_id="source-sync-first",
+    )
+    second = lite_policy_source_sync.request_source_sync(
+        auth_context=context,
+        correlation_id="source-sync-second",
+    )
+    assert first["status"] == "queued"
+    assert second["status"] == "already_requested"
+    assert second["operation"]["operation_id"] == first["operation"]["operation_id"]
+    assert second["operation"]["candidate_revision_id"] == first["operation"]["candidate_revision_id"]
+
+    with connection() as conn:
+        count = conn.execute("SELECT COUNT(*) AS count FROM policy_activation_operations").fetchone()
+    assert int(count["count"] or 0) == 1
 
 
 def test_owner_approval_required_result_is_rejected_without_creating_request(policy_runtime, monkeypatch):
@@ -233,6 +299,54 @@ def test_owner_approval_required_result_is_rejected_without_creating_request(pol
     with connection() as conn:
         count = conn.execute("SELECT COUNT(*) AS count FROM policy_approvals").fetchone()
     assert int(count["count"] or 0) == 0
+
+
+def test_sqlite_rejects_new_owner_or_nonmember_device_approval(policy_runtime):
+    from api_fastapi.db.connection import begin_immediate, connection
+
+    owner, _context = _owner_context()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            tx.execute(
+                """INSERT INTO policy_decisions(
+                       occurred_at,decision_id,correlation_id,actor_type,actor_id,action_id,
+                       target_type,target_id,target_revision,allow,reason_code,policy_revision,evaluation_ms
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    "2026-09-04T00:00:00Z",
+                    "decision-db-owner-reject",
+                    "corr-db-owner-reject",
+                    "human",
+                    owner["human_id"],
+                    "device.remove",
+                    "device",
+                    "old-phone",
+                    "assessment-old-phone",
+                    0,
+                    "approval_required",
+                    "plr-db-defense",
+                    1.0,
+                ),
+            )
+            with pytest.raises(sqlite3.IntegrityError, match="policy_approval_requester_invalid"):
+                tx.execute(
+                    """INSERT INTO policy_approvals(
+                           approval_id,originating_decision_id,correlation_id,action_id,target_type,target_id,
+                           initiating_human_id,initiating_role,required_approver_roles_json,required_assurance,
+                           policy_revision,status,created_at,expires_at,reason_code,evidence_ref
+                       ) VALUES (?,?,?,'device.remove','device','old-phone',?,'Owner',?,
+                                 'policy.approval.device.remove','plr-db-defense','pending',?,?, 'approval_required',?)""",
+                    (
+                        "apr-db-owner-reject",
+                        "decision-db-owner-reject",
+                        "corr-db-owner-reject",
+                        owner["human_id"],
+                        json.dumps(["Admin", "Owner"]),
+                        "2026-09-04T00:00:00Z",
+                        "2099-01-01T00:00:00Z",
+                        "policy:db-owner-reject",
+                    ),
+                )
 
 
 def test_legacy_owner_request_is_cancel_only_and_cannot_be_reviewed(policy_runtime):
