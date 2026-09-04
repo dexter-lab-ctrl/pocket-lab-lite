@@ -160,7 +160,7 @@ test('Removal review remains scrollable and keeps destructive actions reachable 
   expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
 
   await panel.evaluate((element) => {
-    element.scrollTo({ top: element.scrollHeight, behavior: 'instant' });
+    element.scrollTop = element.scrollHeight;
   });
   await expect(panel.getByText('Additional removal review item 8 must remain reachable before confirmation.')).toBeVisible();
 
