@@ -62,6 +62,7 @@ generator_version: 3
 | `GET /api/lite/enterprise/rules/revisions` | enterprise | — | revisions_api_lite_enterprise_rules_revisions_get | contract-derived |
 | `GET /api/lite/enterprise/rules/revisions/{left_revision_id}/compare/{right_revision_id}` | enterprise | — | compare_api_lite_enterprise_rules_revisions__left_revision_id__compare__right_revision_id__get | contract-derived |
 | `GET /api/lite/enterprise/rules/revisions/{revision_id}` | enterprise | — | revision_api_lite_enterprise_rules_revisions__revision_id__get | contract-derived |
+| `GET /api/lite/enterprise/rules/source-sync/status` | enterprise | — | source_sync_status_api_lite_enterprise_rules_source_sync_status_get | contract-derived |
 | `GET /api/lite/enterprise/rules/templates` | enterprise | — | templates_api_lite_enterprise_rules_templates_get | contract-derived |
 | `GET /api/lite/events` | events | — | get_lite_revision_events_api_lite_events_get | contract-derived |
 | `GET /api/lite/fleet` | devices | LiteDevices, LiteRulesEnterprise | get_lite_fleet_api_lite_fleet_get | contract-derived |

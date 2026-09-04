@@ -585,6 +585,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Source Sync Status",
+      "domain": "enterprise",
+      "id": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "name": "GET /api/lite/enterprise/rules/source-sync/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Templates",
       "domain": "enterprise",
       "id": "api:get:/api/lite/enterprise/rules/templates",
@@ -11404,6 +11415,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_opa_policy_staging.py",
+      "name": "tests/backend/test_opa_policy_staging.py",
+      "source_refs": [
+        "tests/backend/test_opa_policy_staging.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_operation_contract.py",
       "name": "tests/backend/test_operation_contract.py",
       "source_refs": [
@@ -11485,6 +11507,17 @@
       "name": "tests/backend/test_reliability.py",
       "source_refs": [
         "tests/backend/test_reliability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_rules_source_sync_progress.py",
+      "name": "tests/backend/test_rules_source_sync_progress.py",
+      "source_refs": [
+        "tests/backend/test_rules_source_sync_progress.py"
       ],
       "type": "test"
     },
@@ -12002,6 +12035,17 @@
       "name": "tests/e2e/lite-phase9-qualification.spec.ts",
       "source_refs": [
         "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+      "name": "tests/e2e/lite-rules-activation-progress.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
       ],
       "type": "test"
     },
@@ -28075,6 +28119,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:51f106bc885a5637",
+      "source": "domain:enterprise",
+      "target": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:5211889a0af1cda9",
@@ -31402,6 +31460,20 @@
       "source": "journey:device-reconnect",
       "target": "api:get:/api/lite/fleet",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:676a7e225bf6682d",
+      "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -34828,6 +34900,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "id": "rel:7a254ecc08e604c1",
+      "source": "reason:policy_activation_pending",
+      "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:7a305e65b5a1d3cc",
@@ -35015,6 +35101,20 @@
       "id": "rel:7b35d9058413fe4c",
       "source": "reason:policy_parameters_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:7b5bca4ce3c68a03",
+      "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -49170,6 +49270,20 @@
       "id": "rel:ce7037261e002a3b",
       "source": "component:worker",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "id": "rel:ce8d5928e1578cc1",
+      "source": "reason:policy_source_update_pending",
+      "target": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
       "type": "verified_by"
     },
     {

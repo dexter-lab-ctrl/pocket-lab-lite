@@ -1,5 +1,6 @@
 import './identityRules.css';
 import './identityRulesGovernance.css';
+import './rulesActivationProgress.css';
 import React from 'react';
 import { FileCheck, ShieldCheck } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
@@ -22,12 +23,82 @@ import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
 
+const RULE_ACTIVATION_STEPS = [
+  { id: 'pending', label: 'Accepted', detail: 'Owner confirmation was accepted and queued for the supervisor.' },
+  { id: 'validating', label: 'Validating', detail: 'Pocket Lab is checking the candidate and its immutable manifest.' },
+  { id: 'switching', label: 'Switching', detail: 'The supervisor is switching to the staged candidate under the activation lock.' },
+  { id: 'restarting', label: 'Restarting', detail: 'The local policy engine is restarting on the candidate revision.' },
+  { id: 'verifying', label: 'Verifying', detail: 'Pocket Lab is proving health and the exact running Rules revision.' },
+  { id: 'active', label: 'Succeeded', detail: 'The proved revision is active and known-good.' },
+];
+const RULE_ACTIVATION_NONTERMINAL = new Set(['pending', 'validating', 'switching', 'restarting', 'verifying', 'rolling_back']);
+
 function actionLabel(action = '') {
   return getLiteRulesActionLabel(action) || String(action || '').replaceAll('.', ' · ');
 }
 
 function errorCode(error) {
   return error?.payload?.detail?.reason_code || error?.payload?.reason_code || '';
+}
+
+function activationStateLabel(state) {
+  if (state === 'rolling_back') return 'Recovering safely';
+  if (state === 'not_completed') return 'Update not completed';
+  if (state === 'uncertain') return 'Recovery needs attention';
+  return RULE_ACTIVATION_STEPS.find((step) => step.id === state)?.label || 'Preparing';
+}
+
+function RulesActivationProgress({ activation, backendReachable }) {
+  const state = String(activation?.state || 'pending');
+  const previousState = String(activation?.previous_state || '');
+  const effectiveState = state === 'not_completed' ? previousState : state;
+  const activeIndex = RULE_ACTIVATION_STEPS.findIndex((step) => step.id === effectiveState);
+  const succeeded = state === 'active';
+  const recovery = state === 'rolling_back';
+  const failed = ['not_completed', 'uncertain', 'rolled_back', 'failed'].includes(state);
+
+  return (
+    <GlassCard className="lite-rules-activation-card mb-5" data-rules-activation-state={state}>
+      <div className="lite-rules-activation-head">
+        <div>
+          <span>Supervisor proof</span>
+          <h2>Updating Safety Rules</h2>
+        </div>
+        <StatusBadge status={succeeded ? 'healthy' : failed ? 'degraded' : 'review'}>{activationStateLabel(state)}</StatusBadge>
+      </div>
+      <p className="lite-rules-activation-summary">
+        {succeeded
+          ? 'Pocket Lab proved the new Rules revision and advanced known-good protection.'
+          : failed
+            ? 'Pocket Lab did not prove the new revision. The previous known-good protection remains authoritative while recovery is reviewed or retried.'
+            : recovery
+              ? 'The candidate did not complete verification. Pocket Lab is restoring the previous known-good revision before allowing protected changes.'
+              : backendReachable
+                ? 'Protected changes stay fail-closed while the supervisor advances each server-reported phase.'
+                : 'Fresh supervisor proof is temporarily unavailable. Pocket Lab will not advance this progress view from saved state alone.'}
+      </p>
+      <ol className="lite-rules-activation-steps" aria-label="Safety Rules update progress" aria-live="polite">
+        {RULE_ACTIVATION_STEPS.map((step, index) => {
+          const complete = succeeded || (activeIndex >= 0 && index < activeIndex);
+          const current = !succeeded && index === activeIndex && !failed;
+          const pending = !complete && !current;
+          return (
+            <li key={step.id} className={`${complete ? 'is-complete' : ''} ${current ? 'is-current' : ''} ${pending ? 'is-pending' : ''}`.trim()} aria-current={current ? 'step' : undefined}>
+              <span className="lite-rules-activation-marker" aria-hidden="true">{complete ? '✓' : index + 1}</span>
+              <div>
+                <strong>{step.label}</strong>
+                <small>{step.detail}</small>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      <div className="lite-rules-activation-foot" role="status">
+        <span>{backendReachable ? 'Live server proof' : 'Waiting for Pocket Lab'}</span>
+        {activation?.candidate_revision_id ? <code>{activation.candidate_revision_id}</code> : null}
+      </div>
+    </GlassCard>
+  );
 }
 
 export default function RulesScreen() {
@@ -50,12 +121,16 @@ export default function RulesScreen() {
   const [manageOpen, setManageOpen] = React.useState(false);
   const [sourceSyncBusy, setSourceSyncBusy] = React.useState(false);
   const [sourceSyncNotice, setSourceSyncNotice] = React.useState(null);
+  const [activationStatus, setActivationStatus] = React.useState(null);
+  const [activationTracked, setActivationTracked] = React.useState(false);
   const enterpriseEnabled = Boolean(identity.data?.enterprise?.enabled);
   const role = identity.data?.enterprise?.current_membership?.role || identity.data?.person?.role || (identity.data?.person?.is_local_owner ? 'Owner' : '');
   const rulesReadOnly = savedStateOnly || !backendReachable;
   const ready = data?.status === 'ready' && data?.engine?.healthy && data?.engine?.loopback_only;
   const sourceUpdateRequired = Boolean(data?.active_policy?.source_update_required);
   const activationInProgress = Boolean(data?.active_policy?.activation_in_progress) || data?.degraded_reason === 'policy_activation_pending';
+  const activationState = String(activationStatus?.state || '');
+  const activationBusy = sourceSyncBusy || activationInProgress || RULE_ACTIVATION_NONTERMINAL.has(activationState);
   const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions.slice(0, 4) : [];
   const templates = Array.isArray(data?.templates) ? data.templates : [];
   const degraded = getLiteReasonPresentation(data?.degraded_reason, data?.summary || 'Safety Rules need attention.');
@@ -68,7 +143,47 @@ export default function RulesScreen() {
 
   const manageLabel = enterpriseEnabled ? 'Review core Safety Rules' : 'Manage Safety Rules';
 
+  React.useEffect(() => {
+    if (!backendReachable || (!activationInProgress && !activationTracked)) return undefined;
+    if (['active', 'not_completed', 'uncertain', 'rolled_back', 'failed'].includes(activationState)) return undefined;
+
+    let cancelled = false;
+    let timer = null;
+
+    async function pollActivation() {
+      try {
+        const result = await liteEnterpriseApi.ruleSourceSyncStatus();
+        if (cancelled) return;
+        const source = result?.source || {};
+        const operation = source?.activation_operation && typeof source.activation_operation === 'object'
+          ? source.activation_operation
+          : null;
+        if (operation) {
+          setActivationTracked(true);
+          setActivationStatus(operation);
+        } else if (activationTracked || activationInProgress) {
+          setActivationStatus((previous) => ({
+            ...(previous || {}),
+            previous_state: previous?.state || '',
+            state: source.source_update_required ? 'not_completed' : 'active',
+          }));
+        }
+        await refresh({ force: true });
+      } catch (_pollError) {
+        // Keep the last proved phase. Network loss must never synthesize progress.
+      }
+      if (!cancelled) timer = window.setTimeout(pollActivation, 1200);
+    }
+
+    pollActivation();
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [activationInProgress, activationTracked, activationState, backendReachable, refresh]);
+
   async function updateSafetyRules() {
+    if (activationBusy) return;
     setSourceSyncBusy(true);
     setSourceSyncNotice({ title: 'Waiting for Pocket Lab', message: 'Current protection stays fail-closed while the Rules update is prepared.' });
     try {
@@ -83,11 +198,15 @@ export default function RulesScreen() {
         await liteApi.verifyPasskeyStepUp({ purpose: 'policy.rules.activate', challenge: options.publicKey.challenge, credential });
         result = await liteEnterpriseApi.syncRuleSource();
       }
+      if (result?.accepted) {
+        setActivationTracked(true);
+        setActivationStatus(result?.operation || { state: 'pending' });
+      }
       setSourceSyncNotice({
-        title: result?.accepted ? 'Safety Rules update requested' : 'Safety Rules already current',
+        title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
         message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
       });
-      await refresh();
+      await refresh({ force: true });
     } catch (syncError) {
       const reason = getLiteReasonPresentation(errorCode(syncError), syncError?.message || 'Pocket Lab could not start the Safety Rules update.');
       setSourceSyncNotice({ error: true, title: reason.title, message: reason.message });
@@ -96,19 +215,26 @@ export default function RulesScreen() {
     }
   }
 
+  const showActivationProgress = Boolean(activationTracked || activationInProgress || RULE_ACTIVATION_NONTERMINAL.has(activationState));
+
   return (
     <>
       <PageHeader
         eyebrow="Rules"
         title="Safety Rules"
         description="What Pocket Lab protects, why an action is allowed or blocked, and what happens next."
-        actions={<div className="lite-governance-inline-actions"><LiteHelp helpKey="rules.protection" /><LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
+        actions={(
+          <div className="lite-governance-inline-actions">
+            <LiteHelp helpKey="rules.protection" />
+            {activationBusy ? <LiteButton disabled aria-disabled="true">Rules update running</LiteButton> : <LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+          </div>
+        )}
       />
 
       <LiteOperationalStory
         className="lite-rules-operational-story"
         story={overview.workspaceStory}
-        primaryAction={overview.workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh Rules', onClick: refresh } : enterpriseEnabled ? { label: 'Review Enterprise protection', onClick: () => document.getElementById('enterprise-rules-heading')?.scrollIntoView({ block: 'start' }) } : null}
+        primaryAction={!activationBusy && overview.workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh Rules', onClick: refresh } : enterpriseEnabled ? { label: 'Review Enterprise protection', onClick: () => document.getElementById('enterprise-rules-heading')?.scrollIntoView({ block: 'start' }) } : null}
         manageAction={!rulesReadOnly ? { label: manageLabel, onClick: () => setManageOpen(true) } : null}
       />
 
@@ -117,15 +243,17 @@ export default function RulesScreen() {
       {backendDegraded && backendReachable && !sourceUpdateRequired && !activationInProgress ? <StateSurface tone="degraded" title="Safety Rules need attention" description={degraded.message} className="mb-5" /> : null}
       {sourceSyncNotice ? <StateSurface tone={sourceSyncNotice.error ? 'degraded' : 'neutral'} title={sourceSyncNotice.title} description={sourceSyncNotice.message} className="mb-5" /> : null}
 
+      {showActivationProgress ? <RulesActivationProgress activation={activationStatus || { state: 'pending' }} backendReachable={backendReachable && !savedStateOnly} /> : null}
+
       {sourceUpdateRequired ? (
         <GlassCard className="lite-rules-card mb-5">
-          <div className="lite-rules-card-head"><LiteHelpHeading title="Safety Rules update ready" helpKey="rules.protection" as="h2" /><StatusBadge status="review">Owner confirmation</StatusBadge></div>
+          <div className="lite-rules-card-head"><LiteHelpHeading title="Safety Rules update ready" helpKey="rules.protection" as="h2" /><StatusBadge status="review">{activationBusy ? 'Supervisor working' : 'Owner confirmation'}</StatusBadge></div>
           <p>Pocket Lab detected that the installed app contains newer Safety Rules than the durable rules currently running. Protected changes remain blocked until the new revision is staged, restarted and proved.</p>
-          {role === 'Owner' && !rulesReadOnly ? <div className="lite-governance-actions"><LiteButton onClick={updateSafetyRules} disabled={sourceSyncBusy}>{sourceSyncBusy ? 'Updating Safety Rules…' : 'Update Safety Rules'}</LiteButton></div> : <p>An active Owner must confirm this Rules update. No policy source, pointer, command or secret is exposed to the browser.</p>}
+          {role === 'Owner' && !rulesReadOnly ? <div className="lite-governance-actions"><LiteButton onClick={updateSafetyRules} disabled={activationBusy}>{activationBusy ? 'Update in progress…' : 'Update Safety Rules'}</LiteButton></div> : <p>An active Owner must confirm this Rules update. No policy source, pointer, command or secret is exposed to the browser.</p>}
         </GlassCard>
       ) : null}
 
-      {activationInProgress ? <StateSurface tone="neutral" title="Safety Rules update in progress" description="Pocket Lab is staging, restarting and proving the requested Rules revision. Protected changes remain blocked until the supervisor proves the exact running revision or safely rolls back." className="mb-5" /> : null}
+      {activationInProgress && !showActivationProgress ? <StateSurface tone="neutral" title="Safety Rules update in progress" description="Pocket Lab is staging, restarting and proving the requested Rules revision. Protected changes remain blocked until the supervisor proves the exact running revision or safely rolls back." className="mb-5" /> : null}
 
       {!loading && data ? (
         <>

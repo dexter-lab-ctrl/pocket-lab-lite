@@ -6824,7 +6824,7 @@
     },
     "/api/lite/enterprise/rules/source-sync": {
       "post": {
-        "description": "Queue repository-source reconciliation for Personal or Enterprise Owner.\n\nThe route lives with Rules governance, but root-owner verification explicitly\nsupports both workspace modes.  FastAPI records intent only; the core\nsupervisor remains the sole pointer/OPA activation authority.",
+        "description": "Queue repository-source reconciliation for Personal or Enterprise Owner.\n\nThe route lives with Rules governance, but root-owner verification explicitly\nsupports both workspace modes. FastAPI records intent only; the core\nsupervisor remains the sole pointer/OPA activation authority.",
         "operationId": "source_sync_api_lite_enterprise_rules_source_sync_post",
         "responses": {
           "202": {
@@ -6871,6 +6871,50 @@
           }
         },
         "summary": "Source Sync",
+        "tags": [
+          "lite-enterprise-rules"
+        ]
+      }
+    },
+    "/api/lite/enterprise/rules/source-sync/status": {
+      "get": {
+        "description": "Project current governed source-sync progress without exposing authority.",
+        "operationId": "source_sync_status_api_lite_enterprise_rules_source_sync_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Source Sync Status Api Lite Enterprise Rules Source Sync Status Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Source Sync Status",
         "tags": [
           "lite-enterprise-rules"
         ]

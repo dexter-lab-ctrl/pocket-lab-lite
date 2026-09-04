@@ -233,6 +233,10 @@
         "title": "GET /api/lite/enterprise/rules/revisions/{revision_id}",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-revisions-revision-id"
       },
+      "endpoint:GET:/api/lite/enterprise/rules/source-sync/status": {
+        "title": "GET /api/lite/enterprise/rules/source-sync/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-source-sync-status"
+      },
       "endpoint:GET:/api/lite/enterprise/rules/templates": {
         "title": "GET /api/lite/enterprise/rules/templates",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-enterprise-rules-templates"
@@ -2683,7 +2687,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "e938f405d2f755af45f68f7d5d447825bfec1ca184cddfb886357606261869d5",
+    "aggregate_fingerprint": "798636c874f2e9de62a7ee9ac6cfcfcabe558779ef62130509f2bf55cd006ce1",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2693,7 +2697,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "702680c5e1443588db70b4bad12e29c448a56a8c64f5bb68f4bb468120d73c73",
+      "contracts/generated/lite-openapi.json": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",

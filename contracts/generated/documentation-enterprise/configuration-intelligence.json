@@ -16106,13 +16106,15 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
-        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+        "tests/backend/test_opa_policy_staging.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
     {
       "affected_components": [
-        "bootstrap/runtime"
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -16129,7 +16131,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "tests/backend/test_opa_policy_staging.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17115,7 +17118,8 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
-        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+        "tests/backend/test_opa_policy_staging.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

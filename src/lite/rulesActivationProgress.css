@@ -1,0 +1,172 @@
+.theme-pocket-lite-daylight .lite-rules-activation-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid rgba(37, 99, 235, .2);
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, .055), rgba(255, 255, 255, .72));
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-head > div {
+  display: grid;
+  gap: .18rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-head span:first-child {
+  color: var(--lite-muted, #667085);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-head h2 {
+  margin: 0;
+  font-size: clamp(1.08rem, 2vw, 1.35rem);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-summary {
+  margin: 0;
+  max-width: 58rem;
+  color: var(--lite-muted, #667085);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: .55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps li {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: .55rem;
+  min-width: 0;
+  padding: .75rem;
+  border: 1px solid rgba(148, 163, 184, .24);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .7);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps li.is-complete {
+  border-color: rgba(22, 163, 74, .3);
+  background: rgba(22, 163, 74, .055);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps li.is-current {
+  border-color: rgba(37, 99, 235, .38);
+  background: rgba(37, 99, 235, .09);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .06);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: 0 0 1.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, .38);
+  background: rgba(15, 23, 42, .04);
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps li.is-complete .lite-rules-activation-marker {
+  border-color: rgba(22, 163, 74, .42);
+  background: rgba(22, 163, 74, .12);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps li.is-current .lite-rules-activation-marker {
+  border-color: rgba(37, 99, 235, .5);
+  background: rgba(37, 99, 235, .14);
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps li > div {
+  display: grid;
+  gap: .18rem;
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps strong {
+  font-size: .86rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-steps small {
+  color: var(--lite-muted, #667085);
+  font-size: .72rem;
+  line-height: 1.35;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding-top: .85rem;
+  border-top: 1px solid rgba(148, 163, 184, .22);
+  color: var(--lite-muted, #667085);
+  font-size: .78rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-activation-foot code {
+  max-width: min(34rem, 62vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.theme-pocket-lite-daylight [data-rules-activation-state="not_completed"],
+.theme-pocket-lite-daylight [data-rules-activation-state="uncertain"],
+.theme-pocket-lite-daylight [data-rules-activation-state="rolled_back"],
+.theme-pocket-lite-daylight [data-rules-activation-state="failed"] {
+  border-color: rgba(180, 83, 9, .3);
+  background: linear-gradient(180deg, rgba(245, 158, 11, .07), rgba(255, 255, 255, .72));
+}
+
+@media (max-width: 980px) {
+  .theme-pocket-lite-daylight .lite-rules-activation-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .theme-pocket-lite-daylight .lite-rules-activation-head,
+  .theme-pocket-lite-daylight .lite-rules-activation-foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .theme-pocket-lite-daylight .lite-rules-activation-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-rules-activation-steps li {
+    min-height: 0;
+  }
+
+  .theme-pocket-lite-daylight .lite-rules-activation-foot code {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-rules-activation-card,
+  .theme-pocket-lite-daylight .lite-rules-activation-steps li {
+    transition: none;
+    animation: none;
+  }
+}

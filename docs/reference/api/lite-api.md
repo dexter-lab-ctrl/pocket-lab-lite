@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3252490f962464c9057b128a9b32ceaa4b0fd351ed79cf65bbeca92317762b64
+source_fingerprint: 9e80813b6c663a8beb739f462df2cb152e2988dc6954873da0cc8781dbb7a22f
 schema_revision: 1
 validation_status: generated
 ---
@@ -1665,6 +1665,21 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-enterprise-rules-source-sync-status"></a>
+## GET `/api/lite/enterprise/rules/source-sync/status`
+
+- Operation ID: `source_sync_status_api_lite_enterprise_rules_source_sync_status_get`
+- Summary: Source Sync Status
+- Deprecated: no
+- Tags: `lite-enterprise-rules`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-enterprise-rules-templates"></a>
