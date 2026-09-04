@@ -11327,6 +11327,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+      "name": "tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+      "source_refs": [
+        "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_ready.py",
       "name": "tests/backend/test_ready.py",
       "source_refs": [
@@ -22870,6 +22881,20 @@
       "id": "rel:36d5b323eab90510",
       "source": "api:get:/api/lite/enterprise/identity/people",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
+      ],
+      "id": "rel:36de7dbc7db94094",
+      "source": "reason:authenticated_confirmed_device_removal",
+      "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
       "type": "verified_by"
     },
     {
@@ -46503,6 +46528,20 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "table:device_enrollment_registry",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
+      ],
+      "id": "rel:c0d30f50b6d87055",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
