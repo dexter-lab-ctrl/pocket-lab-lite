@@ -10207,6 +10207,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py": [
+        {
+          "source": "reason:authenticated_confirmed_device_removal",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_release_process_isolation.py": [
         {
           "source": "component:browser",
@@ -24885,6 +24895,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -26695,6 +26709,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -27827,6 +27845,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65"
+    "source_fingerprint": "cc75daccae5521622386e15776693b1ab63475f8911600431c6833c00c652da4"
   }
 }

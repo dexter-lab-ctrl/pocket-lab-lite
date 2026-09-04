@@ -24385,6 +24385,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+      "name": "tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+      "source_refs": [
+        "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_ready.py",
       "name": "tests/backend/test_ready.py",
       "source_refs": [
@@ -28029,6 +28039,7 @@
         "test:tests/backend/test_nats_status_semantics.py",
         "test:tests/backend/test_operation_contract.py",
         "test:tests/backend/test_operations.py",
+        "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
         "test:tests/backend/test_ready.py",
         "test:tests/backend/test_release.py",
         "test:tests/backend/test_release_process_isolation.py",
@@ -29176,6 +29187,7 @@
         "test:tests/backend/test_nats_status_semantics.py",
         "test:tests/backend/test_operation_contract.py",
         "test:tests/backend/test_operations.py",
+        "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
         "test:tests/backend/test_ready.py",
         "test:tests/backend/test_release.py",
         "test:tests/backend/test_release_process_isolation.py",
@@ -39558,6 +39570,16 @@
         },
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py": [
+        {
+          "source": "reason:authenticated_confirmed_device_removal",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
           "type": "verified_by"
         }
       ],
@@ -54239,6 +54261,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -56046,6 +56072,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
           "type": "verified_by"
         },
         {
@@ -63496,6 +63526,15 @@
       "id": "rel:36d5b323eab90510",
       "source": "api:get:/api/lite/enterprise/identity/people",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
+      ],
+      "id": "rel:36de7dbc7db94094",
+      "source": "reason:authenticated_confirmed_device_removal",
+      "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
       "type": "verified_by"
     },
     {
@@ -78742,6 +78781,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_pr557_owner_personal_mode_hotfix.py"
+      ],
+      "id": "rel:c0d30f50b6d87055",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_pr557_owner_personal_mode_hotfix.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:c106a7ed782f6f1d",
@@ -85634,9 +85682,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "051135b4d22c1ba4b538d727e6e087bd2220c61fdb25c8daf0a6bc4535179c65",
+  "source_fingerprint": "cc75daccae5521622386e15776693b1ab63475f8911600431c6833c00c652da4",
   "statistics": {
-    "entity_count": 1116,
+    "entity_count": 1117,
     "entity_type_counts": {
       "adr": 6,
       "api": 184,
@@ -85653,14 +85701,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 67,
-      "test": 202,
+      "test": 203,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3131,
-    "source_count": 239
+    "relation_count": 3133,
+    "source_count": 240
   }
 }
