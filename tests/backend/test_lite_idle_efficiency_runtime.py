@@ -39,11 +39,14 @@ def test_idle_governor_uses_sustained_pressure_and_bounded_duty_cycle(monkeypatc
         idle_efficiency.RUNTIME_DIAGNOSTICS, "latest_event_loop_lag_ms", lambda: 0.0
     )
 
-    governor.sample_now()
+    # Exercise only the governor sampling contract. sample_now() wraps this with
+    # RuntimeDiagnostics, which owns its own monotonic timings and would consume
+    # the deterministic clock values intended for the governor itself.
+    governor._sample_now_impl()
     assert governor.pressure_reason() == ""
-    governor.sample_now()
+    governor._sample_now_impl()
     assert governor.pressure_reason() == "process_cpu_budget"
-    snapshot = governor.sample_now()
+    snapshot = governor._sample_now_impl()
     assert snapshot["status"] == "critical"
     assert snapshot["sanitized"] is True
     assert 0.0 < governor.optional_cooldown_seconds(1_000) <= 30.0
