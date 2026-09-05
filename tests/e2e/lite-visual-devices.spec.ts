@@ -32,14 +32,17 @@ async function backgroundAlpha(locator) {
   });
 }
 
-async function openFirstRemovalReview(page) {
-  await page.locator('.lite-device-card-disclosure').evaluateAll((items) => {
-    items.forEach((item) => { (item as HTMLDetailsElement).open = true; });
-  });
+async function openRemovalReviewForTestPhone2(page) {
+  const deviceCard = page.locator('.lite-device-card').filter({ hasText: 'Test-Phone-2' }).first();
+  await expect(deviceCard).toBeVisible();
+  await deviceCard.scrollIntoViewIfNeeded();
 
-  const removeAction = page.getByRole('button', { name: /^(Remove device|Review removal)$/ }).first();
+  const disclosure = deviceCard.getByRole('button', { name: 'More details and actions for Test-Phone-2' });
+  await expect(disclosure).toBeVisible();
+  await disclosure.click();
+
+  const removeAction = deviceCard.getByRole('button', { name: /^(Remove device|Review removal)$/ });
   await expect(removeAction).toBeVisible();
-  await removeAction.scrollIntoViewIfNeeded();
   await removeAction.click();
   return removeAction;
 }
@@ -91,7 +94,7 @@ test('Removal review opens as a contextual sheet and restores the initiating act
 
   await page.goto('/?screen=devices');
   await waitForLiteScreenToSettle(page, 'devices');
-  const removeAction = await openFirstRemovalReview(page);
+  const removeAction = await openRemovalReviewForTestPhone2(page);
 
   const panel = page.locator('.lite-device-remove-panel');
   await expectInViewport(panel, page);
@@ -111,14 +114,9 @@ test('Removal review remains scrollable and keeps destructive actions reachable 
   await installScenario(page, 'healthy');
   await page.emulateMedia({ reducedMotion: 'reduce' });
 
-  // Open a real removable device at the project's normal mobile viewport first.
-  // The Devices fleet is virtualized, so shrinking to a very short viewport before
-  // selection can legitimately unmount the stale removable card. This regression is
-  // specifically about the already-open contextual sheet remaining usable when the
-  // viewport becomes constrained (rotation, split-screen, keyboard, small handset).
   await page.goto('/?screen=devices');
   await waitForLiteScreenToSettle(page, 'devices');
-  await openFirstRemovalReview(page);
+  await openRemovalReviewForTestPhone2(page);
 
   const panel = page.locator('.lite-device-remove-panel');
   await expect(panel).toBeVisible();
