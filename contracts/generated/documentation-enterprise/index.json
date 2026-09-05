@@ -37271,8 +37271,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "4fc3a00a0394c28ea9ef35b660e8c6ff8256f2b2",
-          "head_tree": "31daff9b455c180df5abef2a080a0d058d6ab986",
+          "head": "08889475422e7b0250b367c82b11a57b4ac5d7a1",
+          "head_tree": "e97a5a9b9a445a8356c924ab516ed92f9c7ccb7f",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -39321,7 +39321,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "951c601420024222e351496a0f0f39746dec16cbc0c784c4680ff8d5a0043351",
-        "documentation": "7f2efa6d039cad9f0536ffe851695de560f5ffea2e02050189ad233a2c615622",
+        "documentation": "7c8905ff6add81179686083c2566f4361932d2900e7fc52470625c28bb1bb0ca",
         "openapi": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
         "operational_health": "ebf96ec60eceee69e8955ee8aee21b3b63adafaa2049181efbf7cc0f98e99b2a"
       },
@@ -41645,8 +41645,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "4fc3a00a0394c28ea9ef35b660e8c6ff8256f2b2",
-        "head_tree": "31daff9b455c180df5abef2a080a0d058d6ab986",
+        "head": "08889475422e7b0250b367c82b11a57b4ac5d7a1",
+        "head_tree": "e97a5a9b9a445a8356c924ab516ed92f9c7ccb7f",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -106048,5 +106048,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "9e35690daa3193ba22b90158a1a181772cab84a03744a6538aab5a1559bffb86"
+  "source_fingerprint": "8d1186d8303c4294ac4689cdea25e0a80ec59193fb2555fedf20b65079a0ff8b"
 }
