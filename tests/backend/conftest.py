@@ -126,12 +126,28 @@ def isolate_process_global_projection_scheduler(request, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def isolate_release_runtime_process_state(request):
+def isolate_release_runtime_process_state(request, tmp_path, monkeypatch):
     filename = Path(str(request.node.fspath)).name
     if filename not in _RELEASE_ISOLATED_MODULES:
         yield
         return
 
+    # Some release tests exercise defaults without calling their per-test runtime
+    # initializer. Give those tests a real, isolated SQLite database so a path
+    # cached by an earlier temporary runtime can never leak into them.
+    state = tmp_path / "release-isolation" / "state"
+    database = state / "pocketlab-lite.sqlite3"
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(state))
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(database))
     _freshen_release_runtime_state()
+    try:
+        from api_fastapi.db.migrations import apply_migrations
+
+        apply_migrations()
+    except Exception:
+        # Individual tests that intentionally exercise initialization failure
+        # still own their own setup; isolation must not mask their exception.
+        pass
+
     yield
     _freshen_release_runtime_state()
