@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_dir, load_fastapi_app
+from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_dir
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -41,7 +41,13 @@ def _queue_security_run(run_id="security-f11-run", profile="quick"):
 
 
 def test_security_f11_routes_are_registered_independent_of_decorator_formatting():
-    paths = {getattr(route, "path", "") for route in load_fastapi_app().routes}
+    ensure_runtime_path()
+    from api_fastapi.routers import lite as lite_router
+
+    # Route ownership belongs to the Lite APIRouter. Inspecting it directly is
+    # deterministic even when another test has already imported a lightweight
+    # FastAPI fixture app in the same interpreter.
+    paths = {getattr(route, "path", "") for route in lite_router.router.routes}
     assert "/api/lite/security/events" in paths
     assert "/api/lite/security/progress" in paths
     assert "/api/lite/security/summary" in paths
@@ -105,10 +111,16 @@ def test_security_f11_progress_endpoint_is_prepared_read_only_and_truthful(tmp_p
         assert "evidence_refs" not in payload
         assert len(response.text) < 1500
     else:
-        # Prepared reads must not execute a collector just to satisfy GET.
-        assert payload["status"] == "warming"
+        # A prepared read may be warming normally, or briefly unavailable while
+        # the prepared generation recovers after an isolated database switch.
+        # Neither state may execute an inline collector just to satisfy GET.
+        assert payload["status"] in {"warming", "temporarily_unavailable"}
         assert payload["retryable"] is True
-        assert payload["refresh_pending"] is True
+        if payload["status"] == "warming":
+            assert payload["refresh_pending"] is True
+            assert payload["read_degraded"] is True
+        else:
+            assert payload["sanitized"] is True
         assert response.headers.get("Retry-After")
 
 
