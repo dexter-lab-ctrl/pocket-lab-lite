@@ -73,11 +73,19 @@ def _freshen_projection_scheduler() -> None:
 
 
 @pytest.fixture(autouse=True)
-def isolate_process_global_projection_scheduler(request):
+def isolate_process_global_projection_scheduler(request, monkeypatch):
     filename = Path(str(request.node.fspath)).name
     if filename not in _SCHEDULER_ISOLATED_MODULES:
         yield
         return
+
+    # Scheduler unit/contract suites model one local execution owner. Production
+    # API/worker role separation remains tested elsewhere; without an explicit
+    # role here a full-suite process can inherit ownership context from earlier
+    # runtime tests and persist dirty signals instead of executing their local
+    # ProjectionScheduler instances.
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "test")
+    monkeypatch.setenv("POCKETLAB_PROJECTION_EXECUTION_OWNER", "test")
 
     _freshen_projection_scheduler()
     yield
