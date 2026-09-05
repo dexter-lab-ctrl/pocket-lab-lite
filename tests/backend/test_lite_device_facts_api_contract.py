@@ -140,16 +140,26 @@ def isolated_device_facts_api_state(tmp_path):
 def _prime_four_surfaces():
     from api_fastapi.routers import lite
     from api_fastapi.services import lite_phase3b_projections as phase3b
+    from api_fastapi.services.lite_device_recovery import guarded_recovery_contract
 
-    device = _device()
+    # Prime Fleet with the same canonical read-side reconciliation used by Detail
+    # and Health. This prevents a hand-authored partial capability list from being
+    # compared with the registry-driven canonical projection produced later.
+    base_device = _device()
+    device = {**base_device, **guarded_recovery_contract(base_device)}
     fleet_payload = {
         "status": "healthy", "summary": "Devices are connected.", "devices": [device], "items": [device],
         "count": 1, "online": 1, "offline": 0, "remote_access": {"ready": True, "status": "ready"},
         "updated_at": NOW, "projection_only": True, "sanitized": True,
     }
+
+    def project_fleet(payload):
+        lite.CONTROL_PLANE.project_fleet(payload)
+        return lite.CONTROL_PLANE.domain_revision("fleet")
+
     lite.CONTROL_PLANE.prepared_read(
         domain="fleet", key="summary", builder=lambda: fleet_payload,
-        projector=lite.CONTROL_PLANE.project_fleet, stale_after_ms=30_000,
+        projector=project_fleet, stale_after_ms=30_000,
         max_stale_ms=30_000, deadline_seconds=6.0,
     )
 
@@ -163,11 +173,20 @@ def _prime_four_surfaces():
         "services": [{"name": "Control API", "status": "healthy", "summary": "Ready"}],
         "system_current_state": {}, "projection_only": True, "sanitized": True,
     }
-    phase3b.project("system.status", status_payload)
+
+    def project_status(payload):
+        phase3b.project("system.status", payload)
+        committed = phase3b.snapshot("system.status") or {}
+        return max(
+            1,
+            int(committed.get("projection_revision") or 0),
+            int(committed.get("source_revision") or 0),
+        )
+
     lite.CONTROL_PLANE.prepared_read(
         domain="system", key="status",
         builder=lambda: status_payload,
-        projector=lambda payload: phase3b.project("system.status", payload),
+        projector=project_status,
         stale_after_ms=30_000, max_stale_ms=30_000, deadline_seconds=6.0,
     )
     return device
