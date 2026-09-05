@@ -38,10 +38,12 @@ def assert_redacted(text: str):
     for pattern in TOKEN_PATTERNS:
         assert not re.search(pattern, text, flags=re.IGNORECASE), f"secret-like value leaked: {pattern}"
 
-    # A fixture may legitimately name a sensitive field while proving that it is
-    # redacted. Reject only assignments that carry a concrete, non-redacted value.
+    # Fixtures may legitimately name sensitive fields and may compare those
+    # fields in UI logic. Treat only object/key-value syntax or a single '=' as
+    # assignments; do not mistake JavaScript '===', '==', '=>', etc. for secret
+    # material. Concrete assignment values must still be explicitly redacted.
     assignment = re.compile(
-        r"(?i)[\"']?(root_token|unseal_key|client_token|private_key|api_key|password|secret_id)[\"']?\s*[:=]\s*([^,}\n]+)"
+        r"(?i)[\"']?(root_token|unseal_key|client_token|private_key|api_key|password|secret_id)[\"']?\s*(?::|=(?!=))\s*([^,}\n]+)"
     )
     for match in assignment.finditer(text):
         value = match.group(2).strip()
