@@ -1,17 +1,49 @@
 from __future__ import annotations
 
+import re
+from datetime import datetime, timezone
 from typing import Any
 
+from . import lite_device_runtime_projection
 
-_SERVICE_IDS = frozenset({"node_agent", "agent_supervisor"})
+
 _RESTARTABLE_AGENT_STATES = frozenset(
     {"stopped", "offline", "errored", "error", "failed", "unhealthy", "unknown"}
+)
+_SERVICE_CURRENT_SECONDS = 180
+_SECRETISH_SERVICE_TEXT = re.compile(
+    r"(?:token|password|passwd|secret|credential|api[_-]?key|private[_-]?key|"
+    r"authorization|bearer\s+|nats://|https?://[^\s/@]+:[^\s/@]+@|"
+    r"(?:^|\s)(?:/data/data/|/home/|/mnt/|/root/|~[/\\]))",
+    re.IGNORECASE,
 )
 
 
 def _text(value: Any, limit: int = 160) -> str:
     text = " ".join(str(value or "").strip().split())
     return "".join(ch for ch in text if ord(ch) >= 32 and ord(ch) != 127)[:limit]
+
+
+def _service_text(value: Any, limit: int, fallback: str = "") -> str:
+    text = _text(value, limit)
+    if not text or _SECRETISH_SERVICE_TEXT.search(text):
+        return fallback
+    return text
+
+
+def _service_freshness(reported_at: Any, supplied: Any = None) -> str:
+    reported = _text(reported_at, 64)
+    if not reported:
+        return "missing"
+    try:
+        observed = datetime.fromisoformat(reported.replace("Z", "+00:00"))
+        if observed.tzinfo is None:
+            observed = observed.replace(tzinfo=timezone.utc)
+        age = max(0.0, (datetime.now(timezone.utc) - observed.astimezone(timezone.utc)).total_seconds())
+        return "current" if age <= _SERVICE_CURRENT_SECONDS else "stale"
+    except (TypeError, ValueError):
+        supplied_text = _text(supplied, 24).lower()
+        return "stale" if supplied_text == "stale" else "missing"
 
 
 def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
@@ -21,6 +53,10 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
     truth. Persisted copies are display evidence only and must be recomputed on every
     prepared read before they are returned to clients.
     """
+
+    lite_device_runtime_projection.install_health_projection_extension()
+    lite_device_runtime_projection.install_store_extension()
+    device = lite_device_runtime_projection.enrich_device(device)
 
     connection = _text(device.get("connection") or "unknown", 32).lower()
     role = _text(device.get("role"), 40).lower()
@@ -63,31 +99,60 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
     ) or None
     supervisor_service_freshness = "fresh" if supervisor_fresh and connection == "online" else "stale"
 
-    services = [
-        {
-            "service_id": "node_agent",
-            "label": "Device agent",
-            "manager": "pm2",
-            "state": agent_state,
-            "reported_at": agent_reported_at,
-            "freshness": "fresh" if connection == "online" else "stale",
-            "restart_supported": allowed,
-            "restart_reason": reason_code,
-        },
-        {
-            "service_id": "agent_supervisor",
-            "label": "Recovery supervisor",
-            "manager": "pm2",
-            "state": supervisor_state,
-            "reported_at": supervisor_reported_at,
-            "freshness": supervisor_service_freshness,
+    observed_services = (
+        device.get("_runtime_service_evidence")
+        if isinstance(device.get("_runtime_service_evidence"), list)
+        else device.get("runtime_services")
+        if is_server and isinstance(device.get("runtime_services"), list)
+        else []
+    )
+    services: list[dict[str, Any]] = []
+    for raw in observed_services[:24]:
+        if not isinstance(raw, dict):
+            continue
+        raw_identity = _service_text(raw.get("service_id") or raw.get("name"), 80)
+        service_id = raw_identity.lower()
+        service_id = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in service_id).strip("_")
+        if not service_id:
+            continue
+        reported_at = _service_text(raw.get("reported_at"), 64) or None
+        safe_label = _service_text(raw.get("label") or raw.get("name"), 80)
+        safe_manager = _service_text(raw.get("manager"), 32, "process_manager")
+        safe_state = _service_text(raw.get("state") or raw.get("status"), 32, "unknown").lower()
+        services.append({
+            "service_id": service_id,
+            "label": safe_label or service_id.replace("_", " ").title(),
+            "manager": safe_manager,
+            "state": safe_state,
+            "reported_at": reported_at,
+            "freshness": _service_freshness(reported_at, raw.get("freshness")),
             "restart_supported": False,
-            "restart_reason": "not_remotely_restartable",
-        },
-    ]
-
-    # Keep the schema bounded and stable even if this function is extended later.
-    services = [item for item in services if item.get("service_id") in _SERVICE_IDS][:8]
+            "restart_reason": "protected_runtime_service" if is_server else "not_remotely_restartable",
+        })
+    if not services:
+        services = [
+            {
+                "service_id": "node_agent",
+                "label": "Device agent",
+                "manager": "pm2",
+                "state": agent_state,
+                "reported_at": agent_reported_at,
+                "freshness": _service_freshness(agent_reported_at, "fresh" if connection == "online" else "stale"),
+                "restart_supported": allowed,
+                "restart_reason": reason_code,
+            },
+            {
+                "service_id": "agent_supervisor",
+                "label": "Recovery supervisor",
+                "manager": "pm2",
+                "state": supervisor_state,
+                "reported_at": supervisor_reported_at,
+                "freshness": _service_freshness(supervisor_reported_at, supervisor_service_freshness),
+                "restart_supported": False,
+                "restart_reason": "not_remotely_restartable",
+            },
+        ]
+    services = services[:24]
     return {
         "restart_agent_assessment": {
             "allowed": allowed,
@@ -98,4 +163,9 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
             "agent_state": agent_state,
         },
         "runtime_services": services,
+        "device_facts": device.get("device_facts") if isinstance(device.get("device_facts"), dict) else {},
+        "resource_observations": device.get("resource_observations") if isinstance(device.get("resource_observations"), dict) else {},
+        "capability_states": device.get("capability_states") if isinstance(device.get("capability_states"), list) else [],
+        "dependencies": device.get("dependencies") if isinstance(device.get("dependencies"), dict) else {},
+        "_health_signals": device.get("_health_signals") if isinstance(device.get("_health_signals"), dict) else {},
     }

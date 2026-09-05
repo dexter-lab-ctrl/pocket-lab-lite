@@ -1,3 +1,4 @@
+import { normalizeDeviceFacts, resourceFactValue } from './liteDeviceFacts.js';
 const READY_STATES = new Set(['healthy', 'ready', 'online', 'success', 'succeeded']);
 const REVIEW_STATES = new Set(['degraded', 'warning', 'review', 'partial', 'unknown']);
 const DANGER_STATES = new Set(['unavailable', 'unhealthy', 'failed', 'error', 'blocked', 'offline']);
@@ -195,6 +196,7 @@ function resourceMetric({ key, label, value, unit = '', thresholds = null, note 
 }
 
 function finiteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
@@ -352,15 +354,16 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
   const healthSummary = summary.device_health_summary || {};
   const healthyDevices = boundedCount(healthSummary.by_status?.healthy);
   const healthSummaryCurrent = summary.device_health_attention_current === true;
+  const deviceFacts = normalizeDeviceFacts(status.device_facts || {}, { telemetry });
 
-  const memoryTotalMb = finiteNumber(telemetry.memory_total_mb);
-  const memoryFreeMb = finiteNumber(telemetry.memory_free_mb);
-  const memoryUsedMb = finiteNumber(telemetry.memory_usage_mb);
+  const memoryTotalMb = resourceFactValue(deviceFacts, 'memory', 'total_mb');
+  const memoryFreeMb = resourceFactValue(deviceFacts, 'memory', 'free_mb');
+  const memoryUsedMb = resourceFactValue(deviceFacts, 'memory', 'used_mb');
   const derivedMemoryFreeMb = memoryFreeMb ?? (memoryTotalMb !== null && memoryUsedMb !== null
     ? Math.max(0, memoryTotalMb - memoryUsedMb)
     : null);
-  const cpuUsage = finiteNumber(telemetry.cpu_usage_percent);
-  const cpuTemp = finiteNumber(telemetry.cpu_temp_c);
+  const cpuUsage = resourceFactValue(deviceFacts, 'cpu_usage', 'usage_percent');
+  const cpuTemp = resourceFactValue(deviceFacts, 'temperature', 'celsius');
   const semanticHealthTone = hasProjection(telemetryThresholds)
     ? semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status }).tone
     : healthSummaryCurrent
@@ -401,8 +404,8 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
           }
         : resourceMetric({ key: 'device-health', label: 'Device health', value: Number.NaN, note: 'Health information has not been reported yet' });
 
-  const freeSpaceMb = finiteNumber(telemetry.free_space_mb);
-  const totalSpaceMb = finiteNumber(telemetry.total_space_mb);
+  const freeSpaceMb = resourceFactValue(deviceFacts, 'storage', 'free_mb');
+  const totalSpaceMb = resourceFactValue(deviceFacts, 'storage', 'total_mb');
   const storageKnown = freeSpaceMb !== null && totalSpaceMb !== null && totalSpaceMb > 0;
   const storagePercent = storageKnown ? Math.max(0, Math.min(100, (freeSpaceMb / totalSpaceMb) * 100)) : null;
   const semanticStorageTone = hasProjection(storagePressure)
@@ -420,7 +423,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       }
     : hasProjection(storagePressure)
       ? semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' })
-      : resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' });
+      : resourceMetric({ key: 'storage', label: 'Free storage', value: freeSpaceMb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' });
 
   const databaseResource = hasProjection(sqliteHealth)
     ? semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' })

@@ -28,6 +28,7 @@ from release_auto_update import ReleaseAutoUpdater
 from release_workflow import (
     build_release_workflow as build_release_workflow,
 )  # noqa: F401
+from resource_telemetry import collect_resource_telemetry
 
 LOGGER = logging.getLogger("control_plane_core")
 logging.basicConfig(
@@ -208,66 +209,10 @@ def write_json_file(path: pathlib.Path, data: Any) -> None:
 
 
 def telemetry_snapshot() -> Dict[str, Any]:
-    cpu_temp = 42.0
-    for i in range(12):
-        p = pathlib.Path(f"/sys/class/thermal/thermal_zone{i}/temp")
-        if p.exists():
-            try:
-                raw = int(p.read_text().strip())
-                cpu_temp = raw / 1000.0 if raw > 1000 else float(raw)
-                break
-            except Exception:
-                pass
-
-    cpu_usage_percent = 0.0
-    try:
-        load_1m = os.getloadavg()[0]
-        cpu_count = os.cpu_count() or 1
-        cpu_usage_percent = max(0.0, min(100.0, (load_1m / cpu_count) * 100.0))
-    except Exception:
-        cpu_usage_percent = 0.0
-
-    try:
-        st = os.statvfs(str(SETTINGS.base_dir))
-        free_space_mb = int((st.f_bavail * st.f_frsize) // (1024 * 1024))
-        total_space_mb = int((st.f_blocks * st.f_frsize) // (1024 * 1024))
-    except Exception:
-        free_space_mb = 0
-        total_space_mb = 0
-
-    try:
-        with open("/proc/meminfo", "r", encoding="utf-8") as handle:
-            mem = {
-                line.split(":", 1)[0]: int(line.split()[1])
-                for line in handle
-                if ":" in line and line.split()[1].isdigit()
-            }
-        mem_total = mem.get("MemTotal", 0) // 1024
-        mem_available = mem.get("MemAvailable", mem.get("MemFree", 0)) // 1024
-    except Exception:
-        mem_total = 0
-        mem_available = 0
-
-    memory_usage_mb = max(0, mem_total - mem_available)
-
-    return {
-        "timestamp": now_utc_iso(),
-        "cpu_temp_c": cpu_temp,
-        "free_space_mb": free_space_mb,
-        "total_space_mb": total_space_mb,
-        "cpu_usage_percent": round(cpu_usage_percent, 1),
-        "memory_usage_mb": memory_usage_mb,
-        "memory_total_mb": mem_total,
-        "memory_free_mb": mem_available,
-        # Compatibility aliases kept for older clients and tests.
-        "cpuTemp": cpu_temp,
-        "freeSpaceMB": free_space_mb,
-        "totalSpaceMB": total_space_mb,
-        "memoryTotalMB": mem_total,
-        "memoryFreeMB": mem_available,
-        "device": os.uname().nodename if hasattr(os, "uname") else "pocket-lab",
-        "error": None,
-    }
+    """Return one central resource sample using the shared bounded providers."""
+    payload = collect_resource_telemetry(SETTINGS.base_dir)
+    payload["device"] = os.uname().nodename if hasattr(os, "uname") else "pocket-lab"
+    return payload
 
 
 def fetch_gatus_statuses() -> Optional[Dict[str, Any]]:
