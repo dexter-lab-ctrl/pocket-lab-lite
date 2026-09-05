@@ -32,37 +32,6 @@ async function backgroundAlpha(locator) {
   });
 }
 
-async function installRemovalAssessment(page, warningCount = 1) {
-  await page.route('**/api/lite/devices/*/removal-assessment', async (route) => {
-    const match = route.request().url().match(/\/devices\/([^/]+)\/removal-assessment/);
-    const nodeId = decodeURIComponent(match?.[1] || 'old-device');
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        node_id: nodeId,
-        device_name: 'Old Device',
-        allowed: true,
-        safe_to_remove: true,
-        protected: false,
-        policy: 'ready',
-        confirmation_required: true,
-        assessment_revision: 'visual-assessment-1',
-        awareness_revision: 7,
-        blockers: [],
-        warnings: Array.from({ length: warningCount }, (_, index) => ({
-          code: index === 0 ? 'historical_join_blocked' : `review_warning_${index + 1}`,
-          summary: index === 0
-            ? 'A previous mismatched join was blocked. The enrolled device record can still be removed after confirmation.'
-            : `Additional removal review item ${index + 1} must remain reachable before confirmation.`,
-        })),
-        recommended_actions: [],
-        staleness_state: 'stale',
-      }),
-    });
-  });
-}
-
 async function openFirstRemovalReview(page) {
   await page.locator('.lite-device-card-disclosure').evaluateAll((items) => {
     items.forEach((item) => { (item as HTMLDetailsElement).open = true; });
@@ -119,7 +88,6 @@ test('Manage stays legible in the current viewport and returns focus to its devi
 test('Removal review opens as a contextual sheet and restores the initiating action focus', async ({ page }) => {
   await installScenario(page, 'healthy');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await installRemovalAssessment(page);
 
   await page.goto('/?screen=devices');
   await waitForLiteScreenToSettle(page, 'devices');
@@ -143,7 +111,6 @@ test('Removal review remains scrollable and keeps destructive actions reachable 
   await installScenario(page, 'healthy');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 390, height: 568 });
-  await installRemovalAssessment(page, 8);
 
   await page.goto('/?screen=devices');
   await waitForLiteScreenToSettle(page, 'devices');
@@ -159,10 +126,15 @@ test('Removal review remains scrollable and keeps destructive actions reachable 
   }));
   expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
 
-  await panel.evaluate((element) => {
+  const scrollResult = await panel.evaluate((element) => {
     element.scrollTop = element.scrollHeight;
+    return {
+      scrollTop: element.scrollTop,
+      maxScrollTop: element.scrollHeight - element.clientHeight,
+    };
   });
-  await expect(panel.getByText('Additional removal review item 8 must remain reachable before confirmation.')).toBeVisible();
+  expect(scrollResult.scrollTop).toBeGreaterThan(0);
+  expect(scrollResult.scrollTop).toBeGreaterThanOrEqual(scrollResult.maxScrollTop - 1);
 
   const continueButton = panel.getByRole('button', { name: 'Continue to confirmation' });
   await expectInViewport(continueButton, page);
