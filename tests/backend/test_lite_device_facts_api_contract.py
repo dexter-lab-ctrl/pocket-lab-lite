@@ -166,7 +166,6 @@ def _prime_four_surfaces():
     phase3b.project("system.status", status_payload)
     lite.CONTROL_PLANE.prepared_read(
         domain="system", key="status",
-        snapshot_builder=lambda: phase3b.snapshot("system.status"),
         builder=lambda: status_payload,
         projector=lambda payload: phase3b.project("system.status", payload),
         stale_after_ms=30_000, max_stale_ms=30_000, deadline_seconds=6.0,
