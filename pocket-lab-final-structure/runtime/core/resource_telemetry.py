@@ -11,13 +11,36 @@ import glob
 import os
 import re
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
-RESOURCE_OBSERVATION_SCHEMA_VERSION = 1
+RESOURCE_OBSERVATION_SCHEMA_VERSION = 2
 _MAX_TEXT_BYTES = 64 * 1024
 _MAX_THERMAL_ZONES = 64
 _CPU_PREVIOUS: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True)
+class ResourceProvider:
+    metric: str
+    source: str
+    collector: Callable[..., dict[str, Any]]
+    max_duration_ms: float = 250.0
+
+
+def _run_provider(provider: ResourceProvider, observed_at: str, *args: Any) -> dict[str, Any]:
+    started = time.monotonic()
+    try:
+        result = provider.collector(observed_at, *args)
+    except PermissionError:
+        result = _failure(provider.metric, source=provider.source, observed_at=observed_at, reason_code="permission_denied")
+    except Exception:
+        result = _failure(provider.metric, source=provider.source, observed_at=observed_at, reason_code="collection_failed")
+    elapsed_ms = (time.monotonic() - started) * 1000.0
+    if elapsed_ms > max(1.0, float(provider.max_duration_ms)):
+        return _failure(provider.metric, source=provider.source, observed_at=observed_at, reason_code="provider_timeout")
+    return result if isinstance(result, dict) else _failure(provider.metric, source=provider.source, observed_at=observed_at, reason_code="collection_failed")
 
 
 def _iso_now() -> str:
@@ -57,7 +80,7 @@ def _observation(
 
 
 def _failure(metric: str, *, source: str, observed_at: str, reason_code: str) -> dict[str, Any]:
-    status = "permission_denied" if reason_code == "permission_denied" else "unsupported" if reason_code in {"unsupported", "not_present"} else "unavailable"
+    status = "permission_denied" if reason_code == "permission_denied" else "unsupported" if reason_code in {"unsupported", "not_present"} else "transient_failure" if reason_code in {"collection_failed", "provider_timeout"} else "unavailable"
     support = "unsupported" if status == "unsupported" else "supported"
     return _observation(
         metric,
@@ -315,17 +338,24 @@ def _temperature(observed_at: str) -> dict[str, Any]:
     return _failure("temperature", source="sysfs_thermal", observed_at=observed_at, reason_code="unsupported" if saw_zone else "not_present")
 
 
+RESOURCE_PROVIDERS: tuple[ResourceProvider, ...] = (
+    ResourceProvider("memory", "proc_meminfo", _memory, 200.0),
+    ResourceProvider("storage", "statvfs", _storage, 250.0),
+    ResourceProvider("cpu_usage", "proc_stat", _cpu_usage, 200.0),
+    ResourceProvider("load_average", "platform_loadavg", _load_average, 100.0),
+    ResourceProvider("uptime", "boot_clock", _uptime, 150.0),
+    ResourceProvider("temperature", "sysfs_thermal", _temperature, 350.0),
+)
+
+
 def collect_resource_telemetry(storage_root: str | os.PathLike[str]) -> dict[str, Any]:
     """Collect one bounded multi-provider sample without throwing per-metric errors."""
     observed_at = _iso_now()
-    observations = {
-        "memory": _memory(observed_at),
-        "storage": _storage(observed_at, Path(storage_root)),
-        "cpu_usage": _cpu_usage(observed_at),
-        "load_average": _load_average(observed_at),
-        "uptime": _uptime(observed_at),
-        "temperature": _temperature(observed_at),
-    }
+    root = Path(storage_root)
+    observations: dict[str, dict[str, Any]] = {}
+    for provider in RESOURCE_PROVIDERS:
+        args = (root,) if provider.metric == "storage" else ()
+        observations[provider.metric] = _run_provider(provider, observed_at, *args)
     payload: dict[str, Any] = {
         "timestamp": observed_at,
         "sampled_at": observed_at,

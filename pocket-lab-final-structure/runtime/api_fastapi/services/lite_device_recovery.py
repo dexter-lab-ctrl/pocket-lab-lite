@@ -4,7 +4,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
-from . import lite_device_runtime_projection
+from . import lite_device_runtime_extensions, lite_device_runtime_projection, lite_runtime_services
 
 
 _RESTARTABLE_AGENT_STATES = frozenset(
@@ -54,8 +54,8 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
     prepared read before they are returned to clients.
     """
 
-    lite_device_runtime_projection.install_health_projection_extension()
-    lite_device_runtime_projection.install_store_extension()
+    lite_device_runtime_extensions.install_health_projection_extension()
+    lite_device_runtime_extensions.install_store_extension()
     device = lite_device_runtime_projection.enrich_device(device)
 
     connection = _text(device.get("connection") or "unknown", 32).lower()
@@ -99,59 +99,33 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
     ) or None
     supervisor_service_freshness = "fresh" if supervisor_fresh and connection == "online" else "stale"
 
+    # Runtime-service rows are evidence, not inferred topology. Server Host rows
+    # come from the prepared dynamic process snapshot; secondary devices expose
+    # only services explicitly reported by the device/supervisor. Missing service
+    # evidence remains an empty list rather than invented PM2 process names.
     observed_services = (
         device.get("_runtime_service_evidence")
         if isinstance(device.get("_runtime_service_evidence"), list)
         else device.get("runtime_services")
-        if is_server and isinstance(device.get("runtime_services"), list)
+        if isinstance(device.get("runtime_services"), list)
         else []
     )
     services: list[dict[str, Any]] = []
+    seen_services: set[str] = set()
     for raw in observed_services[:24]:
         if not isinstance(raw, dict):
             continue
-        raw_identity = _service_text(raw.get("service_id") or raw.get("name"), 80)
-        service_id = raw_identity.lower()
-        service_id = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in service_id).strip("_")
-        if not service_id:
+        service = lite_runtime_services.sanitize_runtime_service(
+            raw, source="prepared_device_service_evidence"
+        )
+        if not service or service["service_id"] in seen_services:
             continue
-        reported_at = _service_text(raw.get("reported_at"), 64) or None
-        safe_label = _service_text(raw.get("label") or raw.get("name"), 80)
-        safe_manager = _service_text(raw.get("manager"), 32, "process_manager")
-        safe_state = _service_text(raw.get("state") or raw.get("status"), 32, "unknown").lower()
-        services.append({
-            "service_id": service_id,
-            "label": safe_label or service_id.replace("_", " ").title(),
-            "manager": safe_manager,
-            "state": safe_state,
-            "reported_at": reported_at,
-            "freshness": _service_freshness(reported_at, raw.get("freshness")),
-            "restart_supported": False,
-            "restart_reason": "protected_runtime_service" if is_server else "not_remotely_restartable",
-        })
-    if not services:
-        services = [
-            {
-                "service_id": "node_agent",
-                "label": "Device agent",
-                "manager": "pm2",
-                "state": agent_state,
-                "reported_at": agent_reported_at,
-                "freshness": _service_freshness(agent_reported_at, "fresh" if connection == "online" else "stale"),
-                "restart_supported": allowed,
-                "restart_reason": reason_code,
-            },
-            {
-                "service_id": "agent_supervisor",
-                "label": "Recovery supervisor",
-                "manager": "pm2",
-                "state": supervisor_state,
-                "reported_at": supervisor_reported_at,
-                "freshness": _service_freshness(supervisor_reported_at, supervisor_service_freshness),
-                "restart_supported": False,
-                "restart_reason": "not_remotely_restartable",
-            },
-        ]
+        seen_services.add(service["service_id"])
+        service["restart_supported"] = False
+        service["restart_reason"] = (
+            "protected_runtime_service" if is_server else "device_service_display_only"
+        )
+        services.append(service)
     services = services[:24]
     return {
         "restart_agent_assessment": {

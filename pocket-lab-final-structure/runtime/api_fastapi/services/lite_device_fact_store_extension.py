@@ -14,7 +14,7 @@ from typing import Any
 
 from . import lite_control_plane_store as store_module
 
-_EXTENSION_MARKER = "_pocketlab_device_facts_extension_v1"
+_EXTENSION_MARKER = "_pocketlab_device_facts_extension_v2"
 
 
 def _health_values(health: dict[str, Any], updated_at: str, item: dict[str, Any] | None = None) -> dict[str, str]:
@@ -73,6 +73,7 @@ def install_device_fact_store_extension(control_plane: Any) -> Any:
 
     original_upsert = control_plane._upsert_device_health_row
     original_details = control_plane.device_details
+    original_health = control_plane.device_health
     original_fleet_snapshot = control_plane.fleet_projection_snapshot
 
     def upsert_device_health_row(self, conn, *, device_id, item, updated_at, updated_at_epoch_ms):
@@ -122,27 +123,73 @@ def install_device_fact_store_extension(control_plane: Any) -> Any:
         if not isinstance(device, dict):
             return payload
         device.update(_enrollment_overlay(self, str(device.get("id") or device_id)))
-        health = device.get("proactive_health") if isinstance(device.get("proactive_health"), dict) else {}
-        facts = health.get("device_facts") if isinstance(health.get("device_facts"), dict) else {}
-        if facts:
-            device["device_facts"] = facts
+        # Detail, Fleet, and Health consume the same guarded read-side contract.
+        # This call only reconciles prepared/cache evidence; it never executes a
+        # recovery action or starts a runtime process.
+        try:
+            from .lite_device_recovery import guarded_recovery_contract
+
+            device.update(guarded_recovery_contract(device))
+        except Exception:
+            health = device.get("proactive_health") if isinstance(device.get("proactive_health"), dict) else {}
+            facts = health.get("device_facts") if isinstance(health.get("device_facts"), dict) else {}
+            if facts:
+                device["device_facts"] = facts
+        return payload
+
+    def device_health(self, device_id: str):
+        payload = original_health(device_id)
+        if not isinstance(payload, dict):
+            return payload
+        health = payload.get("health") if isinstance(payload.get("health"), dict) else {}
+        try:
+            details = self.device_details(device_id)
+            device = details.get("device") if isinstance(details, dict) and isinstance(details.get("device"), dict) else {}
+        except Exception:
+            device = {}
+        facts = device.get("device_facts") if isinstance(device.get("device_facts"), dict) else (
+            health.get("device_facts") if isinstance(health.get("device_facts"), dict) else {}
+        )
+        observations = facts.get("resources") if isinstance(facts.get("resources"), dict) else {}
+        software_posture = health.get("software_posture") if isinstance(health.get("software_posture"), dict) else {}
+        if not software_posture and isinstance(device.get("proactive_health"), dict):
+            software_posture = device["proactive_health"].get("software_posture") or {}
+        payload["health"] = {
+            **health,
+            "device_facts": facts,
+            "resource_observations": observations,
+            "software_posture": software_posture,
+        }
+        payload["device_facts"] = facts
+        payload["resource_observations"] = observations
+        payload["capability_states"] = device.get("capability_states") if isinstance(device.get("capability_states"), list) else []
+        payload["runtime_services"] = device.get("runtime_services") if isinstance(device.get("runtime_services"), list) else []
+        payload["software_posture"] = software_posture
         return payload
 
     def fleet_projection_snapshot(self):
         payload = original_fleet_snapshot()
         devices = payload.get("devices") if isinstance(payload, dict) else None
         if isinstance(devices, list):
-            for item in devices:
-                if not isinstance(item, dict) or isinstance(item.get("device_facts"), dict):
+            for index, item in enumerate(devices):
+                if not isinstance(item, dict):
                     continue
-                health = item.get("proactive_health") if isinstance(item.get("proactive_health"), dict) else {}
-                facts = health.get("device_facts") if isinstance(health.get("device_facts"), dict) else {}
-                if facts:
-                    item["device_facts"] = facts
+                try:
+                    from .lite_device_recovery import guarded_recovery_contract
+
+                    enriched = {**item, **guarded_recovery_contract(item)}
+                except Exception:
+                    enriched = dict(item)
+                    health = item.get("proactive_health") if isinstance(item.get("proactive_health"), dict) else {}
+                    facts = health.get("device_facts") if isinstance(health.get("device_facts"), dict) else {}
+                    if facts:
+                        enriched["device_facts"] = facts
+                devices[index] = enriched
         return payload
 
     control_plane._upsert_device_health_row = types.MethodType(upsert_device_health_row, control_plane)
     control_plane.device_details = types.MethodType(device_details, control_plane)
+    control_plane.device_health = types.MethodType(device_health, control_plane)
     control_plane.fleet_projection_snapshot = types.MethodType(fleet_projection_snapshot, control_plane)
     setattr(control_plane, _EXTENSION_MARKER, True)
     return control_plane

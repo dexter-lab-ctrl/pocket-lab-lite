@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import re
 import time
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
-RESOURCE_FACTS_SCHEMA_VERSION = 1
+RESOURCE_FACTS_SCHEMA_VERSION = 2
 RESOURCE_CURRENT_SECONDS = 180
 _ALLOWED_OBSERVATION_STATUSES = {
     "available", "verification_pending", "stale", "missing", "unsupported",
-    "permission_denied", "unavailable", "blocked", "not_applicable",
+    "permission_denied", "unavailable", "transient_failure", "blocked", "not_applicable",
 }
 _SOURCE_PRIORITY = {
     "server_central_telemetry": 100,
@@ -19,7 +21,7 @@ _SOURCE_PRIORITY = {
     "legacy_telemetry": 60,
     "system_health": 20,
 }
-_SECRETISH = re.compile(r"token|password|secret|credential|api[_-]?key|nats://|/data/data/|/home/|/mnt/", re.I)
+_SECRETISH = re.compile(r"token|password|passwd|secret|credential|api[_-]?key|private[_-]?key|authorization|bearer\s+|nats://|/data/data/|/storage/emulated/|/home/|/mnt/|/root/", re.I)
 
 
 def _safe_text(value: Any, limit: int = 120, fallback: str = "") -> str:
@@ -65,7 +67,9 @@ def _status(value: Any, fallback: str = "unavailable") -> str:
         return normalized
     if normalized in {"ready", "healthy", "current", "reported", "supported", "ok"}:
         return "available"
-    if normalized in {"error", "failed", "collection_failed", "unknown"}:
+    if normalized in {"collection_failed", "timeout", "provider_timeout", "transient_failure"}:
+        return "transient_failure"
+    if normalized in {"error", "failed", "unknown"}:
         return "unavailable"
     return fallback
 
@@ -162,6 +166,8 @@ def normalize_resource_observations(
         if not candidate:
             continue
         observed_at = _safe_text(candidate.get("observed_at") or fallback_at, 64) or None
+        if observed_at is not None and _epoch(observed_at) is None:
+            observed_at = None
         state = _status(candidate.get("status"))
         value = _sanitize_value(metric, candidate.get("value"))
         if state == "available" and value is None:
@@ -174,7 +180,7 @@ def normalize_resource_observations(
             display_status = "stale"
         else:
             display_status = state
-        normalized[metric] = {
+        record = {
             "metric": metric,
             "value": value,
             "unit": _safe_text(candidate.get("unit"), 32) or None,
@@ -187,6 +193,9 @@ def normalize_resource_observations(
             "support_state": _safe_text(candidate.get("support_state"), 32, "supported" if state not in {"unsupported", "not_applicable"} else "unsupported"),
             "schema_version": max(0, min(100, int(candidate.get("schema_version") or telemetry.get("schema_version") or 0))),
         }
+        revision_material = json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+        record["revision"] = max(1, int.from_bytes(hashlib.sha256(revision_material.encode("utf-8")).digest()[:8], "big") & ((1 << 63) - 1))
+        normalized[metric] = record
     return normalized
 
 
@@ -265,11 +274,11 @@ def _software_fact(device: dict[str, Any], component: str) -> dict[str, Any]:
         ]
     present = [(str(value), str(source), observed_at, freshness) for value, source, observed_at, freshness in candidates if value not in (None, "", "unknown")]
     if not present:
-        return {"component": component, "version": None, "status": "verification_pending", "source": "unavailable", "observed_at": None, "freshness": "missing"}
+        return {"component": component, "version": None, "status": "unknown", "source": "unavailable", "observed_at": None, "freshness": "missing", "reason_code": "version_not_reported"}
     present.sort(key=lambda row: (_epoch(row[2]) or 0.0, 1 if str(row[3]).lower() in {"fresh", "current"} else 0), reverse=True)
     value, source, observed_at, freshness = present[0]
     normalized_freshness = "current" if str(freshness).lower() in {"fresh", "current"} else "stale" if str(freshness).lower() in {"stale", "saved"} else _freshness(observed_at, time.time(), 86400)
-    return {"component": component, "version": _safe_text(value, 80), "status": "current" if normalized_freshness == "current" else "stale", "source": _safe_text(source, 80, "runtime"), "observed_at": _safe_text(observed_at, 64) or None, "freshness": normalized_freshness}
+    return {"component": component, "version": _safe_text(value, 80), "status": "current" if normalized_freshness == "current" else "stale", "source": _safe_text(source, 80, "runtime"), "observed_at": _safe_text(observed_at, 64) or None, "freshness": normalized_freshness, "reason_code": "authoritative_version_evidence" if normalized_freshness == "current" else "version_evidence_stale"}
 
 
 def build_device_facts(
@@ -287,6 +296,11 @@ def build_device_facts(
     facts = device.get("device_facts") if isinstance(device.get("device_facts"), dict) else {}
     if isinstance(facts.get("resources"), dict):
         sources.append(facts["resources"])
+    proactive = device.get("proactive_health") if isinstance(device.get("proactive_health"), dict) else {}
+    if isinstance(proactive.get("resource_observations"), dict):
+        sources.append(proactive["resource_observations"])
+    if isinstance(proactive.get("device_facts"), dict) and isinstance(proactive["device_facts"].get("resources"), dict):
+        sources.append(proactive["device_facts"]["resources"])
     candidate_telemetry = telemetry if isinstance(telemetry, dict) else device.get("telemetry") if isinstance(device.get("telemetry"), dict) else {}
     if not candidate_telemetry and isinstance(device.get("_health_signals"), dict):
         candidate_telemetry = device["_health_signals"].get("telemetry") if isinstance(device["_health_signals"].get("telemetry"), dict) else {}
@@ -297,17 +311,22 @@ def build_device_facts(
                 value["source"] = telemetry_source
         sources.append(normalized)
     resources = reconcile_resource_observations(*sources, now_epoch=now_epoch)
-    return {
+    software = {
+        "node_agent": _software_fact(device, "node_agent"),
+        "supervisor": _software_fact(device, "supervisor"),
+    }
+    observed_at = max((str(item.get("observed_at")) for item in resources.values() if item.get("observed_at")), default=None)
+    result = {
         "schema_version": RESOURCE_FACTS_SCHEMA_VERSION,
         "device_id": _safe_text(device.get("id") or device.get("node_id") or device.get("name"), 120),
         "resources": resources,
-        "software": {
-            "node_agent": _software_fact(device, "node_agent"),
-            "supervisor": _software_fact(device, "supervisor"),
-        },
-        "observed_at": max((str(item.get("observed_at")) for item in resources.values() if item.get("observed_at")), default=None),
+        "software": software,
+        "observed_at": observed_at,
         "sanitized": True,
     }
+    revision_material = json.dumps({"resources": resources, "software": software}, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+    result["revision"] = max(1, int.from_bytes(hashlib.sha256(revision_material.encode("utf-8")).digest()[:8], "big") & ((1 << 63) - 1))
+    return result
 
 
 def apply_device_facts(
