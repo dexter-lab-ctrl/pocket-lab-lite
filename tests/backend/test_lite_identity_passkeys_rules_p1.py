@@ -250,7 +250,8 @@ def test_identity_rules_p1_source_contracts():
     assert "Advanced Setup" in identity
     assert "passkeyStepUpOptions" in api
     assert "policyDecision" in api
-    assert "Safe templates" in rules
+    assert "const templates = Array.isArray(data?.templates) ? data.templates : [];" in rules
+    assert "Protection areas" in rules
     assert "Raw policy input is not exposed" in rules
     assert 'input.action.id == "identity.passkey.revoke"' in rego
     assert "passkey_step_up_required" in rego
