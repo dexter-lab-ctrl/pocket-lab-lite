@@ -37,7 +37,7 @@ async function openRemovalReviewForTestPhone2(page) {
   await expect(deviceCard).toBeVisible();
   await deviceCard.scrollIntoViewIfNeeded();
 
-  const disclosure = deviceCard.getByRole('button', { name: 'More details and actions for Test-Phone-2' });
+  const disclosure = deviceCard.locator('summary[aria-label="More details and actions for Test-Phone-2"]');
   await expect(disclosure).toBeVisible();
   await disclosure.click();
 
