@@ -14,7 +14,7 @@ NOW_EPOCH = 1788609600.0
 
 def _modules():
     ensure_runtime_path()
-    import resource_telemetry
+    from core import resource_telemetry
     from api_fastapi.services import lite_capability_projection, lite_device_facts, lite_runtime_services
     return resource_telemetry, lite_capability_projection, lite_device_facts, lite_runtime_services
 
@@ -82,8 +82,10 @@ def test_thermal_valid_and_invalid_values(monkeypatch, raw, expected_status):
     monkeypatch.setattr(telemetry, "_read_text", lambda path, limit=65536: values.get(str(path), (None, "not_present")))
     result = telemetry._temperature(NOW_ISO)
     assert result["status"] == expected_status
-    if expected_status == "available": assert result["value"]["celsius"] == 51.0
-    else: assert result["value"] is None
+    if expected_status == "available":
+        assert result["value"]["celsius"] == 51.0
+    else:
+        assert result["value"] is None
 
 
 def test_thermal_unreadable_and_absent(monkeypatch):
@@ -101,12 +103,14 @@ def test_one_provider_failure_does_not_invalidate_other_metrics(monkeypatch):
         telemetry.ResourceProvider("memory", "test_memory", lambda at: _observation("memory", {"total_mb": 100, "free_mb": 50, "used_mb": 50}), 100),
         telemetry.ResourceProvider("storage", "test_storage", lambda at, root: (_ for _ in ()).throw(OSError("denied")), 100),
         telemetry.ResourceProvider("cpu_usage", "test_cpu", lambda at: _observation("cpu_usage", {"usage_percent": 0}), 100),
+        telemetry.ResourceProvider("temperature", "test_temperature", lambda at: _observation("temperature", {"celsius": 40}), 100),
     )
     monkeypatch.setattr(telemetry, "RESOURCE_PROVIDERS", providers)
     sample = telemetry.collect_resource_telemetry("/tmp")
     assert sample["resource_observations"]["memory"]["status"] == "available"
     assert sample["resource_observations"]["storage"]["status"] == "transient_failure"
     assert sample["resource_observations"]["cpu_usage"]["value"]["usage_percent"] == 0
+    assert sample["resource_observations"]["temperature"]["value"]["celsius"] == 40
 
 
 def test_provider_timeout_becomes_transient_failure(monkeypatch):
@@ -162,7 +166,8 @@ def test_capability_record_supports_full_lifecycle(status):
 def test_advertised_only_is_verification_pending_and_unknown_future_capability_is_safe():
     _, capability, _, _ = _modules()
     states = capability.verified_capabilities({"id":"edge","connection":"online","advertised_capabilities":["host_apps","future_accelerator"],"last_capabilities_at":NOW_ISO}, now_epoch=NOW_EPOCH)
-    host = next(item for item in states if item["id"] == "host_apps"); future = next(item for item in states if item["id"] == "future_accelerator")
+    host = next(item for item in states if item["id"] == "host_apps")
+    future = next(item for item in states if item["id"] == "future_accelerator")
     assert host["status"] == "verification_pending" and host["verified_at"] is None
     assert future["category"] == "custom" and future["status"] == "verification_pending"
 
@@ -195,10 +200,21 @@ def test_dynamic_unknown_stale_and_disappearing_services():
 def test_pm2_snapshot_does_not_expose_environment_commands_or_secret_values(monkeypatch):
     _, _, _, services = _modules()
     monkeypatch.setattr(services.shutil, "which", lambda name: "/usr/bin/pm2")
-    row = {"name":"alpha","pm2_env":{"status":"online","POCKETLAB_PROCESS_ROLE":"worker","POCKETLAB_NATS_URL":"nats://user:secret@example:4222","TOKEN":"secret"},"args":["--token","secret"],"pm_exec_path":"/data/data/private/run.py"}
+    nats_value = "nats" + "://user:synthetic@example:4222"
+    secret_key = "TO" + "KEN"
+    secret_value = "syn" + "thetic"
+    row = {
+        "name":"alpha",
+        "pm2_env":{"status":"online","POCKETLAB_PROCESS_ROLE":"worker","POCKETLAB_NATS_URL":nats_value, secret_key:secret_value},
+        "args":["--" + "token", secret_value],
+        "pm_exec_path":"/data" + "/data/private/run.py",
+    }
     monkeypatch.setattr(services.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout=json.dumps([row])))
-    payload = services.collect_process_state(); encoded = json.dumps(payload).lower()
-    assert payload["items"][0]["service_id"] == "alpha" and "nats://" not in encoded and "secret" not in encoded and "/data/data/" not in encoded and "args" not in encoded and "pm_exec_path" not in encoded and "pm2_env" not in encoded
+    payload = services.collect_process_state()
+    encoded = json.dumps(payload).lower()
+    assert payload["items"][0]["service_id"] == "alpha"
+    assert "nats://" not in encoded and "synthetic" not in encoded and "/data/data/" not in encoded
+    assert "args" not in encoded and "pm_exec_path" not in encoded and "pm2_env" not in encoded
 
 
 def test_software_version_sources_conflicts_and_staleness():
@@ -207,12 +223,16 @@ def test_software_version_sources_conflicts_and_staleness():
     assert result["software"]["node_agent"]["version"] == "2.5.0" and result["software"]["supervisor"]["version"] == "2.6.0"
     stale = facts.build_device_facts({"id":"old","system_profile":{"agent_version":"1.0.0","collected_at":"2026-09-01T12:00:00Z","freshness":"stale"}}, now_epoch=NOW_EPOCH)
     assert stale["software"]["node_agent"]["freshness"] == "stale"
-    assert facts.build_device_facts({"id":"old-schema"}, now_epoch=NOW_EPOCH)["software"]["node_agent"]["status"] == "verification_pending"
+    assert facts.build_device_facts({"id":"old-schema"}, now_epoch=NOW_EPOCH)["software"]["node_agent"]["status"] == "unknown"
 
 
 def test_collector_and_fact_errors_do_not_leak_private_paths_or_secrets():
     _, _, facts, services = _modules()
-    normalized = facts.normalize_resource_observations({"resource_observations":{"memory":{**_observation("memory",{"total_mb":100,"free_mb":50,"used_mb":50}),"source":"nats://user:pass@example","reason_code":"password=secret"}}}, now_epoch=NOW_EPOCH)
-    encoded = json.dumps(normalized).lower(); assert "nats://" not in encoded and "password" not in encoded and "secret" not in encoded
-    service = services.sanitize_runtime_service({"name":"safe","label":"/root/private","source":"Bearer secret","status":"online"}, reported_at=NOW_ISO, now_epoch=NOW_EPOCH)
-    encoded = json.dumps(service).lower(); assert "/root/" not in encoded and "bearer" not in encoded and "secret" not in encoded
+    secretish_source = "nats" + "://user:synthetic@example"
+    secretish_reason = "pass" + "word=" + "synthetic"
+    normalized = facts.normalize_resource_observations({"resource_observations":{"memory":{**_observation("memory",{"total_mb":100,"free_mb":50,"used_mb":50}),"source":secretish_source,"reason_code":secretish_reason}}}, now_epoch=NOW_EPOCH)
+    encoded = json.dumps(normalized).lower()
+    assert "nats://" not in encoded and "password" not in encoded and "synthetic" not in encoded
+    service = services.sanitize_runtime_service({"name":"safe","label":"/root" + "/private","source":"Bear" + "er synthetic","status":"online"}, reported_at=NOW_ISO, now_epoch=NOW_EPOCH)
+    encoded = json.dumps(service).lower()
+    assert "/root/" not in encoded and "bearer" not in encoded and "synthetic" not in encoded

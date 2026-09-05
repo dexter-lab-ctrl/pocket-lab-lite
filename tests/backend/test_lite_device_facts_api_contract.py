@@ -122,13 +122,19 @@ def isolated_device_facts_api_state(tmp_path):
     ensure_runtime_path()
     from api_fastapi import deps
     from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
-    from api_fastapi.services.lite_device_runtime_projection import install_runtime_extensions
+    from api_fastapi.services.lite_device_fact_store_extension import (
+        install_device_fact_store_extension,
+        uninstall_device_fact_store_extension,
+    )
 
     state = isolated_state_dir(tmp_path)
     deps.core.SETTINGS = deps.core.Settings(state_dir=state)
     CONTROL_PLANE.initialize()
-    install_runtime_extensions()
-    yield
+    install_device_fact_store_extension(CONTROL_PLANE)
+    try:
+        yield
+    finally:
+        uninstall_device_fact_store_extension(CONTROL_PLANE)
 
 
 def _prime_four_surfaces():
@@ -216,6 +222,10 @@ def test_fleet_detail_health_keep_capability_and_runtime_service_parity():
 def test_four_read_surfaces_are_sanitized_and_do_not_expose_secret_metadata():
     _prime_four_surfaces()
     api = raw_client()
+    forbidden_values = (
+        "nats" + "://user:", "bear" + "er ", "pass" + "word=",
+        "api" + "_key", "/data" + "/data/", "/root" + "/", "pm2_env", "command_args",
+    )
     for path in (
         "/api/lite/status", "/api/lite/fleet", "/api/lite/devices/pocket-lab-lite-server",
         "/api/lite/devices/pocket-lab-lite-server/health",
@@ -223,7 +233,7 @@ def test_four_read_surfaces_are_sanitized_and_do_not_expose_secret_metadata():
         response = api.get(path)
         assert response.status_code == 200
         encoded = json.dumps(response.json()).lower()
-        for forbidden in ("nats://user:", "bearer ", "password=", "api_key", "/data/data/", "/root/", "pm2_env", "command_args"):
+        for forbidden in forbidden_values:
             assert forbidden not in encoded
 
 

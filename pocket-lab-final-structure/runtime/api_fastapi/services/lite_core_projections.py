@@ -18,13 +18,6 @@ from . import (
     lite_status,
 )
 from .lite_control_plane_store import CONTROL_PLANE, PreparedProjectionUnavailable
-from .lite_device_runtime_extensions import install_runtime_extensions
-
-# Router import order loads lite_status before this module. Install the bounded
-# Device Facts adapters here so Phase 3B scheduler jobs capture the canonical
-# status/fleet source-revision callbacks before scheduler startup. The installer
-# only wires read-model adapters; it does not collect telemetry or execute services.
-install_runtime_extensions()
 
 _LOGGER = logging.getLogger(__name__)
 

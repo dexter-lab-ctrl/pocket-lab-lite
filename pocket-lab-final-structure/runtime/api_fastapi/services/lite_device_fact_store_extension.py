@@ -15,6 +15,7 @@ from typing import Any
 from . import lite_control_plane_store as store_module
 
 _EXTENSION_MARKER = "_pocketlab_device_facts_extension_v2"
+_ORIGINALS_MARKER = "_pocketlab_device_facts_extension_originals_v2"
 
 
 def _health_values(health: dict[str, Any], updated_at: str, item: dict[str, Any] | None = None) -> dict[str, str]:
@@ -75,6 +76,12 @@ def install_device_fact_store_extension(control_plane: Any) -> Any:
     original_details = control_plane.device_details
     original_health = control_plane.device_health
     original_fleet_snapshot = control_plane.fleet_projection_snapshot
+    setattr(control_plane, _ORIGINALS_MARKER, {
+        "_upsert_device_health_row": original_upsert,
+        "device_details": original_details,
+        "device_health": original_health,
+        "fleet_projection_snapshot": original_fleet_snapshot,
+    })
 
     def upsert_device_health_row(self, conn, *, device_id, item, updated_at, updated_at_epoch_ms):
         changed, reasons = original_upsert(
@@ -192,4 +199,18 @@ def install_device_fact_store_extension(control_plane: Any) -> Any:
     control_plane.device_health = types.MethodType(device_health, control_plane)
     control_plane.fleet_projection_snapshot = types.MethodType(fleet_projection_snapshot, control_plane)
     setattr(control_plane, _EXTENSION_MARKER, True)
+    return control_plane
+
+
+def uninstall_device_fact_store_extension(control_plane: Any) -> Any:
+    """Restore the shared store after isolated tests without changing runtime state."""
+    originals = getattr(control_plane, _ORIGINALS_MARKER, None)
+    if not isinstance(originals, dict):
+        return control_plane
+    for name, value in originals.items():
+        setattr(control_plane, name, value)
+    if hasattr(control_plane, _EXTENSION_MARKER):
+        delattr(control_plane, _EXTENSION_MARKER)
+    if hasattr(control_plane, _ORIGINALS_MARKER):
+        delattr(control_plane, _ORIGINALS_MARKER)
     return control_plane

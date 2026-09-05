@@ -5,7 +5,6 @@ from typing import Any
 from . import lite_capability_projection, lite_device_facts, lite_runtime_services
 
 
-
 def _is_server(device: dict[str, Any]) -> bool:
     role = str(device.get("role") or "").strip().lower().replace("-", "_")
     return bool(
@@ -148,3 +147,15 @@ def enrich_device(device: dict[str, Any]) -> dict[str, Any]:
         "recovery_available": (by_id.get("supervisor_recovery") or {}).get("status") == "verified",
     }
     return result
+
+
+def install_runtime_extensions() -> None:
+    """Compatibility entrypoint for callers that imported the old location.
+
+    Runtime installation is owned by ``lite_device_runtime_extensions``. Keeping
+    this lazy delegate avoids a circular import while preserving the published
+    test/integration contract.
+    """
+    from .lite_device_runtime_extensions import install_runtime_extensions as _install
+
+    _install()

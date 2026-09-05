@@ -4,7 +4,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
-from . import lite_device_runtime_extensions, lite_device_runtime_projection, lite_runtime_services
+from . import lite_device_runtime_projection, lite_runtime_services
 
 
 _RESTARTABLE_AGENT_STATES = frozenset(
@@ -51,11 +51,10 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
 
     This function intentionally derives action authorization from current projection
     truth. Persisted copies are display evidence only and must be recomputed on every
-    prepared read before they are returned to clients.
+    prepared read before they are returned to clients. Runtime extension installation
+    is owned by FastAPI startup, never by this read-side function.
     """
 
-    lite_device_runtime_extensions.install_health_projection_extension()
-    lite_device_runtime_extensions.install_store_extension()
     device = lite_device_runtime_projection.enrich_device(device)
 
     connection = _text(device.get("connection") or "unknown", 32).lower()
@@ -91,13 +90,6 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
         summary = "Pocket Lab can request a guarded device-agent restart."
 
     allowed = reason_code == "allowed"
-    supervisor_reported_at = _text(
-        device.get("last_supervisor_heartbeat_at") or device.get("last_supervisor_at"), 64
-    ) or None
-    agent_reported_at = _text(
-        device.get("last_heartbeat_at") or device.get("last_seen_at") or device.get("last_seen"), 64
-    ) or None
-    supervisor_service_freshness = "fresh" if supervisor_fresh and connection == "online" else "stale"
 
     # Runtime-service rows are evidence, not inferred topology. Server Host rows
     # come from the prepared dynamic process snapshot; secondary devices expose
