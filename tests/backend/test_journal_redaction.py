@@ -2,23 +2,50 @@ import json
 import re
 from pathlib import Path
 
-SECRET_PATTERNS = [
+TOKEN_PATTERNS = [
     r"hvs\.[A-Za-z0-9]+",
-    r"root_token",
-    r"unseal_key",
-    r"client_token",
-    r"private_key",
-    r"api_key",
-    r"password\s*[:=]",
-    r"secret_id\s*[:=]",
 ]
+SENSITIVE_KEYS = {
+    "root_token",
+    "unseal_key",
+    "client_token",
+    "private_key",
+    "api_key",
+    "password",
+    "secret_id",
+}
+SAFE_SECRET_VALUES = {
+    "",
+    "[redacted]",
+    "<redacted>",
+    "redacted",
+    "***",
+    "****",
+    "null",
+    "none",
+    "not configured",
+    "not_configured",
+    "unavailable",
+}
+
+
+def _is_safe_secret_value(value: str) -> bool:
+    normalized = str(value or "").strip().strip('"\'').lower()
+    return normalized in SAFE_SECRET_VALUES or set(normalized) <= {"*"}
 
 
 def assert_redacted(text: str):
-    for pattern in SECRET_PATTERNS:
-        assert not re.search(
-            pattern, text, flags=re.IGNORECASE
-        ), f"secret-like value leaked: {pattern}"
+    for pattern in TOKEN_PATTERNS:
+        assert not re.search(pattern, text, flags=re.IGNORECASE), f"secret-like value leaked: {pattern}"
+
+    # A fixture may legitimately name a sensitive field while proving that it is
+    # redacted. Reject only assignments that carry a concrete, non-redacted value.
+    assignment = re.compile(
+        r"(?i)[\"']?(root_token|unseal_key|client_token|private_key|api_key|password|secret_id)[\"']?\s*[:=]\s*([^,}\n]+)"
+    )
+    for match in assignment.finditer(text):
+        value = match.group(2).strip()
+        assert _is_safe_secret_value(value), f"unredacted fixture value for {match.group(1)}"
 
 
 def test_event_journal_redacts_secret_like_values(tmp_path):
