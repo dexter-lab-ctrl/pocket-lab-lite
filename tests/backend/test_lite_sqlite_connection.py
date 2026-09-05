@@ -40,9 +40,11 @@ def test_lite_sqlite_connection_applies_required_policy(tmp_path, monkeypatch):
     target = _configure(tmp_path, monkeypatch)
     from api_fastapi.db.connection import connection, online_backup, read_connection
     from api_fastapi.db.health import database_health
-    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.migrations import apply_migrations, latest_schema_version, migration_versions
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    expected_versions = migration_versions()
+    assert expected_versions
+    assert apply_migrations() == expected_versions
     with connection() as conn:
         assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
         assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
@@ -56,7 +58,7 @@ def test_lite_sqlite_connection_applies_required_policy(tmp_path, monkeypatch):
     health = database_health()
     assert health["reachable"] is True
     assert health["schema_current"] is True
-    assert health["schema_version"] == 18
+    assert health["schema_version"] == latest_schema_version()
     assert health["journal_mode"] == "wal"
     assert health["foreign_keys"] is True
     assert health["busy_timeout_ms"] == 20000
@@ -155,6 +157,7 @@ def test_write_connection_reports_creation_stages(tmp_path, monkeypatch):
     assert timing["sqlite_connect_ms"] >= 0
     assert timing["pragma_setup_ms"] >= 0
     assert timing["total_ms"] >= 0
+
 
 def test_lite_sqlite_path_cache_reuses_resolution_and_can_reset(tmp_path, monkeypatch):
     connection_module = importlib.import_module("api_fastapi.db.connection")
