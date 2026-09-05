@@ -105,10 +105,31 @@ def _advertised(device: dict[str, Any]) -> set[str]:
         raw = device.get("capabilities")
     result: set[str] = set()
     for item in raw if isinstance(raw, list) else []:
+        if isinstance(item, dict):
+            # Persisted capability-state records are projection evidence, not a
+            # second advertisement channel. Only an explicitly advertised state
+            # may participate in advertisement reconstruction.
+            if item.get("advertised") is not True:
+                continue
+            item = item.get("id")
         value = str(item or "").strip().lower().replace(" ", "_")
         value = _ALIASES.get(value, value)
         if value:
             result.add(value[:80])
+    return result
+
+
+def _prior_capability_states(device: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    candidates = device.get("capability_states")
+    if not isinstance(candidates, list):
+        candidates = device.get("capabilities")
+    result: dict[str, dict[str, Any]] = {}
+    for item in candidates if isinstance(candidates, list) else []:
+        if not isinstance(item, dict):
+            continue
+        capability_id = _safe_text(item.get("id"), 80)
+        if capability_id:
+            result[capability_id] = item
     return result
 
 
@@ -254,6 +275,25 @@ def verified_capabilities(
         "restore_target": {"advertised": "restore_target" in advertised, "present": "restore_target" in advertised or bool(storage.get("restore_target_ready") is not None), "ready": storage.get("restore_target_ready") if isinstance(storage.get("restore_target_ready"), bool) else None, "source": "restore_target_readiness", "at": evaluated_at},
         "backup_target": {"advertised": "backup_target" in advertised, "present": "backup_target" in advertised or bool(storage.get("backup_target_ready") is not None), "ready": storage.get("backup_target_ready") if isinstance(storage.get("backup_target_ready"), bool) else None, "source": "backup_target_readiness", "at": evaluated_at},
     }
+
+    # Durable structured capability records may outlive the raw transient evidence
+    # fields that produced them. A stale state is safe to preserve as stale; it is
+    # never promoted back to verified without fresh runtime evidence.
+    prior_states = _prior_capability_states(device)
+    for capability_id, item in evidence.items():
+        previous = prior_states.get(capability_id)
+        if item.get("present") or not isinstance(previous, dict):
+            continue
+        if str(previous.get("status") or "").lower() != "stale":
+            continue
+        item.update({
+            "present": True,
+            "ready": None,
+            "source": _safe_text(previous.get("source"), 80, str(item.get("source") or "runtime_evidence")),
+            "at": previous.get("evaluated_at") or previous.get("advertised_at") or evaluated_at,
+            "freshness": "stale",
+            "advertised": bool(previous.get("advertised")),
+        })
 
     result: list[dict[str, Any]] = []
     known: set[str] = set()
