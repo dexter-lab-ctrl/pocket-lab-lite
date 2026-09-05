@@ -16,6 +16,14 @@ async function openHealthyDeviceManage(canvasElement) {
   await expect(await canvas.findByText(/Test-Phone-4/i)).toBeInTheDocument();
 }
 
+async function openFirstDeviceDetails(canvasElement) {
+  const canvas = await expectDevices(canvasElement);
+  const detailButtons = await canvas.findAllByRole('button', { name: /Details|Review health/i });
+  await userEvent.click(detailButtons[0]);
+  await expect(await canvas.findByRole('region', { name: /details/i })).toBeInTheDocument();
+  return canvas;
+}
+
 export const ServerHostOnline = createLiteStory('devices', 'devices-server-online');
 export const JoinedDeviceOnline = {
   ...createLiteStory('devices', 'devices-online'),
@@ -96,3 +104,37 @@ export const RepairingManageOpen = {
     await expect(await canvas.findByText(/Repairing/i)).toBeInTheDocument();
   },
 };
+
+export const ResourceFactsComplete = {
+  ...createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openFirstDeviceDetails(canvasElement);
+    await expect(await canvas.findByText(/2048 MB free \/ 4096 MB/i)).toBeInTheDocument();
+  },
+};
+export const ResourceFactsPartial = createLiteStory('devices', 'devices-resource-partial', { viewport: 'desktop' });
+export const ResourceFactsStale = createLiteStory('devices', 'devices-resource-stale', { viewport: 'desktop' });
+export const ResourceFactsUnsupported = createLiteStory('devices', 'devices-resource-unsupported', { viewport: 'desktop' });
+export const ResourceFactsPermissionDenied = createLiteStory('devices', 'devices-resource-permission-denied', { viewport: 'desktop' });
+export const ResourceFactsMissing = createLiteStory('devices', 'devices-resource-missing', { viewport: 'desktop' });
+export const CapabilityStale = createLiteStory('devices', 'devices-capability-stale', { viewport: 'desktop' });
+export const CapabilityUnsupported = createLiteStory('devices', 'devices-capability-unsupported', { viewport: 'desktop' });
+export const CapabilityBlocked = createLiteStory('devices', 'devices-capability-blocked', { viewport: 'desktop' });
+export const CapabilityNotApplicable = createLiteStory('devices', 'devices-capability-not-applicable', { viewport: 'desktop' });
+export const CapabilityMixed = createLiteStory('devices', 'devices-capability-mixed', { viewport: 'desktop' });
+export const CapabilityUnknownFuture = createLiteStory('devices', 'devices-capability-unknown', { viewport: 'desktop' });
+export const RuntimeServicesMixed = createLiteStory('devices', 'devices-services-mixed', { viewport: 'desktop' });
+export const RuntimeServicesStale = createLiteStory('devices', 'devices-services-stale', { viewport: 'desktop' });
+export const RuntimeServiceUnknownFuture = createLiteStory('devices', 'devices-services-unknown', { viewport: 'desktop' });
+export const RuntimeServicesDisappeared = createLiteStory('devices', 'devices-services-disappeared', { viewport: 'desktop' });
+export const SecondaryDeviceFacts = createLiteStory('devices', 'devices-secondary-complete', { viewport: 'desktop' });
+export const SecondarySavedFactsOffline = createLiteStory('devices', 'devices-secondary-offline-saved', { viewport: 'desktop' });
+export const SoftwareCurrent = createLiteStory('devices', 'devices-software-current', { viewport: 'desktop' });
+export const SoftwareOutdated = createLiteStory('devices', 'devices-software-outdated', { viewport: 'desktop' });
+export const SoftwareIncompatible = createLiteStory('devices', 'devices-software-incompatible', { viewport: 'desktop' });
+export const SoftwareStale = createLiteStory('devices', 'devices-software-stale', { viewport: 'desktop' });
+export const LongDeviceName = createLiteStory('devices', 'devices-long-name', { viewport: 'mobile360' });
+export const DeviceFactsDaylight = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', theme: 'daylight' });
+export const DeviceFactsDark = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', theme: 'dark' });
+export const DeviceFactsReducedMotion = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', notes: 'Reduced-motion qualification state.' });
+export const DeviceFactsText200Percent = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', textScale: 2, notes: '200% text qualification state.' });

@@ -3,8 +3,10 @@ const SOFTWARE_COMPONENTS = Object.freeze(['node_agent', 'supervisor']);
 const UNSAFE_FACT_TEXT = /(token|password|secret|credential|api[_-]?key|bearer\s+|nats:\/\/|\/data\/data\/|\/storage\/emulated\/|\/home\/|\/mnt\/|\/root\/)/i;
 const OBSERVATION_STATES = new Set([
   'available', 'current', 'stale', 'missing', 'unsupported', 'permission_denied',
-  'unavailable', 'verification_pending', 'blocked', 'not_applicable',
+  'unavailable', 'transient_failure', 'verification_pending', 'blocked', 'not_applicable',
 ]);
+const CAPABILITY_STATES = new Set(['not_advertised', 'advertised', 'verification_pending', 'verified', 'unavailable', 'unsupported', 'stale', 'blocked', 'not_applicable']);
+const SOFTWARE_STATES = new Set(['current', 'outdated', 'incompatible', 'unknown', 'stale', 'verification_pending']);
 
 function object(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -85,10 +87,13 @@ function sanitizedSoftwareFacts(value) {
     result[component] = {
       component,
       version: version || null,
-      status: text(item.status, version ? 'current' : 'verification_pending').toLowerCase().replace(/[\s-]+/g, '_'),
+      status: SOFTWARE_STATES.has(text(item.status, version ? 'unknown' : 'verification_pending').toLowerCase().replace(/[\s-]+/g, '_'))
+        ? text(item.status, version ? 'unknown' : 'verification_pending').toLowerCase().replace(/[\s-]+/g, '_')
+        : version ? 'unknown' : 'verification_pending',
       source: safeMetadataText(item.source, 'unknown', 80),
       observed_at: sanitizedObservedAt(item.observed_at),
       freshness: text(item.freshness, version ? 'unknown' : 'missing').toLowerCase().replace(/[\s-]+/g, '_'),
+      reason_code: safeMetadataText(item.reason_code, version ? 'version_reported' : 'version_not_reported', 80),
     };
   });
   return result;
@@ -154,6 +159,7 @@ export function normalizeResourceObservation(metric, value = {}) {
     collection_status: collectionStatus,
     freshness: text(item.freshness, status === 'stale' ? 'stale' : status === 'available' ? 'current' : 'missing'),
     observed_at: sanitizedObservedAt(item.observed_at),
+    revision: finiteDeviceFactNumber(item.revision, { min: 1 }) || null,
     source: safeMetadataText(item.source, 'unknown', 80),
     reason_code: safeMetadataText(item.reason_code, status, 80),
     support_state: text(item.support_state, status === 'unsupported' || status === 'not_applicable' ? 'unsupported' : 'unknown'),
@@ -180,6 +186,7 @@ export function normalizeDeviceFacts(input = {}, { telemetry = null, health = nu
     resources: normalized,
     software: sanitizedSoftwareFacts(facts.software),
     observed_at: sanitizedObservedAt(facts.observed_at),
+    revision: finiteDeviceFactNumber(facts.revision, { min: 1 }) || null,
     sanitized: true,
   };
 }
@@ -195,8 +202,74 @@ export function resourceFactAvailabilityLabel(observation = {}) {
   return ({
     available: 'Available', current: 'Available', stale: 'Stale', missing: 'Not reported',
     unsupported: 'Unsupported', permission_denied: 'Permission denied', unavailable: 'Unavailable',
-    verification_pending: 'Verification pending', blocked: 'Blocked', not_applicable: 'Not applicable',
+    transient_failure: 'Temporarily unavailable', verification_pending: 'Verification pending', blocked: 'Blocked', not_applicable: 'Not applicable',
   })[status] || 'Unavailable';
+}
+
+
+function canonicalCapabilityStatus(value) {
+  const status = text(value, 'verification_pending').toLowerCase().replace(/[\s-]+/g, '_');
+  return CAPABILITY_STATES.has(status) ? status : 'verification_pending';
+}
+
+export function normalizeCapabilityEvidence(input = []) {
+  const rows = Array.isArray(input) ? input : Array.isArray(object(input).capability_states) ? object(input).capability_states : [];
+  return rows.slice(0, 64).map((raw) => {
+    const item = object(raw);
+    const id = safeMetadataText(item.id, '', 80).toLowerCase().replace(/[^a-z0-9_.-]+/g, '_');
+    if (!id) return null;
+    const status = canonicalCapabilityStatus(item.status);
+    return {
+      id,
+      label: safeMetadataText(item.label, id.replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()), 96),
+      category: safeMetadataText(item.category, 'device', 48),
+      verification_strategy: safeMetadataText(item.verification_strategy, 'runtime_evidence', 64),
+      status,
+      reason_code: safeMetadataText(item.reason_code, status, 96),
+      source: safeMetadataText(item.source, 'runtime_evidence', 80),
+      advertised: item.advertised === true,
+      advertised_at: sanitizedObservedAt(item.advertised_at),
+      evaluated_at: sanitizedObservedAt(item.evaluated_at),
+      verified_at: status === 'verified' ? sanitizedObservedAt(item.verified_at) : null,
+      freshness: text(item.freshness, status === 'stale' ? 'stale' : 'missing').toLowerCase().replace(/[\s-]+/g, '_'),
+      expires_at: sanitizedObservedAt(item.expires_at),
+      revision: finiteDeviceFactNumber(item.revision, { min: 1 }) || null,
+      schema_version: finiteDeviceFactNumber(item.schema_version, { min: 1, max: 100 }) || 1,
+    };
+  }).filter(Boolean);
+}
+
+export function normalizeRuntimeServices(input = []) {
+  const rows = Array.isArray(input) ? input : Array.isArray(object(input).runtime_services) ? object(input).runtime_services : [];
+  const seen = new Set();
+  return rows.slice(0, 64).map((raw) => {
+    const item = object(raw);
+    const serviceId = safeMetadataText(item.service_id || item.id || item.name, '', 80).toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^[-._]+|[-._]+$/g, '');
+    if (!serviceId || seen.has(serviceId)) return null;
+    seen.add(serviceId);
+    return {
+      service_id: serviceId,
+      label: safeMetadataText(item.label || item.name, serviceId.replace(/[-_.]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()), 96),
+      category: safeMetadataText(item.category, 'service', 32),
+      manager: safeMetadataText(item.manager, 'process_manager', 32),
+      state: safeMetadataText(item.state || item.status, 'unknown', 32).toLowerCase().replace(/[\s-]+/g, '_'),
+      reported_at: sanitizedObservedAt(item.reported_at),
+      freshness: text(item.freshness, 'missing').toLowerCase().replace(/[\s-]+/g, '_'),
+      restart_supported: item.restart_supported === true,
+      restart_reason: safeMetadataText(item.restart_reason, 'backend_guard_required', 80),
+      source: safeMetadataText(item.source, 'prepared_service_evidence', 80),
+      schema_version: finiteDeviceFactNumber(item.schema_version, { min: 1, max: 100 }) || 1,
+      sanitized: true,
+    };
+  }).filter(Boolean);
+}
+
+export function softwarePostureLabel(value) {
+  const status = text(value, 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
+  return ({
+    current: 'Current', outdated: 'Update available', incompatible: 'Incompatible', stale: 'Stale',
+    verification_pending: 'Verification pending', unknown: 'Unknown',
+  })[status] || 'Unknown';
 }
 
 export const LITE_DEVICE_FACTS_RESOURCE_KEYS = RESOURCE_KEYS;
