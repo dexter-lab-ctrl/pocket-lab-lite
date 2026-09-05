@@ -110,13 +110,21 @@ test('Removal review remains scrollable and keeps destructive actions reachable 
   test.skip(testInfo.project.name !== 'mocked-mobile', 'Constrained mobile scroll reachability is qualified once in the mobile project.');
   await installScenario(page, 'healthy');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.setViewportSize({ width: 390, height: 568 });
 
+  // Open a real removable device at the project's normal mobile viewport first.
+  // The Devices fleet is virtualized, so shrinking to a very short viewport before
+  // selection can legitimately unmount the stale removable card. This regression is
+  // specifically about the already-open contextual sheet remaining usable when the
+  // viewport becomes constrained (rotation, split-screen, keyboard, small handset).
   await page.goto('/?screen=devices');
   await waitForLiteScreenToSettle(page, 'devices');
   await openFirstRemovalReview(page);
 
   const panel = page.locator('.lite-device-remove-panel');
+  await expect(panel).toBeVisible();
+  await expectPortalOwned(panel);
+
+  await page.setViewportSize({ width: 390, height: 568 });
   await expectInViewport(panel, page);
   await expect(panel).toHaveCSS('overflow-y', 'auto');
 
