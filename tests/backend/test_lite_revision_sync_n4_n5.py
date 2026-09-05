@@ -6,13 +6,18 @@ import json
 import pytest
 from starlette.requests import Request
 
-from pocket_lab_test_utils import ensure_runtime_path, load_fastapi_app, prepare_sqlite_test_database
+from pocket_lab_test_utils import ensure_runtime_path, prepare_sqlite_test_database
 
 
 def _configure(tmp_path, monkeypatch):
     ensure_runtime_path()
     target = tmp_path / "state" / "pocketlab-lite.sqlite3"
-    return prepare_sqlite_test_database(target, monkeypatch)
+    prepare_sqlite_test_database(target, monkeypatch)
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version, latest_schema_version
+
+    apply_migrations()
+    assert current_schema_version() == latest_schema_version()
+    return target
 
 
 def _fleet_payload(*, state: str = "online", count: int = 2) -> dict:
@@ -181,13 +186,14 @@ def test_revisions_etag_and_304_are_database_instance_fenced(tmp_path, monkeypat
 
 
 def test_revision_sse_route_is_registered_and_cursor_parser_fails_safe():
+    from api_fastapi.routers import lite as lite_router
     from api_fastapi.routers.lite import _parse_lite_revision_cursor
 
     assert _parse_lite_revision_cursor(None) == (0, False)
     assert _parse_lite_revision_cursor("42") == (42, False)
     assert _parse_lite_revision_cursor("bad") == (0, True)
     assert _parse_lite_revision_cursor("-1") == (0, True)
-    paths = {getattr(route, "path", "") for route in load_fastapi_app().routes}
+    paths = {getattr(route, "path", "") for route in lite_router.router.routes}
     assert "/api/lite/events" in paths
     assert "/api/lite/revisions" in paths
 
