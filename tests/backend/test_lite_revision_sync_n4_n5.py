@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timedelta, timezone
 import json
 
 import pytest
 from starlette.requests import Request
 
 from pocket_lab_test_utils import ensure_runtime_path, prepare_sqlite_test_database
+
+
+_FRESH_BASE = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(minutes=1)
+
+
+def _fresh_iso(offset_seconds: int = 0) -> str:
+    return (_FRESH_BASE + timedelta(seconds=offset_seconds)).isoformat().replace("+00:00", "Z")
 
 
 def _configure(tmp_path, monkeypatch):
@@ -33,12 +41,12 @@ def _fleet_payload(*, state: str = "online", count: int = 2) -> dict:
                 "agent_status": state,
                 "supervisor_status": "healthy",
                 "agent_process_status": "online",
-                "last_seen_at": f"2026-07-22T14:00:{index:02d}Z",
+                "last_seen_at": _fresh_iso(index),
             }
             for index in range(count)
         ],
         "remote_access": {"ready": True},
-        "updated_at": "2026-07-22T14:01:00Z",
+        "updated_at": _fresh_iso(60),
     }
 
 
@@ -82,7 +90,7 @@ def test_security_store_revision_is_domain_state_not_duplicate_lite_sse_evidence
     conn = open_connection()
     try:
         with begin_immediate(conn) as tx:
-            revision = lite_security_store._bump_revision(tx, "2026-07-22T14:02:00Z")
+            revision = lite_security_store._bump_revision(tx, _fresh_iso(90))
     finally:
         conn.close()
     with read_connection() as conn:
