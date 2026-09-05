@@ -34,7 +34,8 @@ def _service_text(value: Any, limit: int, fallback: str = "") -> str:
 def _service_freshness(reported_at: Any, supplied: Any = None) -> str:
     reported = _text(reported_at, 64)
     if not reported:
-        return "missing"
+        supplied_text = _text(supplied, 24).lower()
+        return "stale" if supplied_text in {"stale", "saved"} else "missing"
     try:
         observed = datetime.fromisoformat(reported.replace("Z", "+00:00"))
         if observed.tzinfo is None:
@@ -43,7 +44,58 @@ def _service_freshness(reported_at: Any, supplied: Any = None) -> str:
         return "current" if age <= _SERVICE_CURRENT_SECONDS else "stale"
     except (TypeError, ValueError):
         supplied_text = _text(supplied, 24).lower()
-        return "stale" if supplied_text == "stale" else "missing"
+        return "stale" if supplied_text in {"stale", "saved"} else "missing"
+
+
+def _explicit_agent_supervisor_services(
+    device: dict[str, Any], *, allowed: bool, is_server: bool
+) -> list[dict[str, Any]]:
+    """Adapt explicit agent/supervisor status fields into service evidence.
+
+    This is compatibility projection, not topology inference: a row is emitted
+    only when the device actually reports the corresponding process/status field.
+    """
+    rows: list[dict[str, Any]] = []
+    agent_raw = device.get("agent_process_status")
+    if agent_raw in (None, ""):
+        agent_raw = device.get("agent_status")
+    if agent_raw not in (None, ""):
+        reported_at = device.get("last_heartbeat_at") or device.get("last_seen_at") or device.get("last_seen")
+        rows.append({
+            "service_id": "node_agent",
+            "label": "Device Agent",
+            "category": "agent",
+            "manager": "agent_runtime",
+            "state": _text(agent_raw, 32).lower(),
+            "reported_at": reported_at,
+            "freshness": _service_freshness(reported_at, device.get("agent_version_freshness")),
+            "restart_supported": bool(allowed and not is_server),
+            "restart_reason": "allowed" if allowed and not is_server else "protected_runtime_service" if is_server else "guarded_recovery_not_allowed",
+            "source": "device_agent_status_evidence",
+            "schema_version": 1,
+            "sanitized": True,
+        })
+
+    supervisor_raw = device.get("supervisor_process_status")
+    if supervisor_raw in (None, ""):
+        supervisor_raw = device.get("supervisor_status")
+    if supervisor_raw not in (None, ""):
+        reported_at = device.get("last_supervisor_heartbeat_at") or device.get("last_supervisor_at")
+        rows.append({
+            "service_id": "agent_supervisor",
+            "label": "Recovery Supervisor",
+            "category": "supervisor",
+            "manager": "supervisor_runtime",
+            "state": _text(supervisor_raw, 32).lower(),
+            "reported_at": reported_at,
+            "freshness": _service_freshness(reported_at, device.get("supervisor_status_freshness")),
+            "restart_supported": False,
+            "restart_reason": "protected_runtime_service" if is_server else "device_service_display_only",
+            "source": "device_supervisor_status_evidence",
+            "schema_version": 1,
+            "sanitized": True,
+        })
+    return rows
 
 
 def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
@@ -55,7 +107,8 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
     is owned by FastAPI startup, never by this read-side function.
     """
 
-    device = lite_device_runtime_projection.enrich_device(device)
+    original_device = dict(device) if isinstance(device, dict) else {}
+    device = lite_device_runtime_projection.enrich_device(original_device)
 
     connection = _text(device.get("connection") or "unknown", 32).lower()
     role = _text(device.get("role"), 40).lower()
@@ -63,7 +116,6 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
     agent_state = _text(
         device.get("agent_process_status") or device.get("agent_status") or "unknown", 32
     ).lower()
-    supervisor_state = _text(device.get("supervisor_status") or "unknown", 32).lower()
     supervisor_freshness = _text(
         device.get("supervisor_status_freshness") or "unknown", 32
     ).lower()
@@ -91,10 +143,6 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
 
     allowed = reason_code == "allowed"
 
-    # Runtime-service rows are evidence, not inferred topology. Server Host rows
-    # come from the prepared dynamic process snapshot; secondary devices expose
-    # only services explicitly reported by the device/supervisor. Missing service
-    # evidence remains an empty list rather than invented PM2 process names.
     observed_services = (
         device.get("_runtime_service_evidence")
         if isinstance(device.get("_runtime_service_evidence"), list)
@@ -118,7 +166,18 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
             "protected_runtime_service" if is_server else "device_service_display_only"
         )
         services.append(service)
-    services = services[:24]
+
+    # Preserve compatibility for devices that report agent/supervisor status
+    # but not the newer runtime_services array. These rows are backed by those
+    # explicit status observations and therefore remain device-specific evidence.
+    if not services:
+        for service in _explicit_agent_supervisor_services(
+            original_device, allowed=allowed, is_server=is_server
+        ):
+            if service["service_id"] not in seen_services:
+                seen_services.add(service["service_id"])
+                services.append(service)
+
     return {
         "restart_agent_assessment": {
             "allowed": allowed,
@@ -128,7 +187,7 @@ def guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
             "supervisor_fresh": supervisor_fresh,
             "agent_state": agent_state,
         },
-        "runtime_services": services,
+        "runtime_services": services[:24],
         "device_facts": device.get("device_facts") if isinstance(device.get("device_facts"), dict) else {},
         "resource_observations": device.get("resource_observations") if isinstance(device.get("resource_observations"), dict) else {},
         "capability_states": device.get("capability_states") if isinstance(device.get("capability_states"), list) else [],
