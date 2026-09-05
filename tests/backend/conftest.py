@@ -17,7 +17,10 @@ import pytest
 
 
 _SCHEDULER_ISOLATED_MODULES = {
+    "test_lite_command_attention_audit_idempotency.py",
+    "test_lite_command_lifecycle_reconciliation.py",
     "test_lite_control_plane_sqlite_p3.py",
+    "test_lite_devices_durable_enrollment.py",
     "test_lite_dispatch_admission_logging.py",
     "test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
     "test_lite_idle_efficiency_runtime.py",
