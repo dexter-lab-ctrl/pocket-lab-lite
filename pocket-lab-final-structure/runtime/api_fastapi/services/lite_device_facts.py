@@ -262,15 +262,33 @@ def health_signal_telemetry(observations: dict[str, dict[str, Any]], *, sampled_
 
 def _software_fact(device: dict[str, Any], component: str) -> dict[str, Any]:
     profile = device.get("system_profile") if isinstance(device.get("system_profile"), dict) else {}
+    facts = device.get("device_facts") if isinstance(device.get("device_facts"), dict) else {}
+    proactive = device.get("proactive_health") if isinstance(device.get("proactive_health"), dict) else {}
+    proactive_facts = proactive.get("device_facts") if isinstance(proactive.get("device_facts"), dict) else {}
+
+    persisted: list[tuple[Any, Any, Any, Any]] = []
+    for container in (facts, proactive_facts):
+        software = container.get("software") if isinstance(container.get("software"), dict) else {}
+        record = software.get(component) if isinstance(software.get(component), dict) else {}
+        if record.get("version") not in (None, "", "unknown"):
+            persisted.append((
+                record.get("version"),
+                record.get("source") or "canonical_device_facts",
+                record.get("observed_at"),
+                record.get("freshness") or record.get("status"),
+            ))
+
     if component == "node_agent":
         candidates = [
             (device.get("agent_version"), device.get("agent_version_source") or "runtime_heartbeat", device.get("last_heartbeat_at") or device.get("last_seen_at"), device.get("agent_version_freshness")),
             (profile.get("agent_version"), "system_profile", profile.get("collected_at"), profile.get("freshness")),
+            *persisted,
         ]
     else:
         candidates = [
             (device.get("supervisor_version"), device.get("supervisor_status_source") or "supervisor_evidence", device.get("last_supervisor_heartbeat_at") or device.get("last_supervisor_at"), device.get("supervisor_status_freshness")),
             (profile.get("supervisor_version"), "system_profile", profile.get("collected_at"), profile.get("freshness")),
+            *persisted,
         ]
     present = [(str(value), str(source), observed_at, freshness) for value, source, observed_at, freshness in candidates if value not in (None, "", "unknown")]
     if not present:
