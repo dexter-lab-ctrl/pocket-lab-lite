@@ -47,6 +47,30 @@ def _sign_in(client, password):
     return response.json()
 
 
+def _current_auth(client):
+    from api_fastapi.services import lite_identity_auth
+
+    token = client.cookies.get("pocketlab_session")
+    assert token
+    auth = lite_identity_auth.authenticate_session_token(token)
+    assert auth
+    return auth
+
+
+def _enable_enterprise_server_side(client):
+    """Exercise server-owned mode mutation after the route step-up guard is proven.
+
+    WebAuthn step-up itself is covered in the passkey/governance suites. These P2
+    tests focus on mode/membership persistence and session invalidation.
+    """
+    from api_fastapi.services import lite_enterprise_identity
+
+    return lite_enterprise_identity.set_enterprise_enabled(
+        auth_context=_current_auth(client),
+        enabled=True,
+    )
+
+
 def test_enterprise_routes_reject_personal_mode_and_require_csrf(enterprise_runtime):
     client, owner, password = _client_with_owner(enterprise_runtime)
     hidden = client.get("/api/lite/enterprise/identity")
@@ -57,13 +81,18 @@ def test_enterprise_routes_reject_personal_mode_and_require_csrf(enterprise_runt
     assert missing_csrf.status_code == 403
     assert missing_csrf.json()["reason_code"] == "csrf_required"
 
-    enabled = client.put(
+    # CSRF is necessary but no longer sufficient for this root-level change.
+    # Current Lite requires recent Owner passkey assurance.
+    guarded = client.put(
         "/api/lite/enterprise/identity/mode",
-        json={"enabled": True, "role": "Admin"},
+        json={"enabled": True},
         headers={"x-pocket-lab-csrf": owner["csrf_token"]},
     )
-    assert enabled.status_code == 200
-    assert enabled.json()["enabled"] is True
+    assert guarded.status_code == 428
+    assert guarded.json()["detail"]["reason_code"] == "owner_step_up_required"
+
+    enabled = _enable_enterprise_server_side(client)
+    assert enabled["enabled"] is True
 
     # Mode changes invalidate the pre-change session, so the stale browser
     # session cannot be used to manage roles.
@@ -83,9 +112,9 @@ def test_membership_is_server_owned_invalidates_stale_sessions_and_protects_fina
     from api_fastapi.db.connection import begin_immediate, connection
     from api_fastapi.services import lite_enterprise_identity, lite_identity_auth
 
-    client, owner, password = _client_with_owner(enterprise_runtime)
-    enabled = client.put("/api/lite/enterprise/identity/mode", json={"enabled": True}, headers={"x-pocket-lab-csrf": owner["csrf_token"]})
-    assert enabled.status_code == 200
+    client, _owner, password = _client_with_owner(enterprise_runtime)
+    enabled = _enable_enterprise_server_side(client)
+    assert enabled["enabled"] is True
     _sign_in(client, password)
     stale_token = client.cookies.get("pocketlab_session")
     auth = lite_enterprise_identity.enrich_auth_context(
