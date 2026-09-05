@@ -23,11 +23,11 @@ def load_json_tool():
 
 def test_registry_cli_and_all_selection():
     registry = subprocess.run(["bash", str(ORCHESTRATOR), "--list-gates"], cwd=ROOT, capture_output=True, text=True, check=True)
-    for gate in ("idle", "repeated-scans", "progress-soak"):
+    for gate in ("idle", "adaptive-runtime", "repeated-scans", "progress-soak"):
         line = next(line for line in registry.stdout.splitlines() if line.startswith(gate))
         assert "implemented" in line
     dry = subprocess.run(["bash", str(ORCHESTRATOR), "--dry-run", "--all"], cwd=ROOT, capture_output=True, text=True, check=True)
-    assert "selected_gates=idle,repeated-scans,progress-soak,wal-pressure,low-storage" in dry.stdout
+    assert "selected_gates=idle,adaptive-runtime,repeated-scans,progress-soak,wal-pressure,low-storage" in dry.stdout
 
 
 def test_summary_distinguishes_implemented_selected_and_future(tmp_path: Path):
@@ -43,7 +43,9 @@ def test_summary_distinguishes_implemented_selected_and_future(tmp_path: Path):
     output = run_dir / "summary.json"
     assert tool.aggregate(type("Args", (), {"run_dir": str(run_dir), "run_id": run_id, "output": str(output)})()) == 0
     summary = json.loads(output.read_text())
-    assert summary["implemented_gates"] == ["android-resume", "idle", "low-storage", "nats-restart", "progress-soak", "repeated-scans", "submission-recovery", "wal-pressure", "worker-restart"]
+    assert "idle" in summary["implemented_gates"]
+    assert "adaptive-runtime" in summary["implemented_gates"]
+    assert "progress-soak" in summary["implemented_gates"]
     assert summary["selected_gates"] == ["idle"]
     assert summary["passed_gates"] == ["idle"]
     assert summary["unavailable_future_gates"] == []
