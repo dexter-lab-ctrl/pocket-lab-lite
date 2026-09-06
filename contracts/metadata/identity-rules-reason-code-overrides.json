@@ -2,6 +2,36 @@
   "reason_codes": [
     {
       "audit_severity": "info",
+      "code": "legacy_telemetry_value",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Pocket Lab is using a compatible device telemetry value."
+    },
+    {
+      "audit_severity": "info",
+      "code": "version_not_reported",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "This device has not reported that software version yet."
+    },
+    {
+      "audit_severity": "info",
       "code": "enterprise_connect_links_retired",
       "deprecated_aliases": [],
       "domain": "identity",
