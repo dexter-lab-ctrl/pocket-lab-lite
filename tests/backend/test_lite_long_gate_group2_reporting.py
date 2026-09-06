@@ -43,8 +43,10 @@ def test_summary_distinguishes_implemented_selected_and_future(tmp_path: Path):
     output = run_dir / "summary.json"
     assert tool.aggregate(type("Args", (), {"run_dir": str(run_dir), "run_id": run_id, "output": str(output)})()) == 0
     summary = json.loads(output.read_text())
+    # The aggregate's implemented_gates field is the historical Phase 5 scope.
+    # adaptive-runtime is a later registry extension and is verified by the
+    # registry/--all contract above rather than being backfilled into Phase 5.
     assert "idle" in summary["implemented_gates"]
-    assert "adaptive-runtime" in summary["implemented_gates"]
     assert "progress-soak" in summary["implemented_gates"]
     assert summary["selected_gates"] == ["idle"]
     assert summary["passed_gates"] == ["idle"]
