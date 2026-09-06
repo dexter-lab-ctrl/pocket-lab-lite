@@ -252,6 +252,7 @@ def test_identity_rules_p1_source_contracts():
     assert "policyDecision" in api
     assert "const templates = Array.isArray(data?.templates) ? data.templates : [];" in rules
     assert "Protection areas" in rules
-    assert "Raw policy input is not exposed" in rules
+    assert "Normal UI describes safeguards rather than exposing policy source" in rules
+    assert "The browser cannot grant itself a role, approval, exception or assurance" in rules
     assert 'input.action.id == "identity.passkey.revoke"' in rego
     assert "passkey_step_up_required" in rego
