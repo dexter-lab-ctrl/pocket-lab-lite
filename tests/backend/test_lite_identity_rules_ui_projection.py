@@ -98,19 +98,19 @@ def test_identity_rules_ui_polish_keeps_sensitive_internals_progressively_disclo
     assert "const identityReadOnly = savedStateOnly || !backendReachable;" in identity
     assert "buildLiteIdentityAccessOverview" in identity
     assert "LiteSheet" in identity
-    assert "Enterprise people" in identity_enterprise
-    assert "final-Owner protection" in identity_enterprise
+    assert "Identity & Access governance" in identity_enterprise
+    assert "Owner is root-equivalent" in identity_enterprise
 
     assert "Review the local policy engine" not in rules
     assert "free-form browser Rego" not in rules
-    assert "Advanced diagnostics" in rules
-    assert "This does not execute the action" in rules_enterprise
+    assert "Technical status" in rules
+    assert "This never executes the real action" in rules_enterprise
     for field in ("confirmed", "revision_validated", "protected_server_host", "assurance_recent"):
         assert field in rules_enterprise
     assert "viewer_actions?.approve" in rules_enterprise
     assert "Requesting identity ID" not in rules_enterprise
     assert "Select a person" in rules_enterprise
-    assert "Not all conflicts are analyzable by this model" in rules_enterprise
+    assert "Only the deterministic categories implemented by the typed model are claimed" in rules_enterprise
 
     assert "min-height: 44px" in css
     assert "prefers-reduced-motion: reduce" in css
