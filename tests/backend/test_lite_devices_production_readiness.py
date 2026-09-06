@@ -222,6 +222,8 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
                 "last_heartbeat_at": now,
                 "last_system_profile_at": now,
                 "last_supervisor_heartbeat_at": now,
+                "command_delivery_ready": True,
+                "command_delivery_checked_at": now,
                 "system_profile": {
                     "schema_version": 1,
                     "technical_model": "SM-S911B",
@@ -278,7 +280,8 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
     assert server["supervisor_status_freshness"] == "fresh"
     assert server["supervisor_evidence_schema_version"] == 1
     assert server["removal_assessment"]["policy"] == "protected"
-    assert server["capability_states"][0]["status"] == "verified"
+    capability_states = {item["id"]: item for item in server["capability_states"]}
+    assert capability_states["receive_commands"]["status"] == "verified"
 
 
 def test_core_supervisor_persists_canonical_server_host_evidence():
