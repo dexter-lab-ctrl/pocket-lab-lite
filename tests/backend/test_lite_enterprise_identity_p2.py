@@ -89,7 +89,7 @@ def test_enterprise_routes_reject_personal_mode_and_require_csrf(enterprise_runt
         headers={"x-pocket-lab-csrf": owner["csrf_token"]},
     )
     assert guarded.status_code == 428
-    assert guarded.json()["detail"]["reason_code"] == "owner_step_up_required"
+    assert guarded.json()["reason_code"] == "owner_step_up_required"
 
     enabled = _enable_enterprise_server_side(client)
     assert enabled["enabled"] is True
@@ -159,4 +159,4 @@ def test_membership_is_server_owned_invalidates_stale_sessions_and_protects_fina
     forged = {**auth, "authorization": {"enterprise_enabled": True, "role": "Owner"}}
     with pytest.raises(lite_enterprise_identity.EnterpriseIdentityError) as stale:
         lite_enterprise_identity.set_membership(auth_context=forged, human_id="human-second", role="Admin", membership_status="active")
-    assert stale.value.reason_code == "enterprise_owner_required"
+    assert stale.value.reason_code == "enterprise_owner_authority_required"
