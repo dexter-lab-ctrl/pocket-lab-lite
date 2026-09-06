@@ -9,6 +9,7 @@ and release runtime locks. Selected suites therefore receive process-equivalent
 isolation without changing production ownership or recovery contracts.
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -32,8 +33,20 @@ _RELEASE_ISOLATED_MODULES = {
     "test_release_process_isolation.py",
 }
 
+# Release subprocesses inherit the parent environment by design. Backend tests
+# exercise many failpoints and resource limits, so release suites must start from
+# a clean release-specific environment instead of carrying settings from an
+# earlier test into a new child process. Keep ordinary host variables intact.
+_RELEASE_ENVIRONMENT_PREFIXES = (
+    "POCKETLAB_RELEASE_",
+    "POCKETLAB_LITE_RELEASE_",
+)
 _RELEASE_ENVIRONMENT_KEYS = {
-    "POCKETLAB_RELEASE_STAGING_DIR",
+    "POCKETLAB_GITHUB_RELEASES_API",
+    "POCKETLAB_AUTO_RELEASE_APPLY",
+    "POCKETLAB_RELEASE_TAG",
+    "POCKETLAB_LITE_SOURCE_COMMIT",
+    "POCKETLAB_LITE_VERIFIED_ORIGIN",
     "POCKETLAB_LITE_PWA_CURRENT_LINK",
     "POCKETLAB_LITE_PWA_RELEASES_DIR",
     "POCKET_LAB_PWA_DIR",
@@ -41,14 +54,6 @@ _RELEASE_ENVIRONMENT_KEYS = {
     "POCKETLAB_CADDYFILE",
     "POCKET_LAB_CADDYFILE",
     "CADDYFILE",
-    "POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL",
-    "POCKETLAB_LITE_RELEASE_API_HEALTH_URL",
-    "POCKETLAB_LITE_RELEASE_API_PREPARED_URL",
-    "POCKETLAB_RELEASE_CHILD_CPU_SECONDS",
-    "POCKETLAB_RELEASE_CHILD_MAX_ADDRESS_SPACE_BYTES",
-    "POCKETLAB_RELEASE_CHILD_MAX_FILE_BYTES",
-    "POCKETLAB_RELEASE_CHILD_MAX_FILES",
-    "POCKETLAB_RELEASE_MEMORY_MIN_AVAILABLE_PERCENT",
 }
 
 
@@ -124,6 +129,12 @@ def _freshen_release_runtime_state() -> None:
                 )
 
 
+def _clear_release_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in tuple(os.environ):
+        if key in _RELEASE_ENVIRONMENT_KEYS or key.startswith(_RELEASE_ENVIRONMENT_PREFIXES):
+            monkeypatch.delenv(key, raising=False)
+
+
 @pytest.fixture(autouse=True)
 def isolate_process_global_projection_scheduler(request, monkeypatch):
     filename = Path(str(request.node.fspath)).name
@@ -151,11 +162,12 @@ def isolate_release_runtime_process_state(request, tmp_path, monkeypatch):
         yield
         return
 
-    # A developer shell or an earlier runtime test may carry live Server Phone
-    # PWA/Caddy/resource settings. Release subprocess contract tests must build
-    # every path and resource bound explicitly from their own temporary runtime.
-    for key in _RELEASE_ENVIRONMENT_KEYS:
-        monkeypatch.delenv(key, raising=False)
+    # A developer shell or an earlier runtime/failpoint test may carry release
+    # source, retention, timeout, resource-limit, PWA or Caddy settings. The
+    # bounded child intentionally inherits os.environ, so clear the entire
+    # release-specific namespace before each release contract test rather than a
+    # hand-picked subset that can drift as new controls are added.
+    _clear_release_environment(monkeypatch)
 
     # Some release tests exercise defaults without calling their per-test runtime
     # initializer. Give those tests a real, isolated SQLite database so a path
