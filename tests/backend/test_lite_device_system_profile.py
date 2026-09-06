@@ -585,8 +585,9 @@ def test_devices_ui_polish_preserves_server_protection_and_hides_empty_storage()
     assert "Choosing a friendly model changes display metadata only" in details
     assert "Internal codename" in details
     assert "onChooseModel={() =>" in screen
-    assert "scrollIntoView" in screen
     assert "detailsPanelRef" in screen
+    assert "window.requestAnimationFrame" in screen
+    assert "focus?.({ preventScroll: true })" in screen
     assert "<details className=\"lite-device-advanced-details\">" in details
     assert "<details className=\"lite-devices-add-disclosure\">" in screen
     assert "Current connection, system identity, and health at a glance." in screen
