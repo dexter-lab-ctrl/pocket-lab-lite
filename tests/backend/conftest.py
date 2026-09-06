@@ -32,6 +32,25 @@ _RELEASE_ISOLATED_MODULES = {
     "test_release_process_isolation.py",
 }
 
+_RELEASE_ENVIRONMENT_KEYS = {
+    "POCKETLAB_RELEASE_STAGING_DIR",
+    "POCKETLAB_LITE_PWA_CURRENT_LINK",
+    "POCKETLAB_LITE_PWA_RELEASES_DIR",
+    "POCKET_LAB_PWA_DIR",
+    "PWA_DIR",
+    "POCKETLAB_CADDYFILE",
+    "POCKET_LAB_CADDYFILE",
+    "CADDYFILE",
+    "POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL",
+    "POCKETLAB_LITE_RELEASE_API_HEALTH_URL",
+    "POCKETLAB_LITE_RELEASE_API_PREPARED_URL",
+    "POCKETLAB_RELEASE_CHILD_CPU_SECONDS",
+    "POCKETLAB_RELEASE_CHILD_MAX_ADDRESS_SPACE_BYTES",
+    "POCKETLAB_RELEASE_CHILD_MAX_FILE_BYTES",
+    "POCKETLAB_RELEASE_CHILD_MAX_FILES",
+    "POCKETLAB_RELEASE_MEMORY_MIN_AVAILABLE_PERCENT",
+}
+
 
 def _freshen_projection_scheduler() -> None:
     module = sys.modules.get("api_fastapi.services.projection_scheduler")
@@ -132,6 +151,12 @@ def isolate_release_runtime_process_state(request, tmp_path, monkeypatch):
         yield
         return
 
+    # A developer shell or an earlier runtime test may carry live Server Phone
+    # PWA/Caddy/resource settings. Release subprocess contract tests must build
+    # every path and resource bound explicitly from their own temporary runtime.
+    for key in _RELEASE_ENVIRONMENT_KEYS:
+        monkeypatch.delenv(key, raising=False)
+
     # Some release tests exercise defaults without calling their per-test runtime
     # initializer. Give those tests a real, isolated SQLite database so a path
     # cached by an earlier temporary runtime can never leak into them.
@@ -147,6 +172,16 @@ def isolate_release_runtime_process_state(request, tmp_path, monkeypatch):
     except Exception:
         # Individual tests that intentionally exercise initialization failure
         # still own their own setup; isolation must not mask their exception.
+        pass
+
+    # Admission pressure is separately owned by production/runtime coverage.
+    # These subprocess tests prove release contracts, not the host machine's
+    # transient memory pressure after hundreds of tests have already run.
+    try:
+        from api_fastapi.services import release_runtime
+
+        monkeypatch.setattr(release_runtime, "release_admission_reason", lambda: "")
+    except Exception:
         pass
 
     yield
