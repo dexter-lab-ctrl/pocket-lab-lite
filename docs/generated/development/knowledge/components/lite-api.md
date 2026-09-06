@@ -95,14 +95,13 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 - related_to: `pocketlab.commands.lite.restore.apply`
 - related_to: `pocketlab.commands.lite.restore.preview`
 - uses: `GET /api/lite/status`
+- verified_by: `tests/backend/test_architecture_contract.py`
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_device_health_d4.py`
 - verified_by: `tests/backend/test_lite_long_gate_submission_recovery.py`
 - verified_by: `tests/backend/test_lite_phase3b_security_system_probe_revisions.py`
 - verified_by: `tests/backend/test_lite_phase3c_system_aggregates.py`
-- verified_by: `tests/backend/test_lite_revision_sync_n4_n5.py`
-- verified_by: `tests/backend/test_lite_security_f11_events_contract.py`
 - verified_by: `tests/backend/test_lite_security_f3_summary_contract.py`
 - verified_by: `tests/backend/test_lite_security_f7_split_read_contract.py`
 - verified_by: `tests/backend/test_lite_security_f9_etag_contract.py`

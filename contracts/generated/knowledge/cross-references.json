@@ -3561,6 +3561,12 @@
           "type": "owns"
         }
       ],
+      "reason:legacy_telemetry_value": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "reason:local_owner_required": [
         {
           "source": "domain:identity",
@@ -4026,6 +4032,12 @@
       "reason:unregistered_domain": [
         {
           "source": "domain:projections",
+          "type": "owns"
+        }
+      ],
+      "reason:version_not_reported": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -6985,6 +6997,22 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/conftest.py": [
+        {
+          "source": "component:release-subprocess",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_architecture_contract.py": [
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_device_removal_invite_reconciliation.py": [
         {
           "source": "reason:identity_mismatch",
@@ -7461,6 +7489,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:local_owner_required",
           "type": "verified_by"
         },
@@ -7770,6 +7802,10 @@
         },
         {
           "source": "reason:unregistered_domain",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:version_not_reported",
           "type": "verified_by"
         },
         {
@@ -8727,6 +8763,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_device_facts_api_contract.py": [
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_device_health_d4.py": [
         {
           "source": "component:bounded-reconciliation",
@@ -8985,7 +9027,7 @@
           "type": "verified_by"
         },
         {
-          "source": "reason:enterprise_owner_required",
+          "source": "reason:enterprise_owner_authority_required",
           "type": "verified_by"
         },
         {
@@ -9417,11 +9459,7 @@
           "type": "verified_by"
         },
         {
-          "source": "reason:enterprise_rules_role_required",
-          "type": "verified_by"
-        },
-        {
-          "source": "reason:exception_scope_invalid",
+          "source": "reason:owner_approval_policy_inconsistent",
           "type": "verified_by"
         },
         {
@@ -9531,39 +9569,15 @@
         {
           "source": "component:frontend-state",
           "type": "verified_by"
-        },
-        {
-          "source": "component:lite-api",
-          "type": "verified_by"
-        },
-        {
-          "source": "journey:change-password",
-          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_security_f11_events_contract.py": [
-        {
-          "source": "component:frontend-state",
-          "type": "verified_by"
-        },
-        {
-          "source": "component:lite-api",
-          "type": "verified_by"
-        },
         {
           "source": "component:pwa",
           "type": "verified_by"
         },
         {
-          "source": "component:security-coordinator",
-          "type": "verified_by"
-        },
-        {
           "source": "domain:security",
-          "type": "verified_by"
-        },
-        {
-          "source": "journey:change-password",
           "type": "verified_by"
         },
         {
@@ -9572,6 +9586,10 @@
         },
         {
           "source": "journey:security-scan",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:read_degraded",
           "type": "verified_by"
         }
       ],
@@ -11711,6 +11729,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:local_owner_required",
           "type": "verified_by"
         },
@@ -12020,6 +12042,10 @@
         },
         {
           "source": "reason:unregistered_domain",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:version_not_reported",
           "type": "verified_by"
         },
         {
@@ -12489,6 +12515,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:local_owner_required",
           "type": "verified_by"
         },
@@ -12801,6 +12831,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:version_not_reported",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:webauthn_algorithm_unsupported",
           "type": "verified_by"
         },
@@ -12986,6 +13020,12 @@
         },
         {
           "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-device-facts.spec.ts": [
+        {
+          "source": "domain:validation",
           "type": "verified_by"
         }
       ],
@@ -18161,10 +18201,6 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
-          "type": "verified_by"
-        },
-        {
           "target": "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
           "type": "verified_by"
         },
@@ -18543,6 +18579,10 @@
           "type": "uses"
         },
         {
+          "target": "test:tests/backend/test_architecture_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
         },
@@ -18564,14 +18604,6 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
         {
@@ -19657,6 +19689,10 @@
           "type": "protected_by"
         },
         {
+          "target": "test:tests/backend/conftest.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
@@ -19924,10 +19960,6 @@
         },
         {
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
         {
@@ -20915,11 +20947,19 @@
           "type": "owns"
         },
         {
+          "target": "reason:legacy_telemetry_value",
+          "type": "owns"
+        },
+        {
           "target": "reason:protected_server_host",
           "type": "owns"
         },
         {
           "target": "reason:remote_access_not_ready",
+          "type": "owns"
+        },
+        {
+          "target": "reason:version_not_reported",
           "type": "owns"
         },
         {
@@ -23703,6 +23743,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-device-facts.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_intelligent_runtime_parity.py",
           "type": "verified_by"
         }
@@ -24028,14 +24072,6 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
         {
@@ -25501,6 +25537,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
           "type": "verified_by"
         },
@@ -25516,10 +25556,6 @@
       "reason:enterprise_owner_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
           "type": "verified_by"
         },
         {
@@ -25583,10 +25619,6 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/backend/test_lite_policy_approvals_p3_1.py",
-          "type": "verified_by"
-        },
-        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -25640,10 +25672,6 @@
       "reason:exception_scope_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/backend/test_lite_policy_approvals_p3_1.py",
           "type": "verified_by"
         },
         {
@@ -26085,6 +26113,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:legacy_telemetry_value": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:local_owner_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -26144,6 +26186,10 @@
       "reason:owner_approval_policy_inconsistent": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_policy_approvals_p3_1.py",
           "type": "verified_by"
         },
         {
@@ -27075,6 +27121,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_device_facts_api_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_device_lifecycle_idempotency.py",
           "type": "verified_by"
         },
@@ -27176,6 +27226,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
         {
@@ -27304,6 +27358,10 @@
         }
       ],
       "reason:shutdown": [
+        {
+          "target": "test:tests/backend/conftest.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -27434,6 +27492,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:version_not_reported": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -28263,6 +28335,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4031e184bd4b8a725c55610775bbc8d3b8e78d92d2228ec7ec26f2c744631ec6"
+    "source_fingerprint": "8d3255123ef5b9785b6325c6a6229ac57fce9e67b26fd60c9413249962e67463"
   }
 }

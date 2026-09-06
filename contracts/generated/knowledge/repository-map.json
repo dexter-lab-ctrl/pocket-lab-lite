@@ -783,6 +783,7 @@
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
         "reason:legacy_secret_rotation_retired",
+        "reason:legacy_telemetry_value",
         "reason:local_owner_required",
         "reason:metadata_only",
         "reason:no_active_generation",
@@ -861,6 +862,7 @@
         "reason:test_bypass_explicit",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
+        "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
         "reason:webauthn_attestation_unsupported",
@@ -1041,6 +1043,7 @@
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
         "reason:legacy_secret_rotation_retired",
+        "reason:legacy_telemetry_value",
         "reason:local_owner_required",
         "reason:metadata_only",
         "reason:no_active_generation",
@@ -1119,6 +1122,7 @@
         "reason:test_bypass_explicit",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
+        "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
         "reason:webauthn_attestation_unsupported",
@@ -2453,6 +2457,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/conftest.py"
+      ],
+      "source": "tests/backend/conftest.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_architecture_contract.py"
       ],
       "source": "tests/backend/test_architecture_contract.py"
@@ -2594,6 +2604,30 @@
         "test:tests/backend/test_lite_development_documentation_platform.py"
       ],
       "source": "tests/backend/test_lite_development_documentation_platform.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_facts.py"
+      ],
+      "source": "tests/backend/test_lite_device_facts.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_facts_api_contract.py"
+      ],
+      "source": "tests/backend/test_lite_device_facts_api_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_facts_generated_contract.py"
+      ],
+      "source": "tests/backend/test_lite_device_facts_generated_contract.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_device_facts_matrix.py"
+      ],
+      "source": "tests/backend/test_lite_device_facts_matrix.py"
     },
     {
       "entities": [
@@ -2840,6 +2874,12 @@
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
       ],
       "source": "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_platform_release_inventory_isolation.py"
+      ],
+      "source": "tests/backend/test_lite_platform_release_inventory_isolation.py"
     },
     {
       "entities": [
@@ -3521,6 +3561,12 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-device-facts.spec.ts"
+      ],
+      "source": "tests/e2e/lite-device-facts.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-live.spec.ts"
       ],
       "source": "tests/e2e/lite-live.spec.ts"
@@ -3682,6 +3728,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4031e184bd4b8a725c55610775bbc8d3b8e78d92d2228ec7ec26f2c744631ec6"
+    "source_fingerprint": "8d3255123ef5b9785b6325c6a6229ac57fce9e67b26fd60c9413249962e67463"
   }
 }

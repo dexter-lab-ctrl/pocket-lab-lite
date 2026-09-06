@@ -99,6 +99,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 
 ## Tests and validation
 
+- `test:tests/backend/conftest.py`
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_native_release.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`

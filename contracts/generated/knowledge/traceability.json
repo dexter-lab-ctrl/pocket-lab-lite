@@ -2358,7 +2358,6 @@
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-        "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
@@ -2456,14 +2455,13 @@
       "name": "FastAPI /api/lite/*",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/backend/test_architecture_contract.py",
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
-        "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-        "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_security_f7_split_read_contract.py",
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
@@ -2740,6 +2738,7 @@
       "name": "Release subprocess",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
+        "test:tests/backend/conftest.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -2810,7 +2809,6 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
-        "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_security_f7_split_read_contract.py",
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
@@ -3401,6 +3399,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
       "type": "domain",
@@ -3500,8 +3499,6 @@
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
-        "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-        "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_security_f7_split_read_contract.py",
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
@@ -3909,6 +3906,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4031e184bd4b8a725c55610775bbc8d3b8e78d92d2228ec7ec26f2c744631ec6"
+    "source_fingerprint": "8d3255123ef5b9785b6325c6a6229ac57fce9e67b26fd60c9413249962e67463"
   }
 }

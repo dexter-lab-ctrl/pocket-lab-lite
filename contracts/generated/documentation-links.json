@@ -1901,6 +1901,10 @@
         "title": "legacy_secret_rotation_retired",
         "url": "../../docs/generated/development/reason-codes.md#legacy-secret-rotation-retired"
       },
+      "reason:legacy_telemetry_value": {
+        "title": "legacy_telemetry_value",
+        "url": "../../docs/generated/development/reason-codes.md#legacy-telemetry-value"
+      },
       "reason:local_owner_required": {
         "title": "local_owner_required",
         "url": "../../docs/generated/development/reason-codes.md#local-owner-required"
@@ -2212,6 +2216,10 @@
       "reason:unregistered_domain": {
         "title": "unregistered_domain",
         "url": "../../docs/generated/development/reason-codes.md#unregistered-domain"
+      },
+      "reason:version_not_reported": {
+        "title": "version_not_reported",
+        "url": "../../docs/generated/development/reason-codes.md#version-not-reported"
       },
       "reason:webauthn_algorithm_unsupported": {
         "title": "webauthn_algorithm_unsupported",
@@ -2687,7 +2695,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "798636c874f2e9de62a7ee9ac6cfcfcabe558779ef62130509f2bf55cd006ce1",
+    "aggregate_fingerprint": "f2c2a789d2f38984b79f3b042bcc6ad08eb68ef1e866abc4d2a859731fbb3f36",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2699,7 +2707,7 @@
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",

@@ -85,7 +85,6 @@ Validates Quick, Full, and App Check requests, tracks active runs, and exposes c
 - uses: `POST /api/lite/security/check`
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
-- verified_by: `tests/backend/test_lite_security_f11_events_contract.py`
 - verified_by: `tests/backend/test_lite_security_f3_summary_contract.py`
 - verified_by: `tests/backend/test_lite_security_f7_split_read_contract.py`
 - verified_by: `tests/backend/test_lite_security_f9_etag_contract.py`

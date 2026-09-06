@@ -49,10 +49,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -136,10 +136,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -170,10 +170,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -225,7 +225,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "command_undeliverable"
+        "command_undeliverable",
+        "legacy_telemetry_value"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -253,6 +254,7 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "command_undeliverable",
+        "legacy_telemetry_value",
         "policy_source_update_pending"
       ],
       "residual_risk": "human review; no arbitrary RPN",
@@ -334,10 +336,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -417,7 +419,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "command_undeliverable"
+        "command_undeliverable",
+        "legacy_telemetry_value"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -475,10 +478,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -602,10 +605,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -739,10 +742,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -925,10 +928,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
         "policy_source_contract_invalid",
-        "policy_source_contract_missing",
-        "policy_source_revision_conflict"
+        "policy_source_contract_missing"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

@@ -829,6 +829,18 @@
       "user_message": "Use the Identity password controls instead."
     },
     {
+      "code": "legacy_telemetry_value",
+      "domain": "devices",
+      "http_status": 200,
+      "meaning": "A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "info",
+      "terminal": false,
+      "user_message": "Pocket Lab is using a compatible device telemetry value."
+    },
+    {
       "code": "local_owner_required",
       "domain": "identity",
       "http_status": 403,
@@ -1769,6 +1781,18 @@
       "user_message": "The requested domain is not registered."
     },
     {
+      "code": "version_not_reported",
+      "domain": "devices",
+      "http_status": 200,
+      "meaning": "The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "info",
+      "terminal": false,
+      "user_message": "This device has not reported that software version yet."
+    },
+    {
       "code": "webauthn_algorithm_unsupported",
       "domain": "identity",
       "http_status": 403,
@@ -2094,5 +2118,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "cf5c632d965a492bceeedca56d571d5837b9321db01fa2534c64cee71e18cc1b"
+  "source_fingerprint": "0571f75c2c85ba769239af7e5ebd15088370b990965fbfecd46d41ebf36e8a68"
 }

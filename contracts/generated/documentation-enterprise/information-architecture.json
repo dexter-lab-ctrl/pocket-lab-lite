@@ -1419,18 +1419,6 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:change-password",
-          "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py"
-        },
-        {
-          "depth": 1,
-          "relation_type": "verified_by",
-          "source": "journey:change-password",
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py"
-        },
-        {
-          "depth": 1,
-          "relation_type": "verified_by",
-          "source": "journey:change-password",
           "target": "test:tests/backend/test_lite_security_f3_summary_contract.py"
         },
         {
@@ -1720,6 +1708,18 @@
           "relation_type": "verified_by",
           "source": "api:post:/api/lite/identity/step-up/verify",
           "target": "test:tests/parity/test_api_contract_fences.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "target": "test:tests/parity/test_api_contract_fences.py"
         }
       ],
       "expansion": {
@@ -1757,8 +1757,6 @@
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
-        "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-        "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_security_f7_split_read_contract.py",
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
@@ -2505,12 +2503,6 @@
         },
         {
           "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:last-known-good",
-          "target": "boundary:server-host"
-        },
-        {
-          "depth": 2,
           "relation_type": "depends_on",
           "source": "component:post-switch-health",
           "target": "component:last-known-good"
@@ -2861,6 +2853,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:release-subprocess",
+          "target": "test:tests/backend/conftest.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:release-subprocess",
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py"
         },
         {
@@ -2915,6 +2913,7 @@
         "runbooks/release_rollback.yaml"
       ],
       "tests": [
+        "test:tests/backend/conftest.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_native_release.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
@@ -4327,6 +4326,12 @@
         },
         {
           "depth": 2,
+          "relation_type": "verified_by",
+          "source": "api:get:/api/lite/security/progress",
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
+        },
+        {
+          "depth": 2,
           "relation_type": "reads",
           "source": "api:get:/api/lite/security/summary",
           "target": "table:security_database_backups"
@@ -4456,12 +4461,6 @@
           "relation_type": "verified_by",
           "source": "component:security-coordinator",
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:security-coordinator",
-          "target": "test:tests/backend/test_lite_security_f11_events_contract.py"
         },
         {
           "depth": 2,
@@ -4644,7 +4643,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 429,
+  "page_count": 432,
   "page_types": [
     "overview",
     "guide",
@@ -4657,6 +4656,30 @@
     "handbook"
   ],
   "pages": [
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "architecture/device-facts-telemetry-capability-projection.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "devices",
+      "generated": false,
+      "id": "page:architecture/device-facts-telemetry-capability-projection",
+      "intents": [
+        "learn",
+        "reference"
+      ],
+      "page_type": "architecture",
+      "path": "architecture/device-facts-telemetry-capability-projection.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "understand",
+      "related_pages": [],
+      "source_or_generator": "architecture/device-facts-telemetry-capability-projection.md",
+      "title": "Shared Device Facts, Telemetry & Capability Projection",
+      "url": "/architecture/device-facts-telemetry-capability-projection/"
+    },
     {
       "additional_audiences": [],
       "authority": "canonical-source",
@@ -5139,6 +5162,32 @@
       "source_or_generator": "scripts/docs/lite/generate_docs.py",
       "title": "Device capabilities",
       "url": "/generated/development/device-capabilities/"
+    },
+    {
+      "additional_audiences": [
+        "tester"
+      ],
+      "authority": "derived",
+      "canonical_source_references": [
+        "scripts/docs/lite/generate_docs.py"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "devices",
+      "generated": true,
+      "id": "page:generated/development/device-facts-contract",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "generated/development/device-facts-contract.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "scripts/docs/lite/generate_docs.py",
+      "title": "Device Facts contract",
+      "url": "/generated/development/device-facts-contract/"
     },
     {
       "additional_audiences": [
@@ -15846,6 +15895,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "operations/device-facts-api.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "devices",
+      "generated": false,
+      "id": "page:operations/device-facts-api",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "reference",
+      "path": "operations/device-facts-api.md",
+      "primary_audience": "operator",
+      "primary_navigation_owner": "operate",
+      "related_pages": [],
+      "source_or_generator": "operations/device-facts-api.md",
+      "title": "Device Facts API projection",
+      "url": "/operations/device-facts-api/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "operations/devices-durable-enrollment.md"
       ],
       "confidence": "source-derived",
@@ -16114,7 +16187,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "fb4a964e4439847ae6d0c06e804878c3fb7c1abd5603080c2d8f630cc2785d06",
+  "source_fingerprint": "c17168365f67fe86ae185a01e32fd21b5e51dbdea609b83e40fc91a0a279e97a",
   "top_level": [
     "start-here",
     "use",

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: a01817d9d26aa358f5a98cece5db52040975427655223b04f45306d379b1cc64
+source_fingerprint: 8daaaa092248ee7089788c2252ce045e35a10a5d8b2f25e2c1693d337ffb001d
 schema_revision: 1
 validation_status: generated
 ---
@@ -91,6 +91,7 @@ validation_status: generated
 | `lease_active` | projections | Another bounded owner currently holds the lease. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | no | yes | 410 | info | structured reason/failure fields in Lite backend or contracts metadata |
+| `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | no | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `metadata_only` | validation | Only metadata was evaluated. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `no_active_generation` | projections | There is no active generation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -169,6 +170,7 @@ validation_status: generated
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | no | yes | 200 | info | structured reason/failure fields in Lite backend or contracts metadata |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | yes | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
 | `webauthn_algorithm_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `webauthn_assertion_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `webauthn_attestation_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

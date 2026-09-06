@@ -43,6 +43,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/conftest.py",
+      "name": "tests/backend/conftest.py",
+      "source_refs": [
+        "tests/backend/conftest.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_architecture_contract.py",
       "name": "tests/backend/test_architecture_contract.py",
       "source_refs": [
@@ -277,6 +287,46 @@
       "name": "tests/backend/test_lite_development_documentation_platform.py",
       "source_refs": [
         "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_facts.py",
+      "name": "tests/backend/test_lite_device_facts.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_facts.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_facts_api_contract.py",
+      "name": "tests/backend/test_lite_device_facts_api_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_facts_api_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_facts_generated_contract.py",
+      "name": "tests/backend/test_lite_device_facts_generated_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_facts_generated_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_facts_matrix.py",
+      "name": "tests/backend/test_lite_device_facts_matrix.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_facts_matrix.py"
       ],
       "type": "test"
     },
@@ -687,6 +737,16 @@
       "name": "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
       "source_refs": [
         "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
+      "name": "tests/backend/test_lite_platform_release_inventory_isolation.py",
+      "source_refs": [
+        "tests/backend/test_lite_platform_release_inventory_isolation.py"
       ],
       "type": "test"
     },
@@ -1823,6 +1883,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-device-facts.spec.ts",
+      "name": "tests/e2e/lite-device-facts.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-device-facts.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-live.spec.ts",
       "name": "tests/e2e/lite-live.spec.ts",
       "source_refs": [
@@ -2087,6 +2157,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4031e184bd4b8a725c55610775bbc8d3b8e78d92d2228ec7ec26f2c744631ec6"
+    "source_fingerprint": "8d3255123ef5b9785b6325c6a6229ac57fce9e67b26fd60c9413249962e67463"
   }
 }
