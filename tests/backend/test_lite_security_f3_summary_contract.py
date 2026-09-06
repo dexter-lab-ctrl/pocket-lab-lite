@@ -123,11 +123,12 @@ def test_lite_security_group1_f6_prefetch_is_guarded_and_summary_first():
 
     assert "prefetchSecuritySummary" in app
     assert "SECURITY_PREFETCH_SETTLE_MS" in app
-    assert "active === 'security'" in app
-    assert "warmSecurityOnNavIntent" in app
-    assert "onPointerEnter={() => warmSecurityOnNavIntent(item.id)}" in app
-    assert "onFocus={() => warmSecurityOnNavIntent(item.id)}" in app
-    assert "onTouchStart={() => warmSecurityOnNavIntent(item.id)}" in app
+    assert "warmScreenOnNavIntent" in app
+    assert "normalizeLiteScreenId(tabId)" in app
+    assert "if (normalizedId !== 'security') return;" in app
+    assert "onPointerEnter={() => warmScreenOnNavIntent(item.id)}" in app
+    assert "onFocus={() => warmScreenOnNavIntent(item.id)}" in app
+    assert "onTouchStart={() => warmScreenOnNavIntent(item.id)}" in app
 
     assert "navigator.onLine" in preload
     assert "connection.saveData" in preload

@@ -57,6 +57,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services import fleet_registry
     from .services import lite_identity_auth
     from .services.lite_control_plane_store import CONTROL_PLANE
+    from .services.lite_device_runtime_extensions import install_runtime_extensions
     from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
     from .services.workload_admission import WORKLOAD_ADMISSION
     from .services.projection_scheduler import PROJECTION_SCHEDULER
@@ -80,6 +81,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         deps.settings().ensure_dirs()
         await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "api")
         await asyncio.to_thread(CONTROL_PLANE.initialize)
+        # Device Facts adapters are installed only after the prepared SQLite
+        # control plane is initialized and before projection jobs start. Module
+        # imports therefore remain side-effect free for tests and tooling.
+        install_runtime_extensions()
         await asyncio.to_thread(lite_identity_auth.initialize_identity_runtime)
         idle_governor_started = await IDLE_EFFICIENCY.start()
         admission_started = await WORKLOAD_ADMISSION.start()

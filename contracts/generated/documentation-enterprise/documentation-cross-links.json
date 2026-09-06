@@ -3521,17 +3521,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:528ad3b3fe7597a2",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 1,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:identity:55ebbe14b9fc6517",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
@@ -3958,6 +3947,17 @@
       "target_type": "test"
     },
     {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:d6a0dc4a94650938",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "target_type": "test"
+    },
+    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -4079,14 +4079,14 @@
       "target_type": "test"
     },
     {
-      "depth": 1,
+      "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:f7489aa9eb8eb0dd",
+      "id": "link:journey:identity:fa0d338b0a644cad",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {
@@ -5505,6 +5505,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:release:38acc1e30d8d6d11",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "test:tests/backend/conftest.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:release:3cd45b0de07cbe7c",
       "relation_type": "protected_by",
       "source": "page:generated/enterprise/journeys/release",
@@ -5719,17 +5730,6 @@
       "source": "page:generated/enterprise/journeys/release",
       "target": "component:release-subprocess",
       "target_type": "component"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:release:7db4c0218b622f0d",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/release",
-      "target": "boundary:server-host",
-      "target_type": "boundary"
     },
     {
       "depth": 2,
@@ -9039,17 +9039,6 @@
       "target_type": "test"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:security:7fd39ab4de57d058",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/security",
-      "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
-      "target_type": "test"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -9743,6 +9732,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/security",
       "target": "test:tests/backend/test_lite_api.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:f6b817179eba796d",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {

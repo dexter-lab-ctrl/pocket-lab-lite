@@ -589,6 +589,13 @@
           "resolved": true,
           "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/deviceFactsScenarios.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/devices/{device_id}",
@@ -621,6 +628,13 @@
           "resolved": true,
           "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/deviceFactsScenarios.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/devices/{device_id}/health",
@@ -653,6 +667,13 @@
           "resolved": true,
           "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/deviceFactsScenarios.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/devices/{device_id}/health/history",
@@ -686,6 +707,13 @@
           "resolved": true,
           "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/deviceFactsScenarios.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/devices/{device_id}/history",
@@ -1479,6 +1507,13 @@
           "resolved": true,
           "source_module": "src/lite/LiteRulesEnterprise.jsx",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/deviceFactsScenarios.js",
+          "usage": "mock"
         },
         {
           "mocked": true,
@@ -2896,6 +2931,13 @@
           "resolved": true,
           "source_module": "src/hooks/useLiteStatus.js",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/deviceFactsScenarios.js",
+          "usage": "mock"
         },
         {
           "mocked": true,
@@ -5705,6 +5747,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4031e184bd4b8a725c55610775bbc8d3b8e78d92d2228ec7ec26f2c744631ec6"
+    "source_fingerprint": "8d3255123ef5b9785b6325c6a6229ac57fce9e67b26fd60c9413249962e67463"
   }
 }

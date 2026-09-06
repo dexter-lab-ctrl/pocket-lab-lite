@@ -16,6 +16,26 @@ def load_supervisor_module():
     return module
 
 
+def _prepare_supervisor_runtime(tmp_path, monkeypatch):
+    """Give the standalone supervisor the same migrated Lite DB contract as runtime startup."""
+    runtime_root = Path(__file__).resolve().parents[2] / "pocket-lab-final-structure" / "runtime"
+    if str(runtime_root) not in sys.path:
+        sys.path.insert(0, str(runtime_root))
+    state = tmp_path / "state"
+    state.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(state))
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(state / "pocketlab-lite.sqlite3"))
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version, latest_schema_version
+    from api_fastapi.db.runtime import SQLITE_READS
+
+    reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
+    apply_migrations()
+    assert current_schema_version() == latest_schema_version()
+    return state
+
+
 def test_nats_api_status_unhealthy_detects_flush_timeout():
     supervisor = load_supervisor_module()
 
@@ -59,8 +79,8 @@ def test_status_summary_reports_api_nats_health():
 
 
 def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
     supervisor_module = load_supervisor_module()
-    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
     supervisor = supervisor_module.LiteCoreSupervisor()
 
     observed = {
@@ -68,6 +88,7 @@ def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeyp
             "pocket-nats": "online",
             "pocket-api": "online",
             "pocket-worker": "online",
+            "pocket-opa": "online",
             "caddy-proxy": "online",
             "pocket-telemetry": "online",
         },
@@ -88,7 +109,7 @@ def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeyp
         calls["count"] += 1
         return observed
 
-    def fail_restart(service, reason):  # pragma: no cover - should not run
+    def fail_restart(service, reason):
         raise AssertionError(f"unexpected restart for {service}: {reason}")
 
     monkeypatch.setattr(supervisor, "collect", fake_collect)
@@ -134,14 +155,14 @@ def _healthy_observed(*, caddy_tcp=True, caddy_upstream=True):
 
 
 def test_supervisor_does_not_restart_healthy_caddy_for_api_upstream_failure(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
     supervisor_module = load_supervisor_module()
-    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
     supervisor = supervisor_module.LiteCoreSupervisor()
     observed = _healthy_observed(caddy_tcp=True, caddy_upstream=False)
     monkeypatch.setattr(supervisor, "collect", lambda: observed)
     monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
 
-    def fail_restart(service, reason):  # pragma: no cover - must not run
+    def fail_restart(service, reason):
         raise AssertionError(f"unexpected restart for {service}: {reason}")
 
     monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
@@ -155,8 +176,8 @@ def test_supervisor_does_not_restart_healthy_caddy_for_api_upstream_failure(monk
 
 
 def test_supervisor_requires_consecutive_caddy_tcp_failures(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
     supervisor_module = load_supervisor_module()
-    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
     monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD", "3")
     supervisor = supervisor_module.LiteCoreSupervisor()
     observed = _healthy_observed(caddy_tcp=False, caddy_upstream=False)

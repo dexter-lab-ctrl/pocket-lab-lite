@@ -21,6 +21,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
+CORE_DIR = Path(__file__).resolve().parents[1] / "core"
+if str(CORE_DIR) not in sys.path:
+    sys.path.insert(0, str(CORE_DIR))
+
+from resource_telemetry import collect_resource_telemetry
 from lite_system_profile import collect_system_health, collect_system_profile, unavailable_system_profile
 
 try:
@@ -64,54 +69,8 @@ def token_hash(token: str) -> str:
 
 
 def telemetry_snapshot() -> Dict[str, Any]:
-    cpu_temp = 42.0
-    for candidate in [
-        "/sys/class/thermal/thermal_zone0/temp",
-        "/sys/class/thermal/thermal_zone1/temp",
-        "/sys/devices/virtual/thermal/thermal_zone0/temp",
-    ]:
-        try:
-            p = Path(candidate)
-            if p.exists():
-                raw = float(p.read_text().strip())
-                cpu_temp = raw / 1000.0 if raw > 1000 else raw
-                break
-        except Exception:
-            pass
-    try:
-        load = os.getloadavg()[0]
-        cpu_count = os.cpu_count() or 1
-        cpu_usage = max(0.0, min(100.0, (load / cpu_count) * 100.0))
-    except Exception:
-        cpu_usage = 0.0
-    try:
-        st = os.statvfs(str(Path.home()))
-        free_space = int((st.f_bavail * st.f_frsize) // (1024 * 1024))
-        total_space = int((st.f_blocks * st.f_frsize) // (1024 * 1024))
-    except Exception:
-        free_space = 0
-        total_space = 0
-    try:
-        mem = {}
-        with open("/proc/meminfo", "r", encoding="utf-8") as handle:
-            for line in handle:
-                if ":" in line and line.split()[1].isdigit():
-                    mem[line.split(":", 1)[0]] = int(line.split()[1])
-        total = mem.get("MemTotal", 0) // 1024
-        avail = mem.get("MemAvailable", mem.get("MemFree", 0)) // 1024
-    except Exception:
-        total = 0
-        avail = 0
-    return {
-        "timestamp": now_iso(),
-        "cpu_temp_c": round(cpu_temp, 1),
-        "cpu_usage_percent": round(cpu_usage, 1),
-        "free_space_mb": free_space,
-        "total_space_mb": total_space,
-        "memory_total_mb": total,
-        "memory_free_mb": avail,
-        "memory_usage_mb": max(0, total - avail),
-    }
+    """Collect the same canonical resource semantics used by the Server Host."""
+    return collect_resource_telemetry(Path.home())
 
 
 

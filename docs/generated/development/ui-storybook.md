@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 10afae9869997284bf0e7a7a7ae232ae31e2cb3f8bebdc642b75be0961460422
+source_fingerprint: f395bcea9154f56908d6334ff8a318182bac9a3a0769b31a98339a49cf6f2733
 schema_revision: 1
 validation_status: generated
 ---
@@ -58,6 +58,33 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `MobileVerticalConnection`
 - `DesktopHorizontalConnection`
 - `RepairingManageOpen`
+- `ResourceFactsComplete`
+- `ResourceFactsPartial`
+- `ResourceFactsStale`
+- `ResourceFactsUnsupported`
+- `ResourceFactsPermissionDenied`
+- `ResourceFactsMissing`
+- `CapabilityStale`
+- `CapabilityUnsupported`
+- `CapabilityBlocked`
+- `CapabilityNotApplicable`
+- `CapabilityMixed`
+- `CapabilityUnknownFuture`
+- `RuntimeServicesMixed`
+- `RuntimeServicesStale`
+- `RuntimeServiceUnknownFuture`
+- `RuntimeServicesDisappeared`
+- `SecondaryDeviceFacts`
+- `SecondarySavedFactsOffline`
+- `SoftwareCurrent`
+- `SoftwareOutdated`
+- `SoftwareIncompatible`
+- `SoftwareStale`
+- `LongDeviceName`
+- `DeviceFactsDaylight`
+- `DeviceFactsDark`
+- `DeviceFactsReducedMotion`
+- `DeviceFactsText200Percent`
 
 ## LiteHome
 

@@ -34,8 +34,12 @@ def test_phase5_group1_shell_files_are_valid_and_modular():
             ["bash", "-n", str(path)], cwd=ROOT, capture_output=True, text=True
         )
         assert result.returncode == 0, f"{path}: {result.stderr}"
-    assert len(ORCHESTRATOR.read_text(encoding="utf-8").splitlines()) < 560
-    assert "scripts/dev/lib/long_gate_" in ORCHESTRATOR.read_text(encoding="utf-8")
+    source = ORCHESTRATOR.read_text(encoding="utf-8")
+    # Keep the coordinator bounded, but do not freeze its exact historical line
+    # count as new gate groups are registered. Real modularity is the sourced
+    # long_gate_* library boundary plus bash syntax validation above.
+    assert len(source.splitlines()) < 650
+    assert source.count("scripts/dev/lib/long_gate_") >= 8
 
 
 def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
@@ -68,6 +72,7 @@ def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
     assert "implemented" in registry.stdout
     for gate in (
         "idle",
+        "adaptive-runtime",
         "repeated-scans",
         "progress-soak",
         "submission-recovery",
@@ -76,6 +81,7 @@ def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
         "wal-pressure",
         "low-storage",
         "android-resume",
+        "security-s8",
     ):
         assert gate in registry.stdout
     assert registry.stdout.count("unavailable") == 0
@@ -109,8 +115,8 @@ def test_unavailable_gate_and_all_paths_cannot_claim_ready():
     assert 'exit "$LONG_GATE_EXIT_GATE_UNAVAILABLE"' in text
     all_dry = subprocess.run(["bash", str(ORCHESTRATOR), "--dry-run", "--all"], cwd=ROOT, capture_output=True, text=True)
     assert all_dry.returncode == 0
-    assert "selected_gates=idle,repeated-scans,progress-soak,wal-pressure,low-storage" in all_dry.stdout
-    assert "submission-recovery" not in all_dry.stdout
+    assert "selected_gates=idle,adaptive-runtime,repeated-scans,progress-soak,wal-pressure,low-storage" in all_dry.stdout
+    assert "submission-recovery" not in next((line for line in all_dry.stdout.splitlines() if line.startswith("selected_gates=")), "")
     assert "framework-self-test" not in list(
         line.strip() for line in text.split("real_gate_names()", 1)[-1].split("}", 1)[0].splitlines()
         if line.strip().startswith("printf")

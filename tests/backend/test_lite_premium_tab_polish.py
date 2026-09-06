@@ -31,7 +31,7 @@ def test_home_uses_existing_server_state_layers_without_new_api_fanout() -> None
     assert "Dexie" in snapshots or "liteOfflineDb" in snapshots
 
 
-def test_home_presentation_removes_operational_jargon_from_visible_home_copy() -> None:
+def test_home_presentation_keeps_lite_language_and_a_real_next_action_contract() -> None:
     home = read("src/lite/LiteHome.jsx")
     presentation = read("src/lib/liteHomePresentation.js")
 
@@ -52,19 +52,27 @@ def test_home_presentation_removes_operational_jargon_from_visible_home_copy() -
     assert "Protection rules" in presentation
     assert "Backups and recovery" in presentation
     assert "Actions stay protected" in presentation
-    assert "recommended next step" in home.lower()
+    assert "overview.nextAction" in home
+    assert "Your workspace status and the next useful action." in home
+    assert "Where to look next" in home
 
 
-def test_home_and_primary_tabs_use_bounded_native_motion_and_haptics() -> None:
+def test_home_and_primary_tabs_keep_bounded_native_motion_and_reduced_motion() -> None:
     home = read("src/lite/LiteHome.jsx")
     recovery = read("src/lite/LiteRecovery.jsx")
     security = read("src/lite/LiteSecurity.jsx")
     catalog = read("src/lite/catalog/AppCatalogScreen.jsx")
     css = read("src/index.css")
 
-    assert "LiteElevationSurface" in home
-    assert "LiteMotionReveal" in home
-    assert "LitePressableButton" in home
+    # Home now owns a lightweight CSS/state-driven workspace-flow visual rather
+    # than the previous wrapper component names. Assert the current behavior.
+    assert "HomeWorkspaceFlow" in home
+    assert "homeWorkflowPresentation" in home
+    assert "data-home-workflow-state" in home
+    assert "motion-${flow.motion}" in home
+    assert "LiteOperationalStory" in home
+    assert "LiteActionRow" in home
+
     assert "LiteElevationSurface" in recovery
     assert "LiteMotionReveal" in recovery
     assert "triggerLiteHaptic('accepted')" in recovery

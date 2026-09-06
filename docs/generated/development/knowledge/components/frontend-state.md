@@ -85,7 +85,6 @@ Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only s
 - verified_by: `tests/backend/test_lite_phase4_phase5_adaptive_runtime.py`
 - verified_by: `tests/backend/test_lite_premium_tab_polish.py`
 - verified_by: `tests/backend/test_lite_revision_sync_n4_n5.py`
-- verified_by: `tests/backend/test_lite_security_f11_events_contract.py`
 - verified_by: `tests/backend/test_lite_security_f12_f14_stability_contract.py`
 - verified_by: `tests/backend/test_lite_security_f3_summary_contract.py`
 - verified_by: `tests/backend/test_lite_security_f9_etag_contract.py`

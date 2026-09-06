@@ -254,8 +254,6 @@ def test_d4_sqlite_projection_is_change_only_resolves_attention_and_bounds_histo
     assert first == 1
     assert second == first
 
-    # A different raw value in the same threshold bucket must not advance the
-    # prepared health revision or write a new transition.
     same_bucket_without_previous = evaluate_device_health(
         _device(),
         signals=_signals(telemetry={**_signals()["telemetry"], "free_space_mb": 1_500}),
@@ -384,7 +382,7 @@ def test_d4_frontend_contract_uses_backend_health_and_saved_attention_guard():
     assert "selectDeviceProactiveHealthView" in view_models
     assert "attention_current: false" in view_models
     assert "proactive_health" in device_card
-    assert "Review health" in device_card
+    assert "review_device: 'Review device'" in details
     assert "DEVICE_HEALTH_RECOMMENDATIONS_DO_NOT_EXECUTE_D4" in details
     assert "deviceHealthHistoryOpenId" in store
     assert "DEVICE_HEALTH_HISTORY_SNAPSHOT_PATH_PATTERN" in snapshots

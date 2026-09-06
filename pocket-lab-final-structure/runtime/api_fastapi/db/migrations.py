@@ -62,6 +62,17 @@ def discover_migrations(directory: Path | None = None) -> list[Migration]:
     return migrations
 
 
+def migration_versions(directory: Path | None = None) -> list[int]:
+    """Return the authoritative ordered schema versions owned by this runtime."""
+    return [item.version for item in discover_migrations(directory)]
+
+
+def latest_schema_version(directory: Path | None = None) -> int:
+    """Return the current schema contract without duplicating a version in tests."""
+    versions = migration_versions(directory)
+    return max(versions, default=0)
+
+
 def _statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):

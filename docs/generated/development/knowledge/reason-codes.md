@@ -83,6 +83,7 @@ generator_version: 3
 | `lease_active` | projections | Another bounded owner currently holds the lease. | warning | yes | no | Another bounded owner currently holds the lease. |
 | `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | warning | yes | no | Legacy state contains multiple active runs. |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | info | no | yes | Use the Identity password controls instead. |
+| `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | info | no | no | Pocket Lab is using a compatible device telemetry value. |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `metadata_only` | validation | Only metadata was evaluated. | warning | yes | no | Only metadata was evaluated. |
 | `no_active_generation` | projections | There is no active generation. | warning | yes | no | There is no active generation. |
@@ -161,6 +162,7 @@ generator_version: 3
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | info | no | yes | Test-only policy bypass. |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `unregistered_domain` | projections | The requested domain is not registered. | warning | yes | no | The requested domain is not registered. |
+| `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | info | yes | no | This device has not reported that software version yet. |
 | `webauthn_algorithm_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `webauthn_assertion_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `webauthn_attestation_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |

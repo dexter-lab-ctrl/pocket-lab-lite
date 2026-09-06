@@ -733,10 +733,29 @@ def test_e4_database_generation_mismatch_and_pressure_deferral(tmp_path, monkeyp
     release.set()
     assert _wait_for(lambda: scheduler.status("recovery.details").get("last_error_type") == "DatabaseGenerationMismatch", 2.0)
 
+    # recovery.details is UI-critical. After the failed database-generation
+    # attempt it still has no durable commit, so the scheduler intentionally
+    # admits one bounded bootstrap build even under event-loop pressure.
     monkeypatch.setattr(RUNTIME_DIAGNOSTICS, "latest_event_loop_lag_ms", lambda: scheduler.critical_lag_ms + 1)
     with scheduler._condition:
         scheduler._states["recovery.details"].next_retry_at = 0.0
-    scheduler.mark_dirty("recovery.details", job=ProjectionJob("recovery.details", lambda: {"ok": True}, lambda _p: 1, 80, "io", 1.0))
+    scheduler.mark_dirty(
+        "recovery.details",
+        job=ProjectionJob("recovery.details", lambda: {"ok": True}, lambda _p: 1, 80, "io", 1.0),
+    )
+    assert _wait_for(lambda: scheduler.status("recovery.details").get("committed_count") == 1, 2.0)
+    bootstrap = scheduler.status("recovery.details")
+    assert bootstrap["bootstrap_admission_count"] >= 1
+    assert bootstrap["pressure_reason"] == ""
+
+    # Once a durable projection exists, the same optional refresh is eligible
+    # for adaptive pressure deferral and must not start execution.
+    with scheduler._condition:
+        scheduler._states["recovery.details"].next_retry_at = 0.0
+    scheduler.mark_dirty(
+        "recovery.details",
+        job=ProjectionJob("recovery.details", lambda: {"ok": True}, lambda _p: 2, 80, "io", 1.0),
+    )
     assert _wait_for(lambda: scheduler.status("recovery.details").get("pressure_reason") == "event_loop_pressure")
     assert scheduler.status("recovery.details")["active"] is False
     scheduler.shutdown(drain_seconds=1.0)

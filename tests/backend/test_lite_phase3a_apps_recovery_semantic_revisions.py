@@ -169,7 +169,7 @@ def test_phase3a_prepared_read_installs_mandatory_contract_without_running_colle
     assert captured["apps.lifecycle"].source_revision is not None
     assert captured["recovery.summary"].source_revision is not None
     assert captured["recovery.details"].source_revision is not None
-    assert captured["apps.lifecycle"].work_class == "cpu"
+    assert captured["apps.lifecycle"].work_class == "critical"
     assert captured["recovery.summary"].deadline_seconds == 8.0
     assert captured["recovery.details"].deadline_seconds == 10.0
 

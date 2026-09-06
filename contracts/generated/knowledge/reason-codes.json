@@ -1382,6 +1382,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:legacy_telemetry_value",
+      "name": "legacy_telemetry_value",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Pocket Lab is using a compatible device telemetry value."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -2942,6 +2962,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:version_not_reported",
+      "name": "version_not_reported",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "This device has not reported that software version yet."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -3487,6 +3527,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4031e184bd4b8a725c55610775bbc8d3b8e78d92d2228ec7ec26f2c744631ec6"
+    "source_fingerprint": "8d3255123ef5b9785b6325c6a6229ac57fce9e67b26fd60c9413249962e67463"
   }
 }

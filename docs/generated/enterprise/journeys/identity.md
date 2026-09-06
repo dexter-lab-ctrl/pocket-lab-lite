@@ -111,8 +111,6 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_long_gate_submission_recovery.py`
 - `test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py`
 - `test:tests/backend/test_lite_phase3c_system_aggregates.py`
-- `test:tests/backend/test_lite_revision_sync_n4_n5.py`
-- `test:tests/backend/test_lite_security_f11_events_contract.py`
 - `test:tests/backend/test_lite_security_f3_summary_contract.py`
 - `test:tests/backend/test_lite_security_f7_split_read_contract.py`
 - `test:tests/backend/test_lite_security_f9_etag_contract.py`

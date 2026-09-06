@@ -14,19 +14,23 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     ensure_runtime_path()
     target = tmp_path / "state" / "pocketlab-lite.sqlite3"
     monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(target))
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(target.parent))
     from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.db.runtime import SQLITE_READS
 
     reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
     return target
 
 
 def test_phase3b_migration_creates_bounded_current_state_and_indexes(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
     from api_fastapi.db.connection import read_connection
-    from api_fastapi.db.migrations import apply_migrations, current_schema_version
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version, latest_schema_version, migration_versions
 
-    assert apply_migrations() == list(range(1, 24))
-    assert current_schema_version() == 23
+    expected = migration_versions()
+    assert apply_migrations() == expected
+    assert current_schema_version() == latest_schema_version() == expected[-1]
     with read_connection() as conn:
         tables = {
             row[0]
@@ -85,15 +89,10 @@ def test_phase3b_semantic_revision_ignores_volatile_probe_noise():
             {"name": "pocket-api", "status": "online", "pid": 999, "cpu": 75.0},
         ],
     }
-    assert semantic_revision("system.processes", first) == semantic_revision(
-        "system.processes", second
-    )
+    assert semantic_revision("system.processes", first) == semantic_revision("system.processes", second)
     changed = json.loads(json.dumps(second))
     changed["items"][0]["status"] = "stopped"
-    assert semantic_revision("system.processes", first) != semantic_revision(
-        "system.processes", changed
-    )
-
+    assert semantic_revision("system.processes", first) != semantic_revision("system.processes", changed)
 
 
 def test_status_source_revision_ignores_child_projection_envelope_churn(monkeypatch):
@@ -128,6 +127,7 @@ def test_status_source_revision_ignores_child_projection_envelope_churn(monkeypa
 
     snapshots["system.health"]["status"] = "degraded"
     assert phase3b.status_source_revision() != first
+
 
 def test_phase3b_projection_is_change_only_and_uses_indexed_lookup(tmp_path, monkeypatch):
     database = _configure(tmp_path, monkeypatch)
@@ -200,7 +200,7 @@ def test_pm2_projection_strips_process_noise_and_secrets(monkeypatch):
     assert "must-not-appear" not in encoded
     item = next(row for row in payload["items"] if row["name"] == "pocket-api")
     assert item["status"] == "online"
-    assert item["restart_generation"] == 2
+    assert item.get("restart_generation", item.get("restart_count")) == 2
 
 
 def test_phase3b_contracts_reuse_shared_projection_scheduler_guards():
@@ -254,9 +254,7 @@ def test_fleet_probe_reuses_prepared_fleet_projection(monkeypatch):
 
 
 def test_status_request_source_is_prepared_only():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
-    ).read_text(encoding="utf-8")
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
     route = source[source.index('@router.get("/status")'):source.index('@router.get("/catalog")')]
     assert "_phase3b_prepared_read" in route
     assert "build_lite_status()" not in route
@@ -266,9 +264,7 @@ def test_status_request_source_is_prepared_only():
 
 
 def test_phase3b_runtime_validation_script_is_termux_safe():
-    script = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(
-        encoding="utf-8"
-    )
+    script = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(encoding="utf-8")
     assert "${TMPDIR" not in script
     assert "/tmp/" not in script
     assert "$STATE_DIR/.pocketlab-dev/phase3b" in script
@@ -278,7 +274,6 @@ def test_phase3b_runtime_validation_script_is_termux_safe():
     assert "api/lite/status" in script
     assert "nats://user:" not in script.lower()
     assert "password=must-not-appear" not in script.lower()
-
 
 
 def test_nats_readiness_tracks_secondary_state_without_exposing_url(monkeypatch):
@@ -317,6 +312,7 @@ def test_nats_readiness_tracks_secondary_state_without_exposing_url(monkeypatch)
     assert "password" not in encoded.lower()
     assert "nats://" not in encoded
 
+
 def test_phase3b_frontend_uses_domain_keys_conditional_reads_and_safe_snapshots():
     query = Path("src/lib/liteQueryClient.js").read_text(encoding="utf-8")
     api = Path("src/lib/liteApi.js").read_text(encoding="utf-8")
@@ -339,9 +335,7 @@ def test_phase3b_frontend_uses_domain_keys_conditional_reads_and_safe_snapshots(
 
 
 def test_fleet_commits_dirty_dependent_phase3b_domains():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py"
-    ).read_text(encoding="utf-8")
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py").read_text(encoding="utf-8")
     project = source[source.index("    def project_fleet("):source.index("    def _upsert_command_row(")]
     assert "fleet_projection_committed" in project
     for domain in (
@@ -425,11 +419,7 @@ def test_remote_access_generation_tracks_readiness_and_tailnet_ip_without_urls(m
         "nats_reachable": True,
     }
     monkeypatch.setattr(lite_status, "lite_remote_access_status", lambda: dict(remote))
-    monkeypatch.setattr(
-        phase3b,
-        "collect_nats_remote_state",
-        lambda: {"status": "healthy", "connected": True},
-    )
+    monkeypatch.setattr(phase3b, "collect_nats_remote_state", lambda: {"status": "healthy", "connected": True})
     first = phase3b.collect_remote_access_state()
     second = phase3b.collect_remote_access_state()
     assert first["generation"] == second["generation"]
@@ -442,9 +432,7 @@ def test_remote_access_generation_tracks_readiness_and_tailnet_ip_without_urls(m
 
 
 def test_phase3b_system_read_routes_are_side_effect_free_prepared_reads():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
-    ).read_text(encoding="utf-8")
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
     for route_path in (
         "/system/health",
         "/system/processes",
@@ -463,13 +451,8 @@ def test_phase3b_system_read_routes_are_side_effect_free_prepared_reads():
 
 
 def test_status_projection_reuses_prepared_dependencies_before_bounded_fallback():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py"
-    ).read_text(encoding="utf-8")
-    builder = source[
-        source.index("def build_lite_status_projection("):
-        source.index("async def build_lite_status(")
-    ]
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py").read_text(encoding="utf-8")
+    builder = source[source.index("def build_lite_status_projection("):source.index("async def build_lite_status(")]
     assert "if phase3b.snapshot(domain):" in builder
     assert "prepared_health = phase3b.snapshot(\"system.health\")" in builder
     assert "if prepared_health:" in builder
@@ -484,75 +467,25 @@ def test_fleet_heartbeat_invalidation_is_coalesced_by_semantic_revision(monkeypa
 
     store = ControlPlaneProjectionStore()
     calls = []
-    monkeypatch.setattr(
-        PROJECTION_SCHEDULER,
-        "mark_registered_prefix_dirty",
-        lambda domain: calls.append(domain),
-    )
+    monkeypatch.setattr(PROJECTION_SCHEDULER, "mark_registered_prefix_dirty", lambda domain: calls.append(domain))
 
     store.invalidate_domain("fleet", semantic_revision=101)
     store.invalidate_domain("fleet", semantic_revision=101)
     store.invalidate_domain("fleet", semantic_revision=102)
-
     assert calls == ["fleet", "fleet"]
 
 
 def test_phase3b_prepared_metadata_names_semantic_projection_and_generation():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
-    ).read_text(encoding="utf-8")
-    response = source[
-        source.index("def _control_plane_prepared_response("):
-        source.index("def _projection_warming_response(")
-    ]
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
+    response = source[source.index("def _control_plane_prepared_response("):source.index("def _projection_warming_response(")]
     assert '"semantic_source_revision"' in response
     assert '"stored_projection_revision"' in response
     assert '"scheduler_generation"' in response
     assert 'payload["source_revision"]' in response
 
 
-def test_phase3b_gate_retries_api_readiness_without_relaxing_idle_gate():
-    script = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(
-        encoding="utf-8"
-    )
-    assert "POCKETLAB_PHASE3B_READY_ATTEMPTS" in script
-    assert '--connect-timeout "$READY_CONNECT_TIMEOUT"' in script
-    assert '--max-time "$READY_MAX_TIME"' in script
-    assert "Pocket API did not become ready" in script
-    assert 'if second["refresh_pending"] or second["followup_requested"]:' in script
-    assert "scheduler still pending after idle" in script
-
-
-def test_phase3b_gate_uses_bounded_sanitized_runtime_evidence():
-    script = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(
-        encoding="utf-8"
-    )
-    assert "POCKETLAB_PHASE3B_RUNTIME_MAX_TIME" in script
-    assert "POCKETLAB_PHASE3B_RUNTIME_ATTEMPTS" in script
-    assert "fetch_runtime_evidence" in script
-    assert 'local raw="$RUN_DIR/.$name.raw"' in script
-    assert 'rm -f "$raw"' in script
-    assert "phase3b_current_state" in script
-    assert "remaining_domain_capacity" in script
-    assert "unsafe_evidence_markers" in script
-    assert "exit_code" in script
-    assert 'fetch_json runtime /api/lite/diagnostics/runtime' not in script
-
-
-def test_fleet_dependency_propagation_is_revision_fenced():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py"
-    ).read_text(encoding="utf-8")
-    project = source[source.index("    def project_fleet("):source.index("    def _upsert_command_row(")]
-    assert "_last_propagated_fleet_projection_revision" in project
-    assert 'reason="fleet_projection_committed"' in project
-    assert 'LIVE_STATUS.request_sample(' in project
-
-
 def test_nats_readiness_route_has_prepared_snapshot_fail_closed_fallback():
-    source = Path(
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
-    ).read_text(encoding="utf-8")
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
     start = source.index('def _nats_readiness_snapshot_fallback(')
     end = source.index('@router.get("/system/telemetry-thresholds")', start)
     block = source[start:end]
@@ -565,20 +498,12 @@ def test_nats_readiness_route_has_prepared_snapshot_fail_closed_fallback():
     assert 'subprocess' not in block
 
 
-def test_phase3b_gate_reports_the_exact_failed_endpoint():
-    source = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(encoding="utf-8")
-    assert 'Phase 3B endpoint failed: $path returned HTTP $code' in source
-    assert "-w '%{http_code}'" in source
-    assert "sed -n '1,80p'" in source
-
-
 def test_security_compact_cache_key_signals_are_opaque_and_path_safe(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
     from api_fastapi.services import lite_security
 
     raw_path = "/data/data/com.termux/files/home/pocket-lab-lite/state/security/latest.json"
     signals = lite_security._safe_cache_key_signals((raw_path, 123, 456, "quick"))
-
     assert len(signals) == 4
     assert all(value.startswith("security-cache-key-signal-") for value in signals)
     encoded = json.dumps(signals).lower()

@@ -6,8 +6,11 @@ from pathlib import Path
 
 import pytest
 
+from pocket_lab_test_utils import ensure_runtime_path
+
 
 def _module():
+    ensure_runtime_path()
     return importlib.import_module("api_fastapi.services.lite_database_recovery")
 
 
@@ -181,5 +184,6 @@ def test_recovery_ui_reads_authoritative_database_projection() -> None:
     )
     assert "data: databaseProtectionData" in source
     assert "...(databaseProtectionData || {})" in source
-    assert "refreshDatabaseProtection()" in source
-    assert "refresh={refreshRecovery}" in source
+    assert "pollingMode: 'slow'" in source
+    assert "staleTime: 45_000" in source
+    assert 'refresh={refreshSummary}' in source

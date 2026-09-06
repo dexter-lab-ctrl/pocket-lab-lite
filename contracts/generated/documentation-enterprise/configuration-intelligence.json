@@ -373,6 +373,29 @@
     },
     {
       "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "LITE_DEVICE_FACTS_RESOURCE_KEYS",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lib/liteDeviceFacts.js"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "frontend",
         "repository tooling"
       ],
@@ -2158,8 +2181,7 @@
     },
     {
       "affected_components": [
-        "frontend",
-        "repository tooling"
+        "frontend"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -2176,8 +2198,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "src/lib/liteRevisionSync.js",
-        "tests/backend/test_lite_revision_sync_n4_n5.py"
+        "src/lib/liteRevisionSync.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -2986,8 +3007,7 @@
       "secret": false,
       "source": [
         "src/lib/liteSafeSnapshots.js",
-        "tests/backend/test_lite_api.py",
-        "tests/backend/test_lite_security_f11_events_contract.py"
+        "tests/backend/test_lite_api.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -3012,8 +3032,7 @@
       "secret": false,
       "source": [
         "src/lib/liteSafeSnapshots.js",
-        "tests/backend/test_lite_api.py",
-        "tests/backend/test_lite_security_f11_events_contract.py"
+        "tests/backend/test_lite_api.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -3319,7 +3338,6 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "tests/backend/test_lite_security_f11_events_contract.py",
         "tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "tests/backend/test_lite_security_f3_summary_contract.py",
         "tests/backend/test_lite_security_f7_split_read_contract.py",
@@ -4916,7 +4934,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
         "pocket-lab-final-structure/runtime/core/release_auto_update.py",
         "scripts/dev/check-lite-release-validation-server-phone.sh",
-        "tests/backend/test_lite_native_release.py"
+        "tests/backend/conftest.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5331,6 +5349,29 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_COMPONENT_ROLE",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -8400,6 +8441,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_release_process_isolation.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -11407,6 +11449,7 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_lite_native_release.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -11435,6 +11478,7 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_lite_native_release.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -11482,6 +11526,29 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_recovery_subprojections.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_LITE_RELEASE_",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "tests/backend/conftest.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -12961,6 +13028,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_lite_native_release.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -12992,6 +13060,30 @@
     },
     {
       "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_LITE_THEME",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        ".storybook/preview.jsx",
+        "storybook-static/assets/preview-C-0KJ0Lt.js"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "FastAPI",
         "repository tooling"
       ],
@@ -13011,6 +13103,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_lite_native_release.py",
         "tests/backend/test_release_process_isolation.py"
       ],
@@ -15010,11 +15103,11 @@
       "secret": false,
       "source": [
         ".storybook/preview.jsx",
+        "src/mocks/browser.js",
         "src/mocks/handlers.js",
         "src/mocks/identityRulesP1Handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-B13Tll-V.js",
-        "tests/e2e/lite-test-helpers.ts"
+        "storybook-static/assets/preview-C-0KJ0Lt.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -16507,8 +16600,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "scripts/dev/check-lite-phase3b-projections.sh",
-        "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+        "scripts/dev/check-lite-phase3b-projections.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -16577,8 +16669,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "scripts/dev/check-lite-phase3b-projections.sh",
-        "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+        "scripts/dev/check-lite-phase3b-projections.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -16601,8 +16692,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "scripts/dev/check-lite-phase3b-projections.sh",
-        "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
+        "scripts/dev/check-lite-phase3b-projections.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17219,11 +17309,11 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/main.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
-        "tests/backend/test_lite_native_release.py"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17346,6 +17436,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_lite_projection_semantic_hardening.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -17563,6 +17654,29 @@
       "secret": false,
       "source": [
         "scripts/dev/check-lite-control-plane-cold-projections.sh"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_RELEASE_",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "tests/backend/conftest.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18361,6 +18475,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "tests/backend/conftest.py",
         "tests/backend/test_lite_native_release.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -20287,9 +20402,33 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
         "tests/backend/test_lite_device_system_profile.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SERVICE_CATEGORY",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

@@ -35,6 +35,7 @@ def _configure(generator):
     base_metadata = generator.metadata
     base_fingerprint = generator.fingerprint
     base_discovered_reason_codes = generator.discovered_reason_codes
+    base_release_outputs = generator.release_outputs
 
     def merged_metadata() -> dict[str, Any]:
         data = dict(base_metadata())
@@ -89,9 +90,35 @@ def _configure(generator):
                 values.add(first.value)
         return values
 
+    class ReleaseCatalogRoot(type(generator.ROOT)):
+        """Repository root view that excludes local runtime scratch artifacts."""
+
+        def glob(self, pattern):
+            for path in super().glob(pattern):
+                try:
+                    relative = path.relative_to(self)
+                except ValueError:
+                    continue
+                if ".pocketlab-dev" in relative.parts:
+                    continue
+                yield path
+
+    release_catalog_root = ReleaseCatalogRoot(generator.ROOT)
+
+    def release_outputs_without_local_runtime() -> dict[Path, str]:
+        """Build release docs only from repository content, never local test/runtime evidence."""
+        original_root = generator.ROOT
+        generator.ROOT = release_catalog_root
+        try:
+            return base_release_outputs()
+        finally:
+            generator.ROOT = original_root
+
     generator.metadata = merged_metadata
     generator.fingerprint = fingerprint_with_supplement
     generator.discovered_reason_codes = discovered_reason_codes_with_source_sync
+    generator.release_outputs = release_outputs_without_local_runtime
+    generator.SECTION_BUILDERS["release"] = release_outputs_without_local_runtime
     return generator
 
 

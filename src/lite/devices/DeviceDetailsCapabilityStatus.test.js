@@ -9,6 +9,10 @@ describe('device capability row labels', () => {
       'Verification pending',
     );
     expect(capabilityStatusLabel('unavailable')).toBe('Unavailable');
+    expect(capabilityStatusLabel('unsupported')).toBe('Unsupported');
+    expect(capabilityStatusLabel('stale')).toBe('Stale');
+    expect(capabilityStatusLabel('blocked')).toBe('Blocked');
+    expect(capabilityStatusLabel('not_applicable')).toBe('Not applicable');
     expect(
       capabilityStatusLabel(
         'not_advertised',

@@ -37,14 +37,14 @@ def load_module(name: str, path: Path):
     return module
 
 
-def test_runtime_schemas_and_promoted_unavailable_baseline_are_valid():
+def test_runtime_schemas_and_promoted_baseline_are_valid():
     raw = read_json(FIXTURE_DIR / "raw-capture-a.json")
     validate_json(raw, RAW_SCHEMA_PATH)
     sanitized = normalize_capture(raw)
     validate_json(sanitized, SANITIZED_SCHEMA_PATH)
     baseline = read_json(ROOT / "architecture/runtime-baselines/server-phone.json")
     validate_json(baseline, BASELINE_SCHEMA_PATH)
-    assert baseline["verification"]["runtime_verification_state"] == "unavailable"
+    assert baseline["verification"]["runtime_verification_state"] == "verified"
     assert baseline["semantic_fingerprint"]
 
 
@@ -164,9 +164,9 @@ def test_taskfile_dependency_order_live_opt_in_and_mkdocs_navigation():
     assert "LITE_RUNTIME_PROMOTE=1" in (RUNTIME_DIR / "promote_termux_runtime.py").read_text()
     mkdocs = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
     for page in (
-        "generated/development/runtime-verification.md",
+        "generated/production/android-termux.md",
         "generated/production/android-termux-runtime.md",
-        "generated/production/services-pm2-runtime.md",
+        "generated/production/services-pm2.md",
         "generated/production/remote-access-runtime.md",
     ):
         assert page in mkdocs
@@ -178,7 +178,6 @@ def test_generator_depends_only_on_promoted_baseline_and_is_current(tmp_path):
     second = generator.build_outputs()
     assert first == second
     assert generator.check_outputs(first) == 0
-    # A volatile local capture must not alter tracked generation.
     local = ROOT / ".pocketlab-dev/runtime-captures/test/sanitized"
     local.mkdir(parents=True, exist_ok=True)
     (local / "termux-runtime.json").write_text((FIXTURE_DIR / "raw-capture-a.json").read_text())
@@ -191,15 +190,20 @@ def test_generator_depends_only_on_promoted_baseline_and_is_current(tmp_path):
         assert not forbidden_categories(content), path
 
 
-def test_runtime_architecture_verifier_never_creates_components_and_reports_unavailable():
+def test_runtime_architecture_verifier_projects_promoted_evidence_without_creating_components():
     verifier = load_module("runtime_architecture_verifier_test", RUNTIME_DIR / "runtime_architecture_verifier.py")
     result = verifier.verify_runtime_components()
     model = json.loads((ROOT / "architecture/metadata/pocket-lab-architecture.json").read_text())
     assert result["canonical_component_count"] == len(model["components"])
     assert {item["component_id"] for item in result["components"]} == set(model["components"])
+    assert result["baseline_state"] == "verified"
     selected = [item for item in result["components"] if item["runtime_selector"]]
     assert selected
-    assert all(item["classification"] == "runtime-unavailable" for item in selected)
+    required_ids = {component_id for component_id, (_collection, _item_id, required) in verifier.SELECTORS.items() if required}
+    required = [item for item in selected if item["component_id"] in required_ids]
+    assert required
+    assert all(item["classification"] == "source-and-runtime-verified" for item in required)
+    assert all(item["runtime_evidence_state"] == "verified" for item in required)
 
 
 def test_promotion_requires_opt_in_and_failure_preserves_previous_baseline(tmp_path, monkeypatch):
@@ -223,11 +227,11 @@ def test_promotion_requires_opt_in_and_failure_preserves_previous_baseline(tmp_p
     assert baseline_path.read_text() == previous
 
 
-
 def test_promotion_mismatch_gate_includes_non_service_runtime_relationships():
     candidate = normalize_capture(read_json(FIXTURE_DIR / "raw-capture-a.json"))
     candidate["verification"]["unresolved_mismatches"] = ["routes.api-lite: required route mismatch"]
     assert "routes.api-lite: required route mismatch" in runtime_mismatches(candidate)
+
 
 def test_cleanup_is_idempotent_and_removes_raw_layers(tmp_path, monkeypatch):
     promote = load_module("termux_runtime_clean_test", RUNTIME_DIR / "promote_termux_runtime.py")
@@ -422,16 +426,7 @@ def _nats_fixture(**updates):
 
 
 def test_nats_netstat_invisible_tcp_and_all_interface_config_still_verify():
-    raw = _nats_fixture(
-        listener_tool_visible=False,
-        local_listener_reachable=True,
-        listener_present=True,
-        expected_client_port_present=True,
-        fleet_listener_configured=True,
-        fleet_connectivity_observed=True,
-        bind_scope="private-or-all",
-        state="ok",
-    )
+    raw = _nats_fixture(listener_tool_visible=False, local_listener_reachable=True, listener_present=True, expected_client_port_present=True, fleet_listener_configured=True, fleet_connectivity_observed=True, bind_scope="private-or-all", state="ok")
     normalized = normalize_capture(raw)
     assert normalized["messaging"]["client_listener_presence"] == "present"
     assert normalized["messaging"]["bind_scope"] == "private-or-all"
@@ -440,48 +435,21 @@ def test_nats_netstat_invisible_tcp_and_all_interface_config_still_verify():
 
 
 def test_nats_fleet_api_unavailable_does_not_override_local_and_config_truth():
-    raw = _nats_fixture(
-        listener_tool_visible=False,
-        local_listener_reachable=True,
-        listener_present=True,
-        expected_client_port_present=True,
-        fleet_listener_configured=True,
-        fleet_connectivity_observed=None,
-        bind_scope="private-or-all",
-        state="ok",
-    )
+    raw = _nats_fixture(listener_tool_visible=False, local_listener_reachable=True, listener_present=True, expected_client_port_present=True, fleet_listener_configured=True, fleet_connectivity_observed=None, bind_scope="private-or-all", state="ok")
     normalized = normalize_capture(raw)
     assert normalized["verification"]["runtime_verification_state"] == "verified"
     assert not runtime_mismatches(normalized)
 
 
 def test_nats_loopback_only_config_fails_closed_for_fleet_listener():
-    raw = _nats_fixture(
-        listener_tool_visible=False,
-        local_listener_reachable=True,
-        listener_present=True,
-        expected_client_port_present=False,
-        fleet_listener_configured=False,
-        fleet_connectivity_observed=False,
-        bind_scope="loopback",
-        state="partial",
-    )
+    raw = _nats_fixture(listener_tool_visible=False, local_listener_reachable=True, listener_present=True, expected_client_port_present=False, fleet_listener_configured=False, fleet_connectivity_observed=False, bind_scope="loopback", state="partial")
     normalized = normalize_capture(raw)
     assert normalized["verification"]["runtime_verification_state"] == "mismatch"
     assert any("fleet listener not verified" in item for item in runtime_mismatches(normalized))
 
 
 def test_nats_tcp_failure_remains_missing_even_when_config_claims_fleet_bind():
-    raw = _nats_fixture(
-        listener_tool_visible=False,
-        local_listener_reachable=False,
-        listener_present=False,
-        expected_client_port_present=False,
-        fleet_listener_configured=True,
-        fleet_connectivity_observed=True,
-        bind_scope="private-or-all",
-        state="partial",
-    )
+    raw = _nats_fixture(listener_tool_visible=False, local_listener_reachable=False, listener_present=False, expected_client_port_present=False, fleet_listener_configured=True, fleet_connectivity_observed=True, bind_scope="private-or-all", state="partial")
     normalized = normalize_capture(raw)
     assert normalized["services"][[item["id"] for item in normalized["services"]].index("nats")]["presence"] == "missing"
     assert any("services.nats" in item for item in runtime_mismatches(normalized))
@@ -490,12 +458,7 @@ def test_nats_tcp_failure_remains_missing_even_when_config_claims_fleet_bind():
 def test_nats_capture_schema_contains_only_sanitized_boolean_observations():
     schema = read_json(RAW_SCHEMA_PATH)
     nats = schema["$defs"]["nats"]
-    for field in (
-        "listener_tool_visible",
-        "local_listener_reachable",
-        "fleet_listener_configured",
-        "fleet_connectivity_observed",
-    ):
+    for field in ("listener_tool_visible", "local_listener_reachable", "fleet_listener_configured", "fleet_connectivity_observed"):
         assert field in nats["required"]
     forbidden = {"raw_config", "fleet_payload", "address", "hostname", "credentials", "authorization"}
     assert not forbidden.intersection(nats["properties"])

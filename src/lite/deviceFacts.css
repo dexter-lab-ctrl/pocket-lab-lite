@@ -1,0 +1,25 @@
+/* Shared Device Facts presentation states. The parent theme owns global shell
+   colors; these rules keep the facts primitives legible in both supported themes. */
+.theme-pocket-lite-dark [data-device-fact-resource],
+.theme-pocket-lite-dark [data-device-fact-capabilities],
+.theme-pocket-lite-dark [data-device-fact-services],
+.theme-pocket-lite-dark [data-device-fact-software] {
+  color-scheme: dark;
+}
+
+.theme-pocket-lite-dark .lite-device-fact-freshness,
+.theme-pocket-lite-dark [data-device-fact-software] dd,
+.theme-pocket-lite-dark [data-device-fact-software] dt {
+  color: #cbd5e1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-device-fact-resource],
+  [data-device-fact-capabilities],
+  [data-device-fact-services],
+  [data-device-fact-software] {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

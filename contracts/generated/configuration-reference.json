@@ -2023,6 +2023,24 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_COMPONENT_ROLE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_CONTROL_PROJECTION_START_DELAY_SECONDS",
       "production": true,
       "required": false,
@@ -10031,6 +10049,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
         "scripts/lite/device-lifecycle-reconcile.py"
@@ -11026,6 +11045,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/main.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py",
@@ -13366,10 +13386,29 @@
       "runtime_readers": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
       ],
       "safe_default": "pocket-lab-lite-server",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SERVICE_CATEGORY",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -15691,7 +15730,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "2a1b8364c17839240162b3af7f16747f1a596b9ef0703136c6772053918195c9",
+    "aggregate_fingerprint": "1b4aeed1daa2d6c95405570b42e1d5d08103ea08246ce6a71042cbbe769b296d",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15702,20 +15741,20 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py": "870e6814c70b5eb7da3c11c8dc994dd89748be67ab48c121ff5c07415b8d6b3d",
       "pocket-lab-final-structure/runtime/agents/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/agents/lite_system_profile.py": "559c1f44fe21f63cc9da0f4978d01fea67cd9ee2c436633f28ac3b0d7aff7b86",
       "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py": "a07f4bbb091b0b6d6bdc7a4c3c4d32d3c78749e1f2fb510d335f59ba6a6eb2f1",
-      "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py": "dbfdb03af3192695e4285dcc27bb787d5f1ade615395dd5e0317e0280b34b465",
+      "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py": "8ec25a581a938bd6ddb04e864223430b23061a33b8be1d2ea84d9dbc15174052",
       "pocket-lab-final-structure/runtime/api_fastapi/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/__init__.py": "526884a92d46e87f3a6c5ece60852976c4bf968476cf5e37767a345540fea946",
       "pocket-lab-final-structure/runtime/api_fastapi/db/connection.py": "22f27cd617d3c322dff1c6ab05614d090759f74de7c81660b9d9cfbc36abf7fb",
       "pocket-lab-final-structure/runtime/api_fastapi/db/health.py": "0d930da171f13a4ae9a088e4c58806c2dc9b8e75c07e5570b9c1c5a02ac45e27",
-      "pocket-lab-final-structure/runtime/api_fastapi/db/migrations.py": "2601d633040192122521504d1b03a8b4cbb34e2606ece615ed8bfae88daa2b39",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/migrations.py": "ca79cb76d56fdc5ad111cb78934de3cc7538821d9a5d17662607222b25888189",
       "pocket-lab-final-structure/runtime/api_fastapi/db/runtime.py": "dc2df8204ba55e62d5e4804ad2833c8b275e23923e751ad6c01bf2ef95a869fb",
       "pocket-lab-final-structure/runtime/api_fastapi/deps.py": "bba31a8f661db6816c89b1e9243699a0424d87cd0362cd99dbdabd0f79966e3b",
-      "pocket-lab-final-structure/runtime/api_fastapi/main.py": "a410103ef8bf1b915009dd1ad0af1b7026f6c38ed88712fb6041cf254d2e044f",
+      "pocket-lab-final-structure/runtime/api_fastapi/main.py": "36a868396c8954fe2c367a8f04ddc03852decbbb69f7ea141b8b5c63adcbdf85",
       "pocket-lab-final-structure/runtime/api_fastapi/openapi_contracts.py": "7e3bc3864e5390163d4be35978b49b59390d24141cf5ff5a319628ccbad23593",
       "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py": "b35c9a2bd7b079d3d8630bedf3f78cbd7b13785ed2a3e7114bf4b12bd549f961",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
@@ -15763,6 +15802,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "16171c44e96581755494034508fc1f0a69a118ed2166e83431bc14d662c80aa8",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_manifest.py": "8027122787a39ba19f1e2b6d3ece1a050051dec0a7fac590f9d453581c1e3d7b",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_policy.py": "c104b89164febac3659923f9b7acfd2654e6564d9db1646fca7375f1c10010b3",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_capability_projection.py": "10ce833ab9dc17998352b96d4a3bf1a0858d31c8971e9f3a5d4ea069a3fad97f",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py": "d1c5c1a77c4bd9c488ac013cf0a263733ab809497aba20a3985646f726aebb47",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py": "b886926e70709eefc8cd80b35be58b6d559131d7984b6b3335b611164bd80221",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py": "517945a1b3f36ff9d54892edf97e501869012a2ceb1c0b52d9b00d97288c239c",
@@ -15770,8 +15810,12 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_database_recovery.py": "01995da0c893eeb20f865528119ea5671e6565199bc2542635b910244f599a67",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py": "e1918dd7f2e1098bf188c64e837add226df6435701ef2799d1739290f78df4d4",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py": "fc7e7986e493bb50be088dac214d6d317dad5014544f2886c19e013cd13a78ee",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_fact_store_extension.py": "3d2f4840569815e796c92a5d1d470df5087a2e7d438bf85a4617a17ff360cb30",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py": "5a0f3d71275feedd5d3968e4c941b007d02962cb8dcac6e2a2dce1398a9b9e59",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_health.py": "190b1d35fa3d4411a9c838f64e9ad3282e04d3e5c2ea1aefb72e698b704d527e",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_recovery.py": "8995cfad466358ed1c522e46f503f22c0ea12ada20f18cb2edeb1384a26dc504",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_recovery.py": "bbe56acae265ea497a8534e3e93de1ddd8b3471718cffcc0a4685fa69e015024",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py": "4acd4c9e24dc02049f7c924e91ac9ac3dbebcd2d43178ae85239a7a0049192b3",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_projection.py": "344cb6d1e10044a2b8a3d523b055db5d0334b49c9368e2df50e1caf1e13bdaf4",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py": "9b0ba3cf81acd063cd7db392689314a1c9cdc6edcd14703271bb92bde7186700",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_governance.py": "1fc4f3227787dc795c3b53ede69650d5c6de8b2bcf5481c4cf955889c66b5a1d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py": "41e7b61ed086d90aeac20f9deeef660d70a4dcfe80c147d5d3775933afca2bcc",
@@ -15794,6 +15838,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_contract.py": "e0d0e3ecf8e9bb9c4cf1806fb565c9efefd5a79ed7c5cdaadd66fb7e1436739e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py": "d582006b8a4fc9e5123952e3e2f3334c8661d1720f54934e8c434daf95cb0d7e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_transaction.py": "d0a294500be7a76d0d4ec8ebd1e6b076eedc45264146cce754892b6568285b31",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py": "712eecd5baf85fc4deab04cb2aedc65b3fa698c2173d88c37979dc118e6499fa",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_safe_read_headers.py": "f8daa3d6fb7092a999bc5d2a450ebaf2c8a45850834fd60f7c9b8efdfa4f034b",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py": "7cc0e25e120d19c2131ece46ef672323e89b78f160d950044884288637337b8c",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_evidence.py": "3c5a4c9bc7ede905706fe77d781528e46462e19c58906cdd142d17edc2f2a907",
@@ -15830,7 +15875,7 @@
       "pocket-lab-final-structure/runtime/core/artifacts/__init__.py": "1f391af9b3dbe3f4dfc80c9f43af97494c479b8317bf2f06a74afac7be61b64e",
       "pocket-lab-final-structure/runtime/core/artifacts/oras_store.py": "c0175141f20960fa01d97372a7ac1766d2df18c4c2e6e543b062069a13f21e56",
       "pocket-lab-final-structure/runtime/core/contracts.py": "e39e3cfde23f56778b31b18a0c75e79a77e8006901061f53c94458c6a1e9a51f",
-      "pocket-lab-final-structure/runtime/core/control_plane_core.py": "ff1708cc6da8af93cc634cffaf65c0a234ad671fafa76375ad71139cf34902fd",
+      "pocket-lab-final-structure/runtime/core/control_plane_core.py": "e8b24a68e2e1bd5a319a1de1ad1ddcea21b18f1b84c7e7439c0912b1f52f47b0",
       "pocket-lab-final-structure/runtime/core/git/__init__.py": "1f391af9b3dbe3f4dfc80c9f43af97494c479b8317bf2f06a74afac7be61b64e",
       "pocket-lab-final-structure/runtime/core/git/dulwich_repo.py": "60b3f5a94fa584404e0fab01cf770795554da5e374573cde0fed07ebd18b3e36",
       "pocket-lab-final-structure/runtime/core/operations/__init__.py": "d4be4c70b0bc169f02ab003b03a8af24494d867e71cfa8d686c0e77b7bc8401d",
@@ -15839,6 +15884,7 @@
       "pocket-lab-final-structure/runtime/core/operations/taskfile.py": "7b32745b2a1ebcf927607b8c198f600eb948e98e4d9afd2a467c89020ab82c0f",
       "pocket-lab-final-structure/runtime/core/release_auto_update.py": "7e9ab5fa361e3ceaa867872f565c7e17378f71cfb992abf825daf53d18338a40",
       "pocket-lab-final-structure/runtime/core/release_workflow.py": "4783efd02d6b1a89d87a64b40e4da3a8c0e2f0ba340b6757f18e7dce66036dbb",
+      "pocket-lab-final-structure/runtime/core/resource_telemetry.py": "271d200c49505a36367a05b26f3d7a5982047687e6c6184eb990b93d966c99aa",
       "pocket-lab-final-structure/runtime/core/runbooks/__init__.py": "d6a306e430baa37dc507c73d586735628e6ca64e0d4c1a2b9cc6c81b331828dd",
       "pocket-lab-final-structure/runtime/core/runbooks/engine.py": "1d2ec385034c92b604c72ddb243fbf0cadbcb4a3f1766318d7630b30c0a68f0d",
       "pocket-lab-final-structure/runtime/core/runbooks/models.py": "bebed9843da1801c2e72b9e24d279b5215815ee7960313f008b19609169227c2",

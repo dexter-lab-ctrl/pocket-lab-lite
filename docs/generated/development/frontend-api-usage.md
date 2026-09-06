@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: d5ab3d6fd28595c518fe97bc7256209775bdd456a643068fafe65a68281d53eb
+source_fingerprint: ca128a8f3158ad4246ecef51275b024391361b208587d904974c7b26ccb56003
 schema_revision: 1
 validation_status: generated
 ---
@@ -101,6 +101,12 @@ validation_status: generated
 | src/lite/security/SecurityHistoryLazy.jsx | liteApi.securityHistory | GET | `/api/lite/security/history` | query | no | static |
 | src/lite/security/securityPreload.js | liteApi.securityDetails | GET | `/api/lite/security` | query | no | static |
 | src/lite/security/securityPreload.js | liteApi.securitySummary | GET | `/api/lite/security/summary` | query | no | static |
+| src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/devices/:deviceId` | mock | yes | static |
+| src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/devices/:deviceId/health` | mock | yes | static |
+| src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/devices/:deviceId/health/history` | mock | yes | static |
+| src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/devices/:deviceId/history` | mock | yes | static |
+| src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/fleet` | mock | yes | static |
+| src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/lifecycle` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/lifecycle/photoprism` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/photoprism/actions` | mock | yes | static |

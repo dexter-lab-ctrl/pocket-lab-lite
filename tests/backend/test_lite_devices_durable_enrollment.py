@@ -9,25 +9,14 @@ import pytest
 from pocket_lab_test_utils import ensure_runtime_path, prepare_sqlite_test_database
 
 
-@pytest.fixture(autouse=True)
-def _quiesce_runtime_after_test():
-    yield
-    from api_fastapi.db.connection import reset_sqlite_path_cache
-    from api_fastapi.db.runtime import SQLITE_READS
-    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
-
-    assert PROJECTION_SCHEDULER.quiesce_for_database_switch(timeout_seconds=5.0)
-    reset_sqlite_path_cache()
-    SQLITE_READS.invalidate()
-
-
 def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     ensure_runtime_path()
     target = tmp_path / "state" / "pocketlab-lite.sqlite3"
     prepare_sqlite_test_database(target, monkeypatch)
-    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version, latest_schema_version
 
-    assert apply_migrations() == list(range(1, 24))
+    apply_migrations()
+    assert current_schema_version() == latest_schema_version()
     return target
 
 
@@ -192,50 +181,37 @@ def test_explicit_retirement_hides_active_device_and_retains_history(tmp_path, m
     assert _row(database, "SELECT * FROM device_enrollment_registry WHERE device_id='phone-two'")["removal_status"] == "removed"
 
 
-
 def test_full_disconnect_restart_reconnect_and_explicit_removal_acceptance_sequence(tmp_path, monkeypatch):
     database = _configure(tmp_path, monkeypatch)
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
-    # Enroll and observe the device online.
     store = ControlPlaneProjectionStore()
     store.project_fleet(_online_payload())
     online = next(item for item in store.fleet_projection_snapshot()["devices"] if item["id"] == "phone-two")
     assert online["connection"] == "online"
 
-    # Tailscale/NATS discovery disappears beyond the stale boundary. Enrollment
-    # remains durable and a new API/worker process instance still reads it.
     store.project_fleet({
         "status": "degraded", "devices": [], "remote_access": {"ready": False},
         "updated_at": "2026-07-30T09:00:00Z",
     })
     after_api_restart = ControlPlaneProjectionStore()
-    offline = next(
-        item for item in after_api_restart.fleet_projection_snapshot()["devices"]
-        if item["id"] == "phone-two"
-    )
+    offline = next(item for item in after_api_restart.fleet_projection_snapshot()["devices"] if item["id"] == "phone-two")
     assert offline["connection"] == "offline"
     assert offline["staleness_state"] == "stale"
     assert offline["command_delivery_status"] == "undeliverable"
 
-    # A fresh process after a simulated worker/server restart sees the same row.
     after_worker_restart = ControlPlaneProjectionStore()
     assert [item["id"] for item in after_worker_restart.durable_enrolled_devices()] == ["phone-two"]
 
-    # The same canonical identity reconnects without creating a duplicate record.
     reconnect = _online_payload()
     reconnect["devices"][0]["last_seen_at"] = "2026-07-30T09:05:00Z"
     reconnect["devices"][0]["agent_version"] = "1.0.2"
     reconnect["devices"][0]["system_profile"]["agent_version"] = "1.0.1"
     after_worker_restart.project_fleet(reconnect)
-    reconnected = next(
-        item for item in after_worker_restart.fleet_projection_snapshot()["devices"]
-        if item["id"] == "phone-two"
-    )
+    reconnected = next(item for item in after_worker_restart.fleet_projection_snapshot()["devices"] if item["id"] == "phone-two")
     assert reconnected["connection"] == "online"
     assert _row(database, "SELECT COUNT(*) AS count FROM device_enrollment_registry")["count"] == 1
 
-    # A second disconnect still retains history until an explicit guarded removal.
     after_worker_restart.project_fleet({
         "status": "degraded", "devices": [], "remote_access": {"ready": False},
         "updated_at": "2026-07-30T09:10:00Z",
@@ -257,9 +233,7 @@ def test_protected_server_host_registry_is_non_removable(tmp_path, monkeypatch):
 
     store = ControlPlaneProjectionStore()
     payload = _online_payload(device_id="pocket-lab-lite-server", name="Pocket Lab Lite Server")
-    payload["devices"][0].update({
-        "role": "server_host", "is_current": True, "protected_server_host": True,
-    })
+    payload["devices"][0].update({"role": "server_host", "is_current": True, "protected_server_host": True})
     store.project_fleet(payload)
 
     with pytest.raises(DeviceAwarenessError, match="protected server host"):
@@ -268,6 +242,7 @@ def test_protected_server_host_registry_is_non_removable(tmp_path, monkeypatch):
             assessment_revision="protected", awareness_revision=1,
         )
     assert store.durable_enrolled_devices()[0]["protected_server_host"] is True
+
 
 def test_separator_insensitive_duplicate_and_retired_identity_reuse_fail_closed(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
@@ -287,8 +262,9 @@ def test_frontend_device_count_and_role_contracts_are_connection_based():
     view_models = (repo / "src/lib/liteViewModels.js").read_text(encoding="utf-8")
     ui = (repo / "src/lite/LiteUi.jsx").read_text(encoding="utf-8")
 
-    assert "String(device?.connection || '').toLowerCase() === 'online'" in devices
-    assert "String(device?.connection || '').toLowerCase() === 'online'" in card
+    assert "const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;" in devices
+    assert "const presentation = canonicalDevicePresentation(device);" in card
+    assert "const online = !savedStateOnly && presentation.state === 'online';" in card
     assert "normalizeDeviceStatus(device.connection) === 'online'" in view_models
     assert "const devices = Array.isArray(payload?.devices) ? payload.devices : [];" in view_models
     assert "if (String(value || '').toLowerCase() === 'server_host') return 'Server host';" in ui
@@ -347,9 +323,7 @@ def test_protected_host_uses_prepared_local_process_truth_only(monkeypatch):
         },
         "system.supervisor": {
             "updated_at": "2026-07-30T10:00:00Z",
-            "items": [{
-                "device_id": "pocket-lab-lite-server", "supervisor_status": "healthy"
-            }],
+            "items": [{"device_id": "pocket-lab-lite-server", "supervisor_status": "healthy"}],
         },
     }
     monkeypatch.setattr(phase3b, "snapshot", lambda domain: snapshots.get(domain, {}))

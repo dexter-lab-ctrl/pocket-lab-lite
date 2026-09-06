@@ -81,6 +81,7 @@ Owns network, download, verification, staging, apply, and rollback work outside 
 - depends_on: `release_runtime_projection`
 - protected_by: `Messaging and execution boundary`
 - protected_by: `Messaging and execution boundary`
+- verified_by: `tests/backend/conftest.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_enterprise_completion.py`

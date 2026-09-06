@@ -1,7 +1,8 @@
 import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import '../src/index.css';
-import { startPocketLabMocks } from '../src/mocks/browser.js';
+import { startPocketLabMocks, worker } from '../src/mocks/browser.js';
+import { deviceFactsScenarioHandlers } from '../src/mocks/deviceFactsScenarios.js';
 import { clearOfflineSafeSnapshots } from '../src/lib/liteOfflineDb.js';
 import { liteQueryClient } from '../src/lib/liteQueryClient.js';
 import { useLiteUiStore } from '../src/stores/liteUiStore.js';
@@ -41,13 +42,23 @@ export const loaders = [async (context) => {
   await clearOfflineSafeSnapshots().catch(() => null);
   const scenario = context.parameters?.liteScenario || 'healthy';
   const screenId = context.parameters?.liteScreen || 'home';
+  const liteTheme = context.parameters?.liteTheme || 'daylight';
+  const textScale = Number(context.parameters?.liteTextScale || 1);
   localStorage.setItem('POCKETLAB_MOCK_SCENARIO', scenario);
+  localStorage.setItem('POCKETLAB_LITE_THEME', liteTheme === 'dark' ? 'dark' : 'daylight');
+  document.documentElement.dataset.pocketlabLiteTheme = liteTheme === 'dark' ? 'dark' : 'daylight';
+  document.documentElement.classList.toggle('theme-pocket-lite-dark', liteTheme === 'dark');
+  document.documentElement.classList.toggle('theme-pocket-lite-daylight', liteTheme !== 'dark');
+  document.documentElement.style.fontSize = textScale >= 2 ? '200%' : '';
+  worker.resetHandlers();
+  const scenarioHandlers = deviceFactsScenarioHandlers(scenario);
+  if (scenarioHandlers.length) worker.use(...scenarioHandlers);
   useLiteUiStore.getState().setActiveTab(screenId);
   document.documentElement.dataset.liteStorybook = 'true';
   document.documentElement.style.setProperty('scroll-behavior', 'auto');
   if (context.globals?.reducedMotion !== false) document.documentElement.classList.add('lite-reduced-motion');
   else document.documentElement.classList.remove('lite-reduced-motion');
-  return { scenario, screenId };
+  return { scenario, screenId, liteTheme, textScale };
 }];
 
 export const decorators = [

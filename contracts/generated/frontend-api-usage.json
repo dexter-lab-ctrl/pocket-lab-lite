@@ -1110,6 +1110,84 @@
       {
         "dynamic": false,
         "import_chain": [
+          "src/mocks/deviceFactsScenarios.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/devices/:deviceId",
+        "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/deviceFactsScenarios.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/devices/:deviceId/health",
+        "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/deviceFactsScenarios.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/devices/:deviceId/health/history",
+        "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/deviceFactsScenarios.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/devices/:deviceId/history",
+        "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/deviceFactsScenarios.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/fleet",
+        "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/deviceFactsScenarios.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/status",
+        "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
           "src/mocks/handlers.js"
         ],
         "method": "GET",
@@ -2781,7 +2859,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "45b2f0248d3d7729666aa9e41b87d37cb54d6afbe2deddc88f385413bc706b24",
+    "aggregate_fingerprint": "18cf121016588f8d556dfd2ce93aacd4faede9a737cb2eb2ff200f6ecd341a94",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2793,7 +2871,7 @@
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3178f08648c1f1da22cc460178a8337f9a4833472d543f792753bdde2b7b43a6",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353",
       "src/lib/liteApi.js": "cef8ecf7027611150c3f1bb20ddbf9513262fb4821a4aa5b93e233841000f553",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
@@ -2801,7 +2879,7 @@
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
       "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
       "src/lite/LiteDevices.jsx": "7b524399f20d25c7638ffcdcb3646bda88183ccf3099018ee5b453289572b169",
-      "src/lite/LiteDevices.stories.jsx": "52645408dc21a3db93149aeace0f42b18763758c55684829093d6b2ed026a05a",
+      "src/lite/LiteDevices.stories.jsx": "09ef4d871905c5e099a9d4086a829c381bf070b38e281fd9f5cdc9165de8786b",
       "src/lite/LiteHelp.jsx": "2b57e1055641dc99b7b80af9e8e32cc6557de599b1c816a03e4d857b149f8527",
       "src/lite/LiteHome.jsx": "0e33e317a20fc7c23f7fcc1d06be1f37c68398737a2d16b3a455c671caa71a99",
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",

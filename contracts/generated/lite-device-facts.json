@@ -1,0 +1,193 @@
+{
+  "api_surfaces": [
+    "/api/lite/status",
+    "/api/lite/fleet",
+    "/api/lite/devices/{device_id}",
+    "/api/lite/devices/{device_id}/health"
+  ],
+  "capability_registry": [
+    {
+      "category": "execution",
+      "id": "host_apps",
+      "label": "Can host apps",
+      "schema_version": 1,
+      "verification_strategy": "hosted_app_runtime"
+    },
+    {
+      "category": "recovery",
+      "id": "store_backups",
+      "label": "Can store backups",
+      "schema_version": 1,
+      "verification_strategy": "storage_readiness"
+    },
+    {
+      "category": "execution",
+      "id": "run_safety_checks",
+      "label": "Runs safety checks",
+      "schema_version": 1,
+      "verification_strategy": "security_execution"
+    },
+    {
+      "category": "execution",
+      "id": "receive_commands",
+      "label": "Receives commands",
+      "schema_version": 1,
+      "verification_strategy": "command_delivery"
+    },
+    {
+      "category": "recovery",
+      "id": "supervisor_recovery",
+      "label": "Supervisor recovery",
+      "schema_version": 1,
+      "verification_strategy": "supervisor_evidence"
+    },
+    {
+      "category": "connectivity",
+      "id": "remote_access",
+      "label": "Remote access",
+      "schema_version": 1,
+      "verification_strategy": "remote_access_health"
+    },
+    {
+      "category": "control_plane",
+      "id": "serve_control_plane",
+      "label": "Serves Pocket Lab",
+      "schema_version": 1,
+      "verification_strategy": "control_plane_runtime"
+    },
+    {
+      "category": "media",
+      "id": "access_phone_media",
+      "label": "Can access phone media",
+      "schema_version": 1,
+      "verification_strategy": "media_access_readiness"
+    },
+    {
+      "category": "storage",
+      "id": "provide_storage",
+      "label": "Provides storage",
+      "schema_version": 1,
+      "verification_strategy": "storage_readiness"
+    },
+    {
+      "category": "recovery",
+      "id": "restore_target",
+      "label": "Restore target",
+      "schema_version": 1,
+      "verification_strategy": "restore_target_readiness"
+    },
+    {
+      "category": "recovery",
+      "id": "backup_target",
+      "label": "Backup target",
+      "schema_version": 1,
+      "verification_strategy": "backup_target_readiness"
+    }
+  ],
+  "capability_schema_version": 3,
+  "capability_states": [
+    "not_advertised",
+    "advertised",
+    "verification_pending",
+    "verified",
+    "unavailable",
+    "unsupported",
+    "stale",
+    "blocked",
+    "not_applicable"
+  ],
+  "compatibility": {
+    "legacy_telemetry_fields_retained": true,
+    "old_agent_missing_metrics": "unsupported_or_not_reported",
+    "read_side_effects": false
+  },
+  "contract": "pocket-lab-lite-device-facts",
+  "regression_scenarios": [
+    "devices-resource-complete",
+    "devices-resource-partial",
+    "devices-resource-stale",
+    "devices-resource-unsupported",
+    "devices-resource-permission-denied",
+    "devices-resource-missing",
+    "devices-capability-verified",
+    "devices-capability-pending",
+    "devices-capability-stale",
+    "devices-capability-unsupported",
+    "devices-capability-blocked",
+    "devices-capability-not-applicable",
+    "devices-capability-missing",
+    "devices-capability-mixed",
+    "devices-capability-unknown",
+    "devices-services-mixed",
+    "devices-services-stale",
+    "devices-services-unknown",
+    "devices-services-disappeared",
+    "devices-software-current",
+    "devices-software-outdated",
+    "devices-software-incompatible",
+    "devices-software-stale",
+    "devices-secondary-complete",
+    "devices-secondary-offline-saved",
+    "devices-long-name"
+  ],
+  "resource_metrics": [
+    "memory",
+    "storage",
+    "cpu_usage",
+    "load_average",
+    "uptime",
+    "temperature"
+  ],
+  "resource_observation_schema_version": 2,
+  "resource_states": [
+    "available",
+    "verification_pending",
+    "stale",
+    "missing",
+    "unsupported",
+    "permission_denied",
+    "unavailable",
+    "transient_failure",
+    "blocked",
+    "not_applicable"
+  ],
+  "runtime_service_fields": [
+    "service_id",
+    "label",
+    "category",
+    "manager",
+    "state",
+    "reported_at",
+    "freshness",
+    "restart_supported",
+    "restart_reason",
+    "source",
+    "schema_version",
+    "sanitized"
+  ],
+  "schema_version": 1,
+  "security": {
+    "forbidden_metadata": [
+      "environment",
+      "command_args",
+      "password",
+      "token",
+      "api_key",
+      "nats_credentials",
+      "private_paths"
+    ],
+    "sanitized": true
+  },
+  "software_components": [
+    "node_agent",
+    "supervisor"
+  ],
+  "software_states": [
+    "current",
+    "outdated",
+    "incompatible",
+    "unknown",
+    "stale",
+    "verification_pending"
+  ]
+}

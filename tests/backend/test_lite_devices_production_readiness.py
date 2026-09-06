@@ -222,6 +222,10 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
                 "last_heartbeat_at": now,
                 "last_system_profile_at": now,
                 "last_supervisor_heartbeat_at": now,
+                # Deliberately untrusted fixture claims. Protected Server Host
+                # capability truth is rebuilt from prepared Phase3B/NATS evidence.
+                "command_delivery_ready": True,
+                "command_delivery_checked_at": now,
                 "system_profile": {
                     "schema_version": 1,
                     "technical_model": "SM-S911B",
@@ -251,6 +255,7 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
                         "source": "protected_host_supervisor_projection",
                     },
                 },
+                "advertised_capabilities": ["receive_commands"],
                 "capability_states": [
                     {"id": "receive_commands", "status": "verified"}
                 ],
@@ -277,7 +282,10 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
     assert server["supervisor_status_freshness"] == "fresh"
     assert server["supervisor_evidence_schema_version"] == 1
     assert server["removal_assessment"]["policy"] == "protected"
-    assert server["capability_states"][0]["status"] == "verified"
+    capability_states = {item["id"]: item for item in server["capability_states"]}
+    assert capability_states["receive_commands"]["status"] == "not_advertised"
+    assert capability_states["receive_commands"]["reason_code"] == "capability_not_advertised"
+    assert capability_states["receive_commands"]["verified_at"] is None
 
 
 def test_core_supervisor_persists_canonical_server_host_evidence():
@@ -464,7 +472,7 @@ def test_system_profile_merge_preserves_last_good_truth_against_empty_live_fallb
     assert merged["architecture"] == "arm64"
     assert merged["architecture_raw"] == "arm64-v8a"
     assert merged["runtime_type"] == "termux"
-    assert merged["collection_status"] == "current"
+    assert merged["collection_status"] == "stale"
 
 
 def _fleet_payload(device: dict, *, updated_at: str | None = None) -> dict:
@@ -687,7 +695,7 @@ def test_prepared_fleet_retains_guarded_recovery_metadata(tmp_path, monkeypatch)
     device = next(item for item in prepared["devices"] if item["id"] == "phone-two")
     assert device["restart_agent_assessment"]["allowed"] is True
     assert [item["service_id"] for item in device["runtime_services"]] == [
-        "node_agent", "agent_supervisor"
+        "node_agent"
     ]
 
 
@@ -731,7 +739,7 @@ def test_prepared_fleet_recomputes_stale_restart_authorization_offline(tmp_path,
     assert assessment["allowed"] is False
     assert assessment["reason_code"] == "device_unreachable"
     assert assessment["command_deliverable"] is False
-    assert all(item["freshness"] == "stale" for item in device["runtime_services"])
+    assert [item["freshness"] for item in device["runtime_services"]] == ["missing"]
     assert all(item["restart_supported"] is False for item in device["runtime_services"])
 
 
@@ -754,7 +762,6 @@ def test_guarded_recovery_contract_does_not_expose_arbitrary_process_data():
     encoded = str(result)
     assert "never-return" not in encoded
     assert "/private/path" not in encoded
-    assert "arbitrary" not in encoded
-    assert [item["service_id"] for item in result["runtime_services"]] == [
-        "node_agent", "agent_supervisor"
-    ]
+    assert "rm -rf /" not in encoded
+    assert [item["service_id"] for item in result["runtime_services"]] == ["arbitrary"]
+    assert result["runtime_services"][0]["restart_supported"] is False

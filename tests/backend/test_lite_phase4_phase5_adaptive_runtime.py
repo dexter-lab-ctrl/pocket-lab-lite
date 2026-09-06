@@ -464,7 +464,9 @@ def test_core_apps_registration_uses_existing_store_snapshot_api() -> None:
         / "lite_core_projections.py"
     ).read_text(encoding="utf-8")
 
-    assert "CONTROL_PLANE.app_projection_snapshot" in shared
+    assert "CONTROL_PLANE.app_catalog_projection_snapshot" in shared
+    assert "CONTROL_PLANE.app_actions_projection_snapshot" in shared
+    assert "CONTROL_PLANE.app_current_subprojections" in shared
     assert "CONTROL_PLANE.apps_projection_snapshot" not in shared
 
 

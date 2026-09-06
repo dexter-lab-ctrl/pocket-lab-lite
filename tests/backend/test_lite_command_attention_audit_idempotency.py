@@ -8,25 +8,14 @@ import pytest
 from pocket_lab_test_utils import ensure_runtime_path, prepare_sqlite_test_database
 
 
-@pytest.fixture(autouse=True)
-def _quiesce_runtime_after_test():
-    yield
-    from api_fastapi.db.connection import reset_sqlite_path_cache
-    from api_fastapi.db.runtime import SQLITE_READS
-    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
-
-    assert PROJECTION_SCHEDULER.quiesce_for_database_switch(timeout_seconds=5.0)
-    reset_sqlite_path_cache()
-    SQLITE_READS.invalidate()
-
-
 def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     ensure_runtime_path()
     target = tmp_path / "state" / "pocketlab-lite.sqlite3"
     prepare_sqlite_test_database(target, monkeypatch)
-    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version, latest_schema_version
 
-    assert apply_migrations() == list(range(1, 24))
+    apply_migrations()
+    assert current_schema_version() == latest_schema_version()
     return target
 
 

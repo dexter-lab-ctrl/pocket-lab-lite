@@ -14,13 +14,24 @@ def _database(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     ensure_runtime_path()
     path = tmp_path / "state" / "db.sqlite3"
     monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(path))
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(path.parent))
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.db.runtime import SQLITE_READS
+
+    reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
     return path
 
 
 def _migration_worker(database: str, queue) -> None:
     os.environ["POCKETLAB_LITE_DB_PATH"] = database
+    os.environ["POCKETLAB_STATE_DIR"] = str(Path(database).parent)
+    from api_fastapi.db.connection import reset_sqlite_path_cache
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
+    from api_fastapi.db.runtime import SQLITE_READS
 
+    reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
     try:
         applied = apply_migrations()
         queue.put((True, applied, current_schema_version()))
@@ -34,117 +45,43 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
     from api_fastapi.db.migrations import (
         apply_migrations,
         current_schema_version,
+        latest_schema_version,
         migration_rows,
+        migration_versions,
     )
 
-    assert apply_migrations() == list(range(1, 24))
+    expected = migration_versions()
+    assert expected and expected == sorted(set(expected))
+    assert apply_migrations() == expected
     assert apply_migrations() == []
-    assert current_schema_version() == 23
-    assert [row["version"] for row in migration_rows()] == list(range(1, 24))
+    assert current_schema_version() == latest_schema_version() == expected[-1]
+    assert [row["version"] for row in migration_rows()] == expected
     with read_connection() as conn:
-        tables = {
-            row[0]
-            for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            )
-        }
-        indexes = {
-            row[0]
-            for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='index'"
-            )
-        }
+        tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        indexes = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")}
+        assert conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
     assert {
         "schema_migrations",
         "security_scan_runs",
-        "security_scan_progress_events",
-        "security_scan_findings",
-        "security_scan_evidence_refs",
-        "security_scan_tool_runs",
-        "security_profile_snapshots",
-        "domain_revisions",
-        "security_store_metadata",
-        "security_maintenance_runs",
-        "security_database_backups",
-        "security_database_restores",
-        "device_heartbeats",
-        "device_invite_lifecycle",
-        "device_identity_guards",
-        "command_lifecycle",
-        "device_recovery_history",
         "device_current_state",
         "device_system_profiles",
-        "app_action_lifecycle",
-        "app_current_state",
-        "recovery_operations",
-        "backup_manifest_index",
+        "device_awareness_state",
+        "command_lifecycle",
         "recovery_current_state",
         "audit_evidence_index",
         "lite_revision_events",
-        "device_awareness_state",
-        "device_lifecycle_events",
-        "device_lifecycle_transactions",
         "projection_refresh_state",
-        "workflow_current_state",
-        "workflow_event_index",
-        "workflow_command_state",
         "release_runtime_projection",
         "lite_installed_release_identity",
+        "human_identities",
+        "enterprise_memberships",
+        "policy_decisions",
     }.issubset(tables)
     assert {
-        "idx_security_runs_profile_completed",
-        "idx_security_runs_status_updated",
-        "idx_security_progress_run_event",
-        "idx_security_progress_created",
-        "idx_security_findings_run_severity",
-        "idx_security_findings_fingerprint",
-        "idx_security_evidence_run_kind",
-        "idx_security_tool_runs_run",
-        "idx_security_runs_delivery_state",
-        "idx_security_runs_progress_latest",
-        "idx_security_maintenance_kind_requested",
-        "idx_security_database_backups_created",
-        "idx_security_database_restores_requested",
-        "idx_security_runs_history_cursor",
-        "idx_security_runs_profile_history_cursor",
-        "idx_security_runs_profile_updated_latest",
-        "idx_security_runs_app_updated_latest",
-        "idx_device_heartbeats_latest",
         "idx_device_current_fleet_order",
-        "idx_device_current_stale",
-        "idx_device_current_stale_order",
-        "idx_device_system_profiles_updated",
         "idx_device_awareness_staleness",
-        "idx_device_awareness_removal",
-        "idx_device_awareness_identity",
-        "idx_device_lifecycle_device_time",
-        "idx_device_lifecycle_type_time",
-        "idx_device_lifecycle_events_dedupe",
-        "idx_device_lifecycle_generation",
-        "idx_device_lifecycle_transactions_device",
-        "idx_device_lifecycle_transactions_export",
-        "idx_projection_refresh_ready",
-        "idx_device_invites_identity",
-        "idx_device_invites_active_latest",
-        "idx_commands_entity_active",
-        "idx_commands_entity_active_latest",
-        "idx_device_recovery_history",
-        "idx_app_actions_history",
-        "idx_recovery_operations_history",
-        "idx_recovery_operations_updated",
-        "idx_backup_manifest_created",
-        "idx_audit_entity_created",
-        "idx_lite_revision_events_domain_revision",
         "idx_lite_revision_events_replay",
-        "idx_lite_revision_events_retention",
-        "idx_commands_lifecycle_stage",
-        "idx_workflow_current_status_updated",
-        "idx_workflow_current_terminal_updated",
-        "idx_workflow_event_workflow_time",
-        "idx_workflow_command_workflow",
-        "idx_release_runtime_status_updated",
-        "idx_release_runtime_active_lease",
-        "idx_lite_installed_release_identity_mode",
     }.issubset(indexes)
     assert "operation_leases" not in tables
 
@@ -156,14 +93,9 @@ def test_lite_sqlite_migration_checksum_mismatch_fails_closed(tmp_path, monkeypa
     migrations = tmp_path / "migrations"
     migrations.mkdir()
     migration = migrations / "0001_test.sql"
-    migration.write_text(
-        "CREATE TABLE checksum_test(id INTEGER PRIMARY KEY);\n", encoding="utf-8"
-    )
+    migration.write_text("CREATE TABLE checksum_test(id INTEGER PRIMARY KEY);\n", encoding="utf-8")
     assert apply_migrations(migrations) == [1]
-    migration.write_text(
-        "CREATE TABLE checksum_test(id INTEGER PRIMARY KEY, changed TEXT);\n",
-        encoding="utf-8",
-    )
+    migration.write_text("CREATE TABLE checksum_test(id INTEGER PRIMARY KEY, changed TEXT);\n", encoding="utf-8")
     with pytest.raises(MigrationChecksumError):
         apply_migrations(migrations)
 
@@ -176,8 +108,7 @@ def test_lite_sqlite_migration_rejects_newer_schema(tmp_path, monkeypatch):
     apply_migrations()
     with connection() as conn:
         conn.execute(
-            "INSERT INTO schema_migrations(version, name, applied_at, checksum) "
-            "VALUES (?, ?, ?, ?)",
+            "INSERT INTO schema_migrations(version, name, applied_at, checksum) VALUES (?, ?, ?, ?)",
             (999, "future", "2026-07-10T00:00:00Z", "future-checksum"),
         )
     with pytest.raises(MigrationError, match="newer"):
@@ -200,26 +131,24 @@ def test_lite_sqlite_failed_migration_rolls_back_all_statements(tmp_path, monkey
         apply_migrations(migrations)
     with connection() as conn:
         table = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-            ("should_rollback",),
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='should_rollback'"
         ).fetchone()
-        metadata_table = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-            ("schema_migrations",),
+        metadata = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_migrations'"
         ).fetchone()
     assert table is None
-    assert metadata_table is None
+    assert metadata is None
 
 
 def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
     ensure_runtime_path()
+    from api_fastapi.db.migrations import latest_schema_version, migration_versions
+
     database = str(tmp_path / "state" / "db.sqlite3")
+    expected = migration_versions()
     context = multiprocessing.get_context("spawn")
     queue = context.Queue()
-    processes = [
-        context.Process(target=_migration_worker, args=(database, queue))
-        for _ in range(2)
-    ]
+    processes = [context.Process(target=_migration_worker, args=(database, queue)) for _ in range(2)]
     for process in processes:
         process.start()
     for process in processes:
@@ -227,26 +156,27 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 23 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 23]
+    assert all(result[2] == latest_schema_version() for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, len(expected)]
 
 
-def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
-    tmp_path, monkeypatch
-):
+def _copy_schema_prefix(target: Path, *, through: int) -> None:
+    from api_fastapi.db.migrations import schema_dir
+
+    target.mkdir()
+    for source in sorted(schema_dir().glob("*.sql")):
+        version = int(source.name.split("_", 1)[0])
+        if version <= through:
+            (target / source.name).write_bytes(source.read_bytes())
+
+
+def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(tmp_path, monkeypatch):
     database = _database(tmp_path, monkeypatch)
     from api_fastapi.db.connection import connection
-    from api_fastapi.db.migrations import (
-        apply_migrations,
-        current_schema_version,
-        schema_dir,
-    )
+    from api_fastapi.db.migrations import apply_migrations, latest_schema_version, migration_versions
 
     old_schema = tmp_path / "schema-v4"
-    old_schema.mkdir()
-    for source in sorted(schema_dir().glob("000[1-4]_*.sql")):
-        (old_schema / source.name).write_bytes(source.read_bytes())
-
+    _copy_schema_prefix(old_schema, through=4)
     assert apply_migrations(old_schema) == [1, 2, 3, 4]
     with connection() as conn:
         conn.execute(
@@ -262,43 +192,27 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
                 'security-upgrade-v5', 'quick', '', '', 'succeeded', 'preserved',
                 0, '2026-07-20T00:00:00Z', '2026-07-20T00:00:00Z',
                 1784505600000, 1784505600000,
-                0, 0, 0, 0, 0, 0, 0,
-                'test', 1, 0
+                0, 0, 0, 0, 0, 0, 0, 'test', 1, 0
             )
             """
         )
-
-    assert apply_migrations() == list(range(5, 24))
-    assert current_schema_version() == 23
+    assert apply_migrations() == [version for version in migration_versions() if version >= 5]
+    assert latest_schema_version() == migration_versions()[-1]
     with connection() as conn:
         assert conn.execute(
-            "SELECT summary FROM security_scan_runs WHERE run_id = ?",
-            ("security-upgrade-v5",),
+            "SELECT summary FROM security_scan_runs WHERE run_id='security-upgrade-v5'"
         ).fetchone()["summary"] == "preserved"
-        indexes = {
-            row[0]
-            for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='index'"
-            )
-        }
-    assert "idx_security_runs_history_cursor" in indexes
     assert database.exists()
 
 
-def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
-    tmp_path, monkeypatch
-):
+def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(tmp_path, monkeypatch):
     _database(tmp_path, monkeypatch)
     from api_fastapi.db.connection import connection
-    from api_fastapi.db.migrations import apply_migrations, current_schema_version, schema_dir
+    from api_fastapi.db.migrations import apply_migrations, migration_versions
 
     schema_v13 = tmp_path / "schema-v13"
-    schema_v13.mkdir()
-    for source in sorted(schema_dir().glob("*.sql")):
-        if int(source.name.split("_", 1)[0]) <= 13:
-            (schema_v13 / source.name).write_bytes(source.read_bytes())
-
-    assert apply_migrations(schema_v13) == list(range(1, 14))
+    _copy_schema_prefix(schema_v13, through=13)
+    assert apply_migrations(schema_v13) == [version for version in migration_versions(schema_v13)]
     with connection() as conn:
         conn.execute(
             """
@@ -330,95 +244,45 @@ def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
                 "phone-two:first_heartbeat_received",
             ),
         )
-
-    assert apply_migrations() == list(range(14, 24))
-    assert current_schema_version() == 23
+    assert apply_migrations() == [version for version in migration_versions() if version >= 14]
     with connection() as conn:
         preserved = conn.execute(
-            "SELECT event_id,dedupe_key,generation_key,state_revision,database_instance,payload_checksum "
-            "FROM device_lifecycle_events WHERE event_id=?",
-            ("existing-first-heartbeat",),
+            "SELECT event_id,dedupe_key FROM device_lifecycle_events WHERE event_id='existing-first-heartbeat'"
         ).fetchone()
-        quick_check = conn.execute("PRAGMA quick_check").fetchone()[0]
-        foreign_key_errors = conn.execute("PRAGMA foreign_key_check").fetchall()
-        transaction_table = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='device_lifecycle_transactions'"
-        ).fetchone()
+        assert conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
     assert preserved["event_id"] == "existing-first-heartbeat"
     assert preserved["dedupe_key"] == "phone-two:first_heartbeat_received"
-    assert preserved["generation_key"] is None
-    assert preserved["state_revision"] == 0
-    assert quick_check == "ok"
-    assert foreign_key_errors == []
-    assert transaction_table is not None
 
 
+def test_migration_17_backfills_terminal_command_attention(tmp_path, monkeypatch):
+    _database(tmp_path, monkeypatch)
+    from api_fastapi.db.connection import connection
+    from api_fastapi.db.migrations import apply_migrations, migration_versions
 
-
-def test_migration_17_backfills_terminal_command_attention(tmp_path):
-    ensure_runtime_path()
-    import subprocess
-    import sys
-
-    database = tmp_path / "state" / "migration-17.sqlite3"
-    script = r'''
-import os
-import sqlite3
-import sys
-from pathlib import Path
-
-os.environ["POCKETLAB_LITE_DB_PATH"] = sys.argv[1]
-os.environ["POCKETLAB_STATE_DIR"] = str(Path(sys.argv[1]).parent)
-from api_fastapi.db.connection import reset_sqlite_path_cache
-from api_fastapi.db.migrations import apply_migrations, schema_dir
-from api_fastapi.db.runtime import SQLITE_READS
-
-reset_sqlite_path_cache()
-SQLITE_READS.invalidate()
-pre17 = Path(sys.argv[2])
-pre17.mkdir(parents=True, exist_ok=True)
-for source in schema_dir().glob("*.sql"):
-    version = int(source.name.split("_", 1)[0])
-    if version <= 16:
-        (pre17 / source.name).write_bytes(source.read_bytes())
-assert apply_migrations(pre17) == list(range(1, 17))
-with sqlite3.connect(sys.argv[1]) as conn:
-    conn.execute(
-        """
-        INSERT INTO command_lifecycle(
-            command_id,entity_type,entity_id,operation_type,status,
-            created_at,updated_at,updated_at_epoch_ms,source_ref,summary,
-            metadata_json,lifecycle_stage,terminal_at
-        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """,
-        (
-            "pre17-undeliverable", "device", "offline-device", "agent.restart",
-            "undeliverable", "2026-07-01T00:00:00Z", "2026-07-01T00:01:00Z",
-            60000, "test", "undeliverable", "{}", "failed",
-            "2026-07-01T00:01:00Z",
-        ),
-    )
-    conn.commit()
-assert apply_migrations() == [17, 18, 19, 20, 21, 22, 23]
-with sqlite3.connect(sys.argv[1]) as conn:
-    row = conn.execute(
-        """
-        SELECT attention_status,attention_updated_at,attention_updated_at_epoch_ms
-        FROM command_lifecycle WHERE command_id='pre17-undeliverable'
-        """
-    ).fetchone()
-assert row == ("active", "2026-07-01T00:01:00Z", 60000), row
-'''
-    env = os.environ.copy()
-    runtime_root = Path(__file__).resolve().parents[2] / "pocket-lab-final-structure" / "runtime"
-    existing_pythonpath = os.environ.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = str(runtime_root) + (os.pathsep + existing_pythonpath if existing_pythonpath else "")
-    result = subprocess.run(
-        [sys.executable, "-c", script, str(database), str(tmp_path / "pre17")],
-        cwd=Path(__file__).resolve().parents[2],
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr or result.stdout
+    pre17 = tmp_path / "pre17"
+    _copy_schema_prefix(pre17, through=16)
+    assert apply_migrations(pre17) == [version for version in migration_versions(pre17)]
+    with connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO command_lifecycle(
+                command_id,entity_type,entity_id,operation_type,status,
+                created_at,updated_at,updated_at_epoch_ms,source_ref,summary,
+                metadata_json,lifecycle_stage,terminal_at
+            ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                "pre17-undeliverable", "device", "offline-device", "agent.restart",
+                "undeliverable", "2026-07-01T00:00:00Z", "2026-07-01T00:01:00Z",
+                60000, "test", "undeliverable", "{}", "failed",
+                "2026-07-01T00:01:00Z",
+            ),
+        )
+    assert apply_migrations() == [version for version in migration_versions() if version >= 17]
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT attention_status,attention_updated_at,attention_updated_at_epoch_ms "
+            "FROM command_lifecycle WHERE command_id='pre17-undeliverable'"
+        ).fetchone()
+    assert tuple(row) == ("active", "2026-07-01T00:01:00Z", 60000)

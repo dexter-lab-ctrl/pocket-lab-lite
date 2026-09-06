@@ -1,3 +1,4 @@
+import { normalizeDeviceFacts, resourceFactAvailabilityLabel, resourceFactValue } from '../../lib/liteDeviceFacts.js';
 import React from 'react';
 import { AlertTriangle, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
@@ -75,6 +76,11 @@ export function capabilityStatusLabel(value, reasonCode = '') {
     return 'Verification pending';
   }
   if (['unavailable', 'not_ready'].includes(status)) return 'Unavailable';
+  if (status === 'unsupported') return 'Unsupported';
+  if (status === 'stale') return 'Stale';
+  if (status === 'blocked') return 'Blocked';
+  if (status === 'not_applicable') return 'Not applicable';
+  if (status === 'advertised') return 'Advertised';
   if (
     status === 'not_advertised'
     || reason === 'capability_not_advertised'
@@ -212,20 +218,48 @@ function recommendationScreen(value) {
   })[action] || '';
 }
 
-function healthResourceRows(health = {}) {
+function healthResourceRows(health = {}, device = {}) {
+  const facts = normalizeDeviceFacts(
+    device?.device_facts || health?.device_facts || device,
+    { health },
+  );
   const resources = health?.resources || {};
-  return [
-    ['Storage', resources.storage, resources.storage?.available_percent != null ? `${resources.storage.available_percent}% available` : resources.storage?.available_mb != null ? `${resources.storage.available_mb} MB available` : 'Not reported'],
-    ['Memory', resources.memory, resources.memory?.available_percent != null ? `${resources.memory.available_percent}% available` : resources.memory?.available_mb != null ? `${resources.memory.available_mb} MB available` : 'Not reported'],
-    ['System load', resources.load, resources.load?.usage_percent != null ? `${resources.load.usage_percent}%` : 'Not reported'],
-    ['Temperature', resources.temperature, resources.temperature?.celsius != null ? `${resources.temperature.celsius} °C` : 'Not reported'],
-  ].map(([label, value, metric]) => ({
-    label,
-    status: normalizeStatus(value?.status || 'unknown'),
-    statusLabel: titleCase(value?.status, 'Unknown'),
-    metric,
-    summary: value?.summary || 'This signal is not available yet.',
-  }));
+  const definitions = [
+    ['Storage', 'storage', resources.storage, () => {
+      const free = resourceFactValue(facts, 'storage', 'free_mb');
+      const total = resourceFactValue(facts, 'storage', 'total_mb');
+      return free !== null && total !== null ? `${Math.round(free)} MB free / ${Math.round(total)} MB` : null;
+    }],
+    ['Memory', 'memory', resources.memory, () => {
+      const free = resourceFactValue(facts, 'memory', 'free_mb');
+      const total = resourceFactValue(facts, 'memory', 'total_mb');
+      return free !== null && total !== null ? `${Math.round(free)} MB free / ${Math.round(total)} MB` : null;
+    }],
+    ['CPU usage', 'cpu_usage', resources.load, () => {
+      const value = resourceFactValue(facts, 'cpu_usage', 'usage_percent');
+      return value !== null ? `${Math.round(value)}%` : null;
+    }],
+    ['Temperature', 'temperature', resources.temperature, () => {
+      const value = resourceFactValue(facts, 'temperature', 'celsius');
+      return value !== null ? `${Math.round(value)} °C` : null;
+    }],
+  ];
+  return definitions.map(([label, metric, healthValue, metricValue]) => {
+    const observation = facts.resources?.[metric] || {};
+    const rendered = metricValue();
+    return {
+      label,
+      status: normalizeStatus(healthValue?.status || observation.status || 'unknown'),
+      statusLabel: healthValue?.status ? titleCase(healthValue.status, 'Unknown') : resourceFactAvailabilityLabel(observation),
+      metric: rendered || resourceFactAvailabilityLabel(observation),
+      summary: healthValue?.summary || observation.summary || `Resource signal: ${resourceFactAvailabilityLabel(observation)}.`,
+      observationStatus: observation.status || 'missing',
+      freshness: observation.freshness || 'missing',
+      source: observation.source || 'unknown',
+      reasonCode: observation.reason_code || '',
+      observedAt: observation.observed_at || null,
+    };
+  });
 }
 
 function healthHistoryItems(payload = {}) {
@@ -241,6 +275,9 @@ function healthHistoryItems(payload = {}) {
 }
 
 function technicalRows(device) {
+  const facts = normalizeDeviceFacts(device?.device_facts || device);
+  const agentSoftware = facts.software?.node_agent || {};
+  const supervisorSoftware = facts.software?.supervisor || {};
   return [
     { label: 'Device id', value: device?.id },
     { label: 'Role', value: device?.role_label || roleLabel(device?.role) },
@@ -279,8 +316,10 @@ function technicalRows(device) {
     { label: 'Runtime', value: device?.system_profile?.runtime_type },
     { label: 'Termux', value: device?.system_profile?.termux_version },
     { label: 'Python', value: device?.system_profile?.python_version },
-    { label: 'Agent', value: device?.system_profile?.agent_version },
-    { label: 'Supervisor version', value: device?.system_profile?.supervisor_version },
+    { label: 'Agent version', value: agentSoftware.version || device?.system_profile?.agent_version },
+    { label: 'Agent version freshness', value: agentSoftware.version ? titleCase(agentSoftware.freshness, 'Unknown') : '' },
+    { label: 'Supervisor version', value: supervisorSoftware.version || device?.system_profile?.supervisor_version },
+    { label: 'Supervisor version freshness', value: supervisorSoftware.version ? titleCase(supervisorSoftware.freshness, 'Unknown') : '' },
     { label: 'Uptime', value: device?.system_health?.uptime_label },
     { label: 'System load', value: device?.system_health?.load_status ? device.system_health.load_status.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) : '' },
     { label: 'Load average', value: Array.isArray(device?.system_health?.load_average) ? device.system_health.load_average.filter((value) => value !== null).join(' / ') : '' },
@@ -383,7 +422,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   const dependencies = device?.dependencies || {};
   const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
-  const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth) : [];
+  const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];
   const healthAttention = healthAttentionCurrent && Array.isArray(proactiveHealth?.attention_items)
     ? proactiveHealth.attention_items.slice(0, 12)
     : [];

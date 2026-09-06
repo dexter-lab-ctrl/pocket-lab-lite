@@ -82,16 +82,7 @@ def test_s7_delta_uses_stable_key_and_skips_partial_or_other_profile(tmp_path, m
 
 def test_s7_protected_runtime_secret_identity_ignores_volatile_scanner_id(tmp_path, monkeypatch):
     repo, service = _configure(tmp_path, monkeypatch)
-    baseline = {
-        "id": "trivy-secret-jwt-token-gitea/conf/app.runtime.ini",
-        "source": "trivy",
-        "category": "protected_runtime_secret",
-        "severity": "low",
-        "component": "Pocket Lab Lite",
-        "file": "gitea/conf/app.runtime.ini",
-        "summary": "Protected backend runtime secret found.",
-        "recommendation": "Keep it protected.",
-    }
+    baseline = {"id": "trivy-secret-jwt-token-gitea/conf/app.runtime.ini", "source": "trivy", "category": "protected_runtime_secret", "severity": "low", "component": "Pocket Lab Lite", "file": "gitea/conf/app.runtime.ini", "summary": "Protected backend runtime secret found.", "recommendation": "Keep it protected."}
     current = {**baseline, "id": "trivy-secret-different-volatile-match-gitea/conf/app.runtime.ini"}
     _complete(repo, "security-secret-baseline", profile="quick", requested_at="2026-07-17T10:10:00Z", completed_at="2026-07-17T10:11:00Z", findings=[baseline])
     _complete(repo, "security-secret-current", profile="quick", requested_at="2026-07-17T10:12:00Z", completed_at="2026-07-17T10:13:00Z", findings=[current])
@@ -187,6 +178,7 @@ def test_s7_frontend_source_boundaries_and_lazy_composition():
 
     gate = (ROOT / "scripts/dev/check-lite-security-s7-exit-gate.sh").read_text(encoding="utf-8")
     taskfile = (ROOT / "Taskfile.yml").read_text(encoding="utf-8")
+    package = (ROOT / "package.json").read_text(encoding="utf-8")
     assert "PRAGMA quick_check" in gate
     assert "security-profile-snapshot-v2" in gate
     assert "security-history-cursor-v2" in gate
@@ -194,5 +186,6 @@ def test_s7_frontend_source_boundaries_and_lazy_composition():
     assert "max_top_level_keys" in gate
     assert "finding_delta" in gate and "tool_results" in gate
     assert "matched" in gate and "security-db-compare.py" in gate
-    assert "lite:security:s7:check" in taskfile
-    assert "npm run build" in taskfile
+    assert "tasks/Taskfile.lite.yml" in taskfile
+    assert "tasks/Taskfile.ui.yml" in taskfile
+    assert '"build": "vite build"' in package

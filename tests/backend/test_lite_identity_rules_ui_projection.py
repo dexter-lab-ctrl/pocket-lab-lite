@@ -41,7 +41,10 @@ def test_approval_projection_derives_safe_viewer_actions_without_human_ids():
         eligible_approver_count=0,
     )
     assert requester["viewer_relationship"] == "requester"
-    assert requester["viewer_actions"] == {"approve": False, "reject": True, "cancel": True}
+    # Owner-originated peer approvals are legacy policy inconsistencies. They
+    # may be cancelled for reconciliation, but must never be approved/rejected.
+    assert requester["policy_inconsistency"] is True
+    assert requester["viewer_actions"] == {"approve": False, "reject": False, "cancel": True}
     assert requester["eligible_approver_count"] == 0
     assert "initiating_human_id" not in requester
     assert "approved_by_human_id" not in requester
@@ -53,8 +56,8 @@ def test_approval_projection_derives_safe_viewer_actions_without_human_ids():
         eligible_approver_count=1,
     )
     assert reviewer["viewer_relationship"] == "reviewer"
-    assert reviewer["viewer_actions"] == {"approve": True, "reject": True, "cancel": False}
-    assert reviewer["eligible_approver_count"] == 1
+    assert reviewer["viewer_actions"] == {"approve": False, "reject": False, "cancel": False}
+    assert reviewer["eligible_approver_count"] == 0
     assert "initiating_human_id" not in reviewer
 
 
@@ -92,21 +95,22 @@ def test_identity_rules_ui_polish_keeps_sensitive_internals_progressively_disclo
 
     assert "window.prompt" not in identity
     assert "window.confirm" not in identity
-    assert "Showing saved Identity state" in identity
+    assert "const identityReadOnly = savedStateOnly || !backendReachable;" in identity
+    assert "buildLiteIdentityAccessOverview" in identity
     assert "LiteSheet" in identity
-    assert "Enterprise people" in identity_enterprise
-    assert "final-Owner protection" in identity_enterprise
+    assert "Identity & Access governance" in identity_enterprise
+    assert "Owner is root-equivalent" in identity_enterprise
 
     assert "Review the local policy engine" not in rules
     assert "free-form browser Rego" not in rules
-    assert "Advanced diagnostics" in rules
-    assert "This does not execute the action" in rules_enterprise
+    assert "Technical status" in rules
+    assert "This never executes the real action" in rules_enterprise
     for field in ("confirmed", "revision_validated", "protected_server_host", "assurance_recent"):
         assert field in rules_enterprise
     assert "viewer_actions?.approve" in rules_enterprise
     assert "Requesting identity ID" not in rules_enterprise
     assert "Select a person" in rules_enterprise
-    assert "Not all conflicts are analyzable by this model" in rules_enterprise
+    assert "Only the deterministic categories implemented by the typed model are claimed" in rules_enterprise
 
     assert "min-height: 44px" in css
     assert "prefers-reduced-motion: reduce" in css

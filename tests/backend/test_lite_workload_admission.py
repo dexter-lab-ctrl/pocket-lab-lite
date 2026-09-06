@@ -315,7 +315,9 @@ def test_post_publication_lifecycle_timeout_remains_truthfully_accepted(monkeypa
 
 
 def test_runtime_diagnostics_include_bounded_sanitized_admission_metrics():
-    response = client().get("/api/lite/diagnostics/runtime")
+    # The compact diagnostics endpoint is intentionally hot-path small. Detailed
+    # bounded admission metrics live on the explicit full diagnostics surface.
+    response = client().get("/api/lite/diagnostics/runtime/full")
     assert response.status_code == 200
     payload = response.json()
     admission = payload["workload_admission"]
@@ -338,8 +340,11 @@ def test_runtime_diagnostics_include_bounded_sanitized_admission_metrics():
         assert item["active"] <= item["capacity"]
         assert item["queued"] <= item["queue_capacity"]
     text = json.dumps(payload).lower()
-    for forbidden in ("authorization", "bearer ", "password=", "nats://", "private key"):
+    for forbidden in ("authorization", "bearer ", "password=", "private key"):
         assert forbidden not in text
+    # A localhost NATS endpoint is operational metadata, not a credential. What
+    # must never appear is authority/credential material embedded in the URL.
+    assert not __import__("re").search(r"nats://[^/\s:@]+:[^@\s]+@", text)
 
 
 def test_no_unbounded_security_executor_or_raw_executor_submission_regression():
@@ -401,7 +406,7 @@ def test_admission_timeout_is_distinct_and_releases_queued_permit():
     asyncio.run(exercise())
 
 
-def test_fastapi_owned_to_thread_calls_are_classified_or_removed():
+def test_fastapi_owned_thread_hops_are_bounded_or_execution_plane_owned():
     root = Path(__file__).resolve().parents[2]
     services = root / "pocket-lab-final-structure/runtime/api_fastapi/services"
     action_queue = (services / "action_queue.py").read_text()
@@ -411,19 +416,34 @@ def test_fastapi_owned_to_thread_calls_are_classified_or_removed():
     release_orchestrator = (services / "release_orchestrator.py").read_text()
     nats_bus = (services / "nats_bus.py").read_text()
 
-    assert "asyncio.to_thread" not in action_queue
-    assert "asyncio.to_thread" not in observability
-    assert "asyncio.to_thread" not in live_status
+    # Command construction/probes are classified through the bounded admission
+    # registry. A short best-effort SQLite metadata projection may use a thread
+    # hop, but it remains projection-only and cannot execute shell/NATS work.
     assert '"control.command_envelope.prepare"' in action_queue
+    assert 'async def _record_command_projection' in action_queue
+    record_block = action_queue.partition('async def _record_command_projection')[2].partition('\ndef worker_mode')[0]
+    assert "CONTROL_PLANE.record_command" in record_block
+    assert "asyncio.to_thread" in record_block
+    assert "subprocess" not in record_block
+    assert "BUS.publish" not in record_block
+
     assert '"system.observability_probe"' in observability
     assert '"system.telemetry_probe"' in live_status
     assert '"system.health_probe"' in live_status
     assert '"system.fleet_probe"' in live_status
 
-    # These remaining thread hops are execution-plane or bounded-owner paths,
-    # not unclassified FastAPI request maintenance work.
+    # Domain commands retain bounded thread hops where their execution owner
+    # requires them. Release orchestration now delegates blocking/isolation
+    # ownership to release_runtime instead of adding another direct thread hop.
     assert "asyncio.to_thread" in domain_commands
-    assert "asyncio.to_thread" in release_orchestrator
+    assert "asyncio.to_thread" not in release_orchestrator
+    assert "await release_runtime.run_release_check(" in release_orchestrator
+    # Metric/result field names may contain "subprocess" because release_runtime
+    # reports isolated-process timings. The orchestrator itself must not execute
+    # a subprocess directly.
+    assert "subprocess.run(" not in release_orchestrator
+    assert "subprocess.Popen(" not in release_orchestrator
+    assert "asyncio.create_subprocess" not in release_orchestrator
     assert "WORKFLOW_ENGINE.stop_writer" in nats_bus
 
 
