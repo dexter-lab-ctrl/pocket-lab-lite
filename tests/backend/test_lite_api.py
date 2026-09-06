@@ -762,8 +762,11 @@ def test_lite_fleet_stale_agent_renders_offline_connection(tmp_path, monkeypatch
     assert device["connection"] == "offline"
     assert device["restart_agent_assessment"]["allowed"] is False
     assert device["restart_agent_assessment"]["reason_code"] == "device_unreachable"
+    assert [service["service_id"] for service in device["runtime_services"]] == [
+        "node_agent",
+    ]
     assert device["runtime_services"][0]["restart_supported"] is False
-    assert device["runtime_services"][1]["freshness"] == "stale"
+    assert device["runtime_services"][0]["freshness"] == "stale"
 
 
 def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
