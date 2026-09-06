@@ -102,6 +102,11 @@ schema_revision: 1
 validation_status: generated
 ---
 
+<div class="pl-page-meta" markdown>
+<span class="pl-status pl-status--verified">Verified</span>
+<span class="pl-status pl-status--patch-provided">Source generated</span>
+</div>
+
 # Device Facts contract
 
 This page is generated from backend-owned resource-provider and capability registries.
