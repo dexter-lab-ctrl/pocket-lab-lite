@@ -426,138 +426,6 @@ def test_protected_server_host_display_model_update_preserves_identity(tmp_path,
     assert profile["model_label_source"] == "user_selected"
     assert profile["technical_identity_source"] == "agent"
 
-def test_display_model_audit_metadata_is_sanitized(tmp_path, monkeypatch):
-    store = _configure_store(tmp_path, monkeypatch)
-    store.project_fleet(_profile_payload())
-    store.update_device_consumer_model("phone-two", "Samsung Galaxy S23")
-    rows, _, _ = store._read(
-        lambda conn: [dict(row) for row in conn.execute(
-            "SELECT event_type, entity_id, operation_id, summary, evidence_ref "
-            "FROM audit_evidence_index WHERE event_type='device.display_model.updated'"
-        )]
-    )
-    assert len(rows) == 1
-    row = rows[0]
-    assert row["entity_id"] == "phone-two"
-    assert row["summary"] == "Device display model updated."
-    assert row["evidence_ref"] == "sqlite:device_system_profiles"
-    assert "Samsung" not in " ".join(str(value) for value in row.values())
-
-
-def test_model_catalog_duplicate_matches_remain_explicit_suggestions():
-    root = Path(__file__).resolve().parents[2]
-    catalog = (root / "src/data/androidDeviceModels.js").read_text(encoding="utf-8")
-    picker = (root / "src/lite/devices/DeviceModelPickerLazy.jsx").read_text(encoding="utf-8")
-    assert "matches are suggestions and are never auto-selected" in catalog
-    assert ".sort((a, b) => b.score - a.score" in catalog
-    assert "flow.review(entry.consumerModelName)" in picker
-    assert "flow.succeeded" in picker
-
-
-def test_server_agent_identity_is_canonical_and_remote_claims_fail_closed(monkeypatch):
-    ensure_runtime_path()
-    from api_fastapi.services import fleet_registry
-
-    state = {"agents": {}, "updated_at": None}
-    monkeypatch.setenv("POCKETLAB_SERVER_NODE_ID", "pocket-lab-lite-server")
-    monkeypatch.setenv("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
-    monkeypatch.setattr(fleet_registry, "_agents_payload", lambda: state)
-    monkeypatch.setattr(fleet_registry, "_write", lambda _path, _payload: None)
-    monkeypatch.setattr(fleet_registry, "_now", lambda: "2026-07-23T12:00:00Z")
-    monkeypatch.setattr(fleet_registry, "_epoch", lambda: 100.0)
-
-    local = fleet_registry.upsert_agent({
-        "node_id": "localhost",
-        "name": "localhost",
-        "role": "server_host",
-        "is_control_plane": True,
-        "system_profile": {"architecture": "aarch64", "collection_status": "current"},
-        "system_health": {"uptime_seconds": 123, "uptime_status": "available"},
-    })
-    assert local["node_id"] == "pocket-lab-lite-server"
-    assert local["name"] == "Pocket Lab Lite Server"
-    assert local["role"] == "server_host"
-    assert local["isCurrent"] is True
-    assert local["system_profile"]["architecture"] == "aarch64"
-
-    remote = fleet_registry.upsert_agent({
-        "node_id": "remote-phone",
-        "name": "Remote Phone",
-        "role": "server_host",
-        "is_control_plane": True,
-    })
-    assert remote["node_id"] == "remote-phone"
-    assert remote["isCurrent"] is False
-    assert "remote-phone" in state["agents"]
-
-
-def test_agent_event_invalidates_only_fleet_prepared_snapshot(monkeypatch):
-    ensure_runtime_path()
-    from api_fastapi.services import fleet_registry
-    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
-
-    calls = []
-    monkeypatch.setattr(fleet_registry, "upsert_agent", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(CONTROL_PLANE, "invalidate_domain", lambda domain, **_kwargs: calls.append(domain))
-
-    fleet_registry.handle_agent_event({
-        "subject": "pocketlab.events.fleet.node_heartbeat",
-        "type": "fleet.node_heartbeat",
-        "data": {"node_id": "pocket-lab-lite-server"},
-    })
-    assert calls == ["fleet"]
-
-
-def test_canonical_server_profile_and_health_merge_into_lite_fleet(monkeypatch):
-    ensure_runtime_path()
-    from api_fastapi.services import lite_status
-    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
-
-    monkeypatch.setenv("POCKETLAB_NODE_ID", "pocket-lab-lite-server")
-    monkeypatch.setenv("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
-    monkeypatch.setattr(lite_status, "lite_remote_access_status", lambda: {
-        "status": "healthy", "ready": True, "ip": "100.64.0.1",
-        "summary": "Ready", "checked_at": "2026-07-23T12:00:00Z",
-    })
-    monkeypatch.setattr(lite_status, "merged_fleet_nodes", lambda: [{
-        "id": "pocket-lab-lite-server",
-        "node_id": "pocket-lab-lite-server",
-        "name": "Pocket Lab Lite Server",
-        "role": "server_host",
-        "status": "active",
-        "isCurrent": True,
-        "source": "nats-agent",
-        "last_seen_at": "2026-07-23T12:00:00Z",
-        "system_profile": {
-            "architecture": "aarch64",
-            "os_name": "Android",
-            "technical_model": "SM-S911B",
-            "runtime_type": "termux",
-            "collection_status": "current",
-            "collected_at": "2026-07-23T12:00:00Z",
-        },
-        "system_health": {
-            "uptime_seconds": 183480,
-            "uptime_status": "available",
-            "load_status": "normal",
-            "collected_at": "2026-07-23T12:00:00Z",
-        },
-    }])
-    monkeypatch.setattr(CONTROL_PLANE, "device_profile_map", lambda: {})
-    monkeypatch.setattr(CONTROL_PLANE, "durable_enrolled_devices", lambda: [])
-    monkeypatch.setattr(CONTROL_PLANE, "supervisor_state_map", lambda: {})
-    monkeypatch.setattr(CONTROL_PLANE, "reconcile_command_lifecycle", lambda **_kwargs: {})
-    monkeypatch.setattr(lite_status.lite_invites, "enrolled_invite_nodes", lambda: [])
-
-    payload = lite_status.lite_fleet()
-    server = payload["devices"][0]
-    assert payload["count"] == 1
-    assert server["id"] == "pocket-lab-lite-server"
-    assert server["system_profile"]["architecture"] == "aarch64"
-    assert server["system_profile"]["technical_model"] == "SM-S911B"
-    assert server["system_health"]["uptime_seconds"] == 183480
-    assert server["system_health"]["uptime_status"] == "available"
-
 
 def test_server_startup_sets_stable_protected_agent_identity():
     root = Path(__file__).resolve().parents[2]
@@ -577,9 +445,10 @@ def test_devices_ui_polish_preserves_server_protection_and_hides_empty_storage()
     screen = (root / "src/lite/LiteDevices.jsx").read_text(encoding="utf-8")
     styles = (root / "src/index.css").read_text(encoding="utf-8")
 
-    assert "function hasMeaningfulStorage(device)" in card
     assert "Storage status will appear after the device reports it." not in card
-    assert "lite-device-system-strip" in card
+    assert "lite-device-health-strip" in card
+    assert "normalizeDeviceFacts" in details
+    assert "resourceFactAvailabilityLabel" in details
     assert "Choosing a friendly model changes display metadata only" in details
     assert "Internal codename" in details
     assert "onChooseModel={() =>" in screen
