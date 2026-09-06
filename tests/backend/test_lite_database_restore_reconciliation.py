@@ -6,8 +6,11 @@ from pathlib import Path
 
 import pytest
 
+from pocket_lab_test_utils import ensure_runtime_path
+
 
 def _module():
+    ensure_runtime_path()
     return importlib.import_module("api_fastapi.services.lite_database_recovery")
 
 
