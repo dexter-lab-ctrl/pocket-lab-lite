@@ -222,6 +222,8 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
                 "last_heartbeat_at": now,
                 "last_system_profile_at": now,
                 "last_supervisor_heartbeat_at": now,
+                # Deliberately untrusted fixture claims. Protected Server Host
+                # capability truth is rebuilt from prepared Phase3B/NATS evidence.
                 "command_delivery_ready": True,
                 "command_delivery_checked_at": now,
                 "system_profile": {
@@ -281,7 +283,9 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
     assert server["supervisor_evidence_schema_version"] == 1
     assert server["removal_assessment"]["policy"] == "protected"
     capability_states = {item["id"]: item for item in server["capability_states"]}
-    assert capability_states["receive_commands"]["status"] == "verified"
+    assert capability_states["receive_commands"]["status"] == "not_advertised"
+    assert capability_states["receive_commands"]["reason_code"] == "capability_not_advertised"
+    assert capability_states["receive_commands"]["verified_at"] is None
 
 
 def test_core_supervisor_persists_canonical_server_host_evidence():
