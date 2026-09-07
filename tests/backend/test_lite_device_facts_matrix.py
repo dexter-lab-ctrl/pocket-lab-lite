@@ -102,15 +102,18 @@ def test_one_provider_failure_does_not_invalidate_other_metrics(monkeypatch):
     providers = (
         telemetry.ResourceProvider("memory", "test_memory", lambda at: _observation("memory", {"total_mb": 100, "free_mb": 50, "used_mb": 50}), 100),
         telemetry.ResourceProvider("storage", "test_storage", lambda at, root: (_ for _ in ()).throw(OSError("denied")), 100),
-        telemetry.ResourceProvider("cpu_usage", "test_cpu", lambda at: _observation("cpu_usage", {"usage_percent": 0}), 100),
+        telemetry.ResourceProvider("pocketlab_workload_cpu", "test_workload", lambda at: _observation("pocketlab_workload_cpu", {"usage_percent": 0, "process_count": 3}), 100),
         telemetry.ResourceProvider("temperature", "test_temperature", lambda at: _observation("temperature", {"celsius": 40}), 100),
     )
     monkeypatch.setattr(telemetry, "RESOURCE_PROVIDERS", providers)
     sample = telemetry.collect_resource_telemetry("/tmp")
     assert sample["resource_observations"]["memory"]["status"] == "available"
     assert sample["resource_observations"]["storage"]["status"] == "transient_failure"
-    assert sample["resource_observations"]["cpu_usage"]["value"]["usage_percent"] == 0
+    assert sample["resource_observations"]["pocketlab_workload_cpu"]["value"]["usage_percent"] == 0
+    assert sample["resource_observations"]["pocketlab_workload_cpu"]["value"]["process_count"] == 3
     assert sample["resource_observations"]["temperature"]["value"]["celsius"] == 40
+    assert sample["pocketlab_workload_cpu_percent"] == 0
+    assert sample["pocketlab_workload_process_count"] == 3
 
 
 def test_provider_timeout_becomes_transient_failure(monkeypatch):
