@@ -333,6 +333,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "name": "tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_health_canonical_invalidation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_device_health_d4.py",
       "name": "tests/backend/test_lite_device_health_d4.py",
       "source_refs": [
@@ -2157,6 +2167,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e949fa5486340dd71f8ea64c3736832538eff2454ad8904daf4187b99724f4ec"
+    "source_fingerprint": "0750f37091c3d7d6bc37eebf523f5dc05b46ae0dddca96eedadc6e42007ec01b"
   }
 }
