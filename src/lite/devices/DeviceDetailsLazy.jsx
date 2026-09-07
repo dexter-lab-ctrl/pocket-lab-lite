@@ -1,4 +1,9 @@
-import { normalizeDeviceFacts, resourceFactAvailabilityLabel, resourceFactValue } from '../../lib/liteDeviceFacts.js';
+import {
+  deviceResourcePresentation,
+  formatDeviceCapacityGb,
+  normalizeDeviceFacts,
+  resourceFactValue,
+} from '../../lib/liteDeviceFacts.js';
 import React from 'react';
 import { AlertTriangle, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
@@ -228,16 +233,20 @@ function healthResourceRows(health = {}, device = {}) {
     ['Storage', 'storage', resources.storage, () => {
       const free = resourceFactValue(facts, 'storage', 'free_mb');
       const total = resourceFactValue(facts, 'storage', 'total_mb');
-      return free !== null && total !== null ? `${Math.round(free)} MB free / ${Math.round(total)} MB` : null;
+      return free !== null && total !== null ? `${formatDeviceCapacityGb(free)} free / ${formatDeviceCapacityGb(total)}` : null;
     }],
     ['Memory', 'memory', resources.memory, () => {
       const free = resourceFactValue(facts, 'memory', 'free_mb');
       const total = resourceFactValue(facts, 'memory', 'total_mb');
-      return free !== null && total !== null ? `${Math.round(free)} MB free / ${Math.round(total)} MB` : null;
+      return free !== null && total !== null ? `${formatDeviceCapacityGb(free)} free / ${formatDeviceCapacityGb(total)}` : null;
     }],
-    ['CPU usage', 'cpu_usage', resources.load, () => {
-      const value = resourceFactValue(facts, 'cpu_usage', 'usage_percent');
-      return value !== null ? `${Math.round(value)}%` : null;
+    ['Pocket Lab CPU', 'pocketlab_workload_cpu', resources.load, () => {
+      const value = resourceFactValue(facts, 'pocketlab_workload_cpu', 'usage_percent');
+      const processCount = resourceFactValue(facts, 'pocketlab_workload_cpu', 'process_count');
+      if (value === null) return null;
+      return processCount !== null
+        ? `${Math.round(value)}% · ${Math.round(processCount)} service process${Math.round(processCount) === 1 ? '' : 'es'}`
+        : `${Math.round(value)}%`;
     }],
     ['Temperature', 'temperature', resources.temperature, () => {
       const value = resourceFactValue(facts, 'temperature', 'celsius');
@@ -245,19 +254,22 @@ function healthResourceRows(health = {}, device = {}) {
     }],
   ];
   return definitions.map(([label, metric, healthValue, metricValue]) => {
-    const observation = facts.resources?.[metric] || {};
+    const presentation = deviceResourcePresentation(facts, metric, healthValue);
     const rendered = metricValue();
+    const healthStatusLabel = titleCase(presentation.healthStatus, 'Unknown');
     return {
       label,
-      status: normalizeStatus(healthValue?.status || observation.status || 'unknown'),
-      statusLabel: healthValue?.status ? titleCase(healthValue.status, 'Unknown') : resourceFactAvailabilityLabel(observation),
-      metric: rendered || resourceFactAvailabilityLabel(observation),
-      summary: healthValue?.summary || observation.summary || `Resource signal: ${resourceFactAvailabilityLabel(observation)}.`,
-      observationStatus: observation.status || 'missing',
-      freshness: observation.freshness || 'missing',
-      source: observation.source || 'unknown',
-      reasonCode: observation.reason_code || '',
-      observedAt: observation.observed_at || null,
+      status: normalizeStatus(presentation.healthStatus || presentation.observationStatus || 'unknown'),
+      statusLabel: presentation.availabilityLabel,
+      metric: rendered || presentation.availabilityLabel,
+      summary: presentation.healthSummary
+        ? `Health: ${healthStatusLabel}. ${presentation.healthSummary}`
+        : `Health: ${healthStatusLabel}. Measurement: ${presentation.availabilityLabel}.`,
+      observationStatus: presentation.observationStatus,
+      freshness: presentation.freshness,
+      source: presentation.source,
+      reasonCode: presentation.reasonCode,
+      observedAt: presentation.observedAt,
     };
   });
 }
@@ -331,8 +343,8 @@ function technicalRows(device) {
 }
 
 function titleCase(value, fallback = 'Unknown') {
-  const text = String(value || '').replace(/_/g, ' ').trim();
-  return text ? text.replace(/\b\w/g, (letter) => letter.toUpperCase()) : fallback;
+  const valueText = String(value || '').replace(/_/g, ' ').trim();
+  return valueText ? valueText.replace(/\b\w/g, (letter) => letter.toUpperCase()) : fallback;
 }
 
 function capabilityRows(device) {

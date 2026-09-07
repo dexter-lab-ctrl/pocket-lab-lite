@@ -61,33 +61,38 @@ def test_freshest_resource_observation_wins_per_field():
 
 def test_health_resource_projection_keeps_observation_reason_and_source():
     _, _, health = _services()
-    from api_fastapi.services.lite_device_runtime_extensions import _overlay_resource_metadata
+    from api_fastapi.services import lite_device_resource_health
 
-    device = {
-        "id": "edge-phone",
-        "connection": "online",
-        "last_seen_at": "2026-09-05T12:00:00Z",
-        "last_seen_state": {"last_heartbeat_at": "2026-09-05T12:00:00Z", "last_telemetry_at": "2026-09-05T12:00:00Z"},
+    observations = {
+        "memory": {
+            "metric": "memory",
+            "value": {"total_mb": 4096, "free_mb": 2048, "used_mb": 2048},
+            "status": "available",
+            "collection_status": "available",
+            "freshness": "current",
+            "source": "agent_telemetry",
+            "observed_at": "2026-09-05T12:00:00Z",
+            "reason_code": "proc_meminfo",
+            "support_state": "supported",
+            "revision": 7,
+        }
     }
-    signals = {
-        "telemetry": {
-            "sampled_at": "2026-09-05T12:00:00Z",
-            "memory_total_mb": 4096,
-            "memory_free_mb": 2048,
-        },
-        "resource_observations": {
-            "memory": {
-                "status": "available", "collection_status": "available", "freshness": "current",
-                "source": "agent_telemetry", "observed_at": "2026-09-05T12:00:00Z",
-                "reason_code": "proc_meminfo", "support_state": "supported",
-            }
-        },
-    }
-    result = health.evaluate_device_health(device, signals=signals, now_epoch=NOW_EPOCH)
-    resources = _overlay_resource_metadata(result["resources"], signals["resource_observations"])
+    resources = lite_device_resource_health.assess_resource_observations(
+        observations,
+        {},
+        health._policy(),
+        "2026-09-05T12:00:00Z",
+        NOW_EPOCH,
+        hysteresis_band=health._hysteresis_band,
+        recovery_duration_guard=health._recovery_duration_guard,
+        duration_guard=health._duration_guard,
+    )
+    assert resources["memory"]["status"] == "normal"
+    assert resources["memory"]["available_mb"] == 2048
     assert resources["memory"]["source"] == "agent_telemetry"
     assert resources["memory"]["reason_code"] == "proc_meminfo"
     assert resources["memory"]["observation_status"] == "available"
+    assert resources["memory"]["revision"] == 7
 
 
 def test_capability_verified_at_only_exists_for_verified_evidence():
@@ -127,7 +132,6 @@ def test_temperature_provider_rejects_sentinel_and_non_cpu_sensor_classes(monkey
 
     zones = [Path('/tmp/thermal_zone0'), Path('/tmp/thermal_zone1'), Path('/tmp/thermal_zone2')]
     monkeypatch.setattr(resource_telemetry.glob, 'glob', lambda pattern: [str(zone) for zone in zones])
-
     values = {
         '/tmp/thermal_zone0/type': ('battery', None),
         '/tmp/thermal_zone0/temp': ('42000', None),

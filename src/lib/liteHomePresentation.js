@@ -1,4 +1,10 @@
-import { normalizeDeviceFacts, resourceFactValue } from './liteDeviceFacts.js';
+import {
+  deviceResourcePresentation,
+  formatDeviceCapacityGb,
+  normalizeDeviceFacts,
+  resourceFactValue,
+} from './liteDeviceFacts.js';
+
 const READY_STATES = new Set(['healthy', 'ready', 'online', 'success', 'succeeded']);
 const REVIEW_STATES = new Set(['degraded', 'warning', 'review', 'partial', 'unknown']);
 const DANGER_STATES = new Set(['unavailable', 'unhealthy', 'failed', 'error', 'blocked', 'offline']);
@@ -201,16 +207,6 @@ function finiteNumber(value) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
-function formatCapacityMb(value) {
-  const parsed = finiteNumber(value);
-  if (parsed === null) return 'Not available';
-  if (parsed >= 1024) {
-    const gib = parsed / 1024;
-    return `${gib >= 100 ? Math.round(gib) : gib.toFixed(1)} GiB`;
-  }
-  return `${Math.round(parsed)} MB`;
-}
-
 function worstTone(...tones) {
   if (tones.includes('danger')) return 'danger';
   if (tones.includes('review')) return 'review';
@@ -362,7 +358,8 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
   const derivedMemoryFreeMb = memoryFreeMb ?? (memoryTotalMb !== null && memoryUsedMb !== null
     ? Math.max(0, memoryTotalMb - memoryUsedMb)
     : null);
-  const cpuUsage = resourceFactValue(deviceFacts, 'cpu_usage', 'usage_percent');
+  const workloadCpu = resourceFactValue(deviceFacts, 'pocketlab_workload_cpu', 'usage_percent');
+  const workloadPresentation = deviceResourcePresentation(deviceFacts, 'pocketlab_workload_cpu');
   const cpuTemp = resourceFactValue(deviceFacts, 'temperature', 'celsius');
   const semanticHealthTone = hasProjection(telemetryThresholds)
     ? semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status }).tone
@@ -371,22 +368,27 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       : 'neutral';
   const deviceHealthTone = worstTone(
     semanticHealthTone,
-    highUsageTone(cpuUsage, 75, 90),
+    highUsageTone(workloadCpu, 75, 90),
     highUsageTone(cpuTemp, 55, 70),
     lowAvailabilityTone(derivedMemoryFreeMb, memoryTotalMb, 20, 10),
   );
   const memoryKnown = memoryTotalMb !== null && derivedMemoryFreeMb !== null && memoryTotalMb > 0;
-  const cpuParts = [
-    cpuUsage !== null ? `CPU ${Math.round(cpuUsage)}%` : '',
+  const workloadParts = [
+    workloadCpu !== null ? `Pocket Lab CPU ${Math.round(workloadCpu)}%` : '',
     cpuTemp !== null ? `${Math.round(cpuTemp)}°C` : '',
   ].filter(Boolean);
+  const workloadFallbackNote = workloadPresentation.observationStatus === 'verification_pending'
+    ? 'Pocket Lab workload CPU is establishing a baseline.'
+    : workloadPresentation.observationStatus === 'missing'
+      ? 'Pocket Lab workload CPU has not been reported yet.'
+      : `Pocket Lab workload CPU: ${workloadPresentation.availabilityLabel}.`;
   const deviceHealthResource = memoryKnown
     ? {
         key: 'device-health',
-        label: 'Memory and CPU',
-        value: `${formatCapacityMb(derivedMemoryFreeMb)} free / ${formatCapacityMb(memoryTotalMb)}`,
+        label: 'Memory and Pocket Lab CPU',
+        value: `${formatDeviceCapacityGb(derivedMemoryFreeMb)} free / ${formatDeviceCapacityGb(memoryTotalMb)}`,
         tone: deviceHealthTone,
-        note: cpuParts.length ? cpuParts.join(' · ') : 'CPU information has not been reported yet.',
+        note: workloadParts.length ? workloadParts.join(' · ') : workloadFallbackNote,
         screen: 'devices',
       }
     : hasProjection(telemetryThresholds)
@@ -416,14 +418,21 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
     ? {
         key: 'storage',
         label: 'Storage',
-        value: `${formatCapacityMb(freeSpaceMb)} free / ${formatCapacityMb(totalSpaceMb)}`,
+        value: `${formatDeviceCapacityGb(freeSpaceMb)} free / ${formatDeviceCapacityGb(totalSpaceMb)}`,
         tone: storageTone,
         note: `${Math.round(storagePercent)}% available for apps and backups`,
         screen: 'recovery',
       }
     : hasProjection(storagePressure)
       ? semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' })
-      : resourceMetric({ key: 'storage', label: 'Free storage', value: freeSpaceMb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' });
+      : {
+          key: 'storage',
+          label: 'Free storage',
+          value: freeSpaceMb !== null ? formatDeviceCapacityGb(freeSpaceMb) : 'Not available',
+          tone: 'neutral',
+          note: 'Space available for apps and backups',
+          screen: 'recovery',
+        };
 
   const databaseResource = hasProjection(sqliteHealth)
     ? semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' })

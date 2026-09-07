@@ -3,42 +3,17 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import time
 from typing import Any
 
-from . import lite_device_facts, lite_runtime_services
+from . import lite_device_facts, lite_device_resource_health, lite_runtime_services
 from .lite_device_runtime_projection import enrich_device
 
-_HEALTH_EXTENSION_MARKER = "_pocketlab_device_facts_health_extension_v2"
-_RUNTIME_EXTENSION_MARKER = "_pocketlab_device_facts_runtime_extensions_v2"
-
-def _overlay_resource_metadata(resources: dict[str, Any], observations: dict[str, Any]) -> dict[str, Any]:
-    mapping = {
-        "storage": "storage",
-        "memory": "memory",
-        "load": "cpu_usage",
-        "temperature": "temperature",
-    }
-    result = dict(resources) if isinstance(resources, dict) else {}
-    for resource_name, observation_name in mapping.items():
-        resource = result.get(resource_name) if isinstance(result.get(resource_name), dict) else {}
-        observation = observations.get(observation_name) if isinstance(observations.get(observation_name), dict) else None
-        if not observation:
-            continue
-        result[resource_name] = {
-            **resource,
-            "observation_status": observation.get("collection_status") or observation.get("status"),
-            "observed_at": observation.get("observed_at"),
-            "freshness": observation.get("freshness"),
-            "reason_code": observation.get("reason_code"),
-            "support_state": observation.get("support_state"),
-            "source": observation.get("source"),
-            "revision": observation.get("revision"),
-        }
-    return result
+_HEALTH_EXTENSION_MARKER = "_pocketlab_device_facts_health_extension_v3"
+_RUNTIME_EXTENSION_MARKER = "_pocketlab_device_facts_runtime_extensions_v3"
 
 
 def install_health_projection_extension() -> None:
+    """Make canonical Device Facts the only resource-health input at runtime."""
     try:
         from . import lite_device_health as health_module
     except Exception:
@@ -46,6 +21,34 @@ def install_health_projection_extension() -> None:
     if getattr(health_module, _HEALTH_EXTENSION_MARKER, False):
         return
     original = health_module.evaluate_device_health
+
+    def canonical_resource_assessment(signals, previous_resources, policy, now_iso, now_epoch):
+        signals = signals if isinstance(signals, dict) else {}
+        observations = signals.get("resource_observations") if isinstance(signals.get("resource_observations"), dict) else {}
+        if not observations:
+            # Backward-compatible ingress is normalized once into Device Facts;
+            # health never consumes legacy numeric telemetry directly.
+            telemetry = signals.get("telemetry") if isinstance(signals.get("telemetry"), dict) else {}
+            observations = lite_device_facts.normalize_resource_observations(
+                telemetry,
+                source="legacy_health_ingress",
+                now_epoch=now_epoch,
+            )
+        return lite_device_resource_health.assess_resource_observations(
+            observations,
+            previous_resources if isinstance(previous_resources, dict) else {},
+            policy,
+            now_iso,
+            now_epoch,
+            hysteresis_band=health_module._hysteresis_band,
+            recovery_duration_guard=health_module._recovery_duration_guard,
+            duration_guard=health_module._duration_guard,
+        )
+
+    # evaluate_device_health resolves this module global at call time. Replacing
+    # the resource assessor preserves connection/recovery/software logic while
+    # removing Device Facts -> legacy telemetry -> old health translation.
+    health_module._resource_assessment = canonical_resource_assessment
 
     def evaluate_device_health(device, *, signals=None, previous=None, now_epoch=None):
         signals = signals if isinstance(signals, dict) else {}
@@ -55,39 +58,10 @@ def install_health_projection_extension() -> None:
         observations = facts.get("resources") if isinstance(facts.get("resources"), dict) else {}
         canonical_signals = dict(signals)
         if observations:
-            existing_telemetry = signals.get("telemetry") if isinstance(signals.get("telemetry"), dict) else {}
-            sampled_at = max(
-                (
-                    str(item.get("observed_at"))
-                    for item in observations.values()
-                    if isinstance(item, dict) and item.get("observed_at")
-                ),
-                default=existing_telemetry.get("sampled_at") or existing_telemetry.get("timestamp"),
-            )
-            canonical_signals["telemetry"] = {
-                **existing_telemetry,
-                **lite_device_facts.health_signal_telemetry(observations, sampled_at=sampled_at),
-            }
             canonical_signals["resource_observations"] = observations
         result = original(
             effective, signals=canonical_signals, previous=previous, now_epoch=now_epoch
         )
-
-        now_value = time.time() if now_epoch is None else float(now_epoch)
-        current_resources = result.get("resources") if isinstance(result.get("resources"), dict) else {}
-        try:
-            previous_resources = previous.get("resources") if isinstance(previous.get("resources"), dict) else {}
-            policy = health_module._policy()
-            current_resources = health_module._resource_assessment(
-                canonical_signals,
-                previous_resources,
-                policy,
-                health_module._now_iso(now_value),
-                now_value,
-            )
-        except Exception:
-            pass
-        current_resources = _overlay_resource_metadata(current_resources, observations)
 
         versions = dict(result.get("versions") or {}) if isinstance(result.get("versions"), dict) else {}
         software = facts.get("software") if isinstance(facts.get("software"), dict) else {}
@@ -137,7 +111,6 @@ def install_health_projection_extension() -> None:
         })
         return {
             **result,
-            "resources": current_resources,
             "resource_observations": observations,
             "versions": versions,
             "software_posture": software_posture,
@@ -184,7 +157,7 @@ def install_status_projection_extension() -> None:
         from . import lite_status
     except Exception:
         return
-    marker = "_pocketlab_device_facts_status_extension_v1"
+    marker = "_pocketlab_device_facts_status_extension_v2"
     if getattr(lite_status, marker, False):
         return
 
@@ -205,7 +178,8 @@ def install_status_projection_extension() -> None:
             "cpu_temp_c": first("cpu_temp_c", "cpuTemp"),
             "free_space_mb": first("free_space_mb", "freeSpaceMB"),
             "total_space_mb": first("total_space_mb", "totalSpaceMB"),
-            "cpu_usage_percent": first("cpu_usage_percent"),
+            "pocketlab_workload_cpu_percent": first("pocketlab_workload_cpu_percent"),
+            "pocketlab_workload_process_count": first("pocketlab_workload_process_count"),
             "memory_usage_mb": first("memory_usage_mb"),
             "memory_total_mb": first("memory_total_mb", "memoryTotalMB"),
             "memory_free_mb": first("memory_free_mb", "memoryFreeMB"),
@@ -298,7 +272,7 @@ def install_source_revision_extensions() -> None:
         from .live_status import LIVE_STATUS
     except Exception:
         return
-    marker = "_pocketlab_device_facts_source_revision_v1"
+    marker = "_pocketlab_device_facts_source_revision_v2"
     if getattr(phase3b, marker, False):
         return
 

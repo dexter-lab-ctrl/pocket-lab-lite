@@ -8,12 +8,15 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
-RESOURCE_FACTS_SCHEMA_VERSION = 2
+RESOURCE_FACTS_SCHEMA_VERSION = 3
 RESOURCE_CURRENT_SECONDS = 180
 _ALLOWED_OBSERVATION_STATUSES = {
     "available", "verification_pending", "stale", "missing", "unsupported",
     "permission_denied", "unavailable", "transient_failure", "blocked", "not_applicable",
 }
+_RESOURCE_METRICS = (
+    "memory", "storage", "pocketlab_workload_cpu", "cpu_usage", "temperature", "load_average", "uptime"
+)
 _SOURCE_PRIORITY = {
     "server_central_telemetry": 100,
     "agent_telemetry": 90,
@@ -90,8 +93,18 @@ def _sanitize_value(metric: str, value: Any) -> Any:
         if total is None or total <= 0 or free is None or free > total:
             return None
         return {"total_mb": int(total), "free_mb": int(free)}
-    if metric == "cpu_usage":
+    if metric in {"cpu_usage", "pocketlab_workload_cpu"}:
         usage = _number(value.get("usage_percent"), maximum=100.0)
+        if metric == "pocketlab_workload_cpu":
+            process_count = _number(value.get("process_count"), maximum=512.0)
+            if usage is None and process_count is None:
+                return None
+            result: dict[str, Any] = {}
+            if usage is not None:
+                result["usage_percent"] = usage
+            if process_count is not None:
+                result["process_count"] = int(process_count)
+            return result
         return {"usage_percent": usage} if usage is not None else None
     if metric == "temperature":
         celsius = _number(value.get("celsius"), minimum=1.0, maximum=150.0)
@@ -137,6 +150,17 @@ def _legacy_observations(telemetry: dict[str, Any], source: str) -> dict[str, di
     storage_free = _number(telemetry.get("free_space_mb") if telemetry.get("free_space_mb") is not None else telemetry.get("freeSpaceMB"))
     if storage_total is not None and storage_total > 0 and storage_free is not None and storage_free <= storage_total:
         add("storage", {"total_mb": int(storage_total), "free_mb": int(storage_free)}, "MB")
+    workload_cpu = _number(telemetry.get("pocketlab_workload_cpu_percent"), maximum=100.0)
+    workload_count = _number(telemetry.get("pocketlab_workload_process_count"), maximum=512.0)
+    if workload_cpu is not None or workload_count is not None:
+        workload_value: dict[str, Any] = {}
+        if workload_cpu is not None:
+            workload_value["usage_percent"] = workload_cpu
+        if workload_count is not None:
+            workload_value["process_count"] = int(workload_count)
+        add("pocketlab_workload_cpu", workload_value, "percent")
+    # Retain old-agent whole-system CPU observations only as a compatibility
+    # fact. It is not used for health assessment or rendered by the Lite UI.
     cpu_usage = _number(telemetry.get("cpu_usage_percent"), maximum=100.0)
     if cpu_usage is not None:
         add("cpu_usage", {"usage_percent": cpu_usage}, "percent")
@@ -161,7 +185,7 @@ def normalize_resource_observations(
         raw = _legacy_observations(telemetry, "legacy_telemetry")
     fallback_at = telemetry.get("sampled_at") or telemetry.get("timestamp") or telemetry.get("time")
     normalized: dict[str, dict[str, Any]] = {}
-    for metric in ("memory", "storage", "cpu_usage", "temperature", "load_average", "uptime"):
+    for metric in _RESOURCE_METRICS:
         candidate = raw.get(metric) if isinstance(raw.get(metric), dict) else None
         if not candidate:
             continue
@@ -170,6 +194,8 @@ def normalize_resource_observations(
             observed_at = None
         state = _status(candidate.get("status"))
         value = _sanitize_value(metric, candidate.get("value"))
+        # verification_pending may intentionally carry safe metadata such as a
+        # matched process count while the CPU baseline is being established.
         if state == "available" and value is None:
             state = "unavailable"
             reason = "malformed_value"
@@ -227,7 +253,7 @@ def reconcile_resource_observations(
     now_epoch: float | None = None,
 ) -> dict[str, dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {}
-    for metric in ("memory", "storage", "cpu_usage", "temperature", "load_average", "uptime"):
+    for metric in _RESOURCE_METRICS:
         chosen = choose_resource_observation(
             [source[metric] for source in sources if isinstance(source, dict) and isinstance(source.get(metric), dict)],
             now_epoch=now_epoch,
@@ -238,26 +264,12 @@ def reconcile_resource_observations(
 
 
 def health_signal_telemetry(observations: dict[str, dict[str, Any]], *, sampled_at: Any = None) -> dict[str, Any]:
-    telemetry: dict[str, Any] = {
+    """Compatibility envelope that no longer translates facts back to old telemetry."""
+    return {
         "sampled_at": sampled_at,
         "timestamp": sampled_at,
         "resource_observations": observations,
     }
-    memory = observations.get("memory") or {}
-    if memory.get("value") and memory.get("collection_status") == "available":
-        value = memory["value"]
-        telemetry.update({"memory_total_mb": value.get("total_mb"), "memory_free_mb": value.get("free_mb"), "memory_usage_mb": value.get("used_mb")})
-    storage = observations.get("storage") or {}
-    if storage.get("value") and storage.get("collection_status") == "available":
-        value = storage["value"]
-        telemetry.update({"total_space_mb": value.get("total_mb"), "free_space_mb": value.get("free_mb")})
-    cpu = observations.get("cpu_usage") or {}
-    if cpu.get("value") and cpu.get("collection_status") == "available":
-        telemetry["cpu_usage_percent"] = cpu["value"].get("usage_percent")
-    temperature = observations.get("temperature") or {}
-    if temperature.get("value") and temperature.get("collection_status") == "available":
-        telemetry["cpu_temp_c"] = temperature["value"].get("celsius")
-    return telemetry
 
 
 def _software_fact(device: dict[str, Any], component: str) -> dict[str, Any]:
@@ -356,14 +368,9 @@ def apply_device_facts(
     facts = build_device_facts(device, telemetry=telemetry, telemetry_source=telemetry_source)
     result = {**device, "device_facts": facts, "resource_observations": facts["resources"]}
     signals = dict(result.get("_health_signals") or {}) if isinstance(result.get("_health_signals"), dict) else {}
-    sampled_at = None
-    if isinstance(telemetry, dict):
-        sampled_at = telemetry.get("sampled_at") or telemetry.get("timestamp") or telemetry.get("time")
-    if sampled_at is None:
-        sampled_at = device.get("last_telemetry_at")
-    canonical_telemetry = health_signal_telemetry(facts["resources"], sampled_at=sampled_at)
-    existing_telemetry = signals.get("telemetry") if isinstance(signals.get("telemetry"), dict) else {}
-    signals["telemetry"] = {**existing_telemetry, **canonical_telemetry}
+    # Device Facts are now the resource-health authority. Preserve any raw
+    # telemetry only for non-resource freshness/compatibility consumers; never
+    # synthesize numeric legacy telemetry from canonical facts.
     signals["resource_observations"] = facts["resources"]
     software = facts.get("software") or {}
     if software.get("node_agent", {}).get("version"):
