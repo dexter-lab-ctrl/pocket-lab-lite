@@ -3,19 +3,61 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import types
 from typing import Any
 
+from .. import deps
 from . import lite_device_facts, lite_device_resource_health, lite_runtime_services
 from .lite_device_runtime_projection import enrich_device
 
 _HEALTH_EXTENSION_MARKER = "_pocketlab_device_facts_health_extension_v3"
 _RUNTIME_EXTENSION_MARKER = "_pocketlab_device_facts_runtime_extensions_v3"
+_HEALTH_INPUT_CONTRACT_VERSION = 2
+
+
+def _canonical_fact_revision(facts: Any) -> int:
+    if not isinstance(facts, dict):
+        return 0
+    try:
+        return max(0, int(facts.get("revision") or 0))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _signal_backed_facts(
+    effective: dict[str, Any], signals: dict[str, Any], *, now_epoch: float | None
+) -> dict[str, Any]:
+    facts = (
+        effective.get("device_facts")
+        if isinstance(effective.get("device_facts"), dict)
+        else {}
+    )
+    telemetry = signals.get("telemetry") if isinstance(signals.get("telemetry"), dict) else {}
+    if not telemetry:
+        return facts
+    source = "server_central_telemetry" if (
+        effective.get("is_current")
+        or effective.get("protected_server_host")
+        or str(effective.get("role") or "").strip().lower().replace("-", "_") == "server_host"
+    ) else "agent_telemetry"
+    try:
+        # Reconcile the exact telemetry used by this health evaluation with any
+        # already-persisted facts. Fresh current observations win; stale facts
+        # remain available only when the new sample cannot provide the metric.
+        return lite_device_facts.build_device_facts(
+            effective,
+            telemetry=telemetry,
+            telemetry_source=source,
+            now_epoch=now_epoch,
+        )
+    except Exception:
+        return facts
 
 
 def install_health_projection_extension() -> None:
     """Make canonical Device Facts the only resource-health input at runtime."""
     try:
-        from . import lite_device_health as health_module
+        from . import lite_device_health as health_module, lite_status
     except Exception:
         return
     if getattr(health_module, _HEALTH_EXTENSION_MARKER, False):
@@ -50,17 +92,56 @@ def install_health_projection_extension() -> None:
     # removing Device Facts -> legacy telemetry -> old health translation.
     health_module._resource_assessment = canonical_resource_assessment
 
+    # The Server Host is synthesized by the fleet builder rather than by an
+    # agent heartbeat. Supply one bounded local telemetry sample only while that
+    # background builder runs. Request handlers continue to read prepared state.
+    original_server_host_device = getattr(lite_status, "_server_host_device", None)
+    if callable(original_server_host_device) and not getattr(
+        lite_status, "_pocketlab_server_health_signals_v2", False
+    ):
+        def server_host_device(remote_access=None):
+            device = original_server_host_device(remote_access)
+            try:
+                telemetry = deps.core.telemetry_snapshot()
+            except Exception:
+                telemetry = {}
+            if isinstance(telemetry, dict) and telemetry:
+                signals = dict(device.get("_health_signals") or {}) if isinstance(device.get("_health_signals"), dict) else {}
+                signals["telemetry"] = telemetry
+                device["_health_signals"] = signals
+            return device
+
+        lite_status._server_host_device = server_host_device
+        setattr(lite_status, "_pocketlab_server_health_signals_v2", True)
+
     def evaluate_device_health(device, *, signals=None, previous=None, now_epoch=None):
         signals = signals if isinstance(signals, dict) else {}
         previous = previous if isinstance(previous, dict) else {}
         effective = enrich_device(device if isinstance(device, dict) else {})
-        facts = effective.get("device_facts") if isinstance(effective.get("device_facts"), dict) else {}
+        facts = _signal_backed_facts(effective, signals, now_epoch=now_epoch)
         observations = facts.get("resources") if isinstance(facts.get("resources"), dict) else {}
         canonical_signals = dict(signals)
         if observations:
             canonical_signals["resource_observations"] = observations
+
+        facts_revision = _canonical_fact_revision(facts)
+        previous_for_evaluation = previous
+        legacy_contract = facts_revision > 0 and (
+            int(previous.get("source_revision") or 0) <= 0
+            or int(previous.get("health_input_contract_version") or 0) < _HEALTH_INPUT_CONTRACT_VERSION
+        )
+        if legacy_contract:
+            # Preserve prior bands/candidate timers for hysteresis, but remove the
+            # old equality fence so a persisted pre-Device-Facts health row is
+            # actually reevaluated once under the new input contract.
+            previous_for_evaluation = dict(previous)
+            previous_for_evaluation.pop("health_revision", None)
+
         result = original(
-            effective, signals=canonical_signals, previous=previous, now_epoch=now_epoch
+            effective,
+            signals=canonical_signals,
+            previous=previous_for_evaluation,
+            now_epoch=now_epoch,
         )
 
         versions = dict(result.get("versions") or {}) if isinstance(result.get("versions"), dict) else {}
@@ -109,12 +190,21 @@ def install_health_projection_extension() -> None:
                 else "Software verification is pending."
             ),
         })
+        attention_items = [
+            {**item, "source_revision": facts_revision}
+            for item in (result.get("attention_items") or [])
+            if isinstance(item, dict)
+        ]
         return {
             **result,
+            "source_revision": facts_revision,
+            "health_input_contract_version": _HEALTH_INPUT_CONTRACT_VERSION,
             "resource_observations": observations,
             "versions": versions,
             "software_posture": software_posture,
             "device_facts": facts,
+            "attention_items": attention_items,
+            "attention_count": len(attention_items),
         }
 
     health_module.evaluate_device_health = evaluate_device_health
@@ -149,6 +239,28 @@ def _semantic_revision(namespace: str, material: Any) -> int:
         int.from_bytes(hashlib.sha256(encoded.encode("utf-8")).digest()[:8], "big")
         & ((1 << 63) - 1),
     )
+
+
+def _projection_dirty_generation(domain: str) -> int:
+    """Return the durable cross-process invalidation generation for one job."""
+    try:
+        from ..db.runtime import SQLITE_READS
+
+        entry, _ = SQLITE_READS.acquire(timeout_seconds=0.35)
+    except Exception:
+        return 0
+    discard = False
+    try:
+        row = entry.connection.execute(
+            "SELECT signal_generation FROM projection_dirty_signals WHERE domain=?",
+            (str(domain or "")[:120],),
+        ).fetchone()
+        return max(0, int(row["signal_generation"] or 0)) if row is not None else 0
+    except Exception:
+        discard = True
+        return 0
+    finally:
+        SQLITE_READS.release(entry, discard=discard)
 
 
 def install_status_projection_extension() -> None:
@@ -266,9 +378,9 @@ def install_status_projection_extension() -> None:
 
 
 def install_source_revision_extensions() -> None:
-    """Refresh prepared facts on observation changes without creating health transitions."""
+    """Refresh prepared facts on canonical observation changes across API/worker processes."""
     try:
-        from . import fleet_registry, lite_phase3b_projections as phase3b
+        from . import fleet_registry, lite_phase3b_projections as phase3b, lite_status
         from .live_status import LIVE_STATUS
     except Exception:
         return
@@ -278,6 +390,8 @@ def install_source_revision_extensions() -> None:
 
     original_status_revision = phase3b.status_source_revision
     original_fleet_revision = fleet_registry.fleet_source_revision
+    original_builder_for = phase3b.builder_for
+    original_source_revision_for = phase3b.source_revision_for
 
     def status_source_revision() -> int:
         try:
@@ -288,7 +402,15 @@ def install_source_revision_extensions() -> None:
             resources = {}
         return _semantic_revision(
             "system.status.device_facts",
-            {"base_revision": int(original_status_revision()), "resources": resources},
+            {
+                "base_revision": int(original_status_revision()),
+                # This durable generation is the cross-process fence. The API
+                # increments it when its canonical telemetry revision changes;
+                # the worker can therefore observe invalidation without reading
+                # the API process's in-memory LiveStatus sample.
+                "device_facts_generation": _projection_dirty_generation("system.status"),
+                "resources": resources,
+            },
         )
 
     def fleet_source_revision() -> int:
@@ -316,13 +438,60 @@ def install_source_revision_extensions() -> None:
             "fleet.device_facts",
             {
                 "base_revision": int(original_fleet_revision()),
+                "device_facts_generation": _projection_dirty_generation("fleet.summary"),
                 "agents": sorted(agents, key=lambda item: item.get("id") or ""),
                 "server_resources": server_resources,
             },
         )
 
+    def builder_for(domain: str):
+        if domain == "system.status":
+            # Return a thunk rather than a captured function object. A prepared
+            # job registered before a later adapter refresh still resolves the
+            # currently installed status builder when it executes.
+            return lambda: lite_status.build_lite_status_projection()
+        return original_builder_for(domain)
+
+    def source_revision_for(domain: str):
+        if domain == "system.status":
+            # Same late-binding rule for the semantic source fence.
+            return lambda: phase3b.status_source_revision()
+        return original_source_revision_for(domain)
+
     phase3b.status_source_revision = status_source_revision
+    phase3b.builder_for = builder_for
+    phase3b.source_revision_for = source_revision_for
     fleet_registry.fleet_source_revision = fleet_source_revision
+
+    # Telemetry is sampled in the API process while projection execution is
+    # worker-owned. Convert every canonical resource revision into durable dirty
+    # signals so the worker cannot keep serving a prepared pre-revision snapshot.
+    telemetry_marker = "_pocketlab_device_facts_telemetry_invalidation_v2"
+    if not getattr(LIVE_STATUS, telemetry_marker, False):
+        original_sample_telemetry = LIVE_STATUS.sample_telemetry
+        last_resource_revision = {"value": 0}
+
+        async def sample_telemetry(self, *, source="manual"):
+            sample = await original_sample_telemetry(source=source)
+            revision = _semantic_revision(
+                "live_status.device_facts",
+                _canonical_resource_revision_material(sample, "server_central_telemetry"),
+            )
+            changed = revision != last_resource_revision["value"]
+            last_resource_revision["value"] = revision
+            if changed:
+                phase3b.mark_dirty(
+                    "system.status", reason="canonical_device_facts_changed"
+                )
+                if getattr(self, "_device_health_sampler", None) is not None:
+                    self.request_sample(
+                        "device_health", reason="canonical_device_facts_changed"
+                    )
+            return sample
+
+        LIVE_STATUS.sample_telemetry = types.MethodType(sample_telemetry, LIVE_STATUS)
+        setattr(LIVE_STATUS, telemetry_marker, True)
+
     setattr(phase3b, marker, True)
 
 

@@ -10394,6 +10394,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "name": "tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_health_canonical_invalidation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_device_health_d4.py",
       "name": "tests/backend/test_lite_device_health_d4.py",
       "source_refs": [
@@ -30881,6 +30892,20 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-2",
       "type": "affected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_device_health_canonical_invalidation.py"
+      ],
+      "id": "rel:62e80b4f20543de3",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

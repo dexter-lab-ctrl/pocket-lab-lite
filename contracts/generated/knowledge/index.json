@@ -23702,6 +23702,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "name": "tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "source_refs": [
+        "tests/backend/test_lite_device_health_canonical_invalidation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_device_health_d4.py",
       "name": "tests/backend/test_lite_device_health_d4.py",
       "source_refs": [
@@ -28360,6 +28370,7 @@
         "test:tests/backend/test_lite_device_facts_api_contract.py",
         "test:tests/backend/test_lite_device_facts_generated_contract.py",
         "test:tests/backend/test_lite_device_facts_matrix.py",
+        "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_device_lifecycle_idempotency.py",
         "test:tests/backend/test_lite_device_system_profile.py",
@@ -29531,6 +29542,7 @@
         "test:tests/backend/test_lite_device_facts_api_contract.py",
         "test:tests/backend/test_lite_device_facts_generated_contract.py",
         "test:tests/backend/test_lite_device_facts_matrix.py",
+        "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_device_lifecycle_idempotency.py",
         "test:tests/backend/test_lite_device_system_profile.py",
@@ -38583,6 +38595,12 @@
         }
       ],
       "test:tests/backend/test_lite_device_facts_api_contract.py": [
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_device_health_canonical_invalidation.py": [
         {
           "source": "reason:protected_server_host",
           "type": "verified_by"
@@ -56944,6 +56962,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_device_lifecycle_idempotency.py",
           "type": "verified_by"
         },
@@ -69458,6 +69480,15 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-2",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_device_health_canonical_invalidation.py"
+      ],
+      "id": "rel:62e80b4f20543de3",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_device_health_canonical_invalidation.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -87111,9 +87142,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "e949fa5486340dd71f8ea64c3736832538eff2454ad8904daf4187b99724f4ec",
+  "source_fingerprint": "0750f37091c3d7d6bc37eebf523f5dc05b46ae0dddca96eedadc6e42007ec01b",
   "statistics": {
-    "entity_count": 1140,
+    "entity_count": 1141,
     "entity_type_counts": {
       "adr": 6,
       "api": 186,
@@ -87130,14 +87161,14 @@
       "runtime-topology": 9,
       "subject": 201,
       "table": 67,
-      "test": 215,
+      "test": 216,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3187,
-    "source_count": 252
+    "relation_count": 3188,
+    "source_count": 253
   }
 }
