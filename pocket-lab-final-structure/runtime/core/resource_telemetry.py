@@ -1,9 +1,9 @@
 """Bounded, platform-safe resource telemetry providers for Pocket Lab Lite.
 
-Collectors return compatibility numeric fields plus canonical observations.  A
+Collectors return compatibility numeric fields plus canonical observations. A
 failed metric never becomes an invented numeric zero and never invalidates the
-rest of the sample.  No private filesystem paths are included in returned
-payloads.
+rest of the sample. No private filesystem paths, process ids, command lines, or
+secrets are included in returned payloads.
 """
 from __future__ import annotations
 
@@ -15,10 +15,24 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-RESOURCE_OBSERVATION_SCHEMA_VERSION = 2
+RESOURCE_OBSERVATION_SCHEMA_VERSION = 3
 _MAX_TEXT_BYTES = 64 * 1024
 _MAX_THERMAL_ZONES = 64
-_CPU_PREVIOUS: tuple[int, int] | None = None
+_MAX_PROC_ENTRIES = 512
+_WORKLOAD_PREVIOUS: tuple[float, dict[tuple[int, int], int]] | None = None
+
+# Deliberately narrow first-party process identity markers. Generic dependency
+# binaries are accepted only when their command line also carries a Pocket Lab
+# marker, preventing unrelated Termux processes from being counted.
+_POCKETLAB_SCRIPT_MARKERS = (
+    "pocketlab_node_agent.py",
+    "pocketlab_agent_supervisor.py",
+    "pocketlab_worker.py",
+    "pocketlab_core_supervisor.py",
+)
+_POCKETLAB_API_MARKERS = ("api_fastapi", "pocket-lab-final-structure/runtime/api_fastapi")
+_POCKETLAB_CONTEXT_MARKERS = ("pocketlab", "pocket-lab", ".pocketlab")
+_POCKETLAB_DEPENDENCY_BINARIES = ("nats-server", "caddy")
 
 
 @dataclass(frozen=True)
@@ -80,7 +94,12 @@ def _observation(
 
 
 def _failure(metric: str, *, source: str, observed_at: str, reason_code: str) -> dict[str, Any]:
-    status = "permission_denied" if reason_code == "permission_denied" else "unsupported" if reason_code in {"unsupported", "not_present"} else "transient_failure" if reason_code in {"collection_failed", "provider_timeout"} else "unavailable"
+    status = (
+        "permission_denied" if reason_code == "permission_denied"
+        else "unsupported" if reason_code in {"unsupported", "not_present"}
+        else "transient_failure" if reason_code in {"collection_failed", "provider_timeout"}
+        else "unavailable"
+    )
     support = "unsupported" if status == "unsupported" else "supported"
     return _observation(
         metric,
@@ -159,52 +178,151 @@ def _storage(observed_at: str, root: Path) -> dict[str, Any]:
     )
 
 
-def _read_proc_stat() -> tuple[tuple[int, int] | None, str | None]:
-    text, error = _read_text(Path("/proc/stat"), limit=8192)
+def _read_proc_cmdline(pid: int) -> tuple[str | None, str | None]:
+    try:
+        raw = (Path("/proc") / str(pid) / "cmdline").read_bytes()[:4096]
+    except PermissionError:
+        return None, "permission_denied"
+    except (FileNotFoundError, ProcessLookupError):
+        return None, "not_present"
+    except OSError:
+        return None, "collection_failed"
+    if not raw:
+        return "", None
+    return raw.replace(b"\x00", b" ").decode("utf-8", errors="replace").strip().lower(), None
+
+
+def _is_pocketlab_process(cmdline: str) -> bool:
+    value = str(cmdline or "").lower()
+    if not value:
+        return False
+    if any(marker in value for marker in _POCKETLAB_SCRIPT_MARKERS):
+        return True
+    if "uvicorn" in value and any(marker in value for marker in _POCKETLAB_API_MARKERS):
+        return True
+    return (
+        any(binary in value for binary in _POCKETLAB_DEPENDENCY_BINARIES)
+        and any(marker in value for marker in _POCKETLAB_CONTEXT_MARKERS)
+    )
+
+
+def _read_process_ticks(pid: int) -> tuple[tuple[int, int] | None, str | None]:
+    text, error = _read_text(Path("/proc") / str(pid) / "stat", limit=4096)
     if error:
         return None, error
-    first = (text or "").splitlines()[0:1]
-    if not first or not first[0].startswith("cpu "):
-        return None, "malformed_value"
     try:
-        values = [int(value) for value in first[0].split()[1:11]]
-    except ValueError:
+        # comm may contain spaces, so parse fields only after its closing ')'.
+        tail = (text or "").rsplit(")", 1)[1].strip().split()
+        if len(tail) < 20:
+            return None, "malformed_value"
+        utime = int(tail[11])
+        stime = int(tail[12])
+        starttime = int(tail[19])
+    except (IndexError, TypeError, ValueError):
         return None, "malformed_value"
-    if len(values) < 4:
+    if utime < 0 or stime < 0 or starttime < 0:
         return None, "malformed_value"
-    idle = values[3] + (values[4] if len(values) > 4 else 0)
-    total = sum(values)
-    return (total, idle), None
+    return (starttime, utime + stime), None
 
 
-def _cpu_usage(observed_at: str) -> dict[str, Any]:
-    global _CPU_PREVIOUS
-    current, error = _read_proc_stat()
-    if error:
-        return _failure("cpu_usage", source="proc_stat", observed_at=observed_at, reason_code=error)
-    if current is None:
-        return _failure("cpu_usage", source="proc_stat", observed_at=observed_at, reason_code="malformed_value")
-    previous = _CPU_PREVIOUS
-    _CPU_PREVIOUS = current
+def _workload_snapshot() -> tuple[dict[tuple[int, int], int], int, bool]:
+    samples: dict[tuple[int, int], int] = {}
+    matched = 0
+    saw_permission = False
+    try:
+        entries = sorted(
+            (entry for entry in Path("/proc").iterdir() if entry.name.isdigit()),
+            key=lambda entry: int(entry.name),
+        )[:_MAX_PROC_ENTRIES]
+    except (PermissionError, OSError):
+        return {}, 0, True
+    for entry in entries:
+        pid = int(entry.name)
+        cmdline, cmd_error = _read_proc_cmdline(pid)
+        if cmd_error == "permission_denied":
+            saw_permission = True
+            continue
+        if cmd_error or not _is_pocketlab_process(cmdline or ""):
+            continue
+        sample, stat_error = _read_process_ticks(pid)
+        if stat_error == "permission_denied":
+            saw_permission = True
+            continue
+        if stat_error or sample is None:
+            continue
+        starttime, ticks = sample
+        samples[(pid, starttime)] = ticks
+        matched += 1
+    return samples, matched, saw_permission
+
+
+def _pocketlab_workload_cpu(observed_at: str) -> dict[str, Any]:
+    """Measure only explicitly identified Pocket Lab runtime processes.
+
+    No shell, PM2 CLI, root, raw PID, or command-line data crosses the collector
+    boundary. PID start time is part of the private baseline key to resist reuse.
+    """
+    global _WORKLOAD_PREVIOUS
+    now_monotonic = time.monotonic()
+    current, process_count, saw_permission = _workload_snapshot()
+    if not current and process_count == 0 and saw_permission:
+        return _failure(
+            "pocketlab_workload_cpu",
+            source="proc_process_accounting",
+            observed_at=observed_at,
+            reason_code="permission_denied",
+        )
+    previous = _WORKLOAD_PREVIOUS
+    _WORKLOAD_PREVIOUS = (now_monotonic, current)
     if previous is None:
         return _observation(
-            "cpu_usage",
+            "pocketlab_workload_cpu",
+            value={"process_count": process_count},
             status="verification_pending",
-            source="proc_stat",
+            source="proc_process_accounting",
             observed_at=observed_at,
             reason_code="baseline_required",
         )
-    total_delta = current[0] - previous[0]
-    idle_delta = current[1] - previous[1]
-    if total_delta <= 0 or idle_delta < 0:
-        return _failure("cpu_usage", source="proc_stat", observed_at=observed_at, reason_code="malformed_value")
-    percent = max(0.0, min(100.0, ((total_delta - idle_delta) / total_delta) * 100.0))
+    elapsed = now_monotonic - previous[0]
+    if elapsed <= 0:
+        return _failure(
+            "pocketlab_workload_cpu",
+            source="proc_process_accounting",
+            observed_at=observed_at,
+            reason_code="malformed_value",
+        )
+    try:
+        ticks_per_second = int(os.sysconf("SC_CLK_TCK"))
+        cpu_count = max(1, int(os.cpu_count() or 1))
+    except (ValueError, OSError, TypeError):
+        return _failure(
+            "pocketlab_workload_cpu",
+            source="proc_process_accounting",
+            observed_at=observed_at,
+            reason_code="unsupported",
+        )
+    if ticks_per_second <= 0:
+        return _failure(
+            "pocketlab_workload_cpu",
+            source="proc_process_accounting",
+            observed_at=observed_at,
+            reason_code="unsupported",
+        )
+    previous_ticks = previous[1]
+    delta_ticks = sum(
+        max(0, ticks - previous_ticks[key])
+        for key, ticks in current.items()
+        if key in previous_ticks
+    )
+    # Percentage of total device CPU capacity consumed by Pocket Lab processes.
+    usage = (delta_ticks / ticks_per_second) / elapsed / cpu_count * 100.0
+    usage = max(0.0, min(100.0, usage))
     return _observation(
-        "cpu_usage",
-        value={"usage_percent": round(percent, 1)},
+        "pocketlab_workload_cpu",
+        value={"usage_percent": round(usage, 1), "process_count": process_count},
         unit="percent",
         status="available",
-        source="proc_stat",
+        source="proc_process_accounting",
         observed_at=observed_at,
         reason_code="collected",
     )
@@ -306,8 +424,6 @@ def _temperature(observed_at: str) -> dict[str, Any]:
             saw_invalid = True
             continue
         celsius = raw / 1000.0 if abs(raw) >= 1000 else raw
-        # Android thermal sysfs frequently exposes disabled/sentinel values such
-        # as -273000, -40000 and 0.  None of those is a usable device temperature.
         if not (1.0 <= celsius <= 150.0):
             saw_invalid = True
             continue
@@ -316,8 +432,6 @@ def _temperature(observed_at: str) -> dict[str, Any]:
         candidates.sort(key=lambda item: (-item[0], item[2]))
         score = candidates[0][0]
         peers = [item[1] for item in candidates if item[0] == score][:8]
-        # Median of semantically equivalent CPU/SoC sensors avoids selecting an
-        # arbitrary hot peripheral while still tolerating multi-cluster devices.
         peers.sort()
         middle = len(peers) // 2
         value = peers[middle] if len(peers) % 2 else round((peers[middle - 1] + peers[middle]) / 2.0, 1)
@@ -341,7 +455,7 @@ def _temperature(observed_at: str) -> dict[str, Any]:
 RESOURCE_PROVIDERS: tuple[ResourceProvider, ...] = (
     ResourceProvider("memory", "proc_meminfo", _memory, 200.0),
     ResourceProvider("storage", "statvfs", _storage, 250.0),
-    ResourceProvider("cpu_usage", "proc_stat", _cpu_usage, 200.0),
+    ResourceProvider("pocketlab_workload_cpu", "proc_process_accounting", _pocketlab_workload_cpu, 300.0),
     ResourceProvider("load_average", "platform_loadavg", _load_average, 100.0),
     ResourceProvider("uptime", "boot_clock", _uptime, 150.0),
     ResourceProvider("temperature", "sysfs_thermal", _temperature, 350.0),
@@ -383,9 +497,10 @@ def collect_resource_telemetry(storage_root: str | os.PathLike[str]) -> dict[str
             "freeSpaceMB": value.get("free_mb"),
             "totalSpaceMB": value.get("total_mb"),
         })
-    cpu = observations["cpu_usage"]
-    if cpu.get("status") == "available" and isinstance(cpu.get("value"), dict):
-        payload["cpu_usage_percent"] = cpu["value"].get("usage_percent")
+    workload = observations["pocketlab_workload_cpu"]
+    if workload.get("status") == "available" and isinstance(workload.get("value"), dict):
+        payload["pocketlab_workload_cpu_percent"] = workload["value"].get("usage_percent")
+        payload["pocketlab_workload_process_count"] = workload["value"].get("process_count")
     temperature = observations["temperature"]
     if temperature.get("status") == "available" and isinstance(temperature.get("value"), dict):
         value = temperature["value"].get("celsius")
