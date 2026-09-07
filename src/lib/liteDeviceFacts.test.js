@@ -57,7 +57,7 @@ describe('Lite shared device facts', () => {
       },
     });
     expect(resourceFactValue(facts, 'storage', 'free_mb')).toBeNull();
-    expect(resourceFactAvailabilityLabel(facts.resources.storage)).toBe('Permission denied');
+    expect(resourceFactAvailabilityLabel(facts.resources.storage)).toBe('Restricted');
   });
 });
 
@@ -71,7 +71,7 @@ describe('Lite Device Facts future-safe evidence normalization', () => {
       uptime: { status: 'transient_failure', collection_status: 'transient_failure', freshness: 'current', value: null },
     } });
     expect(resourceFactAvailabilityLabel(facts.resources.memory)).toBe('Stale');
-    expect(resourceFactAvailabilityLabel(facts.resources.storage)).toBe('Permission denied');
+    expect(resourceFactAvailabilityLabel(facts.resources.storage)).toBe('Restricted');
     expect(resourceFactAvailabilityLabel(facts.resources.temperature)).toBe('Unsupported');
     expect(resourceFactAvailabilityLabel(facts.resources.uptime)).toBe('Temporarily unavailable');
   });
