@@ -1,4 +1,4 @@
-const RESOURCE_KEYS = Object.freeze(['memory', 'storage', 'cpu_usage', 'temperature', 'load_average', 'uptime']);
+const RESOURCE_KEYS = Object.freeze(['memory', 'storage', 'pocketlab_workload_cpu', 'cpu_usage', 'temperature', 'load_average', 'uptime']);
 const SOFTWARE_COMPONENTS = Object.freeze(['node_agent', 'supervisor']);
 const UNSAFE_FACT_TEXT = /(token|password|secret|credential|api[_-]?key|bearer\s+|nats:\/\/|\/data\/data\/|\/storage\/emulated\/|\/home\/|\/mnt\/|\/root\/)/i;
 const OBSERVATION_STATES = new Set([
@@ -54,8 +54,16 @@ function sanitizedResourceValue(metric, value) {
     const free = finiteDeviceFactNumber(input.free_mb);
     return total !== null && total > 0 && free !== null && free <= total ? { total_mb: total, free_mb: free } : {};
   }
-  if (metric === 'cpu_usage') {
+  if (metric === 'cpu_usage' || metric === 'pocketlab_workload_cpu') {
     const usage = finiteDeviceFactNumber(input.usage_percent, { max: 100 });
+    if (metric === 'pocketlab_workload_cpu') {
+      const processCount = finiteDeviceFactNumber(input.process_count, { max: 512 });
+      if (usage === null && processCount === null) return {};
+      return {
+        ...(usage !== null ? { usage_percent: usage } : {}),
+        ...(processCount !== null ? { process_count: Math.trunc(processCount) } : {}),
+      };
+    }
     return usage !== null ? { usage_percent: usage } : {};
   }
   if (metric === 'temperature') {
@@ -113,6 +121,21 @@ function legacyResourceFacts(telemetry = {}) {
   if (storageTotal !== null && storageTotal > 0 && storageFree !== null && storageFree <= storageTotal) {
     resources.storage = { metric: 'storage', value: { total_mb: storageTotal, free_mb: storageFree }, status: 'available', collection_status: 'available', freshness: 'current', observed_at: sampledAt, source: 'legacy_telemetry', reason_code: 'legacy_telemetry_value' };
   }
+  const workloadCpu = finiteDeviceFactNumber(input.pocketlab_workload_cpu_percent, { max: 100 });
+  const workloadCount = finiteDeviceFactNumber(input.pocketlab_workload_process_count, { max: 512 });
+  if (workloadCpu !== null || workloadCount !== null) {
+    resources.pocketlab_workload_cpu = {
+      metric: 'pocketlab_workload_cpu',
+      value: {
+        ...(workloadCpu !== null ? { usage_percent: workloadCpu } : {}),
+        ...(workloadCount !== null ? { process_count: Math.trunc(workloadCount) } : {}),
+      },
+      status: 'available', collection_status: 'available', freshness: 'current', observed_at: sampledAt,
+      source: 'legacy_telemetry', reason_code: 'legacy_telemetry_value',
+    };
+  }
+  // Whole-system CPU remains compatibility-only for old snapshots and is never
+  // selected by current Pocket Lab resource presentation.
   const cpu = finiteDeviceFactNumber(input.cpu_usage_percent, { max: 100 });
   if (cpu !== null) resources.cpu_usage = { metric: 'cpu_usage', value: { usage_percent: cpu }, status: 'available', collection_status: 'available', freshness: 'current', observed_at: sampledAt, source: 'legacy_telemetry', reason_code: 'legacy_telemetry_value' };
   const temperature = finiteDeviceFactNumber(input.cpu_temp_c ?? input.cpuTemp, { min: 1, max: 150 });
@@ -123,20 +146,24 @@ function legacyResourceFacts(telemetry = {}) {
 function healthResourceFacts(health = {}) {
   const resources = object(health.resources);
   const output = {};
+  const loadMetric = text(resources.load?.resource_metric, '');
   const map = {
     memory: ['memory', resources.memory?.available_mb != null ? { free_mb: resources.memory.available_mb, total_mb: resources.memory.total_mb } : null],
     storage: ['storage', resources.storage?.available_mb != null ? { free_mb: resources.storage.available_mb, total_mb: resources.storage.total_mb } : null],
-    cpu_usage: ['load', resources.load?.usage_percent != null ? { usage_percent: resources.load.usage_percent } : null],
+    pocketlab_workload_cpu: ['load', loadMetric === 'pocketlab_workload_cpu' && resources.load?.usage_percent != null
+      ? { usage_percent: resources.load.usage_percent, process_count: resources.load.process_count }
+      : null],
     temperature: ['temperature', resources.temperature?.celsius != null ? { celsius: resources.temperature.celsius } : null],
   };
   Object.entries(map).forEach(([metric, [key, value]]) => {
     const item = object(resources[key]);
     if (!Object.keys(item).length) return;
+    if (metric === 'pocketlab_workload_cpu' && loadMetric !== 'pocketlab_workload_cpu') return;
     output[metric] = {
       metric,
       value,
       status: canonicalStatus(item.observation_status || item.collection_status || (value ? 'available' : 'missing')),
-      collection_status: canonicalStatus(item.collection_status || (value ? 'available' : 'missing')),
+      collection_status: canonicalStatus(item.observation_status || item.collection_status || (value ? 'available' : 'missing')),
       freshness: text(item.freshness, 'missing'),
       observed_at: sanitizedObservedAt(item.observed_at),
       source: safeMetadataText(item.source, 'health_projection', 80),
@@ -201,11 +228,36 @@ export function resourceFactAvailabilityLabel(observation = {}) {
   const status = canonicalStatus(observation.status || observation.collection_status, 'missing');
   return ({
     available: 'Available', current: 'Available', stale: 'Stale', missing: 'Not reported',
-    unsupported: 'Unsupported', permission_denied: 'Permission denied', unavailable: 'Unavailable',
+    unsupported: 'Unsupported', permission_denied: 'Restricted', unavailable: 'Unavailable',
     transient_failure: 'Temporarily unavailable', verification_pending: 'Verification pending', blocked: 'Blocked', not_applicable: 'Not applicable',
   })[status] || 'Unavailable';
 }
 
+export function formatDeviceCapacityGb(valueMb) {
+  const parsed = finiteDeviceFactNumber(valueMb);
+  if (parsed === null) return 'Not available';
+  const gb = parsed / 1024;
+  return `${gb >= 100 ? Math.round(gb) : gb.toFixed(1)} GB`;
+}
+
+export function deviceResourcePresentation(facts, metric, healthResource = {}) {
+  const normalizedFacts = object(facts);
+  const observation = object(normalizedFacts.resources?.[metric]);
+  const health = object(healthResource);
+  const healthStatus = text(health.status, 'unknown').toLowerCase().replace(/[\s-]+/g, '_') || 'unknown';
+  return {
+    metric,
+    observation,
+    availabilityLabel: resourceFactAvailabilityLabel(observation),
+    observationStatus: canonicalStatus(observation.status || observation.collection_status, 'missing'),
+    freshness: text(observation.freshness, 'missing'),
+    source: safeMetadataText(observation.source, 'unknown', 80),
+    reasonCode: safeMetadataText(observation.reason_code, '', 80),
+    observedAt: observation.observed_at || null,
+    healthStatus,
+    healthSummary: text(health.summary, ''),
+  };
+}
 
 function canonicalCapabilityStatus(value) {
   const status = text(value, 'verification_pending').toLowerCase().replace(/[\s-]+/g, '_');
