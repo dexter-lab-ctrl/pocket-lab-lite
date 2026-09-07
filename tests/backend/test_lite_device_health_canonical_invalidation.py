@@ -107,16 +107,71 @@ def _legacy_health() -> dict:
     }
 
 
+def _capture_attribute(target, name: str):
+    """Capture both descriptor value and whether an instance/module owned it."""
+    namespace = vars(target)
+    return name in namespace, namespace.get(name), getattr(target, name, None)
+
+
+def _restore_attribute(target, name: str, snapshot) -> None:
+    owned, owned_value, resolved_value = snapshot
+    if owned:
+        setattr(target, name, owned_value)
+        return
+    if name in vars(target):
+        delattr(target, name)
+    # Module globals are always owned. The fallback is only needed for unusual
+    # proxy-like test objects where deletion cannot reveal the original value.
+    if getattr(target, name, None) is None and resolved_value is not None:
+        setattr(target, name, resolved_value)
+
+
 @pytest.fixture(autouse=True)
 def isolated_runtime_state(tmp_path):
     ensure_runtime_path()
     from api_fastapi import deps
+    from api_fastapi.services import (
+        fleet_registry,
+        lite_device_health,
+        lite_phase3b_projections as phase3b,
+        lite_status,
+    )
+    from api_fastapi.services.live_status import LIVE_STATUS
     from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
     state = isolated_state_dir(tmp_path)
+    original_settings = deps.core.SETTINGS
     deps.core.SETTINGS = deps.core.Settings(state_dir=state)
     CONTROL_PLANE.initialize()
-    yield
+
+    # Runtime-extension installers intentionally mutate shared module/instance
+    # callbacks. Snapshot every attribute touched by these tests so one test file
+    # cannot change the evaluator contract seen by later unit tests in the same
+    # pytest process.
+    snapshots = [
+        (lite_device_health, "evaluate_device_health", _capture_attribute(lite_device_health, "evaluate_device_health")),
+        (lite_device_health, "_resource_assessment", _capture_attribute(lite_device_health, "_resource_assessment")),
+        (lite_device_health, "_pocketlab_device_facts_health_extension_v3", _capture_attribute(lite_device_health, "_pocketlab_device_facts_health_extension_v3")),
+        (lite_status, "_server_host_device", _capture_attribute(lite_status, "_server_host_device")),
+        (lite_status, "_pocketlab_server_health_signals_v2", _capture_attribute(lite_status, "_pocketlab_server_health_signals_v2")),
+        (lite_status, "_lite_telemetry", _capture_attribute(lite_status, "_lite_telemetry")),
+        (lite_status, "_build_lite_status_from_inputs", _capture_attribute(lite_status, "_build_lite_status_from_inputs")),
+        (lite_status, "default_lite_status_state", _capture_attribute(lite_status, "default_lite_status_state")),
+        (lite_status, "_pocketlab_device_facts_status_extension_v2", _capture_attribute(lite_status, "_pocketlab_device_facts_status_extension_v2")),
+        (phase3b, "status_source_revision", _capture_attribute(phase3b, "status_source_revision")),
+        (phase3b, "builder_for", _capture_attribute(phase3b, "builder_for")),
+        (phase3b, "source_revision_for", _capture_attribute(phase3b, "source_revision_for")),
+        (phase3b, "_pocketlab_device_facts_source_revision_v2", _capture_attribute(phase3b, "_pocketlab_device_facts_source_revision_v2")),
+        (fleet_registry, "fleet_source_revision", _capture_attribute(fleet_registry, "fleet_source_revision")),
+        (LIVE_STATUS, "sample_telemetry", _capture_attribute(LIVE_STATUS, "sample_telemetry")),
+        (LIVE_STATUS, "_pocketlab_device_facts_telemetry_invalidation_v2", _capture_attribute(LIVE_STATUS, "_pocketlab_device_facts_telemetry_invalidation_v2")),
+    ]
+    try:
+        yield
+    finally:
+        for target, name, snapshot in reversed(snapshots):
+            _restore_attribute(target, name, snapshot)
+        deps.core.SETTINGS = original_settings
 
 
 def test_live_server_phone_facts_rebuild_legacy_unknown_health():
