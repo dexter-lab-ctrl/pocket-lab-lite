@@ -114,6 +114,58 @@ def install_health_projection_extension() -> None:
         lite_status._server_host_device = server_host_device
         setattr(lite_status, "_pocketlab_server_health_signals_v2", True)
 
+    # A durable node record for the protected Server Host is merged back into
+    # the synthesized host before health evaluation. The normal fleet merge is
+    # intentionally shallow; an equal-rank incoming node therefore replaces the
+    # private _health_signals dict wholesale. When that node copy carries no
+    # telemetry, preserve the bounded central sample attached above rather than
+    # turning all canonical resource observations into "missing".
+    original_merge_lite_device = getattr(lite_status, "_merge_lite_device", None)
+    merge_marker = "_pocketlab_server_health_signal_merge_v1"
+    if callable(original_merge_lite_device) and not getattr(lite_status, merge_marker, False):
+        def merge_lite_device(existing, incoming):
+            merged = original_merge_lite_device(existing, incoming)
+            existing_signals = (
+                existing.get("_health_signals")
+                if isinstance(existing, dict) and isinstance(existing.get("_health_signals"), dict)
+                else {}
+            )
+            existing_telemetry = (
+                existing_signals.get("telemetry")
+                if isinstance(existing_signals.get("telemetry"), dict)
+                else {}
+            )
+            incoming_signals = (
+                incoming.get("_health_signals")
+                if isinstance(incoming, dict) and isinstance(incoming.get("_health_signals"), dict)
+                else {}
+            )
+            incoming_telemetry = (
+                incoming_signals.get("telemetry")
+                if isinstance(incoming_signals.get("telemetry"), dict)
+                else {}
+            )
+            protected_existing = bool(
+                isinstance(existing, dict)
+                and (
+                    existing.get("is_current")
+                    or existing.get("protected_server_host")
+                    or str(existing.get("role") or "").strip().lower().replace("-", "_") == "server_host"
+                )
+            )
+            if protected_existing and existing_telemetry and not incoming_telemetry:
+                merged_signals = (
+                    dict(merged.get("_health_signals") or {})
+                    if isinstance(merged.get("_health_signals"), dict)
+                    else {}
+                )
+                merged_signals["telemetry"] = dict(existing_telemetry)
+                merged["_health_signals"] = merged_signals
+            return merged
+
+        lite_status._merge_lite_device = merge_lite_device
+        setattr(lite_status, merge_marker, True)
+
     def evaluate_device_health(device, *, signals=None, previous=None, now_epoch=None):
         signals = signals if isinstance(signals, dict) else {}
         previous = previous if isinstance(previous, dict) else {}
