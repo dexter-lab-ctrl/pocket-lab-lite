@@ -265,6 +265,13 @@ def _register_job(
 
 
 def register_jobs() -> dict[str, bool]:
+    # The worker is the normal projection executor. Install the same Device Facts
+    # adapters used by the API before any builder or source-revision callback is
+    # captured so worker-owned fleet/status projections cannot persist legacy
+    # health semantics.
+    from .lite_device_runtime_extensions import install_runtime_extensions
+
+    install_runtime_extensions()
     expected_database_path = str(database_path())
     return {
         "catalog": _register_job(
@@ -291,7 +298,7 @@ def register_jobs() -> dict[str, bool]:
         ),
         "fleet": _register_job(
             domain="fleet", key="summary", snapshot_builder=CONTROL_PLANE.fleet_projection_snapshot,
-            builder=lite_status.lite_fleet,
+            builder=lambda: lite_status.lite_fleet(),
             projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_fleet, payload),
             deadline_seconds=20.0, priority=15, work_class="critical",
         ),
@@ -348,7 +355,7 @@ def schedule_startup_warmup() -> dict[str, bool]:
             lambda payload: project_app_actions_payload("photoprism", payload),
             6.0, 30, "io",
         ),
-        ("fleet", "fleet", "summary", lite_status.lite_fleet, CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),
+        ("fleet", "fleet", "summary", lambda: lite_status.lite_fleet(), CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),
         ("recovery_summary", "recovery", "summary", recovery_summary_payload, CONTROL_PLANE.project_recovery, 4.0, 50, "io"),
         ("recovery_details", "recovery", "details", recovery_details_payload, CONTROL_PLANE.project_recovery, 8.0, 60, "io"),
     )
