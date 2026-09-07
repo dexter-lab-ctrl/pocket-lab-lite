@@ -37413,8 +37413,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "b1428c98bbdabd0920b9d2a8c876fb7597e3bc3d",
-          "head_tree": "ad826ba236d2423551385a59b5f6a715edc20a6e",
+          "head": "e78d77a0986d19d5c77448b4754c8d2a81e8f11b",
+          "head_tree": "6da9769492787ac6bd51972cff3f508a634ab3c8",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -39463,9 +39463,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "24ff57eea26759016e7541560ebba976a4824511099d3e1b4a54687565702cdf",
-        "documentation": "b6e2d4efcb9caee1b0ab9c8bade619a3bf15e47f86ae029bd5fefc15cb22286a",
+        "documentation": "b8bdad2496231049c9ed93943dbddf5ba79a10c1e665b0644d6d9b2e78d417de",
         "openapi": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
-        "operational_health": "ae4cf33b85305943b4645938d016a8377da605b4e91e18b014119431792e66c6"
+        "operational_health": "94a94a6146d2b8545bf05fcaaf00e40735b1e3e75332cda233b7aa9d66141997"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -41787,8 +41787,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "b1428c98bbdabd0920b9d2a8c876fb7597e3bc3d",
-        "head_tree": "ad826ba236d2423551385a59b5f6a715edc20a6e",
+        "head": "e78d77a0986d19d5c77448b4754c8d2a81e8f11b",
+        "head_tree": "6da9769492787ac6bd51972cff3f508a634ab3c8",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -106190,5 +106190,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "ca2caffe75f133dd8c87abe538a7aafc48ce9291a8c3c5ea784b57c30aa15107"
+  "source_fingerprint": "9a84d77b97712627eec6344b7e557d20441072818374faa9cb9820cf74f1657d"
 }

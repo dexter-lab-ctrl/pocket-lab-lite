@@ -154,6 +154,8 @@ def isolated_runtime_state(tmp_path):
         (lite_device_health, "_pocketlab_device_facts_health_extension_v3", _capture_attribute(lite_device_health, "_pocketlab_device_facts_health_extension_v3")),
         (lite_status, "_server_host_device", _capture_attribute(lite_status, "_server_host_device")),
         (lite_status, "_pocketlab_server_health_signals_v2", _capture_attribute(lite_status, "_pocketlab_server_health_signals_v2")),
+        (lite_status, "_merge_lite_device", _capture_attribute(lite_status, "_merge_lite_device")),
+        (lite_status, "_pocketlab_server_health_signal_merge_v1", _capture_attribute(lite_status, "_pocketlab_server_health_signal_merge_v1")),
         (lite_status, "_lite_telemetry", _capture_attribute(lite_status, "_lite_telemetry")),
         (lite_status, "_build_lite_status_from_inputs", _capture_attribute(lite_status, "_build_lite_status_from_inputs")),
         (lite_status, "default_lite_status_state", _capture_attribute(lite_status, "default_lite_status_state")),
@@ -217,6 +219,56 @@ def test_live_server_phone_facts_rebuild_legacy_unknown_health():
         "process_count": 4,
     }
     assert facts["resources"]["temperature"]["value"]["celsius"] == 37.8
+
+
+def test_same_id_server_host_merge_preserves_bounded_health_telemetry():
+    ensure_runtime_path()
+    from api_fastapi.services import (
+        lite_device_health,
+        lite_device_runtime_extensions,
+        lite_status,
+    )
+
+    lite_device_runtime_extensions.install_health_projection_extension()
+
+    synthesized = _server_phone_device()
+    synthesized["_health_signals"] = {
+        "telemetry": _server_phone_telemetry(),
+        "agent_version": "2.5.0-lite-trust-capability-awareness",
+        "supervisor_version": "1.2.2-opa-readiness-proof",
+        "capability_schema_version": 1,
+    }
+    durable_node_copy = _server_phone_device()
+    durable_node_copy["_health_signals"] = {
+        "telemetry": {},
+        "health": {},
+        "storage": {},
+        "reconnect_count": None,
+        "supervisor_repair_count": None,
+        "agent_version": "2.5.0-lite-trust-capability-awareness",
+        "supervisor_version": "1.2.2-opa-readiness-proof",
+        "capability_schema_version": 1,
+    }
+
+    merged = lite_status._merge_lite_device(synthesized, durable_node_copy)
+    signals = merged.get("_health_signals")
+    assert isinstance(signals, dict)
+    assert signals["telemetry"]["memory_total_mb"] == 7072
+    assert signals["telemetry"]["free_space_mb"] == 135725
+    assert signals["telemetry"]["pocketlab_workload_cpu_percent"] == 3.5
+    assert signals["telemetry"]["cpu_temp_c"] == 37.8
+
+    health = lite_device_health.evaluate_device_health(
+        merged,
+        signals=signals,
+        previous=_legacy_health(),
+        now_epoch=NOW_EPOCH,
+    )
+    assert health["resources"]["memory"]["status"] == "normal"
+    assert health["resources"]["storage"]["status"] == "normal"
+    assert health["resources"]["load"]["status"] == "normal"
+    assert health["resources"]["temperature"]["status"] == "normal"
+    assert health["resources"]["load"]["resource_metric"] == "pocketlab_workload_cpu"
 
 
 def test_observation_revision_advances_without_false_health_transition():
