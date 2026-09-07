@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "f395bcea9154f56908d6334ff8a318182bac9a3a0769b31a98339a49cf6f2733",
+  "source_fingerprint": "53f57ad3169f92b2e975cd36fbccbb655dddcb6a6bd3242a2d1f6d7113a525ca",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -134,7 +134,7 @@
     "src/lite/devices/DeviceCard.jsx": "d097b126488d070b423ff51e4ed01ead2cd0bac136fdcacd63348f82b0345330",
     "src/lite/devices/DeviceCard.test.jsx": "6d96c761d36a0c0b279cc96ed1706a7014ceb5fc939f89f970aa2ad5534d66ae",
     "src/lite/devices/DeviceCardScreen.test.jsx": "ed03a85a40d6725cadde59398c267e0d134111c29a920d57a2882310bc7d3901",
-    "src/lite/devices/DeviceDetailsLazy.jsx": "e81023c891a921045c895cd86d05d018b79ba9ce4ff66550eafd79641daf2e9c",
+    "src/lite/devices/DeviceDetailsLazy.jsx": "df620138ee2c463a111b3c4e0209e232d4c0c6db769e03a1a09a3cad70f06ef6",
     "src/lite/devices/DeviceModelPickerLazy.jsx": "6e8feb505b98df6413c0cd39d7fe281e8aa21f379f60fad90a322f085091f7fa",
     "src/lite/recovery/RecoveryActionDetailsLazy.jsx": "85f546be3f0d732f9009c324265bd7aa93f4bf619df7673f84d7430e1b0a95ea",
     "src/lite/recovery/RecoveryBackupHistory.jsx": "000264dc9b6e1cc8c2b1c204520b54e0fef2f89033ad3e043c811e3cd3e710ed",
