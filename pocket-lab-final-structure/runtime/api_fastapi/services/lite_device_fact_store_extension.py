@@ -18,9 +18,20 @@ _EXTENSION_MARKER = "_pocketlab_device_facts_extension_v2"
 _ORIGINALS_MARKER = "_pocketlab_device_facts_extension_originals_v2"
 
 
-def _health_values(health: dict[str, Any], updated_at: str, item: dict[str, Any] | None = None) -> dict[str, str]:
+def _health_values(health: dict[str, Any], updated_at: str, item: dict[str, Any] | None = None) -> dict[str, Any]:
     resources = health.get("resources") if isinstance(health.get("resources"), dict) else {}
     versions = health.get("versions") if isinstance(health.get("versions"), dict) else {}
+    try:
+        source_revision = max(0, int(health.get("source_revision") or 0))
+    except (TypeError, ValueError):
+        source_revision = 0
+    try:
+        input_contract_version = max(0, int(health.get("health_input_contract_version") or 0))
+    except (TypeError, ValueError):
+        input_contract_version = 0
+    evaluated_at = store_module._safe_text(
+        health.get("last_evaluated_at") or updated_at, 64
+    )
     dimensions = {
         "operational_health": health.get("operational_health") or {},
         "software_posture": health.get("software_posture") or {},
@@ -28,12 +39,16 @@ def _health_values(health: dict[str, Any], updated_at: str, item: dict[str, Any]
         "profile_completeness": health.get("profile_completeness") or {},
         "field_freshness": health.get("field_freshness") or {},
         "device_facts": health.get("device_facts") or ((item or {}).get("device_facts") if isinstance((item or {}).get("device_facts"), dict) else {}),
+        "health_input_contract_version": input_contract_version,
     }
     return {
         "resources_json": store_module._safe_json(resources, max_bytes=12288),
         "versions_json": store_module._safe_json(versions, max_bytes=8192),
         "source_freshness_json": store_module._safe_json(health.get("source_freshness") or {}, max_bytes=8192),
         "dimensions_json": store_module._safe_json(dimensions, max_bytes=16384),
+        "source_revision": source_revision,
+        "last_evaluated_at": evaluated_at,
+        "last_evaluated_at_epoch_ms": store_module._epoch_ms(evaluated_at),
         "updated_at": store_module._safe_text(updated_at, 64),
         "updated_at_epoch_ms": store_module._epoch_ms(updated_at),
     }
@@ -96,7 +111,8 @@ def install_device_fact_store_extension(control_plane: Any) -> Any:
             return changed, reasons
         values = _health_values(health, updated_at, item)
         row = conn.execute(
-            "SELECT resources_json,versions_json,source_freshness_json,dimensions_json "
+            "SELECT resources_json,versions_json,source_freshness_json,dimensions_json,"
+            "source_revision,last_evaluated_at,last_evaluated_at_epoch_ms "
             "FROM device_health_current WHERE device_id=?",
             (device_id,),
         ).fetchone()
@@ -105,23 +121,34 @@ def install_device_fact_store_extension(control_plane: Any) -> Any:
         current = dict(row)
         observation_changed = any(
             str(current.get(column) or "") != str(values[column])
-            for column in ("resources_json", "versions_json", "source_freshness_json", "dimensions_json")
+            for column in (
+                "resources_json", "versions_json", "source_freshness_json", "dimensions_json"
+            )
+        ) or int(current.get("source_revision") or 0) != int(values["source_revision"] or 0)
+        legacy_contract_refresh = (
+            int(current.get("source_revision") or 0) <= 0
+            and int(values["source_revision"] or 0) > 0
         )
-        if observation_changed:
+        if observation_changed or legacy_contract_refresh:
             conn.execute(
                 """
                 UPDATE device_health_current
                    SET resources_json=?, versions_json=?, source_freshness_json=?,
-                       dimensions_json=?, updated_at=?, updated_at_epoch_ms=?
+                       dimensions_json=?, source_revision=?,
+                       last_evaluated_at=?, last_evaluated_at_epoch_ms=?,
+                       updated_at=?, updated_at_epoch_ms=?
                  WHERE device_id=?
                 """,
                 (
                     values["resources_json"], values["versions_json"],
                     values["source_freshness_json"], values["dimensions_json"],
-                    values["updated_at"], values["updated_at_epoch_ms"], device_id,
+                    values["source_revision"], values["last_evaluated_at"],
+                    values["last_evaluated_at_epoch_ms"], values["updated_at"],
+                    values["updated_at_epoch_ms"], device_id,
                 ),
             )
-        # Observation refreshes intentionally keep the original semantic result.
+        # Observation/source refreshes intentionally keep the original semantic
+        # transition result. History is preserved; only current evidence advances.
         return changed, reasons
 
     def device_details(self, device_id: str):
