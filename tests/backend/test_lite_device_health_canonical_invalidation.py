@@ -195,12 +195,13 @@ def test_status_builder_projects_live_equivalent_canonical_server_facts(monkeypa
     ensure_runtime_path()
     from api_fastapi import deps
     from api_fastapi.services import lite_device_runtime_extensions, lite_status
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
     lite_device_runtime_extensions.install_status_projection_extension()
     monkeypatch.setattr(lite_status, "_mysql_socket_available", lambda: None)
     monkeypatch.setattr(lite_status.lite_catalog_service, "catalog_apps_count", lambda: 1)
     monkeypatch.setattr(
-        lite_status.CONTROL_PLANE,
+        CONTROL_PLANE,
         "fleet_health_summary",
         lambda: {
             "status": "ready",
@@ -246,15 +247,13 @@ def test_status_callbacks_are_late_bound_and_dirty_generation_changes_revision(m
     lite_device_runtime_extensions.install_source_revision_extensions()
 
     builder = phase3b.builder_for("system.status")
-    monkeypatch.setattr(lite_status, "build_lite_status_projection", lambda: {"sentinel": "late-bound"})
-    assert builder() == {"sentinel": "late-bound"}
-
     source = phase3b.source_revision_for("system.status")
-    monkeypatch.setattr(phase3b, "status_source_revision", lambda: 4242)
-    assert source() == 4242
+    with monkeypatch.context() as patch:
+        patch.setattr(lite_status, "build_lite_status_projection", lambda: {"sentinel": "late-bound"})
+        assert builder() == {"sentinel": "late-bound"}
+        patch.setattr(phase3b, "status_source_revision", lambda: 4242)
+        assert source() == 4242
 
-    # Restore the installed callback for the generation fence assertion.
-    monkeypatch.undo()
     first_generation = {"value": 7}
     monkeypatch.setattr(
         lite_device_runtime_extensions,
