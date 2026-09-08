@@ -209,8 +209,19 @@ def no_backup_payload(*, backup_id: str = "latest", kind: str = "backup") -> dic
         "retry_after_seconds": 2,
     }
 
+
 def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     repository = manifest.get("repository") if isinstance(manifest.get("repository"), dict) else {}
+    included_files = manifest.get("included_files") or []
+
+    def included_file_size(item: Any) -> int:
+        if not isinstance(item, dict):
+            return 0
+        try:
+            return max(0, int(item.get("size_bytes") or 0))
+        except (TypeError, ValueError):
+            return 0
+
     return {
         "backup_id": manifest.get("backup_id"),
         "created_at": manifest.get("created_at"),
@@ -229,11 +240,11 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         },
         "snapshot_id": manifest.get("snapshot_id"),
         "included_sets": manifest.get("included_sets", []),
-        "included_file_count": len(manifest.get("included_files") or []),
+        "included_file_count": len(included_files),
         "excluded_sensitive_items": manifest.get("excluded_sensitive_items", []),
         "verification_status": manifest.get("verification_status", "not_verified"),
         "restorable": bool(manifest.get("restorable", manifest.get("verification_status") == "verified")),
-        "size_bytes": int(manifest.get("size_bytes") or sum(int(item.get("size_bytes") or 0) for item in manifest.get("included_files") or [])),
+        "size_bytes": int(manifest.get("size_bytes") or sum(included_file_size(item) for item in included_files)),
         "included_components": manifest.get("included_components") or manifest.get("included_sets", []),
         "excluded_components": manifest.get("excluded_components") or manifest.get("excluded_runtime_items", []),
         "component_results": manifest.get("component_results") or {},
