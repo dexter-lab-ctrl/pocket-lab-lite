@@ -119,6 +119,8 @@ export default function RecoveryManageSheetLazy({
   detailsLoading = false,
   detailsError = '',
   onRetryDetails,
+  selectedBackupId = '',
+  onSelectBackup,
 }) {
   const activeSection = RECOVERY_MANAGE_SECTIONS.some((item) => item.id === section) ? section : 'backup';
   const recentHistory = (Array.isArray(history) ? history : []).slice(0, 3);
@@ -348,7 +350,16 @@ export default function RecoveryManageSheetLazy({
             {!latestBackup && !lastRestore?.restore_id && !recentHistory.length ? <p>No recovery activity yet.</p> : null}
           </div>
           <React.Suspense fallback={<div className="lite-recovery-history-loading">Loading backup history…</div>}>
-            <RecoveryBackupHistory initialHistory={history} latestPreviewReady={latestPreviewReady} savedStateOnly={savedStateOnly} />
+            <RecoveryBackupHistory
+              initialHistory={history}
+              latestPreviewReady={latestPreviewReady}
+              savedStateOnly={savedStateOnly}
+              selectedBackupId={selectedBackupId}
+              onSelectBackup={onSelectBackup}
+              onVerify={onVerify}
+              onPreview={onPreview}
+              onRecover={onRestore}
+            />
           </React.Suspense>
         </section>
       ) : null}

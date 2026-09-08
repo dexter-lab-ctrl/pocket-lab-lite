@@ -7,10 +7,14 @@ import os
 import tempfile
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Any
 
 from .lite_backup_policy import backup_layout
 from . import lite_storage_faults
+
+CURRENT_FORMAT_VERSION = 2
+_SAFE_BACKUP_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
 
 
 def _read_json(path: Path, default: Any) -> Any:
@@ -53,10 +57,14 @@ def canonical_checksum(payload: dict[str, Any]) -> str:
 
 
 def manifest_path(backup_id: str) -> Path:
+    if not _SAFE_BACKUP_ID.fullmatch(str(backup_id or "").strip()):
+        raise ValueError("invalid backup id")
     return backup_layout().manifests / f"{backup_id}.json"
 
 
 def receipt_path(backup_id: str) -> Path:
+    if not _SAFE_BACKUP_ID.fullmatch(str(backup_id or "").strip()):
+        raise ValueError("invalid backup id")
     return backup_layout().receipts / f"{backup_id}.json"
 
 
@@ -187,7 +195,7 @@ def resolve_backup_id(backup_id: str) -> str | None:
     if value == "latest":
         latest = latest_manifest()
         return str(latest.get("backup_id")) if latest else None
-    return value or None
+    return value if _SAFE_BACKUP_ID.fullmatch(value) else None
 
 
 
@@ -202,16 +210,33 @@ def no_backup_payload(*, backup_id: str = "latest", kind: str = "backup") -> dic
     }
 
 def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    repository = manifest.get("repository") if isinstance(manifest.get("repository"), dict) else {}
     return {
         "backup_id": manifest.get("backup_id"),
         "created_at": manifest.get("created_at"),
+        "completed_at": manifest.get("completed_at"),
+        "label": manifest.get("label") or "Pocket Lab Lite restore point",
+        "format_version": int(manifest.get("format_version") or 1),
+        "status": manifest.get("status") or manifest.get("verification_status") or "unknown",
+        "app_version": manifest.get("app_version"),
+        "schema_version": manifest.get("schema_version"),
         "engine": manifest.get("engine"),
-        "repository": manifest.get("repository"),
+        "repository": {
+            "type": repository.get("type") or "local",
+            "engine": repository.get("engine") or "restic",
+            "encrypted": bool(repository.get("encrypted", True)),
+            "location": "Configured encrypted repository",
+        },
         "snapshot_id": manifest.get("snapshot_id"),
         "included_sets": manifest.get("included_sets", []),
         "included_file_count": len(manifest.get("included_files") or []),
         "excluded_sensitive_items": manifest.get("excluded_sensitive_items", []),
         "verification_status": manifest.get("verification_status", "not_verified"),
+        "restorable": bool(manifest.get("restorable", manifest.get("verification_status") == "verified")),
+        "size_bytes": int(manifest.get("size_bytes") or sum(int(item.get("size_bytes") or 0) for item in manifest.get("included_files") or [])),
+        "included_components": manifest.get("included_components") or manifest.get("included_sets", []),
+        "excluded_components": manifest.get("excluded_components") or manifest.get("excluded_runtime_items", []),
+        "component_results": manifest.get("component_results") or {},
         "verified_at": manifest.get("verified_at"),
         "risk_level": manifest.get("risk_level", "low"),
         "manifest_checksum": manifest.get("manifest_checksum"),
@@ -240,4 +265,13 @@ def api_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
         "verified_at",
         "verification_checks",
     }
-    return {k: v for k, v in receipt.items() if k in allowed}
+    payload = {k: v for k, v in receipt.items() if k in allowed}
+    repository = payload.get("repository")
+    if isinstance(repository, dict):
+        payload["repository"] = {
+            "type": repository.get("type") or "local",
+            "engine": repository.get("engine") or "restic",
+            "encrypted": bool(repository.get("encrypted", True)),
+            "location": "Configured encrypted repository",
+        }
+    return payload

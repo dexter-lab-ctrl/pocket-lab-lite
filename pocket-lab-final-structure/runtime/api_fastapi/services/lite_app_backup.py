@@ -115,6 +115,14 @@ def _write_state(update: dict[str, Any]) -> dict[str, Any]:
         # State persistence must not fail only because cache invalidation
         # could not be completed. The cache remains bounded and recoverable.
         pass
+    try:
+        from . import lite_recovery_subprojections
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        lite_recovery_subprojections.invalidate_recovery_subprojections()
+        CONTROL_PLANE.invalidate_domain("recovery")
+    except Exception:
+        pass
 
     return state
 

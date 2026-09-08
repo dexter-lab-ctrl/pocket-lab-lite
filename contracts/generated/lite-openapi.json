@@ -344,7 +344,7 @@
             "type": "boolean"
           },
           "include_app_data": {
-            "default": false,
+            "default": true,
             "title": "Include App Data",
             "type": "boolean"
           },

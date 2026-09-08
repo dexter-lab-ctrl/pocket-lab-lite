@@ -37,6 +37,10 @@ _RECOVERY_BASE_VALUE: tuple[dict[str, Any], float] | None = None
 _RECOVERY_BASE_FUTURE: concurrent.futures.Future[Any] | None = None
 _RECOVERY_BASE_FAILURES = 0
 _RECOVERY_BASE_NEXT_ALLOWED = 0.0
+RECOVERY_SUMMARY_STALE_AFTER_MS = 10_000
+RECOVERY_SUMMARY_MAX_STALE_MS = 60_000
+RECOVERY_DETAILS_STALE_AFTER_MS = 15_000
+RECOVERY_DETAILS_MAX_STALE_MS = 90_000
 
 CORE_PROJECTION_DOMAINS = frozenset(
     {
@@ -172,7 +176,7 @@ def recovery_base_subprojection() -> dict[str, Any]:
     with _RECOVERY_BASE_LOCK:
         cached = _RECOVERY_BASE_VALUE
         future = _RECOVERY_BASE_FUTURE
-        if cached is not None and now - cached[1] <= 300.0:
+        if cached is not None and now - cached[1] <= 8.0:
             return dict(cached[0])
         if future is None and now >= _RECOVERY_BASE_NEXT_ALLOWED:
             future = _RECOVERY_BASE_EXECUTOR.submit(lite_status.lite_recovery_details)

@@ -82,6 +82,14 @@ def _package_fingerprint(artifact_hashes: dict[str, str]) -> str:
 def _write_json(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
     clean = policy.redact_value(payload)
     deps.core.write_json_file(path, clean)
+    try:
+        from . import lite_recovery_subprojections
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        lite_recovery_subprojections.invalidate_recovery_subprojections()
+        CONTROL_PLANE.invalidate_domain("recovery")
+    except Exception:
+        pass
     return clean
 
 

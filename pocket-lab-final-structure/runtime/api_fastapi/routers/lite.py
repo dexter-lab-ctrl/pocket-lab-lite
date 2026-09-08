@@ -846,7 +846,7 @@ class LitePolicyApplyRequest(BaseModel):
 
 class LiteBackupRequest(BaseModel):
     include_event_journal: bool = True
-    include_app_data: bool = False
+    include_app_data: bool = True
     reason: str | None = None
     dry_run: bool = False
 
@@ -3398,7 +3398,8 @@ def get_lite_recovery_summary(request: Request) -> Response:
             snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=False),
             builder=lite_core_projections.recovery_summary_payload,
             projector=CONTROL_PLANE.project_recovery,
-            stale_after_ms=10_000, max_stale_ms=60_000,
+            stale_after_ms=lite_core_projections.RECOVERY_SUMMARY_STALE_AFTER_MS,
+            max_stale_ms=lite_core_projections.RECOVERY_SUMMARY_MAX_STALE_MS,
             deadline_seconds=8.0, priority=50, work_class="io",
         )
     except PreparedProjectionUnavailable:
@@ -3415,7 +3416,8 @@ def get_lite_recovery_details(request: Request) -> Response:
             domain="recovery", key="details",
             snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True),
             builder=lite_core_projections.recovery_details_payload, projector=CONTROL_PLANE.project_recovery,
-            stale_after_ms=15_000, max_stale_ms=90_000,
+            stale_after_ms=lite_core_projections.RECOVERY_DETAILS_STALE_AFTER_MS,
+            max_stale_ms=lite_core_projections.RECOVERY_DETAILS_MAX_STALE_MS,
             deadline_seconds=10.0, priority=60, work_class="io",
         )
     except PreparedProjectionUnavailable:
@@ -3762,7 +3764,7 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
             detail={
                 "status": "backup_queue_unavailable",
                 "summary": "Backup request could not be queued because the local command bus is not reachable.",
-                "detail": str(exc),
+                "detail": "The backend command bus did not accept the request.",
             },
         ) from exc
     pending = lite_backup.record_backup_request(command)
@@ -3933,6 +3935,17 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
                 "summary": "Create a verified Preview Restore before restoring.",
             },
         )
+    try:
+        lite_backup.validate_restore_preview_binding(preview)
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "preview_stale_or_invalid",
+                "summary": "This restore preview is no longer current. Verify the selected backup and create a new preview.",
+                "sanitized": True,
+            },
+        ) from exc
     command_id = uuid.uuid4().hex
     selected = payload.backup_id
     submitted = await submit_domain_command(

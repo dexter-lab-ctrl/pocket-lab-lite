@@ -112,3 +112,15 @@ export const OfflineSavedManage = {
   },
 };
 export const Mobile320 = createLiteStory('recovery', 'recovery-ready', { viewport: 'mobile360', notes: 'Narrow mobile density guard; exact 320px overflow is covered by Playwright.' });
+
+// Enterprise Recovery state names map to the existing deterministic fixtures.
+export const NoBackups = NoBackupsYet;
+export const ManyRestorePoints = createLiteStory('recovery', 'recovery-verified', { viewport: 'desktop', notes: 'History is cursor-paginated and supports many timestamped restore points.' });
+export const RestorePreview = RestorePreviewReady;
+export const RestoreConfirmation = ManageRestore;
+export const RestoreRunning = createLiteStory('recovery', 'recovery-restore-running');
+export const RestoreSucceeded = createLiteStory('recovery', 'recovery-restore-completed');
+export const RestoreRolledBack = createLiteStory('recovery', 'recovery-rollback-completed');
+export const ProjectionRefreshing = ProjectionTooOld;
+export const MobileManage = OfflineSavedManage;
+export const DesktopManage = ManageOverview;

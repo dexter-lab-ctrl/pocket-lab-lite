@@ -110,9 +110,50 @@ def test_lite_backup_create_writes_manifest_and_receipt(tmp_path, monkeypatch):
     assert manifest["repository"]["encrypted"] is True
     assert manifest["manifest_checksum"]
     assert manifest["verification_status"] == "not_verified"
+    assert manifest["format_version"] == 2
+    assert manifest["restorable"] is False
+    assert manifest["component_results"]["control_plane_database"]["status"] == "validated"
+    assert manifest["component_results"]["media_exclusion"]["status"] == "validated"
     assert any(item["relative_path"] == "state/fleet_agents.json" for item in manifest["included_files"])
     assert receipt["evidence_saved"] is True
     assert "pocketlab.audit.lite.backup.created" in receipt["evidence_references"]
+
+
+def test_restore_point_metadata_is_bounded_and_media_paths_fail_closed(tmp_path, monkeypatch):
+    from api_fastapi.services import lite_backup_manifest, lite_backup_policy
+
+    assert lite_backup_policy.is_excluded_media_path(Path("/storage/emulated/0/DCIM/photo.jpg"))
+    assert lite_backup_policy.is_excluded_media_path(Path("/data/photoprism/originals/photo.jpg"))
+    assert not lite_backup_policy.is_excluded_media_path(Path("state/opa.json"))
+    assert lite_backup_manifest.resolve_backup_id("../private") is None
+    with pytest.raises(ValueError):
+        lite_backup_manifest.manifest_path("../private")
+
+    public = lite_backup_manifest.api_manifest({
+        "backup_id": "safe-1",
+        "format_version": 2,
+        "repository": {"location": "/home/private/restic", "encrypted": True},
+        "included_files": [],
+        "verification_status": "verified",
+        "restorable": True,
+    })
+    assert public["repository"]["location"] == "Configured encrypted repository"
+    assert "/home/private" not in json.dumps(public)
+    assert "restic_password" not in json.dumps(public).lower()
+
+
+def test_recovery_freshness_contract_has_bounded_source_and_cache_windows():
+    from api_fastapi.services import lite_core_projections, lite_recovery_subprojections, lite_semantic_revisions
+
+    summary = lite_semantic_revisions.contract_for("recovery", "summary")
+    details = lite_semantic_revisions.contract_for("recovery", "details")
+    assert summary is not None and details is not None
+    assert summary.max_probe_seconds <= lite_recovery_subprojections.RECOVERY_SUMMARY_TTL_SECONDS
+    assert details.max_probe_seconds <= lite_recovery_subprojections.RECOVERY_DETAILS_TTL_SECONDS
+    assert lite_core_projections.RECOVERY_SUMMARY_STALE_AFTER_MS == 10_000
+    assert lite_core_projections.RECOVERY_DETAILS_STALE_AFTER_MS == 15_000
+    assert lite_core_projections.RECOVERY_SUMMARY_MAX_STALE_MS == 60_000
+    assert lite_core_projections.RECOVERY_DETAILS_MAX_STALE_MS == 90_000
 
 
 def test_lite_recovery_backup_history_endpoints(tmp_path, monkeypatch):

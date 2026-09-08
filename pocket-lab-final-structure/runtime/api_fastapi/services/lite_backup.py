@@ -3,9 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import secrets
 import shutil
 import subprocess
+import threading
 import urllib.error
 import urllib.request
 import uuid
@@ -18,8 +20,17 @@ from .lite_backup_policy import (
     backup_layout,
     backup_scope,
     discover_state_sources,
+    is_excluded_media_path,
     public_repository_label,
 )
+
+_BACKUP_OPERATION_LOCK = threading.Lock()
+_SAFE_OPERATION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
+
+
+def _preview_checksum(preview: dict[str, Any]) -> str:
+    payload = {key: value for key, value in preview.items() if key != "preview_checksum"}
+    return lite_backup_manifest.canonical_checksum(payload)
 
 
 def _utc() -> str:
@@ -43,6 +54,23 @@ def _write_backup_state(payload: dict[str, Any]) -> None:
     current.update(payload)
     current["updated_at"] = _utc()
     deps.core.write_json_file(_state_file(), current)
+    _touch_recovery_projection()
+
+
+def _touch_recovery_projection() -> None:
+    """Wake prepared Recovery projections after a backend-owned transition."""
+    try:
+        from . import lite_recovery_subprojections
+
+        lite_recovery_subprojections.invalidate_recovery_subprojections()
+    except Exception:
+        pass
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        CONTROL_PLANE.invalidate_domain("recovery")
+    except Exception:
+        pass
 
 
 def record_backup_request(command: dict[str, Any]) -> dict[str, Any]:
@@ -53,7 +81,7 @@ def record_backup_request(command: dict[str, Any]) -> dict[str, Any]:
         "status": "queued",
         "requested_at": requested_at,
         "reason": command.get("reason") or "manual backup",
-        "include_app_data": bool(command.get("include_app_data", False)),
+        "include_app_data": bool(command.get("include_app_data", True)),
         "summary": "Backup request queued. The worker will initialize the encrypted repository if needed and then create the backup.",
     }
     _write_backup_state({"pending_backup": pending})
@@ -81,12 +109,15 @@ def _api_pending_backup(pending: dict[str, Any]) -> dict[str, Any]:
 
 
 def _command_id(command: dict[str, Any]) -> str:
-    return str(
+    value = str(
         command.get("command_id")
         or command.get("job_id")
         or command.get("trace_id")
         or uuid.uuid4().hex
-    )
+    ).strip()
+    if not _SAFE_OPERATION_ID.fullmatch(value):
+        raise RuntimeError("Recovery operation identifier is invalid")
+    return value
 
 
 def _sha256(path: Path) -> str:
@@ -167,7 +198,6 @@ def repository_readiness() -> dict[str, Any]:
         "summary": summary,
         "engine": "restic",
         "restic_available": bool(restic),
-        "restic_path": restic,
         "repository_initialized": initialized,
         "repository": {
             "type": "local",
@@ -175,12 +205,7 @@ def repository_readiness() -> dict[str, Any]:
             "encrypted": True,
             "ready": ready,
             "location": public_repository_label(layout),
-            "details": {
-                "root": str(layout.root),
-                "restic_repo": str(layout.repository),
-                "manifests": str(layout.manifests),
-                "receipts": str(layout.receipts),
-            },
+            "details": {"label": "Backend-managed encrypted repository"},
         },
         "latest_backup_id": latest.get("backup_id") if latest else None,
         "checked_at": _utc(),
@@ -382,6 +407,9 @@ def _copy_sources_to_staging(backup_id: str, staging_root: Path) -> list[dict[st
     copied: list[dict[str, Any]] = []
     for item in sources:
         src = Path(item["path"])
+        state_dir = deps.settings().state_dir
+        if src.is_symlink() or not src.is_file() or not _is_within_path(src, state_dir) or is_excluded_media_path(src):
+            raise RuntimeError("Backup source is not a registered safe application state path")
         rel = Path(str(item["relative_path"]).lstrip("/"))
         dest = staging_root / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -448,9 +476,7 @@ def _copy_database_backup_to_staging(
 
 
 def _record_backup_failure(backup_id: str, *, reason: str, include_app_data: bool, error: str) -> None:
-    safe_error = str(error or "backup failed").strip()
-    if len(safe_error) > 2000:
-        safe_error = safe_error[:2000] + "..."
+    safe_error = _safe_backend_error(error)
     failed_at = _utc()
     _write_backup_state(
         {
@@ -501,9 +527,18 @@ def _parse_snapshot_id(stdout: str) -> str | None:
 
 def _safe_restic_error(result: subprocess.CompletedProcess[str]) -> str:
     text = (result.stderr.strip() or result.stdout.strip() or "restic command failed").strip()
-    if len(text) > 2000:
-        text = text[:2000] + "..."
-    return text
+    return _safe_backend_error(text)
+
+
+def _safe_backend_error(error: Exception | str) -> str:
+    text = str(error or "protected backend operation failed").strip()
+    lowered = text.lower()
+    if any(marker in lowered for marker in (
+        "/data/", "/storage/", "/home/", "password", "token", "secret", "private key",
+        "nats://", "--repository", "--password-file", "restic_password", "mysql_pwd",
+    )):
+        return "Protected backend operation failed. Review Recovery diagnostics."
+    return text[:240] + ("..." if len(text) > 240 else "")
 
 
 def _load_verified_manifest(backup_id: str) -> tuple[str, dict[str, Any]]:
@@ -513,7 +548,19 @@ def _load_verified_manifest(backup_id: str) -> tuple[str, dict[str, Any]]:
     manifest = lite_backup_manifest.read_manifest(resolved)
     if not manifest:
         raise FileNotFoundError("Backup manifest was not found.")
+    format_version = int(manifest.get("format_version") or 1)
+    if format_version < 1 or format_version > 2:
+        raise RuntimeError("Backup manifest format is not supported by this Pocket Lab version.")
     return resolved, manifest
+
+
+def _current_recovery_target_revision() -> int:
+    try:
+        from .lite_semantic_revisions import recovery_details_source_revision
+
+        return int(recovery_details_source_revision())
+    except Exception:
+        return 0
 
 
 def _restic_snapshot_exists(restic: str, snapshot_id: str, env: dict[str, str]) -> dict[str, Any]:
@@ -573,6 +620,8 @@ def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> di
     verified_at = _utc()
     manifest = dict(manifest)
     manifest["verification_status"] = status
+    manifest["status"] = status
+    manifest["restorable"] = status == "verified"
     manifest["verified_at"] = verified_at if status == "verified" else None
     manifest["verification"] = {
         "status": status,
@@ -581,6 +630,9 @@ def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> di
         "checks": checks,
         "previous_manifest_checksum": stored_checksum,
     }
+    components = dict(manifest.get("component_results") or {})
+    components["repository_integrity"] = {"status": "validated" if status == "verified" else "failed", "required": True}
+    manifest["component_results"] = components
     manifest["summary"] = "Backup verified and ready for restore preview." if status == "verified" else "Backup verification failed. Review checks before restore."
     manifest = lite_backup_manifest.write_manifest(manifest)
     receipt = lite_backup_manifest.read_receipt(resolved) or {"backup_id": resolved}
@@ -594,9 +646,7 @@ def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> di
         }
     )
     lite_backup_manifest.write_receipt(resolved, receipt)
-    deps.core.write_json_file(
-        deps.settings().state_dir / "backup_state.json",
-        {
+    _write_backup_state({
             "latest_backup_id": resolved,
             "latest_snapshot_id": snapshot_id,
             "pending_backup": None,
@@ -609,8 +659,7 @@ def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> di
             "updated_at": verified_at,
             "manifest": str(lite_backup_manifest.manifest_path(resolved)),
             "receipt": str(lite_backup_manifest.receipt_path(resolved)),
-        },
-    )
+        })
     return {
         "status": status,
         "backup_id": resolved,
@@ -672,6 +721,26 @@ def get_restore_preview(preview_id: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def validate_restore_preview_binding(preview: dict[str, Any]) -> dict[str, Any]:
+    """Validate the immutable manifest/target revision binding before mutation."""
+    backup_id = str(preview.get("backup_id") or "").strip()
+    if not backup_id:
+        raise RuntimeError("Restore preview does not identify a backup")
+    resolved, manifest = _load_verified_manifest(backup_id)
+    if manifest.get("verification_status") != "verified" or not manifest.get("restorable", True):
+        raise RuntimeError("Backup must be verified before restore")
+    if str(preview.get("backup_manifest_checksum") or "") != str(manifest.get("manifest_checksum") or ""):
+        raise RuntimeError("Restore preview is bound to a different backup manifest")
+    if str(preview.get("snapshot_id") or "") != str(manifest.get("snapshot_id") or ""):
+        raise RuntimeError("Restore preview snapshot does not match the backup manifest")
+    expected_checksum = str(preview.get("preview_checksum") or "")
+    if expected_checksum and _preview_checksum(preview) != expected_checksum:
+        raise RuntimeError("Restore preview checksum does not match the saved preview")
+    if int(preview.get("target_revision") or 0) != _current_recovery_target_revision():
+        raise RuntimeError("Restore preview is stale. Create a new preview before restoring.")
+    return {"backup_id": resolved, "manifest": manifest}
+
+
 def create_restore_preview(backup_id: str = "latest", *, reason: str | None = None) -> dict[str, Any]:
     resolved, manifest = _load_verified_manifest(backup_id)
     snapshot_id = str(manifest.get("snapshot_id") or "").strip()
@@ -712,6 +781,9 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
         "preview_id": preview_id,
         "backup_id": resolved,
         "snapshot_id": snapshot_id,
+        "format_version": 2,
+        "backup_manifest_checksum": manifest.get("manifest_checksum"),
+        "target_revision": 0,
         "created_at": created_at,
         "status": "ready" if verified else "needs_verification",
         "restore_allowed": bool(verified),
@@ -729,12 +801,11 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
             "Raw secrets remain excluded from this restore point.",
         ],
     }
+    preview["preview_checksum"] = _preview_checksum(preview)
     path = restore_preview_path(preview_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(preview, indent=2, sort_keys=True, ensure_ascii=False), encoding="utf-8")
-    deps.core.write_json_file(
-        deps.settings().state_dir / "backup_state.json",
-        {
+    _write_backup_state({
             "latest_backup_id": resolved,
             "latest_snapshot_id": snapshot_id,
             "pending_backup": None,
@@ -748,16 +819,24 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
             "updated_at": created_at,
             "manifest": str(lite_backup_manifest.manifest_path(resolved)),
             "restore_preview": str(path),
-        },
-    )
+        })
+    # The preview record itself is a Recovery lifecycle event. Bind after that
+    # commit so a freshly-created preview is not stale immediately.
+    preview["target_revision"] = _current_recovery_target_revision()
+    preview["preview_checksum"] = _preview_checksum(preview)
+    path.write_text(json.dumps(preview, indent=2, sort_keys=True, ensure_ascii=False), encoding="utf-8")
     return preview
 
 
 def restore_checkpoint_path(checkpoint_id: str) -> Path:
+    if not _SAFE_OPERATION_ID.fullmatch(str(checkpoint_id or "")):
+        raise ValueError("invalid checkpoint id")
     return backup_layout().restore_checkpoints / f"{checkpoint_id}.json"
 
 
 def restore_run_path(restore_id: str) -> Path:
+    if not _SAFE_OPERATION_ID.fullmatch(str(restore_id or "")):
+        raise ValueError("invalid restore id")
     return backup_layout().restore_runs / f"{restore_id}.json"
 
 
@@ -792,10 +871,7 @@ def _is_within_path(path: Path, base: Path) -> bool:
 
 
 def _safe_restore_error(error: Exception | str) -> str:
-    text = str(error or "restore failed").strip()
-    if len(text) > 2000:
-        text = text[:2000] + "..."
-    return text
+    return _safe_backend_error(error).replace("Protected backend operation failed. Review Recovery diagnostics.", "Restore failed during a protected backend operation.")
 
 
 def _manifest_file_by_relative_path(manifest: dict[str, Any], relative_path: str) -> dict[str, Any] | None:
@@ -891,6 +967,29 @@ def _create_pre_restore_checkpoint(preview: dict[str, Any], *, restore_id: str, 
         }
     )
     return checkpoint
+
+
+def _rollback_pre_restore_checkpoint(checkpoint: dict[str, Any]) -> bool:
+    """Restore the exact pre-mutation state, including deletion of new files."""
+    state_dir = deps.settings().state_dir
+    try:
+        for item in checkpoint.get("files") or []:
+            rel = str(item.get("relative_path") or "")
+            target = _target_for_backup_path(rel)
+            if not target or not _is_within_path(target, state_dir):
+                continue
+            checkpoint_rel = str(item.get("checkpoint_relative_path") or "")
+            source = checkpoint.get("checkpoint_directory")
+            checkpoint_root = backup_layout().restore_checkpoints / str(checkpoint.get("checkpoint_id") or "")
+            saved = checkpoint_root / checkpoint_rel if checkpoint_rel else None
+            if item.get("current_exists") and saved and saved.is_file() and _is_within_path(saved, checkpoint_root):
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(saved, target)
+            elif not item.get("current_exists") and target.exists() and target.is_file():
+                target.unlink()
+        return True
+    except Exception:
+        return False
 
 
 def _record_restore_run(restore_id: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -1012,17 +1111,16 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
     resolved = lite_backup_manifest.resolve_backup_id(requested_backup)
     if resolved != backup_id:
         raise RuntimeError("Restore preview does not match the requested backup id")
-    manifest = lite_backup_manifest.read_manifest(backup_id)
-    if not manifest:
-        raise RuntimeError("Backup manifest was not found")
-    if manifest.get("verification_status") != "verified":
-        raise RuntimeError("Backup must be verified before restore")
+    binding = validate_restore_preview_binding(preview)
+    manifest = binding["manifest"]
     snapshot_id = str(manifest.get("snapshot_id") or "").strip()
     if snapshot_id != str(preview.get("snapshot_id") or "").strip():
         raise RuntimeError("Restore preview snapshot does not match the backup manifest")
     restic = _restic_binary()
     if not restic:
         raise RuntimeError("restic is required for Lite restore but was not found in PATH")
+    if not _BACKUP_OPERATION_LOCK.acquire(blocking=False):
+        raise RuntimeError("Another backup or restore operation is already running")
 
     started_at = _utc()
     layout = backup_layout()
@@ -1034,8 +1132,26 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
     checkpoint: dict[str, Any] | None = None
     restored_files: list[dict[str, Any]] = []
     skipped_changes: list[dict[str, Any]] = []
+    transaction_created = False
     try:
+        from . import lite_restore_transaction
+
+        try:
+            lite_restore_transaction.create_journal(
+                restore_id=restore_id,
+                backup_id=backup_id,
+                preview_id=preview_id,
+                target_names=[str(change.get("relative_path") or "") for change in preview.get("changes") or []],
+            )
+            transaction_created = True
+            lite_restore_transaction.update_journal(restore_id, phase="checkpointing", summary="Creating pre-restore checkpoint.")
+        except Exception:
+            # The legacy file checkpoint remains the safety boundary if the
+            # durable transaction journal is unavailable.
+            transaction_created = False
         checkpoint = _create_pre_restore_checkpoint(preview, restore_id=restore_id, reason=reason)
+        if transaction_created:
+            lite_restore_transaction.update_journal(restore_id, phase="checkpoint_ready", summary="Pre-restore checkpoint is ready.")
         restore_result = _run_restic(
             [restic, "restore", snapshot_id, "--target", str(restore_root)],
             env=_restic_env(layout),
@@ -1043,6 +1159,8 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
         )
         if restore_result.returncode != 0:
             raise RuntimeError(f"restic restore failed: {_safe_restic_error(restore_result.stderr or restore_result.stdout)}")
+        if transaction_created:
+            lite_restore_transaction.update_journal(restore_id, phase="staging", summary="Restore snapshot staged for validation.")
         state_dir = deps.settings().state_dir
         for change in preview.get("changes") or []:
             rel = str(change.get("relative_path") or "")
@@ -1077,8 +1195,12 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             )
         service_restart = _restore_service_restart_if_needed(restored_files)
         health_validation = _validate_lite_api_health()
+        if health_validation.get("status") != "passed" or service_restart.get("status") == "failed":
+            raise RuntimeError("Post-restore health validation failed")
+        if transaction_created:
+            lite_restore_transaction.update_journal(restore_id, phase="validating_active", summary="Post-restore health checks passed.")
         completed_at = _utc()
-        final_status = "succeeded" if health_validation.get("status") == "passed" and service_restart.get("status") not in {"failed"} else "succeeded_with_warnings"
+        final_status = "succeeded"
         result = {
             "status": final_status,
             "restore_id": restore_id,
@@ -1105,6 +1227,8 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             ],
         }
         _record_restore_run(restore_id, result)
+        if transaction_created:
+            lite_restore_transaction.update_journal(restore_id, phase="committed", summary="Restore transaction committed.", terminal_status="committed", status="succeeded")
         checkpoint_summary = {
             "status": "created",
             "checkpoint_id": result["checkpoint_id"],
@@ -1148,8 +1272,20 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
         return result
     except Exception as exc:
         failed_at = _utc()
+        rolled_back = bool(checkpoint and _rollback_pre_restore_checkpoint(checkpoint))
+        if transaction_created:
+            try:
+                lite_restore_transaction.update_journal(
+                    restore_id,
+                    phase="rolled_back" if rolled_back else "rollback_failed",
+                    summary="Restore rolled back after validation failure." if rolled_back else "Rollback requires operator recovery.",
+                    terminal_status="rolled_back" if rolled_back else "rollback_failed",
+                    status="failed_with_rollback" if rolled_back else "failed_rollback_required",
+                )
+            except Exception:
+                pass
         result = {
-            "status": "failed",
+            "status": "failed_with_rollback" if rolled_back else "failed_rollback_required",
             "restore_id": restore_id,
             "backup_id": preview.get("backup_id"),
             "preview_id": preview_id,
@@ -1157,7 +1293,7 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             "started_at": started_at,
             "failed_at": failed_at,
             "error": _safe_restore_error(exc),
-            "summary": "Restore failed. The pre-restore checkpoint remains available for recovery." if checkpoint else "Restore failed before checkpoint creation.",
+            "summary": "Restore failed and was rolled back from the pre-restore checkpoint." if rolled_back else "Restore failed; operator rollback is required." if checkpoint else "Restore failed before checkpoint creation.",
         }
         _record_restore_run(restore_id, result)
         state_update: dict[str, Any] = {
@@ -1190,12 +1326,15 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             shutil.rmtree(restore_root)
         except Exception:
             pass
+        _BACKUP_OPERATION_LOCK.release()
 
 
 def create_backup(command: dict[str, Any]) -> dict[str, Any]:
     backup_id = _command_id(command)
-    include_app_data = bool(command.get("include_app_data", False))
+    include_app_data = bool(command.get("include_app_data", True))
     reason = str(command.get("reason") or "manual backup")
+    if not _BACKUP_OPERATION_LOCK.acquire(blocking=False):
+        raise RuntimeError("Another backup or restore operation is already running")
     layout = backup_layout()
     layout.ensure()
     restic = _restic_binary()
@@ -1246,9 +1385,16 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
         included_sets = sorted(
             {str(item.get("set") or "Lite runtime state") for item in copied}
         )
+        size_bytes = sum(int(item.get("size_bytes") or 0) for item in copied)
         manifest = {
             "backup_id": backup_id,
             "created_at": created_at,
+            "completed_at": _utc(),
+            "label": "Pocket Lab Lite restore point",
+            "format_version": 2,
+            "status": "created",
+            "app_version": str(os.environ.get("POCKETLAB_LITE_APP_VERSION") or "unknown")[:80],
+            "schema_version": int(database_backup.get("schema_version") or 0),
             "engine": "restic",
             "repository": {
                 "type": "local",
@@ -1259,11 +1405,14 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
             "snapshot_id": snapshot_id,
             "reason": reason,
             "included_sets": included_sets,
+            "included_components": included_sets,
             "included_files": copied,
+            "size_bytes": size_bytes,
             "excluded_sensitive_items": scope["excluded_sensitive"],
             "excluded_runtime_items": scope["excluded_runtime"],
             "conditional_items": scope["conditional"],
             "verification_status": "not_verified",
+            "restorable": False,
             "verified_at": None,
             "risk_level": "low",
             "evidence_references": [
@@ -1276,6 +1425,13 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
                 "stderr_present": bool(backup_result.stderr.strip()),
             },
             "database_backup": database_backup,
+            "component_results": {
+                "control_plane_database": {"status": "validated", "required": True},
+                "lite_runtime_state": {"status": "validated", "required": True},
+                "application_metadata": {"status": "validated", "required": include_app_data},
+                "sanitized_evidence": {"status": "validated", "required": True},
+                "media_exclusion": {"status": "validated", "required": True},
+            },
             "summary": f"Backup created with {len(copied)} safe item(s), including a verified Pocket Lab database backup. Evidence saved.",
         }
         manifest = lite_backup_manifest.write_manifest(manifest)
@@ -1296,17 +1452,14 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
                 "excluded_sensitive_items": manifest["excluded_sensitive_items"],
             },
         )
-        deps.core.write_json_file(
-            deps.settings().state_dir / "backup_state.json",
-            {
+        _write_backup_state({
                 "latest_backup_id": backup_id,
                 "latest_snapshot_id": snapshot_id,
                 "pending_backup": None,
                 "updated_at": _utc(),
                 "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
                 "receipt": str(lite_backup_manifest.receipt_path(backup_id)),
-            },
-        )
+            })
         return {
             "status": "succeeded",
             "backup_id": backup_id,
@@ -1328,6 +1481,7 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
             shutil.rmtree(staging_root)
         except Exception:
             pass
+        _BACKUP_OPERATION_LOCK.release()
 
 
 def get_backup(backup_id: str) -> dict[str, Any] | None:
