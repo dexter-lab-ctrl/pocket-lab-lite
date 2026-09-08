@@ -696,7 +696,7 @@ async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
         await _publish(
             "pocketlab.events.lite.backup.failed",
             "lite.backup.failed",
-            {"command_id": command_id, "error": str(exc)},
+            {"command_id": command_id, "error_type": type(exc).__name__, "sanitized": True},
             trace_id=command_id,
         )
         await _publish(
@@ -752,7 +752,7 @@ async def handle_lite_backup_verify(command: Dict[str, Any]) -> Dict[str, Any]:
         await _publish(
             "pocketlab.events.lite.backup.verify_failed",
             "lite.backup.verify_failed",
-            {"command_id": command_id, "backup_id": backup_id, "error": str(exc)},
+            {"command_id": command_id, "backup_id": backup_id, "error_type": type(exc).__name__, "sanitized": True},
             trace_id=command_id,
         )
         raise
@@ -797,7 +797,7 @@ async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]
         await _publish(
             "pocketlab.events.lite.restore.preview_failed",
             "lite.restore.preview_failed",
-            {"command_id": command_id, "backup_id": backup_id, "error": str(exc)},
+            {"command_id": command_id, "backup_id": backup_id, "error_type": type(exc).__name__, "sanitized": True},
             trace_id=command_id,
         )
         raise
@@ -840,7 +840,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
         await _publish(
             "pocketlab.events.lite.restore.failed",
             "lite.restore.failed",
-            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "error": str(exc)},
+            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "error_type": type(exc).__name__, "sanitized": True},
             trace_id=command_id,
         )
         await _publish(

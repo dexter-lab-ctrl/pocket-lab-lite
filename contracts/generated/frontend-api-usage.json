@@ -2859,7 +2859,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "18cf121016588f8d556dfd2ce93aacd4faede9a737cb2eb2ff200f6ecd341a94",
+    "aggregate_fingerprint": "209c37363ccecad326c525cc1db9d0f6a34b1e1b901e9dc140a9353a5ce5f1b0",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2869,7 +2869,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
+      "contracts/generated/lite-openapi.json": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
       "contracts/metadata/documentation-platform.json": "497fa71e569716d52d3a4514bec19fe2df1ac6c85960f9c5b75729321eeefebc",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353",
@@ -2892,8 +2892,8 @@
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
       "src/lite/LitePrimitives.stories.jsx": "7c5e2879ea4785426ba23b45f820bde10ad64955d2ad5a4ad2e85ef3ff6c22e9",
-      "src/lite/LiteRecovery.jsx": "830f7867c37769d446285b2e3cf164e88cd2c41d5c199b1cf5e1db7c549c8a6f",
-      "src/lite/LiteRecovery.stories.jsx": "f4bef77b77d3f6e9e51ef219f2f4f629e5cf4027bc605c339cc823b64d2d81d8",
+      "src/lite/LiteRecovery.jsx": "91cfd9203aea8f1353f6eaf8526d810db0840eaf03a3b5b2f97acb59a67b7f1f",
+      "src/lite/LiteRecovery.stories.jsx": "c52888ba8f51947de64807d83c320488b64e23375fbe3abf9bc909fe3b0a71c6",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
       "src/lite/LiteRevisionSyncBridge.jsx": "ee30715c8a9d7b152d70ad99ca1761d8208ca2cf0d2ddea0980848afc8001720",

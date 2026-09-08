@@ -664,7 +664,7 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
     if safe_domain == "recovery" and safe_key == "summary":
         return ProjectionRevisionContract(
             source_revision=recovery_summary_source_revision,
-            max_probe_seconds=300.0,
+            max_probe_seconds=5.0,
             quiet_window_seconds=1.0,
             priority=50,
             work_class="io",
@@ -673,7 +673,7 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
     if safe_domain == "recovery" and safe_key == "details":
         return ProjectionRevisionContract(
             source_revision=recovery_details_source_revision,
-            max_probe_seconds=600.0,
+            max_probe_seconds=8.0,
             quiet_window_seconds=1.5,
             priority=60,
             work_class="io",

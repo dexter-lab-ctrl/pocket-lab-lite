@@ -68,7 +68,16 @@ EXCLUDED_RUNTIME_CLASSES = (
     "temporary logs",
     "generated frontend dist",
     "backup repository internals",
+    "Android shared storage and /storage/emulated/*",
+    "PhotoPrism originals and import folders containing media",
+    "PhotoPrism photos, videos, thumbnails, and recreatable caches",
+    "scanner caches and temporary scanner output",
 )
+
+PHOTO_MEDIA_PARTS = frozenset({
+    "originals", "imports", "import", "media", "thumbnails", "thumbnail", "cache", "caches",
+    "dcim", "pictures", "movies", "downloads",
+})
 
 
 @dataclass(frozen=True)
@@ -121,8 +130,7 @@ def backup_layout() -> LiteBackupLayout:
 
 
 def public_repository_label(layout: LiteBackupLayout | None = None) -> str:
-    layout = layout or backup_layout()
-    return str(layout.root)
+    return "Configured encrypted repository"
 
 
 def is_sensitive_path(path: Path) -> bool:
@@ -134,6 +142,15 @@ def is_sensitive_path(path: Path) -> bool:
     if "/pm2/" in f"/{lowered}/" or "/.pm2/" in f"/{lowered}/":
         return True
     return False
+
+
+def is_excluded_media_path(path: Path) -> bool:
+    """Return true for shared storage and registered PhotoPrism media roots."""
+    lowered = str(path).replace("\\", "/").lower()
+    if "/storage/emulated/" in lowered or lowered.startswith("/sdcard"):
+        return True
+    parts = {part for part in Path(lowered).parts if part not in {"/", ""}}
+    return bool(parts & PHOTO_MEDIA_PARTS)
 
 
 def _safe_relative(path: Path, base: Path) -> str:
@@ -149,7 +166,7 @@ def discover_state_sources() -> list[dict[str, Any]]:
 
     for name in DEFAULT_STATE_FILES:
         candidate = state_dir / name
-        if candidate.exists() and candidate.is_file() and not is_sensitive_path(candidate):
+        if candidate.exists() and candidate.is_file() and not candidate.is_symlink() and not is_sensitive_path(candidate) and not is_excluded_media_path(candidate):
             sources.append(
                 {
                     "path": candidate,
@@ -161,10 +178,10 @@ def discover_state_sources() -> list[dict[str, Any]]:
 
     for dirname in DEFAULT_STATE_DIRS:
         directory = state_dir / dirname
-        if not directory.exists() or not directory.is_dir() or is_sensitive_path(directory):
+        if not directory.exists() or not directory.is_dir() or directory.is_symlink() or is_sensitive_path(directory) or is_excluded_media_path(directory):
             continue
         for candidate in sorted(directory.rglob("*")):
-            if not candidate.is_file() or is_sensitive_path(candidate):
+            if not candidate.is_file() or candidate.is_symlink() or is_sensitive_path(candidate) or is_excluded_media_path(candidate):
                 continue
             rel = _safe_relative(candidate, state_dir)
             sources.append(
@@ -176,10 +193,37 @@ def discover_state_sources() -> list[dict[str, Any]]:
                 }
             )
 
+    # Security evidence is backend-owned and already redacted at write time.
+    # Copy only bounded summaries and run metadata; never copy scanner output,
+    # SBOMs, raw logs, or arbitrary evidence payloads.
+    evidence_root = state_dir / "security"
+    evidence_candidates = [evidence_root / "security_state.json"]
+    evidence_candidates.extend(evidence_root.glob("evidence/*/summary.json"))
+    evidence_candidates.extend(evidence_root.glob("compact/profiles/*.json"))
+    for candidate in sorted(evidence_candidates):
+        if not candidate.is_file() or candidate.is_symlink() or not _is_safe_state_path(candidate, state_dir):
+            continue
+        rel = _safe_relative(candidate, state_dir)
+        sources.append({
+            "path": candidate,
+            "relative_path": f"state/{rel}",
+            "set": "Sanitized Security evidence",
+            "kind": "sanitized_evidence",
+        })
+
     return sources
 
 
-def backup_scope(include_app_data: bool = False) -> dict[str, Any]:
+def _is_safe_state_path(path: Path, state_dir: Path) -> bool:
+    try:
+        resolved = path.resolve(strict=True)
+        resolved.relative_to(state_dir.resolve(strict=True))
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def backup_scope(include_app_data: bool = True) -> dict[str, Any]:
     included = [
         "Lite runtime state",
         "Device records and heartbeats",
@@ -194,7 +238,7 @@ def backup_scope(include_app_data: bool = False) -> dict[str, Any]:
         {
             "name": "MariaDB logical dump",
             "enabled": False,
-            "reason": "Not implemented in this increment; add when MariaDB detection and dump validation are present.",
+            "reason": "No registered PhotoPrism metadata database adapter is configured; media is never copied.",
         },
         {
             "name": "Gitea repository/config snapshot",
@@ -204,7 +248,7 @@ def backup_scope(include_app_data: bool = False) -> dict[str, Any]:
         {
             "name": "Registered app data paths",
             "enabled": bool(include_app_data),
-            "reason": "Only included when explicitly requested and when app paths are registered.",
+            "reason": "Only canonical application metadata mappings are eligible; media mappings fail closed and are excluded.",
         },
         {
             "name": "Encrypted secret recovery bundle",

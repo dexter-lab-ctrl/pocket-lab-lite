@@ -30,7 +30,13 @@ function safeHistoryItems(history = [], latestPreviewReady = false) {
     .filter((item) => item.id);
 }
 
-const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHistory = [], latestPreviewReady = false, savedStateOnly = false }) {
+function formatSize(bytes) {
+  const value = Number(bytes || 0);
+  if (!value) return 'Size unavailable';
+  return value >= 1024 * 1024 ? `${(value / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(value / 1024))} KB`;
+}
+
+const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHistory = [], latestPreviewReady = false, savedStateOnly = false, selectedBackupId = '', onSelectBackup, onVerify, onPreview, onRecover }) {
   const [cursor, setCursor] = useState('');
   const [pageOrder, setPageOrder] = useState(['first']);
   const [pageItems, setPageItems] = useState({ first: Array.isArray(initialHistory) ? initialHistory : [] });
@@ -40,7 +46,7 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
     queryKey: liteQueryKeys.recoveryHistoryPage(10, cursor),
     path,
     queryFn: () => liteApi.recoveryHistory(10, cursor),
-    staleTime: 60_000,
+    staleTime: 15_000,
     refetchInterval: false,
     pollingMode: 'slow',
     refetchOnWindowFocus: false,
@@ -99,7 +105,29 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
         hasMore={hasMore}
         loadingMore={query.refreshing && Boolean(cursor)}
         onLoadMore={loadMore}
-      />
+      >
+        <div className="lite-recovery-history-action-list" aria-label="Timestamped restore points">
+          {history.length ? history.map((backup) => {
+            const id = backup.backup_id || backup.id || backup.snapshot_id;
+            const selected = id === selectedBackupId;
+            const verified = backup.verification_status === 'verified';
+            return (
+              <article key={id} className={`lite-recovery-history-action-row${selected ? ' is-selected' : ''}`}>
+                <button type="button" className="lite-recovery-history-select" onClick={() => onSelectBackup?.(backup)} aria-pressed={selected}>
+                  <strong>{backup.created_at ? formatLiteTime(backup.created_at) : 'Timestamp unavailable'}</strong>
+                  <span>{verified ? 'Verified' : 'Needs verification'} · {formatSize(backup.size_bytes)} · {backup.summary || 'Pocket Lab restore point'}</span>
+                </button>
+                <div className="lite-recovery-history-row-actions">
+                  <LiteButton tone="secondary" onClick={() => onSelectBackup?.(backup)}>View details</LiteButton>
+                  <LiteButton tone="secondary" onClick={() => onVerify?.(backup)} disabled={!id}>Verify</LiteButton>
+                  <LiteButton tone="secondary" onClick={() => onPreview?.(backup)} disabled={!id}>Preview</LiteButton>
+                  <LiteButton tone="danger" onClick={() => onRecover?.(backup)} disabled={!verified || !selected || !latestPreviewReady}>Recover</LiteButton>
+                </div>
+              </article>
+            );
+          }) : <p>{query.loading ? 'Loading backup history…' : 'No timestamped restore points yet.'}</p>}
+        </div>
+      </LiteHistorySection>
       {query.error ? (
         <div className="lite-recovery-history-actions">
           <LiteButton tone="secondary" onClick={query.refresh}>Retry</LiteButton>

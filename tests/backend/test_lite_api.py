@@ -4943,7 +4943,7 @@ def test_lite_xstate_hooks_and_screens_preserve_backend_ownership_source():
     catalog = _lite_catalog_source()
     ui = Path("src/lite/LiteUi.jsx").read_text()
     assert "useLiteAddDeviceFlow" in devices and "liteApi.addDevice" in devices and "addDeviceFlow.inviteReady" in devices
-    assert "useLiteRecoveryFlow" in recovery and "recoveryFlow.requestRestore" in recovery and "confirm: true" in recovery and "latestBackup.backup_id !== 'latest'" in recovery
+    assert "useLiteRecoveryFlow" in recovery and "recoveryFlow.requestRestore" in recovery and "confirm: true" in recovery and "selectedRestorePoint.backup_id !== 'latest'" in recovery
     assert "useLiteSecurityCheckFlow" in security and "securityFlow.requestRun" in security and "liteApi.runSecurityScan" in security and "securityExecutionTimeline" in security
     assert "useLiteAppActionFlow" in catalog and "appActionFlow.review" in catalog and "appActionFlow.submit" in catalog and "liteApi.runAppAction" in catalog
     assert "window.location.assign(target)" in catalog
@@ -5428,8 +5428,8 @@ def test_lite_recovery_render_reduction_preserves_polling_and_actions():
     assert "beginRecoveryPollingBurst" not in recovery
     assert "pollingMode: 'slow'" in recovery
     assert "isLive: recoveryPollingIsLive" in recovery
-    assert "staleTime: 30_000" in recovery
-    assert "staleTime: 45_000" in recovery
+    assert "staleTime: 10_000" in recovery
+    assert "staleTime: 15_000" in recovery
     assert "Date.now() + 45_000" not in recovery
     assert "setInterval" not in recovery
     assert "backup()" in recovery

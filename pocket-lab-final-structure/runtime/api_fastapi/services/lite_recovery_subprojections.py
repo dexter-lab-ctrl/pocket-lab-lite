@@ -29,6 +29,13 @@ _FAILURES: dict[str, int] = {}
 _NEXT_ALLOWED: dict[str, float] = {}
 _DURATIONS: dict[str, float] = {}
 
+# Prepared Recovery reads become stale at 10s/15s. Keep their source caches
+# below that bound; the scheduler remains event-driven and probes bounded
+# metadata only.
+RECOVERY_SUMMARY_TTL_SECONDS = 5.0
+RECOVERY_DETAILS_TTL_SECONDS = 8.0
+RECOVERY_MAX_STALE_SECONDS = 60.0
+
 
 def _done(name: str, started: float, future: concurrent.futures.Future[Any]) -> None:
     duration = max(0.0, time.monotonic() - started)
@@ -41,7 +48,7 @@ def _done(name: str, started: float, future: concurrent.futures.Future[Any]) -> 
             failures = min(8, _FAILURES.get(name, 0) + 1)
             _FAILURES[name] = failures
             _DURATIONS[name] = duration
-            _NEXT_ALLOWED[name] = time.monotonic() + min(300.0, 2.0 ** failures)
+            _NEXT_ALLOWED[name] = time.monotonic() + min(30.0, 2.0 ** failures)
             _FUTURES.pop(name, None)
         _LOGGER.warning(
             "pocketlab.recovery_subprojection.refresh_degraded key=%s error_type=%s",
@@ -53,7 +60,7 @@ def _done(name: str, started: float, future: concurrent.futures.Future[Any]) -> 
         _VALUES[name] = (dict(value), time.monotonic())
         _FAILURES[name] = 0
         _DURATIONS[name] = duration
-        _NEXT_ALLOWED[name] = time.monotonic() + min(300.0, max(30.0, duration * 2.0))
+        _NEXT_ALLOWED[name] = time.monotonic() + min(30.0, max(1.0, duration * 2.0))
         _FUTURES.pop(name, None)
 
 
@@ -70,7 +77,7 @@ def _cached(
         cached = _VALUES.get(name)
         future = _FUTURES.get(name)
         duration = _DURATIONS.get(name, 0.0)
-        dynamic_ttl = min(900.0, max(ttl_seconds, 120.0, duration * 5.0))
+        dynamic_ttl = min(RECOVERY_MAX_STALE_SECONDS, max(ttl_seconds, duration * 2.0))
         if cached is not None and now - cached[1] <= dynamic_ttl:
             return dict(cached[0])
         if future is None and now >= _NEXT_ALLOWED.get(name, 0.0):
@@ -111,7 +118,7 @@ def recovery_summary() -> dict[str, Any]:
             "updated_at": deps.now_utc_iso(),
         },
         wait_seconds=0.75,
-        ttl_seconds=180.0,
+        ttl_seconds=RECOVERY_SUMMARY_TTL_SECONDS,
     )
 
 
@@ -126,7 +133,7 @@ def database_protection_summary() -> dict[str, Any]:
             "sanitized": True,
         },
         wait_seconds=0.75,
-        ttl_seconds=300.0,
+        ttl_seconds=RECOVERY_SUMMARY_TTL_SECONDS,
     )
 
 
@@ -144,7 +151,7 @@ def database_protection_details() -> dict[str, Any]:
         lite_database_recovery.database_recovery_status,
         fallback,
         wait_seconds=1.0,
-        ttl_seconds=600.0,
+        ttl_seconds=RECOVERY_DETAILS_TTL_SECONDS,
     )
 
 
@@ -160,7 +167,7 @@ def maintenance_state() -> dict[str, Any]:
             "sanitized": True,
         },
         wait_seconds=0.25,
-        ttl_seconds=60.0,
+        ttl_seconds=RECOVERY_SUMMARY_TTL_SECONDS,
     )
 
 
@@ -178,7 +185,7 @@ def backup_targets() -> dict[str, Any]:
             "updated_at": deps.now_utc_iso(),
         },
         wait_seconds=0.5,
-        ttl_seconds=180.0,
+        ttl_seconds=RECOVERY_SUMMARY_TTL_SECONDS,
     )
 
 
@@ -189,6 +196,15 @@ def app_backup_targets(app_id: str = "photoprism") -> dict[str, Any]:
         "app_id": str(app_id or "photoprism"),
         "name": "PhotoPrism",
     }
+
+
+def invalidate_recovery_subprojections(*names: str) -> None:
+    """Drop cached Recovery inputs after a backend-owned state transition."""
+    keys = set(names) if names else set(_VALUES) | set(_NEXT_ALLOWED)
+    with _LOCK:
+        for name in keys:
+            _VALUES.pop(name, None)
+            _NEXT_ALLOWED.pop(name, None)
 
 
 def warm_startup_dependencies() -> dict[str, bool]:

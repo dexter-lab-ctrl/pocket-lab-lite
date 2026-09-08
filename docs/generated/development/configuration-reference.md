@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 6e4246edfcae8e7276e5b5d104754fabb4cdebb222103a9db197b999a04f56cc
+source_fingerprint: cc83a29ab6ee4c903e5777871e94f814b0b85d19279ad25322a34b68a01a3edc
 schema_revision: 1
 validation_status: generated
 ---
@@ -327,6 +327,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_LITE_APP_STAGE_WORKERS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py |
 | `POCKETLAB_LITE_APP_SUBPROJECTION_WORKERS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py |
 | `POCKETLAB_LITE_APP_UPSTREAM` | configuration | 127.0.0.1:2342 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
+| `POCKETLAB_LITE_APP_VERSION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py |
 | `POCKETLAB_LITE_BACKUP_ROOT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_policy.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py |
 | `POCKETLAB_LITE_BOOTSTRAP_HOST` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `POCKETLAB_LITE_DB_BACKUP_PAGES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/db/connection.py |

@@ -1,31 +1,20 @@
 {
   "approved_change_classes": [
-    "add opt-in Enterprise Mode identity configuration and authoritative local membership/role API operations while preserving Personal Mode as the default",
-    "add Owner/Admin-managed Enterprise person lifecycle and WebAuthn passkey enrollment without exposing browser-held Pocket Lab enrollment tokens or connect links",
-    "retire legacy Enterprise person connect-link and bearer-claim enrollment endpoints with explicit 410 compatibility responses",
-    "add a shared server-owned Enterprise governance projection covering Owner, Admin, Operator, Auditor, and Viewer capability modes while preserving Owner root-equivalent supported authority and hard safety invariants",
-    "add immutable typed Safety Rules revision, activation, rollback, health, simulation, deterministic analysis, and bounded decision-explorer API operations with backend-local OPA ownership",
-    "require recent Owner passkey assurance for root-level Rules activation, rollback, uncertain-resolution, and Enterprise mode changes without introducing peer-approval deadlock",
-    "add policy-derived independent approval lifecycle operations for Enterprise device.remove with purpose-bound passkey step-up, expiry, explicit retry, and replay protection",
-    "add bounded expiring and revocable catalog.install temporary-exception API operations scoped to exact app, device, identity, and policy revision",
-    "add an Owner/Admin + CSRF-protected P2.2 uncertain-activation resolution operation that accepts only the operation ID, proves an already-recovered local policy state, preserves original incident reason evidence, and does not perform shell, PM2, pointer, OPA mutation, or browser-supplied recovery-state actions",
-    "preserve FastAPI hard safeguards, sanitized evidence, backend-only policy input, managed WebAuthn, existing local password/passkey/recovery authentication, and Personal Mode defaults while leaving OIDC and scoped service identities unimplemented",
-    "add an Owner-only, CSRF-protected and recent-passkey-gated Safety Rules source-sync operation that records an immutable repository-derived activation intent while preserving supervisor-owned staging, OPA restart, exact-revision proof, known-good advancement, and rollback authority",
-    "add an authenticated GET-only sanitized Safety Rules source-sync status projection for truthful supervisor activation progress without runtime execution, policy source, command, filesystem path, or secret exposure"
+    "change LiteBackupRequest include_app_data default from false to true so the standard Backup action includes registered Pocket Lab app data by default while preserving an explicit false opt-out and the existing Android shared-storage, PhotoPrism media, secret-redaction, and backend execution boundaries"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "702680c5e1443588db70b4bad12e29c448a56a8c64f5bb68f4bb468120d73c73",
-  "promoted_sha256": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
+  "previous_sha256": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
+  "promoted_sha256": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
     "documents_500": false,
     "raw_secrets_included": false,
     "runtime_routes_removed": false,
-    "write_operations_added": true
+    "write_operations_added": false
   },
-  "source_revision": "feat/rules-activation-progress-ux",
+  "source_revision": "feat/enterprise-backup-recovery",
   "status": "promoted",
-  "validation_status": "dev-pc-qualified-rules-activation-progress-contract"
+  "validation_status": "ci-openapi-valid-enterprise-backup-recovery-contract"
 }

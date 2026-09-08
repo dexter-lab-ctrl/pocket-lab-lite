@@ -10096,6 +10096,29 @@
     },
     {
       "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_LITE_APP_VERSION",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "FastAPI",
         "repository tooling"
       ],
@@ -13078,7 +13101,7 @@
       "secret": false,
       "source": [
         ".storybook/preview.jsx",
-        "storybook-static/assets/preview-C-0KJ0Lt.js"
+        "storybook-static/assets/preview-BRAts1Ys.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -15107,7 +15130,7 @@
         "src/mocks/handlers.js",
         "src/mocks/identityRulesP1Handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-C-0KJ0Lt.js"
+        "storybook-static/assets/preview-BRAts1Ys.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

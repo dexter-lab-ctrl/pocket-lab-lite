@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9aa2367d069cc82a748c90475f4f9c641a18794f7d1e5549992727d28d9ccd64
+source_fingerprint: b5ae84d860998379cc69ecf84821d747624dcb99246ee687a4be26e90b78fd88
 schema_revision: 1
 validation_status: generated
 ---
@@ -74,6 +74,10 @@ validation_status: generated
 | `pocket-lab-lite-recovery-backupfailed` | recovery | `recovery-backup-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-backupfailed-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-savedofflinesnapshot` | recovery | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-savedofflinesnapshot-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-mobile320` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-mobile320-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-manyrestorepoints` | recovery | `recovery-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-manyrestorepoints-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-restorerunning` | recovery | `recovery-restore-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-restorerunning-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-restoresucceeded` | recovery | `recovery-restore-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-restoresucceeded-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-restorerolledback` | recovery | `recovery-rollback-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-restorerolledback-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-rules-norules` | rules | `rules-empty` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-norules-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-rules-protectionhealthy` | rules | `rules-enabled` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-protectionhealthy-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-rules-ruleenabled` | rules | `rules-enabled` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-rules-ruleenabled-{viewport}.png` | fixture-dependent |

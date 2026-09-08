@@ -68,6 +68,7 @@ function mergeOptional(...values) {
 
 export default function RecoveryScreen() {
   const [copiedEvidence, setCopiedEvidence] = useState('');
+  const [selectedBackup, setSelectedBackup] = useState(null);
   const recoveryManageOpen = useLiteUiStore((state) => state.recoveryManageOpen);
   const recoveryManageSection = useLiteUiStore((state) => state.activeRecoveryManageSection);
   const activeActionPanel = useLiteUiStore((state) => state.activeRecoveryDetailsPanel || '');
@@ -100,7 +101,7 @@ export default function RecoveryScreen() {
   } = useLiteResource(liteApi.recoverySummary, [], {
     pollingMode: 'slow',
     isLive: recoveryPollingIsLive,
-    staleTime: 30_000,
+    staleTime: 10_000,
     select: selectRecoverySummaryView,
     snapshotSelect: selectRecoverySummaryView,
   });
@@ -114,7 +115,7 @@ export default function RecoveryScreen() {
     enabled: detailsNeeded,
     pollingMode: 'slow',
     isLive: recoveryPollingIsLive,
-    staleTime: 45_000,
+    staleTime: 15_000,
     select: selectRecoveryScreenView,
     snapshotSelect: selectRecoveryScreenView,
   });
@@ -138,6 +139,10 @@ export default function RecoveryScreen() {
   const latestBackupVerified = latestBackup?.verification_status === 'verified';
   const latestPreview = mergeOptional(details?.latest_restore_preview, data?.latest_restore_preview);
   const latestPreviewReady = latestPreview?.status === 'ready';
+  const selectedRestorePoint = selectedBackup || latestBackup;
+  const selectedRestorePreview = selectedBackup && selectedBackup.backup_id !== latestBackup?.backup_id ? null : latestPreview;
+  const selectedBackupVerified = selectedRestorePoint?.verification_status === 'verified';
+  const selectedPreviewReady = selectedRestorePreview?.status === 'ready';
   const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
   const checkpoint = mergeOptional(details?.pre_restore_checkpoint, data?.pre_restore_checkpoint);
   const serviceRestart = details?.last_restore?.service_restart || {};
@@ -353,7 +358,7 @@ export default function RecoveryScreen() {
     await recoveryActions.runAction({
       actionId: 'backup_now',
       busyKey: 'backup',
-      execute: () => liteApi.backupNow({ include_app_data: false, reason: 'manual backup' }),
+      execute: () => liteApi.backupNow({ include_app_data: true, reason: 'manual full restore point' }),
       onAccepted: recoveryFlow.backupAccepted,
       onDone: recoveryFlow.backupDone,
       onFailure: recoveryFlow.fail,
@@ -436,14 +441,16 @@ export default function RecoveryScreen() {
     });
   }
 
-  async function verifyLatestBackup() {
-    if (!latestBackup?.backup_id) return;
+  async function verifyLatestBackup(backupOverride = null) {
+    const restorePoint = backupOverride || selectedRestorePoint;
+    if (backupOverride) setSelectedBackup(backupOverride);
+    if (!restorePoint?.backup_id) return;
     const flowCheck = recoveryFlow.requestVerify();
     if (!flowCheck.ok) return;
     await recoveryActions.runAction({
       actionId: 'verify_backup',
       busyKey: 'verify',
-      execute: () => liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' }),
+      execute: () => liteApi.verifyBackup(restorePoint.backup_id, { reason: 'manual verification' }),
       onAccepted: recoveryFlow.verifyAccepted,
       onDone: recoveryFlow.verified,
       onFailure: recoveryFlow.fail,
@@ -451,15 +458,17 @@ export default function RecoveryScreen() {
     });
   }
 
-  async function previewLatestRestore() {
-    if (!latestBackup?.backup_id) return;
+  async function previewLatestRestore(backupOverride = null) {
+    const restorePoint = backupOverride || selectedRestorePoint;
+    if (backupOverride) setSelectedBackup(backupOverride);
+    if (!restorePoint?.backup_id) return;
     const flowCheck = recoveryFlow.requestPreview();
     if (!flowCheck.ok) return;
     await recoveryActions.runAction({
       actionId: 'preview_restore_recovery',
       busyKey: 'preview',
       execute: () => liteApi.previewRestore({
-        backup_id: latestBackup.backup_id,
+        backup_id: restorePoint.backup_id,
         reason: 'manual restore preview',
       }),
       onAccepted: recoveryFlow.previewAccepted,
@@ -469,18 +478,18 @@ export default function RecoveryScreen() {
   }
 
   function restoreLatestBackup() {
-    if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
+    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id) return;
     const flowCheck = recoveryFlow.requestRestore({
-      verified: latestBackupVerified,
-      previewReady: latestPreviewReady,
-      explicitBackup: Boolean(latestBackup?.backup_id && latestBackup.backup_id !== 'latest'),
+      verified: selectedBackupVerified,
+      previewReady: selectedPreviewReady,
+      explicitBackup: Boolean(selectedRestorePoint?.backup_id && selectedRestorePoint.backup_id !== 'latest'),
     });
     if (!flowCheck.ok) return;
     setRestoreConfirmation('lite');
   }
 
   async function confirmRestoreLatestBackup() {
-    if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
+    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id) return;
     setRestoreConfirmation('');
     recoveryFlow.confirmRestore();
     triggerLiteHaptic('confirm');
@@ -488,8 +497,8 @@ export default function RecoveryScreen() {
       actionId: 'recovery_restore',
       busyKey: 'restore',
       execute: () => liteApi.restoreBackup({
-        backup_id: latestBackup.backup_id,
-        preview_id: latestPreview.preview_id,
+        backup_id: selectedRestorePoint.backup_id,
+        preview_id: selectedRestorePreview.preview_id,
         confirm: true,
       }),
       onAccepted: recoveryFlow.restoreAccepted,
@@ -742,15 +751,15 @@ export default function RecoveryScreen() {
           <RecoveryManageSheetLazy
             section={recoveryManageSection}
             onSectionChange={setRecoveryManageSection}
-            latestBackup={latestBackup}
-            latestPreview={latestPreview}
+            latestBackup={selectedRestorePoint}
+            latestPreview={selectedRestorePreview}
             lastRestore={lastRestore}
             checkpoint={checkpoint}
             repository={repository}
             history={history}
             savedStateOnly={savedStateOnly || detailsSavedStateOnly}
-            latestBackupVerified={latestBackupVerified}
-            latestPreviewReady={latestPreviewReady}
+            latestBackupVerified={selectedBackupVerified}
+            latestPreviewReady={selectedPreviewReady}
             restoreSucceeded={restoreSucceeded}
             databaseProtection={databaseProtection}
             latestDatabaseBackup={latestDatabaseBackup}
@@ -767,12 +776,14 @@ export default function RecoveryScreen() {
             onBackup={backup}
             onVerify={verifyLatestBackup}
             onPreview={previewLatestRestore}
-            onRestore={restoreLatestBackup}
+            onRestore={(backup) => { if (backup) setSelectedBackup(backup); restoreLatestBackup(); }}
             onDatabaseBackup={backUpDatabase}
             onOpenDatabaseDetails={() => setDatabaseDetailsOpen(true)}
             onBackUpApp={backUpApp}
             onOpenActionDetails={openActionPanel}
             onOpenEvidence={() => setEvidenceOpen(true)}
+            selectedBackupId={selectedRestorePoint?.backup_id || ''}
+            onSelectBackup={setSelectedBackup}
             detailsLoading={detailsLoading && !detailsData}
             detailsError={detailsError}
             onRetryDetails={refreshDetails}
