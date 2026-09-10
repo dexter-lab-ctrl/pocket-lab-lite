@@ -20,12 +20,15 @@ APP_RESTORE_PREVIEW_SUBJECT = "pocketlab.commands.lite.app.restore.preview"
 
 APP_BACKUP_INCLUDES = [
     "app_config",
+    "photoprism_safe_configuration",
+    "photoprism_metadata_database",
     "app_metadata",
     "storage_mappings",
     "route_registry",
     "safe_evidence_refs",
 ]
 APP_BACKUP_EXCLUDES = [
+    "android_shared_storage",
     "original_media",
     "import_folder_media",
     "generated_cache",

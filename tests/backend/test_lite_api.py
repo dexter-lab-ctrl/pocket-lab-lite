@@ -74,6 +74,16 @@ def _prime_prepared_get(path: str) -> None:
                 max_stale_ms=0, deadline_seconds=10.0,
             )
         elif route in {"/api/lite/recovery", "/api/lite/recovery/details"}:
+            # Recovery details compose the last committed App Lifecycle
+            # snapshot. Prime that canonical dependency explicitly in the
+            # legacy request-fixture helper instead of making the Recovery
+            # builder launch the live App Lifecycle collector.
+            lite.CONTROL_PLANE.prepared_read(
+                domain="apps", key="lifecycle",
+                builder=lite.lite_app_lifecycle.app_lifecycle_profiles,
+                projector=lite.CONTROL_PLANE.project_apps, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=10.0,
+            )
             lite.CONTROL_PLANE.prepared_read(
                 domain="recovery", key="details", builder=lite._lite_recovery_details_payload,
                 projector=lite.CONTROL_PLANE.project_recovery, stale_after_ms=0,
@@ -2495,6 +2505,51 @@ def test_lite_worker_routes_media_commands_by_subject_before_generic_operation(m
     subject, command = domain_calls[0]
     assert subject == "pocketlab.commands.lite.app.media"
     assert command["operation"] == "import_photos"
+
+
+def test_lite_restore_worker_result_emits_failed_lifecycle_after_rollback(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import domain_commands
+
+    published: list[tuple[str, str, dict]] = []
+
+    async def fake_publish(subject, event_type, data, **_kwargs):
+        published.append((subject, event_type, data))
+
+    def fake_restore(_command):
+        return {
+            "status": "failed_with_rollback",
+            "restore_id": "restore-lifecycle-1",
+            "backup_id": "backup-lifecycle-1",
+            "preview_id": "preview-lifecycle-1",
+            "checkpoint_id": "checkpoint-restore-lifecycle-1",
+            "database_restore": {"failure_category": "restore_operation_failed"},
+            "rollback": {"status": "rolled_back"},
+        }
+
+    monkeypatch.setattr(domain_commands, "_publish", fake_publish)
+    import api_fastapi.services.lite_backup as lite_backup
+
+    monkeypatch.setattr(lite_backup, "apply_restore", fake_restore)
+
+    result = asyncio.run(
+        domain_commands.handle_lite_restore_apply(
+            {"command_id": "restore-lifecycle-1", "backup_id": "backup-lifecycle-1"}
+        )
+    )
+
+    assert result["status"] == "failed_with_rollback"
+    assert any(
+        subject == "pocketlab.events.lite.restore.failed"
+        and event_type == "lite.restore.failed"
+        and data["result_status"] == "failed_with_rollback"
+        and data["rollback_status"] == "rolled_back"
+        for subject, event_type, data in published
+    )
+    assert not any(
+        subject == "pocketlab.events.lite.restore.completed"
+        for subject, _event_type, _data in published
+    )
 
 
 def test_lite_media_worker_applies_storage_mappings_before_photoprism_cli(tmp_path, monkeypatch):

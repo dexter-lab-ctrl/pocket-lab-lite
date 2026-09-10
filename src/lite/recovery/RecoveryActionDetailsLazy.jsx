@@ -110,6 +110,8 @@ export default function RecoveryActionDetailsLazy({
   const historyItems = buildHistoryItems({ history, latestBackup, latestPreview, checkpoint, lastRestore });
   const logs = Array.isArray(panel?.logs) ? panel.logs : [];
   const restoreSummary = lastRestore?.summary || (lastRestore?.restored_file_count ? `${lastRestore.restored_file_count} Lite state file(s) restored.` : 'Restore stays protected until confirmed.');
+  const includedComponents = Array.isArray(latestPreview?.included_components) ? latestPreview.included_components : [];
+  const excludedComponents = Array.isArray(latestPreview?.excluded_components) ? latestPreview.excluded_components : [];
 
   const whatChanged = [];
   if (actionKey === 'verify' && latestBackup?.verification_status === 'verified') whatChanged.push('Backup verification is ready.');
@@ -160,6 +162,14 @@ export default function RecoveryActionDetailsLazy({
             ))}
           </div>
         </section>
+        {actionKey === 'preview' && (includedComponents.length || excludedComponents.length) ? (
+          <section className="lite-progressive-detail-section lite-app-action-detail-section" aria-label="Restore scope">
+            <strong>Restore scope</strong>
+            {includedComponents.length ? <p><strong>Included:</strong> {includedComponents.join(', ')}</p> : null}
+            {excludedComponents.length ? <p><strong>Excluded and unchanged:</strong> {excludedComponents.join(', ')}</p> : null}
+            <p>Photo/media files and Android shared storage remain unchanged.</p>
+          </section>
+        ) : null}
         {actionKey === 'evidence' ? (
           <section className="lite-progressive-detail-section lite-app-action-detail-section is-next-step">
             <strong>Protected records</strong>

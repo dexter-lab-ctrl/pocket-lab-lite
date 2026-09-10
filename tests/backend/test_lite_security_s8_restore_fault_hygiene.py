@@ -56,6 +56,27 @@ def test_wait_restore_preserves_sanitized_failure_detail(monkeypatch):
         raise AssertionError("expected RestoreExpectationError")
 
 
+def test_rollback_checkpoint_accepts_logical_proof_with_diagnostic_byte_hash_change():
+    assert long_gate_s8.rollback_checkpoint_is_valid(
+        {
+            "phase": "rolled_back",
+            "rollback_status": "rolled_back",
+            "api_worker_restart_allowed": True,
+            "checkpoint_database_projection_matched": True,
+            "checkpoint_database_hash_matched": False,
+            "checkpoint_database_byte_hash_matched": False,
+        }
+    ) is True
+    assert long_gate_s8.rollback_checkpoint_is_valid(
+        {
+            "phase": "rolled_back",
+            "rollback_status": "rolled_back",
+            "api_worker_restart_allowed": True,
+            "checkpoint_database_projection_matched": False,
+        }
+    ) is False
+
+
 def test_worker_fault_environment_reads_only_sanitized_pm2_fields(monkeypatch):
     payload = [
         {

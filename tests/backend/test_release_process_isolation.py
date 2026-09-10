@@ -472,6 +472,41 @@ def test_worker_publishes_truthful_terminal_failure_for_release_result(monkeypat
     assert terminal[2]["last_known_good"] is True
 
 
+def test_worker_publishes_terminal_failure_for_rolled_back_restore(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import domain_commands
+    from workers import pocketlab_worker
+
+    published: list[tuple[str, str, dict]] = []
+
+    async def fake_domain(_subject, _command):
+        return {
+            "status": "failed_with_rollback",
+            "database_restore": {"failure_category": "restore_operation_failed"},
+        }
+
+    async def fake_publish(subject, event_type, data, **_kwargs):
+        published.append((subject, event_type, data))
+
+    monkeypatch.setattr(domain_commands, "execute_domain_command", fake_domain)
+    monkeypatch.setattr(pocketlab_worker, "publish", fake_publish)
+
+    asyncio.run(
+        pocketlab_worker.execute_domain_command(
+            "pocketlab.commands.lite.recovery.restore.apply",
+            {"command_id": "restore-rolled-back-1"},
+        )
+    )
+
+    terminal = published[-1]
+    assert terminal[0] == "pocketlab.events.command.failed"
+    assert terminal[1] == "command.failed"
+    assert terminal[2]["status"] == "failed"
+    assert terminal[2]["result_status"] == "failed_with_rollback"
+    assert terminal[2]["terminal"] is True
+    assert terminal[2]["error_type"] == "restore_operation_failed"
+
+
 def test_release_check_returns_truthful_degraded_state(monkeypatch):
     ensure_runtime_path()
     monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")

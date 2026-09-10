@@ -830,6 +830,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "qualification_authentication_required",
+      "deprecated_aliases": [],
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 401,
+      "meaning": "A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Qualification authentication is unavailable."
+    },
+    {
+      "audit_severity": "warning",
       "code": "cold_start_validation",
       "deprecated_aliases": [],
       "domain": "validation",

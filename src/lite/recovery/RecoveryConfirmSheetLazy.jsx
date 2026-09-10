@@ -22,6 +22,8 @@ export default function RecoveryConfirmSheetLazy({
   const title = databaseRestore ? 'Restore Pocket Lab database?' : 'Restore this backup?';
   const backupLabel = backup?.created_at ? formatLiteTime(backup.created_at) : 'Selected verified backup';
   const sizeLabel = backup?.size_bytes ? formatSize(backup.size_bytes) : null;
+  const includedComponents = Array.isArray(preview?.included_components) ? preview.included_components : [];
+  const excludedComponents = Array.isArray(preview?.excluded_components) ? preview.excluded_components : [];
 
   return (
     <div className="lite-recovery-native-confirm" data-recovery-native-confirm="true">
@@ -49,6 +51,15 @@ export default function RecoveryConfirmSheetLazy({
           <li>Pocket Lab checks health and keeps rollback evidence afterward.</li>
         </ul>
       </section>
+
+      {includedComponents.length || excludedComponents.length ? (
+        <section className="lite-recovery-native-confirm-section" aria-label="Restore scope">
+          <div><ShieldCheck className="h-5 w-5" /><strong>Restore scope</strong></div>
+          {includedComponents.length ? <p><strong>Included:</strong> {includedComponents.join(', ')}</p> : null}
+          {excludedComponents.length ? <p><strong>Excluded and unchanged:</strong> {excludedComponents.join(', ')}</p> : null}
+          <p>Photo/media files and Android shared storage will not be changed.</p>
+        </section>
+      ) : null}
 
       <section className="lite-recovery-native-confirm-section is-muted">
         <div><AlertTriangle className="h-5 w-5" /><strong>What will not happen</strong></div>

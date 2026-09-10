@@ -94,6 +94,11 @@ def test_recovery_details_preserves_existing_full_contract(monkeypatch):
     })
     monkeypatch.setattr(lite.lite_app_lifecycle, "cached_app_backup_profiles", lambda: {"apps": [{"app_id": "photoprism"}]})
     monkeypatch.setattr(lite.lite_app_lifecycle, "app_lifecycle_profiles", lambda: {"apps": [{"app_id": "photoprism"}]})
+    monkeypatch.setattr(
+        lite.lite_core_projections.CONTROL_PLANE,
+        "app_lifecycle_projection_snapshot",
+        lambda: {"apps": [{"app_id": "photoprism"}]},
+    )
     monkeypatch.setattr(lite.lite_recovery_subprojections, "backup_targets", lambda: {"targets": [{"device_id": "phone-2"}]})
     monkeypatch.setattr(lite.lite_recovery_subprojections, "database_protection_details", lambda: {"status": "healthy", "backup_history": []})
     monkeypatch.setattr(lite.lite_recovery_subprojections, "maintenance_state", lambda: {"active": False, "state": "ready"})

@@ -9,7 +9,8 @@ default decision := {
 }
 
 authenticated_actor if {
-	input.actor.type in {"human", "service", "test"}
+	input.actor.type in {"human", "service", "qualification", "test"}
+	input.session.authenticated == true
 }
 
 default governance_parameters := {}
@@ -18,6 +19,49 @@ governance_parameters := data.parameters
 
 admin_device_remove_approval := object.get(governance_parameters, "admin_device_remove_approval", 1)
 operator_device_remove_approval := object.get(governance_parameters, "operator_device_remove_approval", 1)
+
+recovery_action if {
+	input.action.id in {"backup.create", "backup.verify", "restore.preview"}
+	authenticated_actor
+	input.target.type == "recovery"
+	input.target.id != ""
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "recovery_target"],
+	"reason_code": "authenticated_recovery_operation",
+} if {
+	recovery_action
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "confirmed_restore", "bound_preview", "owner_authority"],
+	"reason_code": "owner_authority_restore",
+} if {
+	input.action.id == "restore.apply"
+	authenticated_actor
+	input.target.type == "recovery"
+	input.target.id != ""
+	input.actor.role == "Owner"
+	input.actor.owner_authority == true
+	input.target.state.confirmed == true
+	input.target.state.preview_bound == true
+	input.target.state.restorable == true
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["owner_authority"],
+	"reason_code": "recovery_owner_required",
+} if {
+	input.action.id == "restore.apply"
+	authenticated_actor
+	input.target.type == "recovery"
+	input.target.id != ""
+	not (input.actor.role == "Owner")
+}
 
 decision := {
 	"allow": true,

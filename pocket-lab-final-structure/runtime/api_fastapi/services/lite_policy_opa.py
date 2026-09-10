@@ -20,7 +20,17 @@ from .lite_security_policy import redact_value
 OPA_BASE_URL = os.environ.get("POCKETLAB_OPA_URL", "http://127.0.0.1:8181").rstrip("/")
 OPA_DECISION_PATH = "/v1/data/pocketlab/authz/decision"
 OPA_REVISION_PATH = "/v1/data/pocketlab/meta/revision"
-PROTECTED_ACTIONS = frozenset({"catalog.install", "device.remove", "identity.passkey.revoke"})
+PROTECTED_ACTIONS = frozenset(
+    {
+        "catalog.install",
+        "device.remove",
+        "identity.passkey.revoke",
+        "backup.create",
+        "backup.verify",
+        "restore.preview",
+        "restore.apply",
+    }
+)
 
 
 class PolicyDecisionError(RuntimeError):
@@ -203,6 +213,8 @@ def _normalized_actor(auth_context: dict[str, Any] | None) -> dict[str, str | in
         "authorization_version": authorization_version,
         "identity_class": identity_class,
         "enterprise_enabled": bool(authorization.get("enterprise_enabled")),
+        "owner_authority": bool(authorization.get("owner_authority")),
+        "membership_active": bool(authorization.get("membership_active")),
     }
 
 

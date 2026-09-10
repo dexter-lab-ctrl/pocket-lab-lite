@@ -16,6 +16,7 @@ import re
 import shutil
 import sqlite3
 import subprocess
+import threading
 import time
 from typing import Any, Callable
 
@@ -67,6 +68,8 @@ _MAX_CHANGED_PATHS = 24
 _MAX_CHANGED_PATH_LENGTH = 160
 _MAX_SEMANTIC_EVENTS_PER_DOMAIN = 64
 _MAX_SEMANTIC_EVENTS_GLOBAL = 2048
+_SCHEMA_READY_LOCK = threading.Lock()
+_SCHEMA_READY_INSTANCE = ""
 _DEFAULT_COMMIT_VOLATILE_FIELDS = frozenset(
     {
         "collector_duration_ms",
@@ -115,6 +118,17 @@ def _database_instance() -> str:
     except OSError:
         raw = f"{path}:missing"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
+
+
+def _ensure_schema_once_per_database() -> None:
+    """Avoid repeated migration transactions from concurrent probe readers."""
+    global _SCHEMA_READY_INSTANCE
+    instance = _database_instance()
+    with _SCHEMA_READY_LOCK:
+        if _SCHEMA_READY_INSTANCE == instance:
+            return
+        apply_migrations()
+        _SCHEMA_READY_INSTANCE = instance
 
 
 def _safe_text(value: Any, limit: int = 192) -> str:
@@ -179,6 +193,21 @@ def _canonical_material(value: Any) -> Any:
     return _safe_text(value, 192)
 
 
+_CRITICAL_SYSTEM_PROJECTION_DOMAINS = frozenset(
+    {"security.progress", "security.summary", "system.status", "system.health"}
+)
+
+
+def _projection_writer_priority(domain: str) -> int:
+    """Keep bounded health/security commits ahead of diagnostic telemetry."""
+    return 20 if domain in _CRITICAL_SYSTEM_PROJECTION_DOMAINS else 50
+
+
+def _projection_writer_deadline(domain: str) -> float:
+    """Give critical prepared reads a bounded, still-finite writer window."""
+    return 5.0 if domain in _CRITICAL_SYSTEM_PROJECTION_DOMAINS else 2.0
+
+
 def semantic_revision(namespace: str, material: Any) -> int:
     blob = json.dumps(
         {"namespace": _safe_text(namespace, 96), "schema_version": 1, "material": _canonical_material(material)},
@@ -214,7 +243,7 @@ def _read(
     callback: Callable[[sqlite3.Connection], Any], *, ensure_schema: bool = True
 ) -> Any:
     if ensure_schema:
-        apply_migrations()
+        _ensure_schema_once_per_database()
     entry, _ = SQLITE_READS.acquire(timeout_seconds=1.0)
     discard = False
     try:
@@ -680,7 +709,10 @@ def commit_projection_if_changed(
         )
 
     return SQLITE_WRITER.submit(
-        f"projection.commit.{safe_domain}", write, deadline_seconds=2.0
+        f"projection.commit.{safe_domain}",
+        write,
+        deadline_seconds=_projection_writer_deadline(safe_domain),
+        priority=_projection_writer_priority(safe_domain),
     )
 
 
@@ -1479,50 +1511,65 @@ def source_revision_for(domain: str) -> Callable[[], int]:
         raise ValueError("unsupported Phase 3B projection domain") from exc
 
 
+def _job(domain: str):
+    """Build the worker-owned job from the shared semantic contract.
+
+    Phase 3B used to install jobs only as a side effect of a dirty signal. That
+    left a durable signal susceptible to being claimed before the worker had a
+    complete registry, and made startup reconciliation dependent on unrelated
+    API traffic. Keep registration explicit and use the same contract as the
+    other prepared projection families.
+    """
+    from .lite_semantic_revisions import contract_for
+    from .projection_scheduler import ProjectionJob
+
+    parent, key = domain.split(".", 1)
+    contract = contract_for(parent, key)
+    if contract is None or not callable(contract.source_revision):
+        raise RuntimeError(f"missing mandatory semantic revision contract for {domain}")
+    return ProjectionJob(
+        domain=domain,
+        builder=builder_for(domain),
+        projector=lambda payload, selected_domain=domain: project(selected_domain, payload),
+        priority=contract.priority,
+        work_class=contract.work_class,
+        deadline_seconds=contract.deadline_seconds,
+        optional=contract.work_class != "critical",
+        source_revision=contract.source_revision,
+        max_probe_seconds=contract.max_probe_seconds,
+        quiet_window_seconds=contract.quiet_window_seconds,
+    )
+
+
+def register_jobs() -> None:
+    """Install every Phase 3B job before durable state is reconciled."""
+    from .projection_scheduler import PROJECTION_SCHEDULER
+
+    for domain in PHASE3B_DOMAINS:
+        PROJECTION_SCHEDULER.register(_job(domain))
+
+
 def mark_dirty(*domains: str, reason: str = "event") -> None:
     try:
-        from .projection_scheduler import PROJECTION_SCHEDULER, ProjectionJob
+        from .projection_scheduler import PROJECTION_SCHEDULER
     except Exception:
         return
     selected = domains or PHASE3B_DOMAINS
+    register_jobs()
     for domain in selected:
         if domain not in PHASE3B_DOMAINS:
             continue
-        work_class = "critical" if domain in {"security.progress", "system.nats_remote"} else "io"
-        priority = (
-            10
-            if domain == "security.progress"
-            else 20
-            if domain in {"security.summary", "system.status", "system.health"}
-            else 40
-        )
+        job = _job(domain)
         PROJECTION_SCHEDULER.mark_dirty(
             domain,
-            job=ProjectionJob(
-                domain=domain,
-                builder=builder_for(domain),
-                projector=lambda payload, selected_domain=domain: project(selected_domain, payload),
-                priority=priority,
-                work_class=work_class,
-                deadline_seconds=8.0 if domain not in {"system.processes", "system.remote_access"} else 10.0,
-                optional=work_class != "critical",
-                source_revision=source_revision_for(domain),
-                max_probe_seconds=(
-                    30.0
-                    if domain == "security.progress"
-                    else 60.0
-                    if domain
-                    in {"system.nats_remote", "system.agent", "system.supervisor"}
-                    else 300.0
-                ),
-                quiet_window_seconds=0.25 if domain == "security.progress" else 1.0,
-            ),
-            priority=priority,
+            job=job,
+            priority=job.priority,
             reason=reason,
         )
 
 
 def schedule_startup_warmup() -> dict[str, bool]:
+    register_jobs()
     result: dict[str, bool] = {}
     for domain in PHASE3B_DOMAINS:
         try:

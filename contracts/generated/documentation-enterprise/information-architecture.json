@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 893,
+  "cross_link_count": 894,
   "feature_journeys": [
     {
       "api_entities": [
@@ -3166,6 +3166,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:nats-listeners",
+          "target": "test:tests/backend/test_lite_qualification_owner.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:nats-listeners",
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py"
         },
         {
@@ -3426,6 +3432,7 @@
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
+        "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -4643,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 432,
+  "page_count": 433,
   "page_types": [
     "overview",
     "guide",
@@ -16009,6 +16016,30 @@
       "url": "/recovery/security-s8-maintenance/"
     },
     {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "recovery/server-phone-backup-restore-live-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:recovery/server-phone-backup-restore-live-qualification",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "reference",
+      "path": "recovery/server-phone-backup-restore-live-qualification.md",
+      "primary_audience": "operator",
+      "primary_navigation_owner": "operate",
+      "related_pages": [],
+      "source_or_generator": "recovery/server-phone-backup-restore-live-qualification.md",
+      "title": "Server Phone Backup and Restore Live Qualification",
+      "url": "/recovery/server-phone-backup-restore-live-qualification/"
+    },
+    {
       "additional_audiences": [
         "tester"
       ],
@@ -16187,7 +16218,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "c17168365f67fe86ae185a01e32fd21b5e51dbdea609b83e40fc91a0a279e97a",
+  "source_fingerprint": "9da574852020b503945fa4f8182342d7f52122fa28533492ed6827aa94afb120",
   "top_level": [
     "start-here",
     "use",

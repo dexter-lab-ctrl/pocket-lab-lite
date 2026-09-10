@@ -30,6 +30,8 @@ class _WriteRequest(Generic[T]):
     enqueued_at: float
     deadline_at: float
     completed: threading.Event
+    priority: int = 50
+    sequence: int = 0
     result: T | None = None
     error: BaseException | None = None
 
@@ -64,11 +66,14 @@ class SQLiteWriteService:
         self.max_queue = max_queue or _bounded_int(
             "POCKETLAB_LITE_DB_WRITE_QUEUE", 64, 4, 1024
         )
-        self._queue: queue.Queue[_WriteRequest[Any] | None] = queue.Queue(
+        self._queue: queue.PriorityQueue[
+            tuple[int, int, _WriteRequest[Any] | None]
+        ] = queue.PriorityQueue(
             maxsize=self.max_queue
         )
         self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
+        self._sequence = 0
         self._metrics_lock = threading.Lock()
         self._shutdown = False
         self._metrics: dict[str, float | int] = {
@@ -102,19 +107,26 @@ class SQLiteWriteService:
         callback: Callable[[sqlite3.Connection], T],
         *,
         deadline_seconds: float = 2.0,
+        priority: int = 50,
     ) -> T:
         self.start()
         now = time.monotonic()
         bounded_deadline = max(0.05, min(float(deadline_seconds), 30.0))
+        bounded_priority = max(0, min(int(priority), 100))
+        with self._lock:
+            self._sequence += 1
+            sequence = self._sequence
         request: _WriteRequest[T] = _WriteRequest(
             operation=str(operation or "sqlite.write")[:80],
             callback=callback,
             enqueued_at=now,
             deadline_at=now + bounded_deadline,
             completed=threading.Event(),
+            priority=bounded_priority,
+            sequence=sequence,
         )
         try:
-            self._queue.put_nowait(request)
+            self._queue.put_nowait((bounded_priority, sequence, request))
         except queue.Full as exc:
             self._increment("rejected_writes")
             raise SQLiteWriteRejected("SQLite write queue is full") from exc
@@ -131,7 +143,7 @@ class SQLiteWriteService:
         connection_identity = ""
         try:
             while True:
-                request = self._queue.get()
+                _priority, _sequence, request = self._queue.get()
                 if request is None:
                     return
                 if time.monotonic() >= request.deadline_at:
@@ -233,7 +245,10 @@ class SQLiteWriteService:
             thread = self._thread
         if thread is not None and thread.is_alive():
             try:
-                self._queue.put(None, timeout=max(0.1, timeout_seconds))
+                with self._lock:
+                    self._sequence += 1
+                    sequence = self._sequence
+                self._queue.put((1000, sequence, None), timeout=max(0.1, timeout_seconds))
             except queue.Full:
                 pass
             thread.join(timeout=max(0.1, timeout_seconds))
@@ -284,35 +299,44 @@ class SQLiteReadConnectionManager:
             with self._lock:
                 self._metrics["acquire_timeout"] += 1
             raise TimeoutError("SQLite read connection acquisition timed out")
-        generation = self.generation
-        current_identity = _database_identity()
         entry: _ReadEntry | None = None
-        while entry is None:
-            try:
-                candidate = self._available.get_nowait()
-            except queue.Empty:
-                break
-            expired = time.monotonic() - candidate.last_used_at > self.idle_seconds
-            if (
-                candidate.generation != generation
-                or candidate.database_identity != current_identity
-                or expired
-                or not self._healthy(candidate)
-            ):
-                candidate.connection.close()
-                continue
-            entry = candidate
+        try:
+            generation = self.generation
+            current_identity = _database_identity()
+            while entry is None:
+                try:
+                    candidate = self._available.get_nowait()
+                except queue.Empty:
+                    break
+                expired = time.monotonic() - candidate.last_used_at > self.idle_seconds
+                if (
+                    candidate.generation != generation
+                    or candidate.database_identity != current_identity
+                    or expired
+                    or not self._healthy(candidate)
+                ):
+                    candidate.connection.close()
+                    continue
+                entry = candidate
+                with self._lock:
+                    self._metrics["reused"] += 1
+            if entry is None:
+                conn = open_connection(read_only=True)
+                now = time.monotonic()
+                entry = _ReadEntry(conn, generation, current_identity, now, now)
+                with self._lock:
+                    self._metrics["created"] += 1
             with self._lock:
-                self._metrics["reused"] += 1
-        if entry is None:
-            conn = open_connection(read_only=True)
-            now = time.monotonic()
-            entry = _ReadEntry(conn, generation, current_identity, now, now)
-            with self._lock:
-                self._metrics["created"] += 1
-        with self._lock:
-            self._metrics["acquired"] += 1
-        return entry, max(0.0, (time.monotonic() - started) * 1000.0)
+                self._metrics["acquired"] += 1
+            return entry, max(0.0, (time.monotonic() - started) * 1000.0)
+        except BaseException:
+            if entry is not None:
+                entry.connection.close()
+            # A permit is reserved before path/connection validation. Return it
+            # when setup fails so one transient missing/invalid database cannot
+            # permanently exhaust the bounded read pool.
+            self._semaphore.release()
+            raise
 
     def release(self, entry: _ReadEntry, *, discard: bool = False) -> None:
         try:

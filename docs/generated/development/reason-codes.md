@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 04c4507cf8fc11161d0372f7f03acdca1e8bc37bfb110ac0c2abda20e5517d96
+source_fingerprint: fa175c16a0a3ccb987e90cdefe0dbc9fd94deda665c486a04f2482a6db99bb6f
 schema_revision: 1
 validation_status: generated
 ---
@@ -155,6 +155,7 @@ validation_status: generated
 | `projection_too_old` | projections | The last committed projection is too old for a safe write. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `projection_unavailable` | projections | The prepared projection is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `protected_server_host` | devices | The protected server host cannot use this destructive action. | no | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `qualification_authentication_required` | identity | A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied. | yes | no | 401 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `queue_full` | projections | The bounded queue cannot accept more work. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `read_degraded` | system | A safe last-known read is shown while refresh is unavailable. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `release_projection_unavailable` | release | The release prepared projection is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |

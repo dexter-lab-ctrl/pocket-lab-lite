@@ -114,6 +114,18 @@ def test_phase3a_contracts_cover_actual_app_and_recovery_projection_keys():
         assert contract.quiet_window_seconds > 0
 
 
+def test_phase3a_termux_app_projection_deadlines_are_bounded_for_cold_hydration():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_semantic_revisions import contract_for
+
+    assert contract_for("apps", "catalog").deadline_seconds == 45.0
+    assert contract_for("apps", "lifecycle").deadline_seconds == 20.0
+    assert contract_for("apps", "actions:photoprism").deadline_seconds == 20.0
+    assert contract_for("apps", "catalog").deadline_seconds <= 60.0
+    assert contract_for("apps", "lifecycle").deadline_seconds <= 60.0
+    assert contract_for("apps", "actions:photoprism").deadline_seconds <= 60.0
+
+
 def test_phase3a_prepared_read_installs_mandatory_contract_without_running_collector(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services.lite_control_plane_store import (
@@ -740,6 +752,32 @@ def test_phase3a_corrupt_or_oversized_source_fails_closed(monkeypatch, tmp_path)
         lite_semantic_revisions.app_source_revision(scope="catalog")
     probe = lite_semantic_revisions.diagnostics()["probes"]["apps.catalog:photoprism"]
     assert probe["last_error_type"] == "SemanticSourceUnavailable"
+
+
+def test_phase3a_recovery_source_read_timeout_fails_closed_then_recovers(tmp_path, monkeypatch):
+    _configure_database(tmp_path, monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.db.runtime import SQLITE_READS
+    from api_fastapi.services import lite_semantic_revisions
+
+    original_acquire = SQLITE_READS.acquire
+    calls = {"count": 0}
+
+    def fail_once(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise TimeoutError("test read-pool timeout")
+        return original_acquire(*args, **kwargs)
+
+    monkeypatch.setattr(SQLITE_READS, "acquire", fail_once)
+    with pytest.raises(lite_semantic_revisions.SemanticSourceUnavailable, match="database_unavailable"):
+        lite_semantic_revisions.recovery_summary_source_revision()
+
+    recovered_revision = lite_semantic_revisions.recovery_summary_source_revision()
+    assert recovered_revision > 0
+    assert calls["count"] > 1
+    probe = lite_semantic_revisions.diagnostics()["probes"]["recovery.summary"]
+    assert probe["last_error_type"] == ""
 
 
 def test_phase3a_hotfix_oversized_append_journal_is_excluded_not_failed(monkeypatch, tmp_path):

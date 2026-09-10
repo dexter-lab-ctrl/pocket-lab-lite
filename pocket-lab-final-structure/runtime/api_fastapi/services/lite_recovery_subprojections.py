@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+from contextlib import contextmanager
 import logging
 import os
 import sys
@@ -28,17 +29,24 @@ _FUTURES: dict[str, concurrent.futures.Future[Any]] = {}
 _FAILURES: dict[str, int] = {}
 _NEXT_ALLOWED: dict[str, float] = {}
 _DURATIONS: dict[str, float] = {}
+_QUIESCING_FOR_DATABASE_SWITCH = False
 
 # Prepared Recovery reads become stale at 10s/15s. Keep their source caches
 # below that bound; the scheduler remains event-driven and probes bounded
 # metadata only.
 RECOVERY_SUMMARY_TTL_SECONDS = 5.0
 RECOVERY_DETAILS_TTL_SECONDS = 8.0
-RECOVERY_MAX_STALE_SECONDS = 60.0
+# Keep source caches strictly inside the summary prepared-read max-stale fence;
+# the details projection has a wider fence but shares these bounded inputs.
+RECOVERY_MAX_STALE_SECONDS = 30.0
 
 
 def _done(name: str, started: float, future: concurrent.futures.Future[Any]) -> None:
     duration = max(0.0, time.monotonic() - started)
+    if future.cancelled():
+        with _LOCK:
+            _FUTURES.pop(name, None)
+        return
     try:
         value = future.result()
         if not isinstance(value, dict):
@@ -80,7 +88,11 @@ def _cached(
         dynamic_ttl = min(RECOVERY_MAX_STALE_SECONDS, max(ttl_seconds, duration * 2.0))
         if cached is not None and now - cached[1] <= dynamic_ttl:
             return dict(cached[0])
-        if future is None and now >= _NEXT_ALLOWED.get(name, 0.0):
+        if (
+            future is None
+            and not _QUIESCING_FOR_DATABASE_SWITCH
+            and now >= _NEXT_ALLOWED.get(name, 0.0)
+        ):
             started = time.monotonic()
             future = _EXECUTOR.submit(callback)
             setattr(future, "_pocketlab_started", started)
@@ -171,10 +183,33 @@ def maintenance_state() -> dict[str, Any]:
     )
 
 
+def _prepared_backup_targets() -> dict[str, Any]:
+    """Compose targets from the committed Fleet projection only.
+
+    Recovery details must not start the live Fleet collector as a side effect
+    of a prepared-read refresh. That collector can be slow on Termux and would
+    keep the database-switch fence from quiescing during a restore.
+    """
+    from .lite_control_plane_store import CONTROL_PLANE
+
+    fleet = CONTROL_PLANE.fleet_projection_snapshot()
+    if not isinstance(fleet, dict):
+        return {
+            "status": "degraded",
+            "summary": "Backup targets are refreshing.",
+            "targets": [],
+            "items": [],
+            "count": 0,
+            "ready_count": 0,
+            "updated_at": deps.now_utc_iso(),
+        }
+    return lite_app_backup_targets.backup_targets(fleet_payload=fleet)
+
+
 def backup_targets() -> dict[str, Any]:
     return _cached(
         "recovery:backup-targets",
-        lite_app_backup_targets.backup_targets,
+        _prepared_backup_targets,
         {
             "status": "degraded",
             "summary": "Backup targets are refreshing.",
@@ -205,6 +240,77 @@ def invalidate_recovery_subprojections(*names: str) -> None:
         for name in keys:
             _VALUES.pop(name, None)
             _NEXT_ALLOWED.pop(name, None)
+
+
+def begin_database_switch(*, timeout_seconds: float = 5.0) -> bool:
+    """Drain and hold Recovery source readers for a SQLite database handoff.
+
+    The normal projection scheduler owns prepared-projection jobs, but these
+    bounded source caches also have their own executors.  A database replacement
+    is unsafe while one of those readers still holds a pooled SQLite connection,
+    so block new submissions, cancel queued work, and wait for active callbacks
+    to release their connections before allowing the handoff to continue.
+    """
+    global _QUIESCING_FOR_DATABASE_SWITCH
+    deadline = time.monotonic() + max(0.1, min(float(timeout_seconds), 120.0))
+    with _LOCK:
+        _QUIESCING_FOR_DATABASE_SWITCH = True
+        futures = tuple(_FUTURES.values())
+        for future in futures:
+            if not future.running():
+                future.cancel()
+
+    try:
+        while True:
+            with _LOCK:
+                active = tuple(future for future in _FUTURES.values() if not future.done())
+            if not active:
+                with _LOCK:
+                    _FUTURES.clear()
+                    _VALUES.clear()
+                    _NEXT_ALLOWED.clear()
+                    _FAILURES.clear()
+                    _DURATIONS.clear()
+                return True
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return False
+            concurrent.futures.wait(
+                active,
+                timeout=min(0.1, remaining),
+                return_when=concurrent.futures.FIRST_COMPLETED,
+            )
+    except BaseException:
+        end_database_switch()
+        raise
+
+
+def end_database_switch() -> None:
+    """Release a previously acquired Recovery source-reader fence."""
+    with _LOCK:
+        global _QUIESCING_FOR_DATABASE_SWITCH
+        _QUIESCING_FOR_DATABASE_SWITCH = False
+
+
+@contextmanager
+def database_switch_fence(*, timeout_seconds: float = 5.0):
+    """Hold Recovery source readers quiescent across a SQLite replacement."""
+    if not begin_database_switch(timeout_seconds=timeout_seconds):
+        end_database_switch()
+        raise RuntimeError("Recovery source readers did not quiesce before database promotion")
+    try:
+        yield
+    finally:
+        end_database_switch()
+
+
+def quiesce_for_database_switch(*, timeout_seconds: float = 5.0) -> bool:
+    """Drain Recovery source readers for compatibility with existing callers."""
+    try:
+        with database_switch_fence(timeout_seconds=timeout_seconds):
+            return True
+    except RuntimeError:
+        return False
 
 
 def warm_startup_dependencies() -> dict[str, bool]:

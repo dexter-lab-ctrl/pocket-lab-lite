@@ -27,9 +27,14 @@ def prepare_sqlite_test_database(target: Path, monkeypatch) -> Path:
     """Fence shared scheduler/read-pool state before switching test databases."""
     ensure_runtime_path()
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+    from api_fastapi.services import lite_core_projections, lite_recovery_subprojections
 
     if not PROJECTION_SCHEDULER.quiesce_for_database_switch(timeout_seconds=5.0):
         raise RuntimeError("projection scheduler did not quiesce before test database switch")
+    if not lite_recovery_subprojections.quiesce_for_database_switch(timeout_seconds=5.0):
+        raise RuntimeError("Recovery source readers did not quiesce before test database switch")
+    if not lite_core_projections.quiesce_recovery_base_for_database_switch(timeout_seconds=5.0):
+        raise RuntimeError("Recovery base reader did not quiesce before test database switch")
 
     target = Path(target)
     target.parent.mkdir(parents=True, exist_ok=True)

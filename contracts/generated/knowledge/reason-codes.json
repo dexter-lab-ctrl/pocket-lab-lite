@@ -2662,6 +2662,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 401,
+      "id": "reason:qualification_authentication_required",
+      "name": "qualification_authentication_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Qualification authentication is unavailable."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The bounded queue cannot accept more work.",
       "domain": "projections",
       "event_mapping": [],
@@ -3527,6 +3547,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "17541b9d7baf5786cb1f3269b2c6cb685959862bfa0cdf1141d06998011abd6e"
+    "source_fingerprint": "da6c7356ae23ba42389f552d7306ff692e274282e5b0ded1ab4972e3f05d8f67"
   }
 }

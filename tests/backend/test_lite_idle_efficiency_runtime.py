@@ -109,6 +109,129 @@ def test_projection_scheduler_skips_unchanged_sqlite_projection(tmp_path, monkey
     scheduler.shutdown(drain_seconds=1.0)
 
 
+def test_critical_projection_lane_is_not_starved_by_slow_io(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(state))
+    db_path = state / "pocketlab.sqlite3"
+    db_path.touch()
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(db_path))
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_IO_WORKERS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_CRITICAL_WORKERS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_CPU_WORKERS", "1")
+
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    reset_sqlite_path_cache()
+    scheduler = ProjectionScheduler()
+    io_started = threading.Event()
+    release_io = threading.Event()
+    critical_finished = threading.Event()
+
+    def slow_io_builder():
+        io_started.set()
+        release_io.wait(timeout=2.0)
+        return {"lane": "io"}
+
+    def critical_builder():
+        critical_finished.set()
+        return {"lane": "critical"}
+
+    try:
+        scheduler.mark_dirty(
+            "apps.slow",
+            job=ProjectionJob(
+                "apps.slow",
+                slow_io_builder,
+                lambda _payload: 1,
+                50,
+                "io",
+                3.0,
+            ),
+        )
+        assert io_started.wait(timeout=1.0)
+        scheduler.mark_dirty(
+            "recovery.critical",
+            job=ProjectionJob(
+                "recovery.critical",
+                critical_builder,
+                lambda _payload: 1,
+                0,
+                "critical",
+                3.0,
+            ),
+        )
+        assert critical_finished.wait(timeout=1.0)
+        assert scheduler.diagnostics()["active_critical"] <= 1
+    finally:
+        release_io.set()
+        scheduler.shutdown(drain_seconds=1.0)
+
+
+def test_recovery_projection_lane_is_not_starved_by_slow_critical(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(state))
+    db_path = state / "pocketlab.sqlite3"
+    db_path.touch()
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(db_path))
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_CRITICAL_WORKERS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_RECOVERY_WORKERS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_IO_WORKERS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_CPU_WORKERS", "1")
+
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    reset_sqlite_path_cache()
+    scheduler = ProjectionScheduler()
+    critical_started = threading.Event()
+    release_critical = threading.Event()
+    recovery_finished = threading.Event()
+
+    def slow_critical_builder():
+        critical_started.set()
+        release_critical.wait(timeout=2.0)
+        return {"lane": "critical"}
+
+    def recovery_builder():
+        recovery_finished.set()
+        return {"lane": "recovery"}
+
+    try:
+        scheduler.mark_dirty(
+            "apps.slow",
+            job=ProjectionJob(
+                "apps.slow",
+                slow_critical_builder,
+                lambda _payload: 1,
+                20,
+                "critical",
+                3.0,
+            ),
+        )
+        assert critical_started.wait(timeout=1.0)
+        scheduler.mark_dirty(
+            "recovery.summary",
+            job=ProjectionJob(
+                "recovery.summary",
+                recovery_builder,
+                lambda _payload: 1,
+                0,
+                "recovery",
+                3.0,
+            ),
+        )
+        assert recovery_finished.wait(timeout=1.0)
+        assert scheduler.diagnostics()["active_recovery"] <= 1
+    finally:
+        release_critical.set()
+        scheduler.shutdown(drain_seconds=1.0)
+
+
 def test_projection_scheduler_event_prefix_is_single_flight(tmp_path, monkeypatch):
     ensure_runtime_path()
     state = tmp_path / "state"

@@ -1599,6 +1599,18 @@
       "user_message": "The protected server host cannot use this destructive action."
     },
     {
+      "code": "qualification_authentication_required",
+      "domain": "identity",
+      "http_status": 401,
+      "meaning": "A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Qualification authentication is unavailable."
+    },
+    {
       "code": "queue_full",
       "domain": "projections",
       "http_status": 200,
@@ -2118,5 +2130,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "383fb07a130fad5d2e2004b8de9b465b1962f35caaa717fd12423668798f6d53"
+  "source_fingerprint": "913c13cec2d13dec934a5972c2419d75746b23124b568ff73bb843e5a3389295"
 }

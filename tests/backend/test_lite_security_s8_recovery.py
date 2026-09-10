@@ -203,6 +203,35 @@ def test_s8_concurrent_database_backups_fail_safely(monkeypatch):
     ).exists()
 
 
+def test_s8_checkpoint_fails_closed_when_state_file_changes_during_copy(monkeypatch):
+    from api_fastapi import deps
+    from api_fastapi.services import lite_database_recovery
+
+    source = deps.settings().state_dir / "fleet_agents.json"
+    source.write_text('{"agents": {}, "updated_at": null}\n', encoding="utf-8")
+    monkeypatch.setattr(
+        lite_database_recovery,
+        "_security_projection_targets",
+        lambda: [source],
+    )
+    original_copy = lite_database_recovery._copy_file_durable
+    mutations = {"count": 0}
+
+    def racing_copy(source_path, target_path, *, mode=None):
+        original_copy(source_path, target_path, mode=mode)
+        if source_path == source:
+            mutations["count"] += 1
+            source.write_text(
+                json.dumps({"agents": {}, "updated_at": mutations["count"]}) + "\n",
+                encoding="utf-8",
+            )
+
+    monkeypatch.setattr(lite_database_recovery, "_copy_file_durable", racing_copy)
+    with pytest.raises(RuntimeError, match="changed during snapshot"):
+        lite_database_recovery._checkpoint_state_files("checkpoint-race")
+    assert mutations["count"] == 2
+
+
 def test_s8_retention_is_bounded_preserves_protected_runs_and_never_deletes_evidence(monkeypatch):
     from api_fastapi import deps
     from api_fastapi.db.connection import database_path
@@ -527,6 +556,31 @@ def test_s8_startup_recovery_rolls_back_promoting_transaction(monkeypatch):
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
+def test_s8_api_restart_is_allowed_during_post_restore_validation():
+    from api_fastapi.services import lite_database_recovery, lite_restore_transaction
+
+    lite_restore_transaction.create_journal(
+        restore_id="post-restore-api-restart",
+        backup_id="backup-post-restore-api-restart",
+        preview_id="preview-post-restore-api-restart",
+        target_names=["state/catalog.json"],
+    )
+    lite_restore_transaction.update_journal(
+        "post-restore-api-restart",
+        phase="post_restore_validation",
+        api_worker_restart_allowed=True,
+        summary="Active validation passed; runtime health is being checked.",
+    )
+
+    result = lite_database_recovery.startup_recovery_guard("api")
+
+    assert len(result["recovered"]) == 1
+    assert result["recovered"][0]["phase"] == "post_restore_validation"
+    assert result["guard"]["unresolved"] is True
+    assert result["guard"]["phase"] == "post_restore_validation"
+    assert result["guard"]["api_worker_restart_allowed"] is True
+
+
 def test_s8_architecture_and_ui_contracts_are_preserved():
     router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
     worker = Path("pocket-lab-final-structure/runtime/workers/pocketlab_worker.py").read_text(encoding="utf-8")
@@ -786,3 +840,97 @@ def test_s8_projection_failure_rolls_back_exact_run_projection_set(monkeypatch):
     assert result["phase"] == "rolled_back"
     assert current_projection.read_bytes() == before
     assert lite_database_recovery._parity_check()["matched"] is True
+
+
+def test_s8_rollback_accepts_sanitized_runtime_bookkeeping_after_checkpoint(monkeypatch):
+    from api_fastapi.db.connection import database_path
+    from api_fastapi.services import lite_database_recovery
+
+    repo = _repository()
+    _terminal_run(repo, "bookkeeping-source", completed_at=_iso_days_ago(3))
+    lite_database_recovery._refresh_security_projections()
+    lite_database_recovery.create_database_backup({"command_id": "bookkeeping-backup"})
+    _terminal_run(repo, "bookkeeping-current", completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    preview = lite_database_recovery.create_database_restore_preview("bookkeeping-backup")
+
+    original_restore = lite_database_recovery._restore_checkpoint_state_files
+
+    def restore_checkpoint_with_runtime_evidence(restore_id, manifest):
+        result = original_restore(restore_id, manifest)
+        with sqlite3.connect(database_path()) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO workflow_command_state(
+                    command_id, workflow_id, subject, event_type, command_json,
+                    created_at, updated_at, updated_at_epoch_ms,
+                    process_generation, database_instance
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "runtime-bookkeeping-after-checkpoint",
+                    "restore-bookkeeping",
+                    "pocketlab.commands.lite.database.restore",
+                    "command.running",
+                    "{}",
+                    "2026-09-08T00:00:00Z",
+                    "2026-09-08T00:00:01Z",
+                    1,
+                    1,
+                    "test-runtime",
+                ),
+            )
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO phase3b_revision_events(
+                    database_instance, domain, projection_revision, source_revision,
+                    reason, occurred_at, occurred_at_epoch_ms, sanitized,
+                    previous_semantic_hash, new_semantic_hash, changed_paths_json,
+                    source_revision_before, source_revision_after,
+                    scheduler_generation, execution_owner
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "test-runtime",
+                    "system.status",
+                    987654,
+                    1,
+                    "restore_bookkeeping",
+                    "2026-09-08T00:00:00Z",
+                    1,
+                    "before",
+                    "after",
+                    "[]",
+                    1,
+                    1,
+                    1,
+                    "test",
+                ),
+            )
+            conn.commit()
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        return result
+
+    monkeypatch.setattr(
+        lite_database_recovery,
+        "_restore_checkpoint_state_files",
+        restore_checkpoint_with_runtime_evidence,
+    )
+    monkeypatch.setenv("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_S8_FAULT_POINT", "after_sqlite_promotion")
+    result = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "bookkeeping-restore",
+            "backup_id": "bookkeeping-backup",
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
+
+    assert result["status"] == "failed"
+    assert result["phase"] == "rolled_back"
+    assert result["rollback_status"] == "rolled_back"
+    assert result["canonical_parity_matched"] is True
+    assert result["checkpoint_database_projection_matched"] is True
+    assert result["checkpoint_database_hash_matched"] is False
+    assert result["checkpoint_database_byte_hash_matched"] is False

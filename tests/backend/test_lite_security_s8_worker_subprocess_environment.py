@@ -110,6 +110,18 @@ def test_worker_identity_accepts_sanitized_termux_environment(tmp_path):
     assert identity["HOME"] == str(tmp_path)
 
 
+def test_worker_identity_accepts_native_pm2_context_without_explicit_home(tmp_path):
+    module = load_module()
+    runtime = module._string_environment(valid_worker_env(str(tmp_path)))
+
+    identity = module._validate_worker_identity(
+        runtime_env=runtime,
+        control_env={},
+    )
+
+    assert identity["HOME"] == str(tmp_path)
+
+
 def test_worker_identity_rejects_database_outside_state(tmp_path):
     module = load_module()
     pm2_home = tmp_path / ".pm2"

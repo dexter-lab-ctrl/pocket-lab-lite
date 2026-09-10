@@ -152,6 +152,7 @@ confidence: generated
 | projection_too_old | projections | warning | yes | The last committed projection is too old for a safe write. | Capture fresh sanitized runtime evidence and explicitly promote it before claiming current readiness. |
 | projection_unavailable | projections | warning | yes | The prepared projection is unavailable. | Correct the prerequisite and retry through the owning backend workflow. |
 | protected_server_host | devices | warning | no | The protected server host cannot use this destructive action. | Review the owning evidence and operator guidance before another action. |
+| qualification_authentication_required | identity | warning | yes | A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied. | Correct the prerequisite and retry through the owning backend workflow. |
 | queue_full | projections | warning | yes | The bounded queue cannot accept more work. | Correct the prerequisite and retry through the owning backend workflow. |
 | read_degraded | system | warning | yes | A safe last-known read is shown while refresh is unavailable. | Inspect the owning dependency/readiness evidence and recover through the backend-owned path. |
 | release_projection_unavailable | release | warning | yes | The release prepared projection is unavailable. | Correct the prerequisite and retry through the owning backend workflow. |

@@ -14,6 +14,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
+from .. import deps
 from ..db.connection import begin_immediate, connection
 from ..db.migrations import apply_migrations
 from . import lite_enterprise_governance, lite_policy_approvals, lite_policy_lifecycle
@@ -172,6 +173,10 @@ def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | N
         auth_context,
         "policy.rules.activate",
     )
+    qualification_principal = deps.is_qualification_owner_context(_resolved)
+    principal_human_id = None if qualification_principal else actor_id
+    principal_type = "qualification" if qualification_principal else "human"
+    principal_id = deps.QUALIFICATION_OWNER_ID if qualification_principal else actor_id
 
     # Owner-originated peer approvals are impossible under the authority model.
     # Clean up legacy rows produced by stale policy before considering a new
@@ -269,9 +274,10 @@ def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | N
                     """INSERT INTO policy_revisions(
                            revision_id,parent_revision_id,template_id,template_version,
                            canonical_parameters_json,manifest_json,content_hash,created_by_human_id,
-                           created_at,validation_status,validation_reason_code,lifecycle_status,
+                           created_by_principal_type,created_by_principal_id,created_at,
+                           validation_status,validation_reason_code,lifecycle_status,
                            change_summary
-                       ) VALUES (?,?,?,?,?,?,?,?,?,'pending','','draft',?)
+                       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending','','draft',?)
                        ON CONFLICT(revision_id) DO NOTHING""",
                     (
                         candidate_revision,
@@ -281,7 +287,9 @@ def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | N
                         parameters_json,
                         manifest_json,
                         candidate["content_hash"],
-                        actor_id,
+                        principal_human_id,
+                        principal_type,
+                        principal_id,
                         now,
                         SOURCE_SYNC_SUMMARY,
                     ),
@@ -302,12 +310,15 @@ def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | N
                     )
                 tx.execute(
                     """INSERT INTO policy_activation_operations(
-                           operation_id,requested_by_human_id,correlation_id,candidate_revision_id,
+                           operation_id,requested_by_human_id,requested_by_principal_type,
+                           requested_by_principal_id,correlation_id,candidate_revision_id,
                            prior_known_good_revision_id,state,created_at,updated_at
-                       ) VALUES (?,?,?,?,?,'pending',?,?)""",
+                       ) VALUES (?,?,?,?,?,?,?,'pending',?,?)""",
                     (
                         operation_id,
-                        actor_id,
+                        principal_human_id,
+                        principal_type,
+                        principal_id,
                         safe_correlation,
                         candidate_revision,
                         str(runtime["known_good_revision_id"] or "") or None,

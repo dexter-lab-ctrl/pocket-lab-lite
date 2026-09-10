@@ -9,16 +9,24 @@ and operation-service behavior.
 from __future__ import annotations
 
 import datetime as dt
+import errno
 import json
 import logging
 import os
 import pathlib
 import time
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Windows-only fallback
+    fcntl = None
 
 from operations.service import OperationService
 from operations.registry import normalize_operation_request
@@ -188,6 +196,8 @@ OP_SERVICE = OperationService(
 )
 
 AUTO_UPDATER: ReleaseAutoUpdater | None = None
+_STATE_WRITE_FENCE_LOCK = threading.RLock()
+_STATE_WRITE_FENCE_STATE = threading.local()
 
 
 def now_utc_iso() -> str:
@@ -203,9 +213,71 @@ def read_json_file(path: pathlib.Path, default: Any) -> Any:
         return default
 
 
+@contextmanager
+def state_write_fence(*, timeout_seconds: float = 300.0):
+    """Serialize state-file writers across API, worker, and agent processes.
+
+    Database restore owns this fence while replacing the canonical database and
+    registered state files.  Normal JSON writers participate through
+    ``write_json_file`` so a heartbeat or lifecycle callback cannot rewrite a
+    restored file between its durable copy and checksum validation.  The
+    thread-local depth makes restore journal/maintenance writes re-entrant.
+    """
+    depth = int(getattr(_STATE_WRITE_FENCE_STATE, "depth", 0) or 0)
+    if depth:
+        _STATE_WRITE_FENCE_STATE.depth = depth + 1
+        try:
+            yield
+        finally:
+            _STATE_WRITE_FENCE_STATE.depth = depth
+        return
+
+    try:
+        timeout = max(0.1, min(float(timeout_seconds), 600.0))
+    except (TypeError, ValueError):
+        timeout = 300.0
+    acquired = _STATE_WRITE_FENCE_LOCK.acquire(timeout=timeout)
+    if not acquired:
+        raise TimeoutError("State write fence acquisition timed out")
+    descriptor: int | None = None
+    try:
+        lock_path = SETTINGS.state_dir / ".pocketlab-state-write.lock"
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        descriptor = os.open(
+            str(lock_path), os.O_CREAT | os.O_RDWR, 0o600
+        )
+        os.fchmod(descriptor, 0o600)
+        if fcntl is not None:
+            deadline = time.monotonic() + timeout
+            while True:
+                try:
+                    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as exc:
+                    if exc.errno not in {errno.EACCES, errno.EAGAIN}:
+                        raise
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise TimeoutError("State write fence acquisition timed out") from exc
+                    time.sleep(min(0.1, remaining))
+        _STATE_WRITE_FENCE_STATE.depth = 1
+        yield
+    finally:
+        _STATE_WRITE_FENCE_STATE.depth = 0
+        if descriptor is not None:
+            if fcntl is not None:
+                try:
+                    fcntl.flock(descriptor, fcntl.LOCK_UN)
+                except OSError:
+                    pass
+            os.close(descriptor)
+        _STATE_WRITE_FENCE_LOCK.release()
+
+
 def write_json_file(path: pathlib.Path, data: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    with state_write_fence():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def telemetry_snapshot() -> Dict[str, Any]:

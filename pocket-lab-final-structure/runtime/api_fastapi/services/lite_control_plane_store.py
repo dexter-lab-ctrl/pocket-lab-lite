@@ -137,6 +137,22 @@ def _epoch_ms(value: Any = None) -> int:
         return int(time.time() * 1000)
 
 
+def _strict_epoch_ms(value: Any = None) -> int:
+    """Parse a persisted ISO timestamp without treating bad data as current."""
+    if value is None or value == "":
+        return 0
+    if isinstance(value, (int, float)):
+        number = float(value)
+        return int(number if number > 10_000_000_000 else number * 1000)
+    try:
+        return max(
+            0,
+            int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp() * 1000),
+        )
+    except (TypeError, ValueError, OverflowError):
+        return 0
+
+
 def _encode_cursor(epoch_ms: int, row_id: str) -> str:
     raw = json.dumps([int(epoch_ms), str(row_id)], separators=(",", ":")).encode("utf-8")
     return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
@@ -1075,6 +1091,49 @@ class ControlPlaneProjectionStore:
         result, _, _ = self._read(lambda conn: _domain_revision(conn, domain))
         return int(result)
 
+    def _durable_projection_reconciliation_epoch_ms(
+        self, scheduler_domain: str, snapshot_updated_epoch_ms: int
+    ) -> int:
+        """Return the worker's last successful reconciliation time when safe.
+
+        Recovery snapshots carry the time the canonical state last changed.  A
+        worker can legitimately probe that unchanged state much later without
+        changing the snapshot timestamp.  ``projection_refresh_state`` is the
+        worker-owned durable record of that reconciliation. Trust the last
+        successful completion while a newer refresh is queued or active, but
+        reject failed, missing, or aged completions so the normal
+        stale/max-stale fences still apply.
+
+        This is intentionally read-only.  Request handling never refreshes or
+        marks a projection current; it only consumes the worker's persisted
+        result after a process restart or API/worker split.
+        """
+        try:
+            def read(conn: sqlite3.Connection) -> int:
+                row = conn.execute(
+                    """
+                    SELECT last_error_type, last_completed_at
+                    FROM projection_refresh_state
+                    WHERE domain=?
+                    """,
+                    (str(scheduler_domain),),
+                ).fetchone()
+                if row is None:
+                    return 0
+                if str(row["last_error_type"] or ""):
+                    return 0
+                completed_epoch_ms = _strict_epoch_ms(row["last_completed_at"])
+                if completed_epoch_ms <= 0 or completed_epoch_ms < int(snapshot_updated_epoch_ms):
+                    return 0
+                return completed_epoch_ms
+
+            result, _, _ = self._read(read)
+            return int(result or 0)
+        except (sqlite3.Error, OSError, TypeError, ValueError):
+            # A diagnostics row is advisory. A read failure must preserve the
+            # existing fail-closed prepared-read behavior.
+            return 0
+
     def database_instance(self) -> str:
         self.initialize()
         return _database_instance()
@@ -1477,7 +1536,11 @@ class ControlPlaneProjectionStore:
         if snapshot:
             snapshot_payload = dict(snapshot)
             updated_epoch = _epoch_ms(snapshot_payload.get("updated_at"))
-            age_ms = max(0, int(time.time() * 1000) - updated_epoch)
+            reconciled_epoch = self._durable_projection_reconciliation_epoch_ms(
+                f"{domain}.{key}", updated_epoch
+            )
+            freshness_epoch = max(updated_epoch, reconciled_epoch)
+            age_ms = max(0, int(time.time() * 1000) - freshness_epoch)
             revision = max(
                 0,
                 int(snapshot_payload.get("projection_revision") or 0),
@@ -1494,6 +1557,12 @@ class ControlPlaneProjectionStore:
                 or item.database_instance != instance
                 or revision > item.revision
                 or schema_version > item.projection_schema_version
+                # The worker may reconcile unchanged canonical state without
+                # changing its semantic revision. Its durable completion time
+                # is still the authoritative freshness signal for this API
+                # process, so advance the prepared timestamp when that
+                # completion is newer than the local cache.
+                or prepared_at > item.prepared_at
                 or (canonical_hash and canonical_hash != item.canonical_hash and prepared_at >= item.prepared_at)
             )
             if should_replace:
@@ -1558,9 +1627,14 @@ class ControlPlaneProjectionStore:
             builder=builder,
             projector=scheduled_projector,
             priority=max(0, min(int(priority), 100)),
-            work_class=("cpu" if work_class == "cpu" else "critical" if work_class == "critical" else "io"),
+            work_class=(
+                "cpu" if work_class == "cpu"
+                else "recovery" if work_class == "recovery"
+                else "critical" if work_class == "critical"
+                else "io"
+            ),
             deadline_seconds=max(0.1, min(float(deadline_seconds), 300.0)),
-            optional=work_class != "critical",
+            optional=work_class not in {"critical", "recovery"},
             # Payload hashing provides change-only persistence for collectors that
             # do not yet expose a cheap authoritative source revision. Never use the
             # projection's own revision as its source fence: that would suppress a
@@ -1665,6 +1739,7 @@ class ControlPlaneProjectionStore:
         *,
         domain: str,
         key: str,
+        snapshot_builder: Callable[[], dict[str, Any] | None] | None = None,
         builder: Callable[[], dict[str, Any]],
         projector: Callable[[dict[str, Any]], int],
         deadline_seconds: float = 3.0,
@@ -1680,7 +1755,12 @@ class ControlPlaneProjectionStore:
                 return False
         try:
             self.prepared_only_read(
-                domain=domain, key=key, snapshot_builder=lambda: None,
+                # Startup warm-up uses the same committed SQLite readback fence
+                # as normal prepared reads. Passing a permanently empty builder
+                # would make every successful warm-up fail after projection even
+                # though canonical state was committed.
+                domain=domain, key=key,
+                snapshot_builder=snapshot_builder or (lambda: None),
                 builder=builder, projector=projector, stale_after_ms=0,
                 max_stale_ms=0, deadline_seconds=deadline_seconds,
                 priority=priority, work_class=work_class,
@@ -2365,7 +2445,24 @@ class ControlPlaneProjectionStore:
                 "SELECT backup_id, status, verification_status, created_at, verified_at, size_bytes, summary "
                 "FROM backup_manifest_index ORDER BY updated_at_epoch_ms DESC, backup_id DESC LIMIT 1"
             ).fetchone()
-            return (dict(state) if state else None, dict(backup) if backup else None)
+            projection_domain = "recovery.details" if details else "recovery.summary"
+            projection = conn.execute(
+                "SELECT last_completed_at FROM projection_refresh_state WHERE domain=?",
+                (projection_domain,),
+            ).fetchone()
+            state_value = dict(state) if state else None
+            if state_value is not None:
+                # Summary and Details share the compact recovery tables, but
+                # they are separate prepared-read contracts. A sibling
+                # projection commit must not make the other key appear fresh.
+                # The worker's durable completion timestamp is the authority;
+                # missing completion is intentionally old and therefore stale.
+                state_value["updated_at"] = str(
+                    projection["last_completed_at"]
+                    if projection and projection["last_completed_at"]
+                    else "1970-01-01T00:00:00Z"
+                )
+            return (state_value, dict(backup) if backup else None)
         state, backup = self._read(read)[0]
         if not state:
             return None
@@ -5682,25 +5779,33 @@ class ControlPlaneProjectionStore:
                 reason="recovery_state_changed", projection_version=1,
             ) if changed else _domain_revision(conn, "recovery")
 
-        try:
-            previous_revision = self.domain_revision("recovery")
-            revision = int(SQLITE_WRITER.submit("recovery.projection", write, deadline_seconds=3.0))
-            if revision != previous_revision:
-                try:
-                    from . import lite_phase3c_projections
+        previous_revision = self.domain_revision("recovery")
+        # Recovery is a critical prepared-read projection.  A failed writer
+        # transaction must reach the scheduler so its durable dirty generation
+        # remains pending; returning the old revision here falsely reports a
+        # successful refresh of stale state.
+        revision = int(
+            SQLITE_WRITER.submit(
+                "recovery.projection",
+                write,
+                deadline_seconds=8.0,
+                priority=5,
+            )
+        )
+        if revision != previous_revision:
+            try:
+                from . import lite_phase3c_projections
 
-                    lite_phase3c_projections.mark_dirty(
-                        "system.storage_pressure",
-                        "system.sqlite_health",
-                        "system.activity_current",
-                        "system.activity_history",
-                        reason="recovery_projection_changed",
-                    )
-                except Exception:
-                    pass
-            return revision
-        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
-            return self.domain_revision("recovery")
+                lite_phase3c_projections.mark_dirty(
+                    "system.storage_pressure",
+                    "system.sqlite_health",
+                    "system.activity_current",
+                    "system.activity_history",
+                    reason="recovery_projection_changed",
+                )
+            except Exception:
+                pass
+        return revision
 
     @staticmethod
     def _history_result(

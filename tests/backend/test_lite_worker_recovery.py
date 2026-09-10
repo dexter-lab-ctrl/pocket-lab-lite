@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib.util
 import json
 from pathlib import Path
@@ -169,3 +170,31 @@ def test_worker_acks_redelivered_security_command_after_stale_run_terminalized(
     assert fake_bus.acked == 1
     assert published[0][1] == "worker.ignored"
     assert published[0][2]["reason"] == "security run is already terminal"
+
+
+def test_worker_renews_long_jetstream_delivery_ownership():
+    ensure_runtime_path()
+    worker = _load_worker_module()
+
+    class Message:
+        def __init__(self):
+            self.heartbeats = 0
+            self.ready = asyncio.Event()
+
+        async def in_progress(self):
+            self.heartbeats += 1
+            if self.heartbeats >= 2:
+                self.ready.set()
+
+    async def exercise():
+        message = Message()
+        task = asyncio.create_task(
+            worker._command_ack_heartbeat(message, interval_seconds=0.001)
+        )
+        await asyncio.wait_for(message.ready.wait(), timeout=0.5)
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+        return message.heartbeats
+
+    assert asyncio.run(exercise()) >= 2

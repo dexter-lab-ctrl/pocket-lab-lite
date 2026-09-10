@@ -147,6 +147,7 @@ generator_version: 3
 | `projection_too_old` | projections | The last committed projection is too old for a safe write. | warning | yes | no | The last committed projection is too old for a safe write. |
 | `projection_unavailable` | projections | The prepared projection is unavailable. | warning | yes | no | The prepared projection is unavailable. |
 | `protected_server_host` | devices | The protected server host cannot use this destructive action. | warning | no | no | The protected server host cannot use this destructive action. |
+| `qualification_authentication_required` | identity | A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied. | warning | yes | no | Qualification authentication is unavailable. |
 | `queue_full` | projections | The bounded queue cannot accept more work. | warning | yes | no | The bounded queue cannot accept more work. |
 | `read_degraded` | system | A safe last-known read is shown while refresh is unavailable. | warning | yes | no | A safe last-known read is shown while refresh is unavailable. |
 | `release_projection_unavailable` | release | The release prepared projection is unavailable. | warning | yes | no | The release prepared projection is unavailable. |

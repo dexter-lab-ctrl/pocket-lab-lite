@@ -51,30 +51,37 @@ def _safe(value: Any, default: str = "unknown", maximum: int = 96) -> str:
 # Values are (active transition, stable reconciliation, maximum backoff) seconds.
 # Environment overrides still control CPU/payload/allocation limits.
 DOMAIN_CADENCE_SECONDS: dict[str, tuple[float, float, float]] = {
-    "fleet.summary": (4.0, 300.0, 1_200.0),
-    "apps.catalog": (5.0, 600.0, 3_600.0),
-    "apps.lifecycle": (5.0, 600.0, 3_600.0),
-    "apps.actions:photoprism": (5.0, 300.0, 1_800.0),
+    # Prepared reads fail closed before these old stable cadences would run.
+    # Keep both stable reconciliation and maximum backoff below the matching
+    # API max-stale fence, with room for bounded dispatch latency and jitter.
+    "fleet.summary": (4.0, 120.0, 240.0),
+    "apps.catalog": (5.0, 120.0, 240.0),
+    "apps.lifecycle": (5.0, 30.0, 60.0),
+    "apps.actions:photoprism": (5.0, 30.0, 60.0),
     "apps.update:photoprism": (8.0, 900.0, 3_600.0),
     "apps.backup:photoprism": (8.0, 900.0, 3_600.0),
-    "recovery.summary": (8.0, 900.0, 3_600.0),
-    "recovery.details": (15.0, 1_200.0, 3_600.0),
-    "security.progress": (2.0, 120.0, 600.0),
-    "security.summary": (5.0, 300.0, 1_800.0),
-    "system.status": (5.0, 300.0, 1_800.0),
-    "system.health": (5.0, 300.0, 1_800.0),
-    "system.processes": (10.0, 600.0, 1_800.0),
-    "system.agent": (5.0, 300.0, 1_200.0),
-    "system.supervisor": (5.0, 300.0, 1_200.0),
-    "system.remote_access": (10.0, 600.0, 1_800.0),
-    "system.nats_remote": (3.0, 180.0, 900.0),
-    "system.fleet_probe": (5.0, 300.0, 1_200.0),
-    "system.telemetry_thresholds": (10.0, 600.0, 1_800.0),
-    "system.storage_pressure": (15.0, 600.0, 1_800.0),
-    "system.sqlite_health": (15.0, 900.0, 3_600.0),
-    "system.activity_current": (2.0, 120.0, 600.0),
-    "system.activity_history": (15.0, 900.0, 3_600.0),
-    "system.activity_summary": (2.0, 120.0, 600.0),
+    # Prepared Recovery reads fail closed after 60s/90s. Keep the worker's
+    # stable and maximum reconciliation cadence materially below those fences,
+    # including bounded dispatch latency and the scheduler's +/-4% jitter.
+    # These remain low-power bounded probes; they do not collect on request.
+    "recovery.summary": (8.0, 15.0, 30.0),
+    "recovery.details": (15.0, 30.0, 60.0),
+    "security.progress": (2.0, 120.0, 240.0),
+    "security.summary": (5.0, 120.0, 240.0),
+    "system.status": (5.0, 120.0, 240.0),
+    "system.health": (5.0, 120.0, 240.0),
+    "system.processes": (10.0, 120.0, 240.0),
+    "system.agent": (5.0, 120.0, 240.0),
+    "system.supervisor": (5.0, 120.0, 240.0),
+    "system.remote_access": (10.0, 120.0, 240.0),
+    "system.nats_remote": (3.0, 120.0, 240.0),
+    "system.fleet_probe": (5.0, 120.0, 240.0),
+    "system.telemetry_thresholds": (10.0, 120.0, 240.0),
+    "system.storage_pressure": (15.0, 120.0, 240.0),
+    "system.sqlite_health": (15.0, 240.0, 480.0),
+    "system.activity_current": (2.0, 120.0, 480.0),
+    "system.activity_history": (15.0, 120.0, 480.0),
+    "system.activity_summary": (2.0, 120.0, 480.0),
 }
 
 def _termux_runtime() -> bool:

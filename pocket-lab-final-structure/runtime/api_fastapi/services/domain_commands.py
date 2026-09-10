@@ -16,6 +16,20 @@ def _safe(data: Dict[str, Any]) -> Dict[str, Any]:
     return {k: ("***" if k in SENSITIVE_KEYS else v) for k, v in data.items()}
 
 
+def _audit_actor(command: Dict[str, Any]) -> Dict[str, Any]:
+    """Return only bounded, non-identifying actor data for lifecycle evidence."""
+    raw = command.get("requested_by_actor")
+    if not isinstance(raw, dict):
+        return {}
+    actor_type = str(raw.get("actor_type") or "authenticated")[:32]
+    return {
+        "actor_type": actor_type,
+        "actor_label": "Qualification Owner" if actor_type == "qualification" else "Authenticated actor",
+        "auth_method": str(raw.get("auth_method") or "")[:48],
+        "synthetic": actor_type == "qualification",
+    }
+
+
 async def _publish(
     subject: str, event_type: str, data: Dict[str, Any], *, trace_id: str | None = None
 ) -> None:
@@ -685,7 +699,7 @@ async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
     await _publish(
         "pocketlab.events.lite.backup.started",
         "lite.backup.started",
-        {"command_id": command_id, "engine": "restic"},
+        {"command_id": command_id, "engine": "restic", **_audit_actor(command)},
         trace_id=command_id,
     )
     from . import lite_backup
@@ -696,13 +710,13 @@ async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
         await _publish(
             "pocketlab.events.lite.backup.failed",
             "lite.backup.failed",
-            {"command_id": command_id, "error_type": type(exc).__name__, "sanitized": True},
+            {"command_id": command_id, "error_type": type(exc).__name__, "sanitized": True, **_audit_actor(command)},
             trace_id=command_id,
         )
         await _publish(
             "pocketlab.audit.lite.backup.failed",
             "lite.backup.failed",
-            {"command_id": command_id, "status": "failed"},
+            {"command_id": command_id, "status": "failed", **_audit_actor(command)},
             trace_id=command_id,
         )
         raise
@@ -714,6 +728,7 @@ async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
             "backup_id": result.get("backup_id"),
             "snapshot_id": result.get("snapshot_id"),
             "manifest_checksum": (result.get("manifest") or {}).get("manifest_checksum"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
@@ -725,6 +740,7 @@ async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
             "backup_id": result.get("backup_id"),
             "snapshot_id": result.get("snapshot_id"),
             "evidence_saved": True,
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
@@ -737,7 +753,7 @@ async def handle_lite_backup_verify(command: Dict[str, Any]) -> Dict[str, Any]:
     await _publish(
         "pocketlab.events.lite.backup.verify_started",
         "lite.backup.verify_started",
-        {"command_id": command_id, "backup_id": backup_id},
+        {"command_id": command_id, "backup_id": backup_id, **_audit_actor(command)},
         trace_id=command_id,
     )
     from . import lite_backup
@@ -752,7 +768,7 @@ async def handle_lite_backup_verify(command: Dict[str, Any]) -> Dict[str, Any]:
         await _publish(
             "pocketlab.events.lite.backup.verify_failed",
             "lite.backup.verify_failed",
-            {"command_id": command_id, "backup_id": backup_id, "error_type": type(exc).__name__, "sanitized": True},
+            {"command_id": command_id, "backup_id": backup_id, "error_type": type(exc).__name__, "sanitized": True, **_audit_actor(command)},
             trace_id=command_id,
         )
         raise
@@ -764,13 +780,14 @@ async def handle_lite_backup_verify(command: Dict[str, Any]) -> Dict[str, Any]:
             "backup_id": result.get("backup_id"),
             "status": result.get("status"),
             "manifest_checksum": result.get("manifest_checksum"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
     await _publish(
         "pocketlab.audit.lite.backup.verified",
         "lite.backup.verified",
-        {"command_id": command_id, "backup_id": result.get("backup_id"), "status": result.get("status")},
+        {"command_id": command_id, "backup_id": result.get("backup_id"), "status": result.get("status"), **_audit_actor(command)},
         trace_id=command_id,
     )
     return result
@@ -782,7 +799,7 @@ async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]
     await _publish(
         "pocketlab.events.lite.restore.preview_started",
         "lite.restore.preview_started",
-        {"command_id": command_id, "backup_id": backup_id},
+        {"command_id": command_id, "backup_id": backup_id, **_audit_actor(command)},
         trace_id=command_id,
     )
     from . import lite_backup
@@ -797,7 +814,7 @@ async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]
         await _publish(
             "pocketlab.events.lite.restore.preview_failed",
             "lite.restore.preview_failed",
-            {"command_id": command_id, "backup_id": backup_id, "error_type": type(exc).__name__, "sanitized": True},
+            {"command_id": command_id, "backup_id": backup_id, "error_type": type(exc).__name__, "sanitized": True, **_audit_actor(command)},
             trace_id=command_id,
         )
         raise
@@ -810,13 +827,14 @@ async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]
             "preview_id": result.get("preview_id"),
             "change_count": result.get("change_count"),
             "restore_allowed": result.get("restore_allowed"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
     await _publish(
         "pocketlab.audit.lite.restore.preview_created",
         "lite.restore.preview_created",
-        {"command_id": command_id, "backup_id": result.get("backup_id"), "preview_id": result.get("preview_id")},
+        {"command_id": command_id, "backup_id": result.get("backup_id"), "preview_id": result.get("preview_id"), **_audit_actor(command)},
         trace_id=command_id,
     )
     return result
@@ -829,7 +847,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
     await _publish(
         "pocketlab.events.lite.restore.started",
         "lite.restore.started",
-        {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id},
+        {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, **_audit_actor(command)},
         trace_id=command_id,
     )
     from . import lite_backup
@@ -840,17 +858,27 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
         await _publish(
             "pocketlab.events.lite.restore.failed",
             "lite.restore.failed",
-            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "error_type": type(exc).__name__, "sanitized": True},
+            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "error_type": type(exc).__name__, "sanitized": True, **_audit_actor(command)},
             trace_id=command_id,
         )
         await _publish(
             "pocketlab.audit.lite.restore.failed",
             "lite.restore.failed",
-            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "status": "failed"},
+            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "status": "failed", **_audit_actor(command)},
             trace_id=command_id,
         )
         raise
     checkpoint_id = result.get("checkpoint_id")
+    result_status = str(result.get("status") or "failed").strip().lower()
+    restore_failed = result_status in {
+        "failed",
+        "error",
+        "degraded",
+        "failed_with_rollback",
+        "failed_rollback_required",
+        "rollback_failed",
+        "rolled_back",
+    }
     await _publish(
         "pocketlab.events.lite.restore.checkpoint_created",
         "lite.restore.checkpoint_created",
@@ -860,9 +888,53 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "backup_id": result.get("backup_id"),
             "preview_id": result.get("preview_id"),
             "checkpoint_id": checkpoint_id,
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
+    if restore_failed:
+        database_restore = result.get("database_restore")
+        failure_category = (
+            database_restore.get("failure_category")
+            if isinstance(database_restore, dict)
+            else result.get("failure_category")
+        )
+        rollback = result.get("rollback")
+        await _publish(
+            "pocketlab.events.lite.restore.failed",
+            "lite.restore.failed",
+            {
+                "command_id": command_id,
+                "restore_id": result.get("restore_id"),
+                "backup_id": result.get("backup_id"),
+                "preview_id": result.get("preview_id"),
+                "checkpoint_id": checkpoint_id,
+                "status": "failed",
+                "result_status": result_status,
+                "failure_category": failure_category,
+                "rollback_status": rollback.get("status") if isinstance(rollback, dict) else None,
+                "sanitized": True,
+                **_audit_actor(command),
+            },
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.restore.failed",
+            "lite.restore.failed",
+            {
+                "command_id": command_id,
+                "restore_id": result.get("restore_id"),
+                "backup_id": result.get("backup_id"),
+                "preview_id": result.get("preview_id"),
+                "checkpoint_id": checkpoint_id,
+                "status": "failed",
+                "result_status": result_status,
+                "rollback_status": rollback.get("status") if isinstance(rollback, dict) else None,
+                **_audit_actor(command),
+            },
+            trace_id=command_id,
+        )
+        return result
     await _publish(
         "pocketlab.events.lite.restore.service_restart_checked",
         "lite.restore.service_restart_checked",
@@ -871,6 +943,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "restore_id": result.get("restore_id"),
             "backup_id": result.get("backup_id"),
             "service_restart": result.get("service_restart"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
@@ -882,6 +955,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "restore_id": result.get("restore_id"),
             "backup_id": result.get("backup_id"),
             "health_validation": result.get("health_validation"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
@@ -896,6 +970,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "checkpoint_id": checkpoint_id,
             "restored_file_count": result.get("restored_file_count"),
             "status": result.get("status"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )
@@ -910,6 +985,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "checkpoint_id": checkpoint_id,
             "restored_file_count": result.get("restored_file_count"),
             "status": result.get("status"),
+            **_audit_actor(command),
         },
         trace_id=command_id,
     )

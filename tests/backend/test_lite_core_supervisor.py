@@ -131,6 +131,27 @@ def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeyp
     assert "api_nats_client_unhealthy_observed" in supervisor.events_file.read_text()
 
 
+def test_supervisor_does_not_restart_responding_api_when_pm2_state_lags(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
+    supervisor_module = load_supervisor_module()
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    observed = _healthy_observed()
+    observed["services"]["pocket-api"] = "waiting restart"
+    observed["checks"]["api_http_reachable"] = True
+    monkeypatch.setattr(supervisor, "collect", lambda: observed)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+
+    def fail_restart(service, reason):
+        raise AssertionError(f"unexpected restart for {service}: {reason}")
+
+    monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
+    payload = supervisor.tick()
+
+    assert payload["actions"] == []
+    assert payload["supervisor_status"] == "healthy"
+    assert "api_pm2_status_degraded_endpoint_reachable" in supervisor.events_file.read_text()
+
+
 def _healthy_observed(*, caddy_tcp=True, caddy_upstream=True):
     return {
         "services": {
@@ -144,6 +165,7 @@ def _healthy_observed(*, caddy_tcp=True, caddy_upstream=True):
         "checks": {
             "nats_tcp_reachable": True,
             "api_nats_connected": True,
+            "api_http_reachable": True,
             "caddy_tcp_reachable": caddy_tcp,
             "caddy_upstream_http_reachable": caddy_upstream,
             "caddy_http_reachable": caddy_upstream,
