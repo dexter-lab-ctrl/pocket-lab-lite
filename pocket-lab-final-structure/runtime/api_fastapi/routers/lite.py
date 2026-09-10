@@ -191,6 +191,15 @@ async def _enforce_lite_policy(
     correlation_id: str,
 ) -> dict[str, Any]:
     try:
+        from ..services import lite_harness
+
+        lite_harness.enforce_capability(
+            auth_context,
+            action_id=action_id,
+            target_type=target_type,
+            target_id=target_id,
+            operation_id=correlation_id,
+        )
         return await asyncio.to_thread(
             lite_policy_opa.evaluate_authorization,
             auth_context=auth_context,
@@ -202,6 +211,20 @@ async def _enforce_lite_policy(
             request_context={"source": "lite_api"},
             correlation_id=correlation_id,
         )
+    except lite_harness.HarnessError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            headers={"Cache-Control": "no-store"},
+            detail={
+                "status": "blocked",
+                "accepted": False,
+                "reason_code": exc.reason_code,
+                "message": exc.message,
+                "decision_id": None,
+                "policy_revision": None,
+                "approval": None,
+            },
+        ) from exc
     except lite_policy_opa.PolicyDecisionError as exc:
         decision = exc.decision or {}
         raise HTTPException(
@@ -228,12 +251,27 @@ def _safe_recovery_actor(auth_context: dict[str, Any]) -> dict[str, str | bool]:
         or ""
     ).strip()[:48]
     actor_type = str(actor.get("type") or "authenticated")[:32]
-    return {
+    result: dict[str, str | bool] = {
         "actor_type": actor_type,
         "actor_label": "Qualification Owner" if actor_type == "qualification" else "Authenticated actor",
         "auth_method": auth_method,
         "synthetic": actor_type == "qualification",
     }
+    harness = auth_context.get("harness") or {}
+    if isinstance(harness, dict):
+        result["actor_label"] = "Synthetic machine"
+        result["synthetic"] = True
+        for source_key, limit in (
+            ("principal_id", 80),
+            ("principal_class", 40),
+            ("session_id", 100),
+            ("purpose", 80),
+            ("target_scope", 64),
+        ):
+            if harness.get(source_key):
+                output_key = "harness_session_id" if source_key == "session_id" else source_key
+                result[output_key] = str(harness[source_key])[:limit]
+    return result
 
 
 def _recovery_target_revision() -> str:

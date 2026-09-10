@@ -845,6 +845,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "harness_transport_rejected",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 401,
+      "meaning": "Synthetic harness proof was presented over a non-loopback or forwarded transport.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Use the harness only over direct loopback transport."
+    },
+    {
+      "audit_severity": "warning",
       "code": "cold_start_validation",
       "deprecated_aliases": [],
       "domain": "validation",

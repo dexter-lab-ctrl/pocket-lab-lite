@@ -18,6 +18,11 @@ React/Vite PWA → Caddy → FastAPI /api/lite/* → NATS / JetStream
 → worker / node agent / supervisor → sanitized evidence → FastAPI reads → UI
 ```
 
+The separate backend-only synthetic qualification surface is documented in
+[Qualification & maintenance harness](../../docs/validation/qualification-maintenance-harness.md).
+It is a direct-loopback FastAPI client contract; it does not expand this MCP's
+six-tool surface or become a second Pocket Lab control plane.
+
 ## Ownership
 
 - Repository source: `tools/mcp/pocketlab_dev/`.

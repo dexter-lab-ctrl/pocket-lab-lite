@@ -31,6 +31,7 @@ from .routers import (
     fleet,
     gitops,
     health,
+    harness,
     lite,
     lite_enterprise_identity,
     lite_enterprise_rules,
@@ -49,6 +50,13 @@ from .routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    from .services import lite_harness
+
+    # This is intentionally the first startup action. Unsafe production
+    # harness flags must fail the process before databases, workers, NATS, or
+    # any other runtime component can start.
+    lite_harness.validate_startup_configuration()
+
     from .services.nats_bus import BUS
     from .services.operation_events import install_operation_event_publisher
     from .services.live_status import LIVE_STATUS
@@ -227,6 +235,7 @@ app.add_middleware(LiteSafeReadNonceMiddleware)
 
 for router in (
     health.router,
+    harness.router,
     lite.router,
     lite_identity_p1.router,
     lite_enterprise_identity.router,

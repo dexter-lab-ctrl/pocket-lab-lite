@@ -1,10 +1,10 @@
 {
   "counts": {
     "development": 2249,
-    "direct": 95,
+    "direct": 96,
     "release": 0,
-    "runtime": 23,
-    "total": 2272,
+    "runtime": 24,
+    "total": 2273,
     "transitive": 2177
   },
   "dependencies": [
@@ -70,6 +70,22 @@
       "transitive": false,
       "upstream_posture": "normalized evidence when promoted",
       "version": "24.0",
+      "vulnerability_status": "canonical scanner evidence when promoted"
+    },
+    {
+      "architecture": "platform-dependent",
+      "arm64_support": "verify from package wheel/source metadata; not inferred",
+      "category": "Python dependency",
+      "direct": true,
+      "ecosystem": "PyPI",
+      "license": "unobserved until ScanCode/SBOM evidence",
+      "name": "cryptography",
+      "purpose": "runtime Python dependency",
+      "release_introduced": "current-release-candidate",
+      "runtime_or_dev": "runtime",
+      "transitive": false,
+      "upstream_posture": "normalized evidence when promoted",
+      "version": "42.0.0",
       "vulnerability_status": "canonical scanner evidence when promoted"
     },
     {

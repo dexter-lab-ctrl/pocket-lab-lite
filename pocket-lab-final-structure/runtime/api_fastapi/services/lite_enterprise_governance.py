@@ -234,7 +234,8 @@ def access_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
 def require_root_owner(auth_context: dict[str, Any]) -> tuple[dict[str, Any], str]:
     context = lite_enterprise_identity.enrich_auth_context(auth_context)
     if deps.is_qualification_owner_context(context):
-        return context, deps.QUALIFICATION_OWNER_ID
+        harness = context.get("harness") or {}
+        return context, str(harness.get("principal_id") or deps.QUALIFICATION_OWNER_ID)
     actor = context.get("actor") or {}
     authorization = context.get("authorization") or {}
     actor_id = str(actor.get("identity_id") or "")
@@ -253,6 +254,21 @@ def require_root_owner(auth_context: dict[str, Any]) -> tuple[dict[str, Any], st
 
 def require_recent_assurance(auth_context: dict[str, Any], purpose: str) -> tuple[dict[str, Any], str]:
     context, actor_id = require_root_owner(auth_context)
+    harness = context.get("harness") if isinstance(context.get("harness"), dict) else None
+    if harness is not None:
+        from . import lite_harness
+
+        capability = {
+            "policy.rules.activate": "rules.activate",
+            "policy.rules.rollback": "rules.rollback",
+        }.get(str(purpose), str(purpose))
+        lite_harness.enforce_capability(
+            context,
+            action_id=capability,
+            target_type="policy",
+            target_id="rules",
+            operation_id=None,
+        )
     now = _now()
     assurance = (context.get("session") or {}).get("assurance") or []
     if not any(

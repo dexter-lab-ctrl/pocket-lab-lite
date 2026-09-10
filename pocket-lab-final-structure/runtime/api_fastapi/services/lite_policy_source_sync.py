@@ -174,9 +174,14 @@ def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | N
         "policy.rules.activate",
     )
     qualification_principal = deps.is_qualification_owner_context(_resolved)
+    harness = _resolved.get("harness") if isinstance(_resolved.get("harness"), dict) else {}
     principal_human_id = None if qualification_principal else actor_id
     principal_type = "qualification" if qualification_principal else "human"
-    principal_id = deps.QUALIFICATION_OWNER_ID if qualification_principal else actor_id
+    principal_id = (
+        str(harness.get("principal_id") or deps.QUALIFICATION_OWNER_ID)[:80]
+        if qualification_principal
+        else actor_id
+    )
 
     # Owner-originated peer approvals are impossible under the authority model.
     # Clean up legacy rows produced by stale policy before considering a new

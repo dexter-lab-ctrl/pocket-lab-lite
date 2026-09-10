@@ -2,6 +2,8 @@
 
 Pocket Lab Lite keeps the safety model of Pocket Lab while presenting it in simpler language.
 
+Machine qualification is documented separately in [Qualification & maintenance harness](../validation/qualification-maintenance-harness.md). It is a synthetic, capability-scoped backend surface and is not projected into the Lite UI or human Identity flow.
+
 ## Preserved controls
 
 - FastAPI remains the only frontend-facing control API.

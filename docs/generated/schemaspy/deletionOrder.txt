@@ -39,6 +39,9 @@ lite_revision_events
 lite_installed_release_identity
 identity_audit_events
 human_credentials
+harness_sessions
+harness_challenges
+harness_audit_events
 device_supervisor_state
 device_removal_receipts
 device_health_current
@@ -66,4 +69,5 @@ device_recovery_history
 device_invite_lifecycle
 device_enrollment_registry
 workflow_current_state
+synthetic_principals
 schema_migrations

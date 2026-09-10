@@ -198,6 +198,7 @@ nav:
       - SQLite / data: generated/development/lite-sqlite-schema.md
       - UI state ownership: generated/development/ui-state-catalog.md
       - Testing matrix: generated/development/testing.md
+      - Qualification & maintenance harness: validation/qualification-maintenance-harness.md
       - Accessibility & visual gates: generated/development/accessibility-visual.md
       - Backend-to-Frontend parity: generated/development/validation/parity/index.md
       - Validation coverage: generated/enterprise/reference/validation-coverage.md

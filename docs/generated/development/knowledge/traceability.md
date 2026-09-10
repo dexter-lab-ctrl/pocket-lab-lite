@@ -16,6 +16,8 @@ generator_version: 3
 | --- | --- | --- | --- |
 | DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | DELETE /api/lite/enterprise/identity/people/{human_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| DELETE /api/lite/harness/principals/{principal_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| DELETE /api/lite/harness/session/{session_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | DELETE /api/lite/identity/passkeys/{credential_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | DELETE /api/lite/identity/sessions/{session_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/apps/lifecycle | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -69,6 +71,9 @@ generator_version: 3
 | GET /api/lite/fleet/devices/{node_id}/restart-agent/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/health-summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/invites/latest | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/harness/capabilities | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/harness/session/{session_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/harness/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/identity | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/identity/owner-claim/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/policy | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -159,6 +164,10 @@ generator_version: 3
 | POST /api/lite/fleet/devices/{node_id}/restart-agent | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/fleet/invites/{invite_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/fleet/remove-device | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/challenge | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/principals | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/principals/{principal_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/session | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/identity/login | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/identity/logout | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/identity/owner-claim | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -278,6 +287,7 @@ generator_version: 3
 | Drift Management | domain | — | unvalidated |
 | Enterprise | domain | — | unvalidated |
 | Events | domain | — | unvalidated |
+| Harness | domain | — | unvalidated |
 | Health | domain | — | unvalidated |
 | Home | domain | test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py | test-linked |
 | Identity | domain | test:tests/backend/test_lite_api.py, test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_enterprise_identity_p2.py, test:tests/backend/test_lite_identity_passkeys_rules_p1.py, test:tests/backend/test_lite_identity_rules_authorization.py, test:tests/backend/test_lite_identity_rules_enterprise_governance.py, test:tests/backend/test_lite_identity_rules_ui_projection.py, test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_documentation_ia.py, test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-content-stress.spec.ts, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-phase9-qualification.spec.ts, test:tests/e2e/lite-test-helpers.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |

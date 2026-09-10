@@ -61,6 +61,7 @@ generator_version: 3
 | `exception_unusable` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `generation_changed` | projections | The source generation changed during work. | warning | yes | no | The source generation changed during work. |
 | `generic_policy_toggle_retired` | rules | The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned. | info | no | yes | This legacy Rules action is no longer available. |
+| `harness_transport_rejected` | validation | Synthetic harness proof was presented over a non-loopback or forwarded transport. | warning | yes | no | Use the harness only over direct loopback transport. |
 | `human_session_required` | identity | The requested credential or session lifecycle action requires the signed-in local owner session. | warning | yes | no | A signed-in owner session is required. |
 | `identity_current_password_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `identity_login_failed` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |

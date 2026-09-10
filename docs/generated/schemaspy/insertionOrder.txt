@@ -1,4 +1,5 @@
 schema_migrations
+synthetic_principals
 workflow_current_state
 device_enrollment_registry
 device_invite_lifecycle
@@ -26,6 +27,9 @@ device_health_attention
 device_health_current
 device_removal_receipts
 device_supervisor_state
+harness_audit_events
+harness_challenges
+harness_sessions
 human_credentials
 identity_audit_events
 lite_installed_release_identity

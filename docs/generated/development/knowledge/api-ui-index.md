@@ -18,6 +18,8 @@ generator_version: 3
 | --- | --- | --- | --- | --- |
 | `DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}` | apps | — | delete_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings__mapping_id__delete | contract-derived |
 | `DELETE /api/lite/enterprise/identity/people/{human_id}` | enterprise | — | remove_enterprise_person_api_lite_enterprise_identity_people__human_id__delete | contract-derived |
+| `DELETE /api/lite/harness/principals/{principal_id}` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__delete | contract-derived |
+| `DELETE /api/lite/harness/session/{session_id}` | harness | — | revoke_session_api_lite_harness_session__session_id__delete | contract-derived |
 | `DELETE /api/lite/identity/passkeys/{credential_id}` | identity | — | revoke_lite_passkey_api_lite_identity_passkeys__credential_id__delete | contract-derived |
 | `DELETE /api/lite/identity/sessions/{session_id}` | identity | — | revoke_lite_identity_session_api_lite_identity_sessions__session_id__delete | contract-derived |
 | `GET /api/lite/apps/lifecycle` | apps | — | get_lite_app_lifecycle_profiles_api_lite_apps_lifecycle_get | contract-derived |
@@ -71,6 +73,9 @@ generator_version: 3
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | devices | LiteDevices | lite_fleet_agent_restart_status_api_lite_fleet_devices__node_id__restart_agent_status_get | contract-derived |
 | `GET /api/lite/fleet/health-summary` | devices | — | get_lite_fleet_health_summary_api_lite_fleet_health_summary_get | contract-derived |
 | `GET /api/lite/fleet/invites/latest` | devices | — | get_latest_lite_fleet_invite_api_lite_fleet_invites_latest_get | contract-derived |
+| `GET /api/lite/harness/capabilities` | harness | — | capabilities_api_lite_harness_capabilities_get | contract-derived |
+| `GET /api/lite/harness/session/{session_id}` | harness | — | session_status_api_lite_harness_session__session_id__get | contract-derived |
+| `GET /api/lite/harness/status` | harness | — | status_api_lite_harness_status_get | contract-derived |
 | `GET /api/lite/identity` | identity | — | get_lite_identity_api_lite_identity_get | contract-derived |
 | `GET /api/lite/identity/owner-claim/status` | identity | LiteIdentity | owner_claim_status_api_lite_identity_owner_claim_status_get | contract-derived |
 | `GET /api/lite/policy` | rules | LiteRules | get_lite_policy_api_lite_policy_get | contract-derived |
@@ -161,6 +166,10 @@ generator_version: 3
 | `POST /api/lite/fleet/devices/{node_id}/restart-agent` | devices | LiteDevices | restart_lite_fleet_agent_api_lite_fleet_devices__node_id__restart_agent_post | contract-derived |
 | `POST /api/lite/fleet/invites/{invite_id}/revoke` | devices | — | revoke_lite_fleet_invite_api_lite_fleet_invites__invite_id__revoke_post | contract-derived |
 | `POST /api/lite/fleet/remove-device` | devices | LiteDevices | remove_lite_device_api_lite_fleet_remove_device_post | contract-derived |
+| `POST /api/lite/harness/challenge` | harness | — | challenge_api_lite_harness_challenge_post | contract-derived |
+| `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
+| `POST /api/lite/harness/principals/{principal_id}/revoke` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__revoke_post | contract-derived |
+| `POST /api/lite/harness/session` | harness | — | session_api_lite_harness_session_post | contract-derived |
 | `POST /api/lite/identity/login` | identity | LiteIdentity | login_lite_identity_api_lite_identity_login_post | contract-derived |
 | `POST /api/lite/identity/logout` | identity | LiteIdentity | logout_lite_identity_api_lite_identity_logout_post | contract-derived |
 | `POST /api/lite/identity/owner-claim` | identity | — | issue_lite_owner_claim_api_lite_identity_owner_claim_post | contract-derived |

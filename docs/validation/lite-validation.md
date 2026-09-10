@@ -1,6 +1,6 @@
 # Lite Validation
 
-Pocket Lab Lite keeps the core Pocket Lab control-plane model while reducing the default runtime footprint. Validation should prove that the Lite API, Lite UI, Lite bootstrap profile, and documentation build remain healthy without starting the heavyweight observability stack by default.
+Pocket Lab Lite keeps the core Pocket Lab control-plane model while reducing the default runtime footprint. Validation should prove that the Lite API, Lite UI, Lite bootstrap profile, and documentation build remain healthy without starting the heavyweight observability stack by default. For the separate backend-only machine qualification surface, see [Qualification & maintenance harness](qualification-maintenance-harness.md).
 
 ## What is validated
 
@@ -143,4 +143,4 @@ grafana-ui
 
 ## Validation boundaries
 
-These checks validate local source, contracts, frontend build, docs, and dry-run bootstrap behavior. Mocked UI/UX regression checks validate deterministic browser presentation only. They do not prove live Android service startup, physical-device interaction, real WebAuthn ceremonies, live Security scans, live Recovery work, or live Rules mutation until those are separately qualified in the appropriate environment.
+These checks validate local source, contracts, frontend build, docs, and dry-run bootstrap behavior. Mocked UI/UX regression checks validate deterministic browser presentation only. They do not prove live Android service startup, physical-device interaction, real WebAuthn ceremonies, live Security scans, live Recovery work, or live Rules mutation until those are separately qualified in the appropriate environment. The harness itself remains non-browser, default-off, and direct-loopback-only.

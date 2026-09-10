@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .. import deps
-from ..services import lite_enterprise_governance, lite_policy_analysis, lite_policy_approvals, lite_policy_lifecycle, lite_policy_opa, lite_policy_source_sync
+from ..services import lite_enterprise_governance, lite_harness, lite_policy_analysis, lite_policy_approvals, lite_policy_lifecycle, lite_policy_opa, lite_policy_source_sync
 
 router = APIRouter(prefix="/api/lite/enterprise/rules", tags=["lite-enterprise-rules"])
 lite_enterprise_governance.ensure_policy_templates()
@@ -52,6 +52,7 @@ def _call(response: Response, callback: Any) -> Any:
         lite_policy_approvals.ApprovalError,
         lite_enterprise_governance.GovernanceError,
         lite_policy_source_sync.PolicySourceSyncError,
+        lite_harness.HarnessError,
     ) as exc:
         raise HTTPException(status_code=exc.status_code, headers={"Cache-Control": "no-store"}, detail={"reason_code": exc.reason_code, "message": exc.message}) from exc
     response.headers["Cache-Control"] = "no-store"

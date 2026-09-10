@@ -9,8 +9,38 @@ default decision := {
 }
 
 authenticated_actor if {
-	input.actor.type in {"human", "service", "qualification", "test"}
+	input.actor.type in {"human", "service", "qualification", "test", "maintenance", "synthetic_machine"}
 	input.session.authenticated == true
+}
+
+synthetic_actor if {
+	input.harness.enabled == true
+}
+
+harness_authorized if {
+	synthetic_actor
+	input.harness.qualification_environment == true
+	input.harness.target_scope == input.target.scope
+	input.action.id in input.harness.capabilities
+	not (input.action.id in {"device.remove", "restore.apply", "backup.location.manage", "rules.activate", "rules.rollback"})
+}
+
+harness_authorized if {
+	synthetic_actor
+	input.harness.qualification_environment == true
+	input.harness.target_scope == input.target.scope
+	input.action.id in input.harness.capabilities
+	input.harness.destructive_allowed == true
+}
+
+authorized_actor if {
+	authenticated_actor
+	not synthetic_actor
+}
+
+authorized_actor if {
+	authenticated_actor
+	harness_authorized
 }
 
 default governance_parameters := {}
@@ -22,14 +52,14 @@ operator_device_remove_approval := object.get(governance_parameters, "operator_d
 
 recovery_action if {
 	input.action.id in {"backup.create", "backup.verify", "restore.preview"}
-	authenticated_actor
+	authorized_actor
 	input.target.type == "recovery"
 	input.target.id != ""
 }
 
 backup_location_action if {
 	input.action.id == "backup.location.manage"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "recovery_location"
 	input.target.id != ""
 	input.target.state.protected_server_host == true
@@ -57,7 +87,7 @@ decision := {
 	"reason_code": "owner_authority_restore",
 } if {
 	input.action.id == "restore.apply"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "recovery"
 	input.target.id != ""
 	input.actor.role == "Owner"
@@ -73,7 +103,7 @@ decision := {
 	"reason_code": "recovery_owner_required",
 } if {
 	input.action.id == "restore.apply"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "recovery"
 	input.target.id != ""
 	not (input.actor.role == "Owner")
@@ -85,7 +115,7 @@ decision := {
 	"reason_code": "authenticated_app_install",
 } if {
 	input.action.id == "catalog.install"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "app"
 	input.target.id != ""
 	not input.continuation.matching_temporary_exception
@@ -97,7 +127,7 @@ decision := {
 	"reason_code": "authenticated_app_install_exception_scoped",
 } if {
 	input.action.id == "catalog.install"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "app"
 	input.target.id != ""
 	input.continuation.matching_temporary_exception == true
@@ -109,7 +139,7 @@ decision := {
 	"reason_code": "authenticated_confirmed_device_removal",
 } if {
 	input.action.id == "device.remove"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "device"
 	input.target.state.confirmed == true
 	input.target.state.revision_validated == true
@@ -120,7 +150,7 @@ decision := {
 enterprise_device_removal_safe if {
 	input.actor.enterprise_enabled == true
 	input.action.id == "device.remove"
-	authenticated_actor
+	authorized_actor
 	input.target.type == "device"
 	input.target.state.confirmed == true
 	input.target.state.revision_validated == true
@@ -233,7 +263,7 @@ decision := {
 	"reason_code": "passkey_step_up_satisfied",
 } if {
 	input.action.id == "identity.passkey.revoke"
-	authenticated_actor
+	authorized_actor
 	input.session.authenticated == true
 	recent_passkey_step_up
 	input.target.type == "passkey"
@@ -246,7 +276,7 @@ decision := {
 	"reason_code": "passkey_step_up_required",
 } if {
 	input.action.id == "identity.passkey.revoke"
-	authenticated_actor
+	authorized_actor
 	input.session.authenticated == true
 	not recent_passkey_step_up
 }

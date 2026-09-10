@@ -323,5 +323,16 @@ def test_caddy_strips_qualification_proof_headers(route):
     handler = source.split(f"  handle {route} {{", 1)[1].split("\n  }", 1)[0]
     assert "header_up -X-Pocket-Lab-Test" in handler
     assert "header_up -X-Pocket-Lab-Qualification" in handler
+    for header in (
+        "Session",
+        "Provisioning",
+        "Provisioning-Token",
+        "Principal",
+        "Profile",
+        "Purpose",
+        "Signature",
+        "Target-Scope",
+    ):
+        assert f"header_up -X-Pocket-Lab-Harness-{header}" in handler
     if route == "/api/lite/security/events":
         assert "flush_interval -1" in handler

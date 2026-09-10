@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 675469456d17501936d1507bd490bef4d90ec6de35bb278c8ce07a0e95df0925
+source_fingerprint: d82ea8c61d5982454c2053bfe893550633badcbc49684a44da59fa9fbdbd43da
 schema_revision: 1
 validation_status: generated
 ---
@@ -69,6 +69,7 @@ validation_status: generated
 | `exception_unusable` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `generation_changed` | projections | The source generation changed during work. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `generic_policy_toggle_retired` | rules | The legacy generic Rules toggle endpoint is retired; live OPA policy state is backend-owned. | no | yes | 410 | info | structured reason/failure fields in Lite backend or contracts metadata |
+| `harness_transport_rejected` | validation | Synthetic harness proof was presented over a non-loopback or forwarded transport. | yes | no | 401 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `human_session_required` | identity | The requested credential or session lifecycle action requires the signed-in local owner session. | yes | no | 403 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `identity_current_password_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `identity_login_failed` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

@@ -89,6 +89,18 @@
           "type": "owns"
         }
       ],
+      "api:delete:/api/lite/harness/principals/{principal_id}": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:delete:/api/lite/harness/session/{session_id}": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
           "source": "journey:change-password",
@@ -520,6 +532,24 @@
       "api:get:/api/lite/fleet/invites/latest": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/harness/capabilities": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/harness/session/{session_id}": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/harness/status": [
+        {
+          "source": "domain:harness",
           "type": "owns"
         }
       ],
@@ -1293,6 +1323,30 @@
         {
           "source": "component:retirement-database-recovery",
           "type": "uses"
+        }
+      ],
+      "api:post:/api/lite/harness/challenge": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/principals": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/session": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
         }
       ],
       "api:post:/api/lite/identity/login": [
@@ -3466,6 +3520,12 @@
       "reason:generic_policy_toggle_retired": [
         {
           "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:harness_transport_rejected": [
+        {
+          "source": "domain:validation",
           "type": "owns"
         }
       ],
@@ -6555,6 +6615,24 @@
           "type": "owns"
         }
       ],
+      "table:harness_audit_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:harness_challenges": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:harness_sessions": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:human_credentials": [
         {
           "source": "component:api-guards",
@@ -7067,6 +7145,12 @@
           "type": "reads"
         }
       ],
+      "table:synthetic_principals": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:webauthn_challenges": [
         {
           "source": "domain:control_plane",
@@ -7532,6 +7616,10 @@
         },
         {
           "source": "reason:generic_policy_toggle_retired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:harness_transport_rejected",
           "type": "verified_by"
         },
         {
@@ -8145,6 +8233,14 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/harness/principals/{principal_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:delete:/api/lite/harness/session/{session_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -8354,6 +8450,18 @@
         },
         {
           "source": "api:get:/api/lite/fleet/invites/latest",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/capabilities",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/session/{session_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/status",
           "type": "verified_by"
         },
         {
@@ -8714,6 +8822,22 @@
         },
         {
           "source": "api:post:/api/lite/fleet/remove-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/principals",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/session",
           "type": "verified_by"
         },
         {
@@ -9210,6 +9334,16 @@
         },
         {
           "source": "component:pwa",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_harness.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:harness_transport_rejected",
           "type": "verified_by"
         }
       ],
@@ -11867,6 +12001,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:human_session_required",
           "type": "verified_by"
         },
@@ -12665,6 +12803,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:human_session_required",
           "type": "verified_by"
         },
@@ -13391,6 +13533,14 @@
           "type": "verified_by"
         },
         {
+          "source": "api:delete:/api/lite/harness/principals/{principal_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:delete:/api/lite/harness/session/{session_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -13600,6 +13750,18 @@
         },
         {
           "source": "api:get:/api/lite/fleet/invites/latest",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/capabilities",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/session/{session_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/status",
           "type": "verified_by"
         },
         {
@@ -13960,6 +14122,22 @@
         },
         {
           "source": "api:post:/api/lite/fleet/remove-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/principals",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/session",
           "type": "verified_by"
         },
         {
@@ -14861,6 +15039,26 @@
           "type": "verified_by"
         }
       ],
+      "api:delete:/api/lite/harness/principals/{principal_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:delete:/api/lite/harness/session/{session_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:delete:/api/lite/identity/passkeys/{credential_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -15518,6 +15716,36 @@
         }
       ],
       "api:get:/api/lite/fleet/invites/latest": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/harness/capabilities": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/harness/session/{session_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/harness/status": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -16570,6 +16798,46 @@
         }
       ],
       "api:post:/api/lite/fleet/remove-device": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/principals": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/session": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -21089,6 +21357,18 @@
           "type": "owns"
         },
         {
+          "target": "table:harness_audit_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:harness_challenges",
+          "type": "owns"
+        },
+        {
+          "target": "table:harness_sessions",
+          "type": "owns"
+        },
+        {
           "target": "table:human_credentials",
           "type": "owns"
         },
@@ -21146,6 +21426,10 @@
         },
         {
           "target": "table:policy_temporary_exceptions",
+          "type": "owns"
+        },
+        {
+          "target": "table:synthetic_principals",
           "type": "owns"
         },
         {
@@ -21784,6 +22068,44 @@
       "domain:events": [
         {
           "target": "api:get:/api/lite/events",
+          "type": "owns"
+        }
+      ],
+      "domain:harness": [
+        {
+          "target": "api:delete:/api/lite/harness/principals/{principal_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:delete:/api/lite/harness/session/{session_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/harness/capabilities",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/harness/session/{session_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/harness/status",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/principals",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/session",
           "type": "owns"
         }
       ],
@@ -24125,6 +24447,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:harness_transport_rejected",
+          "type": "owns"
+        },
+        {
           "target": "reason:metadata_only",
           "type": "owns"
         },
@@ -25759,6 +26085,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_harness.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
@@ -26148,6 +26478,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:harness_transport_rejected": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_harness.py",
           "type": "verified_by"
         },
         {
@@ -28843,6 +29191,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
+    "source_fingerprint": "f030b2ac5e41f961c57794b8e0526a91977d123555fcf3e1742d4ebec0acbda2"
   }
 }

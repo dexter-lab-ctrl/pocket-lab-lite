@@ -23,6 +23,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "policy_activation_operations":"candidate_revision_id":w -> "policy_revisions":"revision_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_activation_operations":"prior_known_good_revision_id":w -> "policy_revisions":"revision_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_activation_operations":"requested_by_human_id":w -> "human_identities":"human_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "policy_activation_operations":"requested_by_principal_id":w -> "synthetic_principals":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "policy_approvals":"approved_by_human_id":w -> "human_identities":"human_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_approvals":"initiating_human_id":w -> "human_identities":"human_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_approvals":"originating_decision_id":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=teeodot style=dashed];
@@ -30,6 +31,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "policy_recovery_resolutions":"recovered_revision_id":w -> "policy_revisions":"revision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "policy_recovery_resolutions":"requested_by_human_id":w -> "human_identities":"human_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_revisions":"created_by_human_id":w -> "human_identities":"human_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "policy_revisions":"created_by_principal_id":w -> "synthetic_principals":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "policy_runtime_state":"elipses":w -> "policy_revisions":"revision_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_runtime_state":"elipses":w -> "policy_revisions":"revision_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_temporary_exceptions":"app_id":w -> "app_current_state":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
@@ -221,7 +223,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>policy_activation_operations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="policy_activation_operations.html"
     target="_top"
@@ -275,7 +277,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="107" HEIGHT="16"><B>policy_revisions</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
     URL="policy_revisions.html"
     target="_top"
@@ -369,6 +371,17 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     URL="security_database_backups.html"
     target="_top"
     tooltip="security_database_backups"
+  ];
+  "synthetic_principals" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="135" HEIGHT="16"><B>synthetic_principals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
+    </TABLE>>
+    URL="synthetic_principals.html"
+    target="_top"
+    tooltip="synthetic_principals"
   ];
   "webauthn_challenges" [
    label=<

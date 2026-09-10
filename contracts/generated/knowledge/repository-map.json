@@ -126,6 +126,7 @@
         "domain:drift-management",
         "domain:enterprise",
         "domain:events",
+        "domain:harness",
         "domain:health",
         "domain:lite",
         "domain:live_status",
@@ -363,6 +364,8 @@
       "entities": [
         "api:delete:/api/lite/apps/photoprism/storage-mappings/{mapping_id}",
         "api:delete:/api/lite/enterprise/identity/people/{human_id}",
+        "api:delete:/api/lite/harness/principals/{principal_id}",
+        "api:delete:/api/lite/harness/session/{session_id}",
         "api:delete:/api/lite/identity/passkeys/{credential_id}",
         "api:delete:/api/lite/identity/sessions/{session_id}",
         "api:get:/api/lite/apps/lifecycle",
@@ -416,6 +419,9 @@
         "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
+        "api:get:/api/lite/harness/capabilities",
+        "api:get:/api/lite/harness/session/{session_id}",
+        "api:get:/api/lite/harness/status",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/policy",
@@ -506,6 +512,10 @@
         "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
         "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
         "api:post:/api/lite/fleet/remove-device",
+        "api:post:/api/lite/harness/challenge",
+        "api:post:/api/lite/harness/principals",
+        "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/session",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
         "api:post:/api/lite/identity/owner-claim",
@@ -564,6 +574,7 @@
         "domain:drift-management",
         "domain:enterprise",
         "domain:events",
+        "domain:harness",
         "domain:health",
         "domain:lite",
         "domain:live_status",
@@ -606,6 +617,7 @@
         "domain:drift-management",
         "domain:enterprise",
         "domain:events",
+        "domain:harness",
         "domain:health",
         "domain:lite",
         "domain:live_status",
@@ -654,6 +666,9 @@
         "table:domain_revisions",
         "table:enterprise_configuration",
         "table:enterprise_memberships",
+        "table:harness_audit_events",
+        "table:harness_challenges",
+        "table:harness_sessions",
         "table:human_credentials",
         "table:human_enrollment_claims",
         "table:human_identities",
@@ -692,6 +707,7 @@
         "table:security_scan_runs",
         "table:security_scan_tool_runs",
         "table:security_store_metadata",
+        "table:synthetic_principals",
         "table:webauthn_challenges",
         "table:webauthn_credentials",
         "table:webauthn_users",
@@ -773,6 +789,7 @@
         "reason:exception_unusable",
         "reason:generation_changed",
         "reason:generic_policy_toggle_retired",
+        "reason:harness_transport_rejected",
         "reason:human_session_required",
         "reason:identity_current_password_invalid",
         "reason:identity_login_failed",
@@ -1036,6 +1053,7 @@
         "reason:exception_unusable",
         "reason:generation_changed",
         "reason:generic_policy_toggle_retired",
+        "reason:harness_transport_rejected",
         "reason:human_session_required",
         "reason:identity_current_password_invalid",
         "reason:identity_login_failed",
@@ -1673,6 +1691,15 @@
         "table:recovery_backup_locations"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+    },
+    {
+      "entities": [
+        "table:harness_audit_events",
+        "table:harness_challenges",
+        "table:harness_sessions",
+        "table:synthetic_principals"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
     },
     {
       "entities": [
@@ -2747,6 +2774,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_harness.py"
+      ],
+      "source": "tests/backend/test_lite_harness.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_home_capacity_contract.py"
       ],
       "source": "tests/backend/test_lite_home_capacity_contract.py"
@@ -3796,6 +3829,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
+    "source_fingerprint": "f030b2ac5e41f961c57794b8e0526a91977d123555fcf3e1742d4ebec0acbda2"
   }
 }
