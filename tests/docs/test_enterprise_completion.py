@@ -654,6 +654,20 @@ def test_release_comparison_never_substitutes_head_for_a_release():
         assert all(row["classification"] == "not-comparable" for row in delta["dimensions"])
 
 
+def test_current_release_baseline_uses_explicit_or_stable_local_provenance(monkeypatch):
+    monkeypatch.delenv("SOURCE_COMMIT", raising=False)
+    monkeypatch.delenv("SOURCE_TREE_HASH", raising=False)
+    local = completion.current_release_baseline(ROOT)
+    assert local["head"] == "uncommitted"
+    assert local["head_tree"] == "uncommitted"
+
+    monkeypatch.setenv("SOURCE_COMMIT", "a" * 40)
+    monkeypatch.setenv("SOURCE_TREE_HASH", "b" * 40)
+    explicit = completion.current_release_baseline(ROOT)
+    assert explicit["head"] == "a" * 40
+    assert explicit["head_tree"] == "b" * 40
+
+
 def test_threat_model_svg_is_semantic_architecture_integrated_and_not_live():
     text = (ROOT / "docs/generated/assets/enterprise/threat-model.svg").read_text(encoding="utf-8")
     for token in ["data-node=", "data-control=", "data-attack-path=", "Modeled flow — not live traffic", "prefers-reduced-motion"]:

@@ -37666,8 +37666,8 @@
         "baseline_readiness": {
           "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
           "candidate_count": 3,
-          "head": "197c1e2b86c919d1b71ab1c794bea5d90ef781e6",
-          "head_tree": "dab2d61f2015f1bd8ee7b668281a5a8d732e3be0",
+          "head": "uncommitted",
+          "head_tree": "uncommitted",
           "reason": "comparable verified prior release selected",
           "selected_baseline": {
             "artifacts": [
@@ -39716,7 +39716,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "dbf089b11542774582321b4d60089499c4943841346438ba772a690f239015f3",
-        "documentation": "a7367bbcc9ba1093b27087199b20a86d76ada8d1349f84980bb2170a104e2723",
+        "documentation": "c781022c6bc4adf70f4baa1ee9af12632b6b7583edbe5c1e6c922930639c486c",
         "openapi": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
         "operational_health": "a1f56847c0477062282421b7565aa4a3304957caa6946c30b25ccf5fdedaa1d9"
       },
@@ -42040,8 +42040,8 @@
       "baseline_readiness": {
         "baseline_policy": "two verified canonical release records + matching reachable Git tag/commit/tree; release-to-HEAD comparison is forbidden",
         "candidate_count": 3,
-        "head": "197c1e2b86c919d1b71ab1c794bea5d90ef781e6",
-        "head_tree": "dab2d61f2015f1bd8ee7b668281a5a8d732e3be0",
+        "head": "uncommitted",
+        "head_tree": "uncommitted",
         "reason": "comparable verified prior release selected",
         "selected_baseline": {
           "artifacts": [
@@ -106443,5 +106443,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "33305f6bb8aa266f41d6cc992432589c49c3ae659980a0ad56d152c9b97e7f10"
+  "source_fingerprint": "3f61d23d643a54300afeb5e935521dbf8da98e498b40b63e9ae0ef0c289f3853"
 }

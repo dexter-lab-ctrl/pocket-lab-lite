@@ -133,9 +133,13 @@ def current_release_baseline(root: Path) -> dict[str, Any]:
     """
     state = shared_comparison_state(root)
     selected_baseline = state.get("baseline") if state.get("comparison_state") == "comparable" else None
+    # Keep generated projections stable across ordinary commits. Release/CI jobs can provide
+    # exact provenance explicitly; an uncommitted marker is the honest local default.
+    local_source = os.environ.get("SOURCE_COMMIT", "").strip() or "uncommitted"
+    local_tree = os.environ.get("SOURCE_TREE_HASH", "").strip() or "uncommitted"
     return {
-        "head": git_maybe(root, "rev-parse", "HEAD") or "unavailable",
-        "head_tree": git_maybe(root, "rev-parse", "HEAD^{tree}"),
+        "head": local_source,
+        "head_tree": local_tree,
         "baseline": selected_baseline,
         "current": state.get("current"),
         "comparison_state": state.get("comparison_state"),
