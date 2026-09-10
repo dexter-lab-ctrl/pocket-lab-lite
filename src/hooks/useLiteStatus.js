@@ -29,6 +29,7 @@ function queryKeyForLoader(loader, dependencies = []) {
   if (path === liteQueryPaths.recovery) return liteQueryKeys.recovery();
   if (path === liteQueryPaths.recoverySummary) return liteQueryKeys.recoverySummary();
   if (path === liteQueryPaths.recoveryDetails) return liteQueryKeys.recoveryDetails();
+  if (path === liteQueryPaths.recoveryLocations) return liteQueryKeys.recoveryLocations();
   return liteQueryKeys.resource(path, ...dependencies);
 }
 

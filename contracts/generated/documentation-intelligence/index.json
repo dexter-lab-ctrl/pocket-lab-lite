@@ -2707,6 +2707,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "location_not_registered",
+        "domain": "recovery",
+        "http_status": 409,
+        "meaning": "A restore point refers to a backup location that is not currently registered on the protected Server Phone.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Reconnect or rediscover the backup location before continuing."
+      },
+      {
         "code": "metadata_only",
         "domain": "validation",
         "http_status": 200,
@@ -3585,6 +3597,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
+      },
+      {
+        "code": "storage_unavailable",
+        "domain": "recovery",
+        "http_status": 409,
+        "meaning": "A registered backup location cannot currently be reached or inspected safely.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Reconnect this storage or choose another backup location before continuing."
       },
       {
         "code": "submit_failed",
@@ -6574,5 +6598,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "ece5cc2d16ce77bd23d4a0bf83eb3e7a8bc843a915cf7335685ed966ecfe6b98"
+  "source_fingerprint": "7293e51589e6a84c4830f417b64247beb2067402c2b7cb04dea6adfbeba19d5d"
 }

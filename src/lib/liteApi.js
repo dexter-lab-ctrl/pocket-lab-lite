@@ -374,6 +374,10 @@ export const liteApi = {
   recovery: safeGet('/api/lite/recovery'),
   recoverySummary: conditionalGet('/api/lite/recovery/summary'),
   recoveryDetails: conditionalGet('/api/lite/recovery/details'),
+  recoveryLocations: safeGet('/api/lite/recovery/locations'),
+  discoverRecoveryLocation: (candidateId) => postJson('/api/lite/recovery/locations/discover', { candidate_id: candidateId }),
+  selectRecoveryLocation: (locationId) => postJson('/api/lite/recovery/locations/select', { location_id: locationId }),
+  forgetRecoveryLocation: (locationId) => postJson('/api/lite/recovery/locations/forget', { location_id: locationId, confirm: true }),
   recoveryOperations: (limit = 20, cursor = '') => {
     const query = new URLSearchParams({ limit: String(limit || 20) });
     if (cursor) query.set('cursor', cursor);

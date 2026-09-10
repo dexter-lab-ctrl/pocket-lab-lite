@@ -13,6 +13,7 @@ function formatSize(bytes) {
 export default function RecoveryConfirmSheetLazy({
   kind = 'lite',
   backup = null,
+  location = null,
   preview = null,
   busy = false,
   onCancel,
@@ -41,6 +42,8 @@ export default function RecoveryConfirmSheetLazy({
       <section className="lite-recovery-native-confirm-backup" aria-label="Selected backup">
         <strong>{backupLabel}</strong>
         <small>{[backup?.verification_status === 'verified' ? 'Verified' : 'Verification required', sizeLabel].filter(Boolean).join(' · ')}</small>
+        {!databaseRestore ? <span>Recover from: {location?.display_name || backup?.location?.display_name || 'Pocket Lab protected backup'}</span> : null}
+        {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
       </section>
 
       <section className="lite-recovery-native-confirm-section">

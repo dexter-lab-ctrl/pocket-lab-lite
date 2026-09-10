@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from .. import deps
-from . import lite_backup_manifest
+from . import lite_backup_locations, lite_backup_manifest
 from .lite_backup_policy import (
     backup_layout,
     backup_scope,
@@ -135,8 +135,12 @@ def _touch_recovery_projection() -> None:
 def record_backup_request(command: dict[str, Any]) -> dict[str, Any]:
     backup_id = _command_id(command)
     requested_at = _utc()
+    location_id = str(command.get("location_id") or lite_backup_locations.selected_location_id()).strip() or lite_backup_locations.DEFAULT_LOCATION_ID
+    location = lite_backup_locations.location_metadata(location_id)
     pending = {
         "backup_id": backup_id,
+        "location_id": location_id,
+        "location": {key: location.get(key) for key in ("location_id", "display_name", "kind", "repository_id")},
         "status": "queued",
         "requested_at": requested_at,
         "reason": command.get("reason") or "manual backup",
@@ -154,8 +158,12 @@ def pending_backup() -> dict[str, Any] | None:
 
 
 def _api_pending_backup(pending: dict[str, Any]) -> dict[str, Any]:
+    location_id = str(pending.get("location_id") or lite_backup_locations.DEFAULT_LOCATION_ID)
+    location = pending.get("location") if isinstance(pending.get("location"), dict) else lite_backup_locations.location_metadata(location_id)
     return {
         "backup_id": pending.get("backup_id"),
+        "location_id": location_id,
+        "location": {key: location.get(key) for key in ("location_id", "display_name", "kind", "repository_id")},
         "status": pending.get("status") or "queued",
         "created_at": pending.get("requested_at"),
         "engine": "restic",
@@ -275,7 +283,8 @@ def _restic_repo_initialized(layout: Any) -> bool:
 
 
 def repository_readiness() -> dict[str, Any]:
-    layout = backup_layout()
+    location_id = lite_backup_locations.selected_location_id()
+    layout = lite_backup_locations.layout_for_location(location_id)
     layout.ensure()
     restic = _restic_binary()
     initialized = _restic_repo_initialized(layout)
@@ -290,6 +299,7 @@ def repository_readiness() -> dict[str, Any]:
     else:
         status = "unavailable"
         summary = "Restic is not installed yet. Install restic to create encrypted local backups."
+    location = lite_backup_locations.location_metadata(location_id)
     return {
         "status": status,
         "ready": ready,
@@ -302,9 +312,11 @@ def repository_readiness() -> dict[str, Any]:
             "engine": "restic",
             "encrypted": True,
             "ready": ready,
-            "location": public_repository_label(layout),
-            "details": {"label": "Backend-managed encrypted repository"},
+            "location": location.get("display_name") or public_repository_label(layout),
+            "details": {"label": "Backend-managed encrypted repository", "location_id": location_id},
         },
+        "location_id": location_id,
+        "location": location,
         "latest_backup_id": latest.get("backup_id") if latest else None,
         "checked_at": _utc(),
     }
@@ -312,6 +324,7 @@ def repository_readiness() -> dict[str, Any]:
 
 def recovery_status(*, history_limit: int = 25) -> dict[str, Any]:
     readiness = repository_readiness()
+    locations = lite_backup_locations.locations_projection()
     backups = [
         lite_backup_manifest.api_manifest(item)
         for item in lite_backup_manifest.list_manifests(limit=max(1, min(int(history_limit or 1), 25)))
@@ -336,6 +349,7 @@ def recovery_status(*, history_limit: int = 25) -> dict[str, Any]:
         "summary": summary,
         "repository": readiness["repository"],
         "repository_readiness": readiness,
+        "backup_locations": locations,
         "what_will_be_backed_up": scope["included"],
         "what_will_not_be_backed_up": scope["excluded_sensitive"]
         + scope["excluded_runtime"],
@@ -378,6 +392,8 @@ def _compact_backup_summary(backup: dict[str, Any] | None) -> dict[str, Any] | N
         "pending",
         "status",
         "size_bytes",
+        "location_id",
+        "location",
     )
     return {key: backup.get(key) for key in allowed if backup.get(key) is not None}
 
@@ -397,6 +413,8 @@ def _compact_restore_preview(preview: dict[str, Any] | None) -> dict[str, Any] |
         "requires_confirmation",
         "destructive_changes_applied",
         "summary",
+        "location_id",
+        "location",
     )
     return {key: preview.get(key) for key in allowed if preview.get(key) is not None}
 
@@ -436,6 +454,7 @@ def _compact_restore_summary(restore: dict[str, Any] | None) -> dict[str, Any] |
 
 def recovery_summary() -> dict[str, Any]:
     readiness = repository_readiness()
+    locations = lite_backup_locations.locations_projection()
     latest_manifest = lite_backup_manifest.latest_manifest()
     latest = lite_backup_manifest.api_manifest(latest_manifest) if latest_manifest else None
     pending = pending_backup()
@@ -488,6 +507,7 @@ def recovery_summary() -> dict[str, Any]:
             "ready": bool(readiness.get("repository", {}).get("ready")),
             "location": readiness.get("repository", {}).get("location"),
         },
+        "backup_locations": locations,
         "last_backup": current,
         "latest_backup": current,
         "last_verification_result": (current or {}).get("verification_status") or "not_verified",
@@ -741,6 +761,10 @@ def _load_verified_manifest(backup_id: str) -> tuple[str, dict[str, Any]]:
     manifest = lite_backup_manifest.read_manifest(resolved)
     if not manifest:
         raise FileNotFoundError("Backup manifest was not found.")
+    try:
+        lite_backup_locations.layout_for_manifest(manifest)
+    except lite_backup_locations.BackupLocationError as exc:
+        raise RuntimeError(str(exc)) from exc
     format_version = int(manifest.get("format_version") or 1)
     if format_version < 1 or format_version > 2:
         raise RuntimeError("Backup manifest format is not supported by this Pocket Lab version.")
@@ -829,7 +853,8 @@ def _manifest_component_check(manifest: dict[str, Any]) -> dict[str, Any]:
 
 def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> dict[str, Any]:
     resolved, manifest = _load_verified_manifest(backup_id)
-    layout = backup_layout()
+    location_id = str(manifest.get("location_id") or lite_backup_locations.DEFAULT_LOCATION_ID)
+    layout = lite_backup_locations.layout_for_location(location_id)
     layout.ensure()
     restic = _restic_binary()
     if not restic:
@@ -869,18 +894,20 @@ def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> di
     components["repository_integrity"] = {"status": "validated" if status == "verified" else "failed", "required": True}
     manifest["component_results"] = components
     manifest["summary"] = "Backup verified and ready for restore preview." if status == "verified" else "Backup verification failed. Review checks before restore."
-    manifest = lite_backup_manifest.write_manifest(manifest)
-    receipt = lite_backup_manifest.read_receipt(resolved) or {"backup_id": resolved}
+    manifest = lite_backup_manifest.write_manifest(manifest, location_id=location_id, layout=layout)
+    receipt = lite_backup_manifest.read_receipt(resolved, location_id=location_id, layout=layout) or {"backup_id": resolved}
     receipt.update(
         {
             "backup_id": resolved,
+            "location_id": location_id,
+            "backup_location": manifest.get("backup_location"),
             "verification_status": status,
             "verified_at": verified_at if status == "verified" else None,
             "verification_checks": checks,
             "manifest_checksum": manifest.get("manifest_checksum"),
         }
     )
-    lite_backup_manifest.write_receipt(resolved, receipt)
+    lite_backup_manifest.write_receipt(resolved, receipt, location_id=location_id, layout=layout)
     _write_backup_state({
             "latest_backup_id": resolved,
             "latest_snapshot_id": snapshot_id,
@@ -892,8 +919,8 @@ def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> di
                 "checks": checks,
             },
             "updated_at": verified_at,
-            "manifest": str(lite_backup_manifest.manifest_path(resolved)),
-            "receipt": str(lite_backup_manifest.receipt_path(resolved)),
+            "manifest": str(lite_backup_manifest.manifest_path(resolved, location_id=location_id, layout=layout)),
+            "receipt": str(lite_backup_manifest.receipt_path(resolved, location_id=location_id, layout=layout)),
         })
     return {
         "status": status,
@@ -1009,10 +1036,11 @@ def validate_restore_preview_binding(preview: dict[str, Any]) -> dict[str, Any]:
 
 def create_restore_preview(backup_id: str = "latest", *, reason: str | None = None) -> dict[str, Any]:
     resolved, manifest = _load_verified_manifest(backup_id)
+    location_id = str(manifest.get("location_id") or lite_backup_locations.DEFAULT_LOCATION_ID)
     snapshot_id = str(manifest.get("snapshot_id") or "").strip()
     if not snapshot_id:
         raise RuntimeError("Backup manifest does not include a restic snapshot id")
-    layout = backup_layout()
+    layout = lite_backup_locations.layout_for_location(location_id)
     layout.ensure()
     restic = _restic_binary()
     if not restic:
@@ -1057,6 +1085,8 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
     preview = {
         "preview_id": preview_id,
         "backup_id": resolved,
+        "location_id": location_id,
+        "location": manifest.get("backup_location") or lite_backup_locations.location_metadata(location_id),
         "snapshot_id": snapshot_id,
         "format_version": 2,
         "backup_manifest_checksum": manifest.get("manifest_checksum"),
@@ -1100,7 +1130,7 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
                 "excluded_components": excluded_components,
             },
             "updated_at": created_at,
-            "manifest": str(lite_backup_manifest.manifest_path(resolved)),
+            "manifest": str(lite_backup_manifest.manifest_path(resolved, location_id=location_id, layout=layout)),
             "restore_preview": str(path),
         })
     # The preview record itself is a Recovery lifecycle event. Bind after that
@@ -1648,6 +1678,8 @@ def _apply_full_restore_from_staging(
     service_restart = post_validation.get("service_restart") if isinstance(post_validation, dict) else None
     health_validation = post_validation.get("health_validation") if isinstance(post_validation, dict) else None
     application_validation = post_validation.get("application_validation") if isinstance(post_validation, dict) else None
+    source_location_id = str(manifest.get("location_id") or lite_backup_locations.DEFAULT_LOCATION_ID).strip() or lite_backup_locations.DEFAULT_LOCATION_ID
+    source_layout = lite_backup_locations.layout_for_location(source_location_id)
     result = {
         "status": status,
         "restore_id": restore_id,
@@ -1705,7 +1737,7 @@ def _apply_full_restore_from_staging(
                 "rollback": result.get("rollback"),
                 "health_validation": health_validation,
             },
-            "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
+            "manifest": str(lite_backup_manifest.manifest_path(backup_id, location_id=source_location_id, layout=source_layout)),
             "restore_preview": str(restore_preview_path(preview_id)),
             "restore_run": str(restore_run_path(restore_id)),
         }
@@ -1794,19 +1826,24 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
 
     binding = validate_restore_preview_binding(preview)
     manifest = binding["manifest"]
+    source_location_id = str(manifest.get("location_id") or lite_backup_locations.DEFAULT_LOCATION_ID).strip() or lite_backup_locations.DEFAULT_LOCATION_ID
+    source_layout = lite_backup_locations.layout_for_location(source_location_id)
     snapshot_id = str(manifest.get("snapshot_id") or "").strip()
     if snapshot_id != str(preview.get("snapshot_id") or "").strip():
         raise RuntimeError("Restore preview snapshot does not match the backup manifest")
     restic = _restic_binary()
     if not restic:
         raise RuntimeError("restic is required for Lite restore but was not found in PATH")
-    snapshot_check = _restic_snapshot_exists(restic, snapshot_id, _restic_env(backup_layout()))
+    snapshot_check = _restic_snapshot_exists(restic, snapshot_id, _restic_env(source_layout))
     if snapshot_check.get("status") != "passed":
         raise RuntimeError("Selected restore point is no longer present in the configured encrypted repository")
     if not _BACKUP_OPERATION_LOCK.acquire(blocking=False):
         raise RuntimeError("Another backup or restore operation is already running")
 
     started_at = _utc()
+    # Restore staging, checkpoints, and the guarded destination transaction
+    # stay on the protected local host.  Only the immutable source repository
+    # follows the selected restore point's location binding.
     layout = backup_layout()
     layout.ensure()
     restore_root = layout.staging / f"restore-{restore_id}"
@@ -1846,7 +1883,7 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
         restore_root.mkdir(parents=True, exist_ok=True)
         restore_result = _run_restic(
             [restic, "restore", snapshot_id, "--target", str(restore_root)],
-            env=_restic_env(layout),
+            env=_restic_env(source_layout),
             timeout=600,
             capture_stdout=False,
         )
@@ -1984,7 +2021,7 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
                     "service_restart": service_restart,
                     "health_validation": health_validation,
                 },
-                "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
+                "manifest": str(lite_backup_manifest.manifest_path(backup_id, location_id=source_location_id, layout=source_layout)),
                 "restore_preview": str(restore_preview_path(preview_id)),
                 "restore_run": str(restore_run_path(restore_id)),
             }
@@ -2116,12 +2153,13 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
     include_app_data = bool(command.get("include_app_data", True))
     include_event_journal = bool(command.get("include_event_journal", True))
     reason = str(command.get("reason") or "manual backup")
+    location_id = str(command.get("location_id") or lite_backup_locations.selected_location_id()).strip() or lite_backup_locations.DEFAULT_LOCATION_ID
     existing = _existing_backup_result(backup_id)
     if existing is not None:
         return existing
     if not _BACKUP_OPERATION_LOCK.acquire(blocking=False):
         raise RuntimeError("Another backup or restore operation is already running")
-    layout = backup_layout()
+    layout = lite_backup_locations.layout_for_location(location_id)
     layout.ensure()
     restic = _restic_binary()
     if not restic:
@@ -2214,6 +2252,7 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
             "completed_at": _utc(),
             "label": "Pocket Lab Lite restore point",
             "format_version": 2,
+            "location_id": location_id,
             "status": "created",
             "app_version": str(os.environ.get("POCKETLAB_LITE_APP_VERSION") or "unknown")[:80],
             "schema_version": int(database_backup.get("schema_version") or 0),
@@ -2223,7 +2262,12 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
                 "type": "local",
                 "engine": "restic",
                 "encrypted": True,
-                "location": public_repository_label(layout),
+                "location": lite_backup_locations.location_metadata(location_id).get("display_name") or public_repository_label(layout),
+            },
+            "backup_location": {
+                **lite_backup_locations.location_metadata(location_id),
+                "repository_fingerprint": lite_backup_locations.repository_fingerprint(location_id, layout),
+                "status": "ready",
             },
             "snapshot_id": snapshot_id,
             "reason": reason,
@@ -2262,11 +2306,13 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
             },
             "summary": f"Backup created with {len(copied)} safe item(s), including a verified Pocket Lab database backup. {application_backup['summary']}",
         }
-        manifest = lite_backup_manifest.write_manifest(manifest)
+        manifest = lite_backup_manifest.write_manifest(manifest, location_id=location_id, layout=layout)
         receipt = lite_backup_manifest.write_receipt(
             backup_id,
             {
                 "backup_id": backup_id,
+                "location_id": location_id,
+                "backup_location": manifest.get("backup_location"),
                 "created_at": created_at,
                 "status": "succeeded",
                 "summary": "Evidence saved",
@@ -2279,14 +2325,17 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
                 "included_sets": included_sets,
                 "excluded_sensitive_items": manifest["excluded_sensitive_items"],
             },
+            location_id=location_id,
+            layout=layout,
         )
         _write_backup_state({
                 "latest_backup_id": backup_id,
                 "latest_snapshot_id": snapshot_id,
+                "latest_backup_location_id": location_id,
                 "pending_backup": None,
                 "updated_at": _utc(),
-                "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
-                "receipt": str(lite_backup_manifest.receipt_path(backup_id)),
+                "manifest": str(lite_backup_manifest.manifest_path(backup_id, location_id=location_id, layout=layout)),
+                "receipt": str(lite_backup_manifest.receipt_path(backup_id, location_id=location_id, layout=layout)),
             })
         return {
             "status": "succeeded",

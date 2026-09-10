@@ -1422,6 +1422,32 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A restore point refers to a backup location that is not currently registered on the protected Server Phone.",
+      "domain": "recovery",
+      "event_mapping": [
+        "recovery.location.unavailable"
+      ],
+      "http_status": 409,
+      "id": "reason:location_not_registered",
+      "name": "location_not_registered",
+      "projection_mapping": [
+        "backup_locations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Location unavailable"
+      ],
+      "user_interpretation": "Reconnect or rediscover the backup location before continuing."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Only metadata was evaluated.",
       "domain": "validation",
       "event_mapping": [],
@@ -2882,6 +2908,32 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A registered backup location cannot currently be reached or inspected safely.",
+      "domain": "recovery",
+      "event_mapping": [
+        "recovery.location.unavailable"
+      ],
+      "http_status": 409,
+      "id": "reason:storage_unavailable",
+      "name": "storage_unavailable",
+      "projection_mapping": [
+        "backup_locations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Location unavailable"
+      ],
+      "user_interpretation": "Reconnect this storage or choose another backup location before continuing."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The work request could not be admitted.",
       "domain": "system",
       "event_mapping": [],
@@ -3547,6 +3599,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

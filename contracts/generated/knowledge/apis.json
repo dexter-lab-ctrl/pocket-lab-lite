@@ -2218,6 +2218,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Recovery Locations",
+      "domain": "recovery",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.recoveryLocations",
+          "resolved": true,
+          "source_module": "src/lite/LiteRecovery.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/recovery/locations",
+      "method": "GET",
+      "name": "GET /api/lite/recovery/locations",
+      "operation_id": "get_lite_recovery_locations_api_lite_recovery_locations_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/recovery/locations",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Recovery Maintenance",
       "domain": "recovery",
       "id": "api:get:/api/lite/recovery/maintenance",
@@ -5318,6 +5355,123 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Discover Lite Recovery Location",
+      "domain": "recovery",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.discoverRecoveryLocation",
+          "resolved": true,
+          "source_module": "src/lite/LiteRecovery.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/recovery/locations/discover",
+      "method": "POST",
+      "name": "POST /api/lite/recovery/locations/discover",
+      "operation_id": "discover_lite_recovery_location_api_lite_recovery_locations_discover_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/recovery/locations/discover",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Forget Lite Recovery Location",
+      "domain": "recovery",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.forgetRecoveryLocation",
+          "resolved": true,
+          "source_module": "src/lite/LiteRecovery.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/recovery/locations/forget",
+      "method": "POST",
+      "name": "POST /api/lite/recovery/locations/forget",
+      "operation_id": "forget_lite_recovery_location_api_lite_recovery_locations_forget_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/recovery/locations/forget",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Select Lite Recovery Location",
+      "domain": "recovery",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.selectRecoveryLocation",
+          "resolved": true,
+          "source_module": "src/lite/LiteRecovery.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/recovery/locations/select",
+      "method": "POST",
+      "name": "POST /api/lite/recovery/locations/select",
+      "operation_id": "select_lite_recovery_location_api_lite_recovery_locations_select_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/recovery/locations/select",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Run Lite Recovery Checkpoint",
       "domain": "recovery",
       "id": "api:post:/api/lite/recovery/maintenance/checkpoint",
@@ -5747,6 +5901,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

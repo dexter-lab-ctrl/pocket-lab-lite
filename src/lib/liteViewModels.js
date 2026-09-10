@@ -2472,10 +2472,52 @@ function normalizeRecoveryRepository(repository = {}) {
     'initialized',
     'repository_initialized',
     'location_label',
+    'location',
+    'location_id',
     'summary',
     'updated_at',
     'checked_at',
   ]);
+}
+
+function normalizeRecoveryLocation(location = {}) {
+  if (!isObject(location)) return null;
+  return copySafeKeys(location, [
+    'location_id',
+    'candidate_id',
+    'kind',
+    'display_name',
+    'status',
+    'reason_code',
+    'available',
+    'writable',
+    'repository_present',
+    'repository_id',
+    'free_bytes',
+    'capacity_bytes',
+    'is_default',
+    'is_selected',
+    'is_removable',
+    'last_checked_at',
+    'sanitized',
+  ]);
+}
+
+function normalizeRecoveryLocations(payload = {}) {
+  if (!isObject(payload)) return null;
+  return {
+    status: normalizeRecoveryStatus(payload.status || 'unknown'),
+    summary: safeString(payload.summary || ''),
+    server_host_only: payload.server_host_only === true,
+    selected_location_id: safeString(payload.selected_location_id || ''),
+    default_location_id: safeString(payload.default_location_id || ''),
+    selected_location: normalizeRecoveryLocation(payload.selected_location),
+    locations: (Array.isArray(payload.locations) ? payload.locations : []).slice(0, 16).map(normalizeRecoveryLocation).filter(Boolean),
+    candidates: (Array.isArray(payload.candidates) ? payload.candidates : []).slice(0, 16).map(normalizeRecoveryLocation).filter(Boolean),
+    picker: isObject(payload.picker) ? copySafeKeys(payload.picker, ['system_folder_picker', 'selection_mode', 'raw_paths_accepted']) : null,
+    updated_at: safeString(payload.updated_at || ''),
+    sanitized: true,
+  };
 }
 
 function normalizeRecoveryBackup(backup = {}) {
@@ -2499,7 +2541,9 @@ function normalizeRecoveryBackup(backup = {}) {
     'included_file_count',
     'size_bytes',
     'risk_level',
+    'location_id',
   ]);
+  selected.location = normalizeRecoveryLocation(backup.location);
   selected.included_components = safeList(backup.included_components || backup.included_sets);
   selected.excluded_components = safeList(backup.excluded_components || backup.excluded_runtime_items);
   return selected;
@@ -2523,7 +2567,9 @@ function normalizeRecoveryPreview(preview = {}) {
     'created_at',
     'completed_at',
     'updated_at',
+    'location_id',
   ]);
+  selected.location = normalizeRecoveryLocation(preview.location);
   selected.included_components = safeList(preview.included_components || preview.included_sets);
   selected.excluded_components = safeList(preview.excluded_components || preview.excluded_runtime_items);
   return selected;
@@ -2678,6 +2724,7 @@ export function selectRecoverySummaryView(payload = {}) {
     data_source: safeString(payload?.data_source || ''),
     refresh_pending: payload?.refresh_pending === true,
     repository,
+    backup_locations: normalizeRecoveryLocations(payload?.backup_locations || payload?.locations || {}),
     last_backup: latestBackup,
     latest_backup: latestBackup,
     latest_restore_preview: latestPreview,
@@ -2850,6 +2897,8 @@ function normalizeRecoveryHistorySnapshotBackup(backup = {}) {
     'included_file_count',
     'size_bytes',
     'risk_level',
+    'location_id',
+    'location',
   ]);
 }
 
@@ -3059,6 +3108,9 @@ export function getLiteRecoveryMutationInvalidations(actionId = '', result = {})
     'recovery_restore',
     'restore_backup',
     'database_restore',
+    'discover_recovery_location',
+    'select_recovery_location',
+    'forget_recovery_location',
   ].includes(normalized)) {
     keys.push(['lite', 'recovery', 'history']);
   }

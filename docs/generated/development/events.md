@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 195fc9da224c0854ac598e2da7574750ce3b3748156668533076dd0595967bf8
+source_fingerprint: 9085e81a12fd1d6805333b96f1baac6009db2c4e4473d38484618ad81d0e0b82
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 Subjects are scanned from current runtime source. This does not reintroduce the retired full-product typed-operation catalog.
 
-## Detected subjects (200)
+## Detected subjects (206)
 
 - `pocketlab.commands.`
 - `pocketlab.commands.catalog.refresh`
@@ -43,6 +43,9 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.commands.lite.app.safety`
 - `pocketlab.commands.lite.app.update.check`
 - `pocketlab.commands.lite.backup.create`
+- `pocketlab.commands.lite.backup.location.discover`
+- `pocketlab.commands.lite.backup.location.forget`
+- `pocketlab.commands.lite.backup.location.select`
 - `pocketlab.commands.lite.backup.verify`
 - `pocketlab.commands.lite.catalog.install`
 - `pocketlab.commands.lite.database.backup`
@@ -136,6 +139,9 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.events.lite.app.{event_prefix}.started`
 - `pocketlab.events.lite.app.{event_prefix}.updated`
 - `pocketlab.events.lite.backup.failed`
+- `pocketlab.events.lite.backup.location.{event_prefix}_completed`
+- `pocketlab.events.lite.backup.location.{event_prefix}_failed`
+- `pocketlab.events.lite.backup.location.{event_prefix}_started`
 - `pocketlab.events.lite.backup.snapshot_created`
 - `pocketlab.events.lite.backup.started`
 - `pocketlab.events.lite.backup.verified`

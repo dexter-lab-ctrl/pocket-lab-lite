@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 6b20aaaad39412d760cf55760b1ce5307955afb9d8d713f4ec0049927e923711
+source_fingerprint: 0147bb13d2cb8bd35d55c084e16f2063c951e8cc9b562f3cdb49a7c044f6400f
 schema_revision: 1
 validation_status: generated
 ---
@@ -61,6 +61,10 @@ validation_status: generated
 | src/lite/LiteRecovery.jsx | liteApi.restoreDatabase | POST | `/api/lite/recovery/database/backups/{param}/restore` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.verifyDatabaseBackup | POST | `/api/lite/recovery/database/backups/{param}/verify` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.recoveryDetails | GET | `/api/lite/recovery/details` | query | no | static |
+| src/lite/LiteRecovery.jsx | liteApi.recoveryLocations | GET | `/api/lite/recovery/locations` | query | no | static |
+| src/lite/LiteRecovery.jsx | liteApi.discoverRecoveryLocation | POST | `/api/lite/recovery/locations/discover` | mutation | no | static |
+| src/lite/LiteRecovery.jsx | liteApi.forgetRecoveryLocation | POST | `/api/lite/recovery/locations/forget` | mutation | no | static |
+| src/lite/LiteRecovery.jsx | liteApi.selectRecoveryLocation | POST | `/api/lite/recovery/locations/select` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.restoreBackup | POST | `/api/lite/recovery/restore` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.previewRestore | POST | `/api/lite/recovery/restore/preview` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.recoverySummary | GET | `/api/lite/recovery/summary` | query | no | static |
@@ -151,6 +155,10 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/backups/:backupId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/backups/:backupId/verify` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/database` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/locations` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/discover` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/forget` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/select` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/receipts/:backupId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/restore` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/restore/preview` | mock | yes | static |

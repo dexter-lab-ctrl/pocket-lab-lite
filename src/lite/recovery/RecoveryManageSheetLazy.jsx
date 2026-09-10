@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, LoadingCard, StateSurface, StatusBadge } from '../LiteUi.jsx';
+import RecoveryBackupLocation from './RecoveryBackupLocation.jsx';
 
 const RecoveryBackupHistory = React.lazy(() => import('./RecoveryBackupHistory.jsx'));
 
@@ -104,6 +105,7 @@ export default function RecoveryManageSheetLazy({
   appBackups = [],
   lifecycleByApp = new Map(),
   backupTargets = [],
+  backupLocations = {},
   protectedItems = [],
   excludedItems = [],
   busy = '',
@@ -121,6 +123,9 @@ export default function RecoveryManageSheetLazy({
   onRetryDetails,
   selectedBackupId = '',
   onSelectBackup,
+  onDiscoverLocation,
+  onSelectLocation,
+  onForgetLocation,
 }) {
   const activeSection = RECOVERY_MANAGE_SECTIONS.some((item) => item.id === section) ? section : 'backup';
   const recentHistory = (Array.isArray(history) ? history : []).slice(0, 3);
@@ -174,6 +179,14 @@ export default function RecoveryManageSheetLazy({
       {activeSection === 'backup' ? (
         <section id="recovery-manage-panel-backup" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-backup" tabIndex={0}>
           <SectionHeading eyebrow="Backup" title="Create and manage restore points" description="Create verified restore points for Pocket Lab Lite, its database, and supported apps." />
+          <RecoveryBackupLocation
+            locations={backupLocations}
+            disabled={Boolean(busy) || databaseWriteBlocked || savedStateOnly}
+            busy={busy}
+            onDiscover={onDiscoverLocation}
+            onSelect={onSelectLocation}
+            onForget={onForgetLocation}
+          />
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
               icon={ArchiveRestore}

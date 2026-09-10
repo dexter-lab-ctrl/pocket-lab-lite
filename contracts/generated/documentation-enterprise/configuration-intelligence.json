@@ -10150,6 +10150,79 @@
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_LITE_BACKUP_ALLOWED_ROOTS",
+      "owner": "FastAPI/runtime",
+      "purpose": "Backup/recovery configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py",
+        "tests/backend/test_lite_backup_locations.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_LITE_BACKUP_LOCATION_CANDIDATES",
+      "owner": "FastAPI/runtime",
+      "purpose": "Backup/recovery configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_LITE_BACKUP_MIN_FREE_BYTES",
+      "owner": "FastAPI/runtime",
+      "purpose": "Backup/recovery configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py",
+        "tests/backend/test_lite_backup_locations.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "POCKETLAB_LITE_BACKUP_ROOT",
       "owner": "FastAPI/runtime",
       "purpose": "Backup/recovery configuration",
@@ -10166,8 +10239,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py",
         "tests/backend/test_lite_api.py",
-        "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
-        "tests/backend/test_lite_photoprism_backup.py"
+        "tests/backend/test_lite_backup_locations.py",
+        "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -13298,8 +13371,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".storybook/preview.jsx",
-        "storybook-static/assets/preview-BRAts1Ys.js"
+        ".storybook/preview.jsx"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -15328,7 +15400,7 @@
         "src/mocks/handlers.js",
         "src/mocks/identityRulesP1Handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "storybook-static/assets/preview-BRAts1Ys.js"
+        "tests/e2e/lite-test-helpers.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

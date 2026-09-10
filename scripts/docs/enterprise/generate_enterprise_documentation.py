@@ -530,7 +530,7 @@ def config_inventory() -> list[dict[str, Any]]:
     # change the generated contract.
     excluded_parts = {
         ".git", ".venv", "venv", "node_modules", "dist", "pwa_dist", "site",
-        ".pocketlab-dev", ".pytest_cache", "__pycache__", "playwright-report",
+        "storybook-static", ".pocketlab-dev", ".pytest_cache", "__pycache__", "playwright-report",
         "test-results", "allure-results", "allure-report", "coverage",
     }
     excluded_prefixes = {

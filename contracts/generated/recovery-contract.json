@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "1b87f0c5cff2a73a807ae1ac6edbaee2cb69cbd614625bd08388f20ac4dab52e",
+    "aggregate_fingerprint": "d506897df8f624b0019c2576b01946ab99dff7c3b1987722bfd1ce0de09935a5",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,12 +10,15 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "65432538aab389a57c26d4631f10d413bfd2e678be916b81415f609330c96f11",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "33b51e6376ba23bc1463571a8a5422456f7bcf1493634f13f5fd7e4b81a34cde",
+      "contracts/generated/lite-openapi.json": "9aaf78e327569a667b09bb41c17fd48f3fcef0cc09f572b64f16690214fae6f9",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "a5c4693f7073de8c6f3f4d016e457d23bf1f7213832f0949c2fecddf2c8ae917",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "faadf8fbe9398894efdc577cba72f6a635310e69e7cd2f32c48bb2fb72baa5b4",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py": "608e28b8b7ab93eaf3d52b41a314ffdcdec9743829b36248eff46a8f6ef297e9",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_manifest.py": "2ae0e0c1e1ed9503955e6e8481f51b92d4f843ba702d418a9f15dd1c6ac68332",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py": "d582006b8a4fc9e5123952e3e2f3334c8661d1720f54934e8c434daf95cb0d7e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_transaction.py": "a9e8359daed1956e8c600a87158de7b286db22370090da846cfb4ceff9c7c4a2",
-      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
+      "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
     },
     "validation_state": "generated"
   },
@@ -27,6 +30,15 @@
       "succeeded",
       "degraded",
       "failed"
+    ],
+    "backup_location": [
+      "checking",
+      "available",
+      "ready",
+      "low_space",
+      "read_only",
+      "missing",
+      "unavailable"
     ],
     "checkpoint": [
       "not_created",
@@ -64,6 +76,10 @@
       "/api/lite/recovery/database/restore/previews/{preview_id}",
       "/api/lite/recovery/database/restore/{restore_id}",
       "/api/lite/recovery/details",
+      "/api/lite/recovery/locations",
+      "/api/lite/recovery/locations/discover",
+      "/api/lite/recovery/locations/forget",
+      "/api/lite/recovery/locations/select",
       "/api/lite/recovery/maintenance",
       "/api/lite/recovery/maintenance/checkpoint",
       "/api/lite/recovery/maintenance/retention",
@@ -84,6 +100,8 @@
       "restore run",
       "health result"
     ],
+    "location_ownership": "protected Server Phone only; opaque location IDs; browser raw paths rejected",
+    "location_picker": "Android system folder picker not implemented; backend-discovered candidates only",
     "projection_freshness": "prepared Recovery summary revision and stale metadata",
     "restore": [
       "queued",

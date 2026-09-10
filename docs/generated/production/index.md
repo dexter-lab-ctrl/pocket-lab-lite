@@ -7,7 +7,7 @@ audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 195fc9da224c0854ac598e2da7574750ce3b3748156668533076dd0595967bf8
+source_fingerprint: 9085e81a12fd1d6805333b96f1baac6009db2c4e4473d38484618ad81d0e0b82
 schema_revision: 1
 validation_status: generated
 ---

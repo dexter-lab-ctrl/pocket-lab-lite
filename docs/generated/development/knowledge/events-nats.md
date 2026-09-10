@@ -36,6 +36,9 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.lite.app.safety` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.app.update.check` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.backup.create` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.backup.location.discover` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.backup.location.forget` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.backup.location.select` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.backup.verify` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.catalog.install` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.database.backup` | lite | — | — | incomplete | incomplete | incomplete |
@@ -130,6 +133,9 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.lite.app.{event_prefix}.started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.app.{event_prefix}.updated` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.backup.failed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.backup.location.{event_prefix}_completed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.backup.location.{event_prefix}_failed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.backup.location.{event_prefix}_started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.backup.snapshot_created` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.backup.started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.backup.verified` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |

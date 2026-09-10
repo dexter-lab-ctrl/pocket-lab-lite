@@ -57,6 +57,7 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/recovery',
   '/api/lite/recovery/summary',
   '/api/lite/recovery/details',
+  '/api/lite/recovery/locations',
   RECOVERY_HISTORY_SNAPSHOT_ENDPOINT,
 ]);
 
@@ -88,6 +89,7 @@ export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/recovery': 20 * 60 * 1000,
   '/api/lite/recovery/summary': 20 * 60 * 1000,
   '/api/lite/recovery/details': 20 * 60 * 1000,
+  '/api/lite/recovery/locations': 10 * 60 * 1000,
   [RECOVERY_HISTORY_SNAPSHOT_ENDPOINT]: 20 * 60 * 1000,
 };
 

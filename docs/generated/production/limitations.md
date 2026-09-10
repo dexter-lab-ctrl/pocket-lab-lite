@@ -7,7 +7,7 @@ audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 195fc9da224c0854ac598e2da7574750ce3b3748156668533076dd0595967bf8
+source_fingerprint: 9085e81a12fd1d6805333b96f1baac6009db2c4e4473d38484618ad81d0e0b82
 schema_revision: 1
 validation_status: generated
 ---
@@ -27,4 +27,5 @@ Only source-implemented behavior is listed; live server-phone qualification rema
 - Temporary exceptions apply only to exact `catalog.install` app/device/human/revision scope, are revocable, and last at most 60 minutes.
 - The legacy generic secret store remains separate from the human Identity credential store and must not be treated as the owner password backend.
 - Android performance and live OPA/process claims require server-phone evidence; desktop/source validation alone is insufficient.
+- The Android system folder picker/SAF bridge is not implemented. Backup location selection is limited to backend-discovered, validated Server Phone candidates; live Android storage qualification remains separate.
 - Live browser and long-duration qualification require a running isolated stack and explicit user action.

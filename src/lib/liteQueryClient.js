@@ -42,6 +42,7 @@ export const liteQueryKeys = {
   recovery: () => ['lite', 'recovery'],
   recoverySummary: () => ['lite', 'recovery', 'summary'],
   recoveryDetails: () => ['lite', 'recovery', 'details'],
+  recoveryLocations: () => ['lite', 'recovery', 'locations'],
   recoveryHistory: () => ['lite', 'recovery', 'history'],
   recoveryHistoryPage: (limit = 10, cursor = '') => ['lite', 'recovery', 'history', Number(limit || 10), String(cursor || 'first')],
   recoveryOperations: (limit = 20, cursor = '') => ['lite', 'recovery', 'operations', Number(limit || 20), String(cursor || 'first')],
@@ -89,6 +90,7 @@ export const liteQueryPaths = {
   recovery: '/api/lite/recovery',
   recoverySummary: '/api/lite/recovery/summary',
   recoveryDetails: '/api/lite/recovery/details',
+  recoveryLocations: '/api/lite/recovery/locations',
   recoveryOperations: (limit = 20, cursor = '') => `/api/lite/recovery/operations?limit=${encodeURIComponent(limit || 20)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
 };
 
