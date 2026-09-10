@@ -689,6 +689,36 @@ Bounded projection scheduler state
 | Indexes | idx_projection_refresh_ready, sqlite_autoindex_projection_refresh_state_1 |
 | Confidence | source-derived |
 
+## `recovery_backup_location_events`
+
+Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | recovery |
+| Owner | not a prepared projection |
+| Writer | Recovery services and worker completion handlers |
+| Readers | /api/lite/recovery, /api/lite/recovery/details |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_recovery_backup_location_events_location, idx_recovery_backup_location_events_time |
+| Confidence | inferred |
+
+## `recovery_backup_locations`
+
+Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | recovery |
+| Owner | not a prepared projection |
+| Writer | Recovery services and worker completion handlers |
+| Readers | /api/lite/recovery, /api/lite/recovery/details |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_recovery_backup_locations_selected, idx_recovery_backup_locations_default, sqlite_autoindex_recovery_backup_locations_1 |
+| Confidence | inferred |
+
 ## `recovery_code_batches`
 
 Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.

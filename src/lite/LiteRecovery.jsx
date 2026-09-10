@@ -119,6 +119,13 @@ export default function RecoveryScreen() {
     select: selectRecoveryScreenView,
     snapshotSelect: selectRecoveryScreenView,
   });
+  const {
+    data: recoveryLocationsData,
+    refresh: reloadRecoveryLocations,
+  } = useLiteResource(liteApi.recoveryLocations, [], {
+    staleTime: 15_000,
+    snapshotSelect: (payload) => payload || {},
+  });
 
   const {
     data: databaseProtectionData,
@@ -139,10 +146,14 @@ export default function RecoveryScreen() {
   const latestBackupVerified = latestBackup?.verification_status === 'verified';
   const latestPreview = mergeOptional(details?.latest_restore_preview, data?.latest_restore_preview);
   const latestPreviewReady = latestPreview?.status === 'ready';
+  const backupLocations = recoveryLocationsData || details?.backup_locations || data?.backup_locations || {};
   const selectedRestorePoint = selectedBackup || latestBackup;
-  const selectedRestorePreview = selectedBackup && selectedBackup.backup_id !== latestBackup?.backup_id ? null : latestPreview;
+  const selectedRestorePreview = latestPreview && selectedRestorePoint?.backup_id === latestPreview?.backup_id ? latestPreview : null;
   const selectedBackupVerified = selectedRestorePoint?.verification_status === 'verified';
   const selectedPreviewReady = selectedRestorePreview?.status === 'ready';
+  const selectedBackupLocation = selectedRestorePoint?.location || selectedRestorePreview?.location || null;
+  const selectedBackupLocationReady = !selectedBackupLocation
+    || (selectedBackupLocation.available !== false && !['missing', 'read_only', 'low_space', 'unavailable'].includes(String(selectedBackupLocation.status || '').toLowerCase()));
   const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
   const checkpoint = mergeOptional(details?.pre_restore_checkpoint, data?.pre_restore_checkpoint);
   const serviceRestart = details?.last_restore?.service_restart || {};
@@ -378,6 +389,48 @@ export default function RecoveryScreen() {
     });
   }
 
+  async function discoverRecoveryLocation(candidateId) {
+    if (!candidateId) return;
+    await recoveryActions.runAction({
+      actionId: 'discover_recovery_location',
+      busyKey: `location-discover:${candidateId}`,
+      blocked: recoveryWriteBlocked,
+      blockedMessage: recoveryWriteBlockedReason,
+      execute: () => liteApi.discoverRecoveryLocation(candidateId),
+      successHaptic: 'success',
+      failureHaptic: 'warning',
+    });
+    reloadRecoveryLocations?.();
+  }
+
+  async function selectRecoveryLocation(locationId) {
+    if (!locationId) return;
+    await recoveryActions.runAction({
+      actionId: 'select_recovery_location',
+      busyKey: `location-select:${locationId}`,
+      blocked: recoveryWriteBlocked,
+      blockedMessage: recoveryWriteBlockedReason,
+      execute: () => liteApi.selectRecoveryLocation(locationId),
+      acceptedHaptic: 'accepted',
+      failureHaptic: 'warning',
+    });
+    reloadRecoveryLocations?.();
+  }
+
+  async function forgetRecoveryLocation(locationId) {
+    if (!locationId) return;
+    await recoveryActions.runAction({
+      actionId: 'forget_recovery_location',
+      busyKey: `location-forget:${locationId}`,
+      blocked: recoveryWriteBlocked,
+      blockedMessage: recoveryWriteBlockedReason,
+      execute: () => liteApi.forgetRecoveryLocation(locationId),
+      acceptedHaptic: 'accepted',
+      failureHaptic: 'warning',
+    });
+    reloadRecoveryLocations?.();
+  }
+
   async function verifyDatabaseBackup() {
     if (!latestDatabaseBackup?.backup_id) return;
     await recoveryActions.runAction({
@@ -478,7 +531,7 @@ export default function RecoveryScreen() {
   }
 
   function restoreLatestBackup() {
-    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id) return;
+    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id || !selectedBackupLocationReady) return;
     const flowCheck = recoveryFlow.requestRestore({
       verified: selectedBackupVerified,
       previewReady: selectedPreviewReady,
@@ -547,10 +600,11 @@ export default function RecoveryScreen() {
     const liteConfirmationInvalid = restoreConfirmation === 'lite' && (
       recoveryFlow.writeBlocked
       || recoveryFlow.value !== 'restoreConfirmationRequired'
-      || !latestBackupVerified
-      || !latestPreviewReady
-      || !latestBackup?.backup_id
-      || !latestPreview?.preview_id
+      || !selectedBackupVerified
+      || !selectedPreviewReady
+      || !selectedBackupLocationReady
+      || !selectedRestorePoint?.backup_id
+      || !selectedRestorePreview?.preview_id
     );
     const databaseConfirmationInvalid = restoreConfirmation === 'database' && (
       databaseWriteBlocked
@@ -572,6 +626,11 @@ export default function RecoveryScreen() {
     latestDatabasePreview?.preview_id,
     latestPreview?.preview_id,
     latestPreviewReady,
+    selectedBackupLocationReady,
+    selectedBackupVerified,
+    selectedPreviewReady,
+    selectedRestorePoint?.backup_id,
+    selectedRestorePreview?.preview_id,
     recoveryFlow,
     restoreConfirmation,
     setRestoreConfirmation,
@@ -770,6 +829,7 @@ export default function RecoveryScreen() {
             appBackups={appBackups}
             lifecycleByApp={lifecycleByApp}
             backupTargets={backupTargets}
+            backupLocations={backupLocations}
             protectedItems={protectedItems}
             excludedItems={excludedItems}
             busy={busy}
@@ -784,6 +844,9 @@ export default function RecoveryScreen() {
             onOpenEvidence={() => setEvidenceOpen(true)}
             selectedBackupId={selectedRestorePoint?.backup_id || ''}
             onSelectBackup={setSelectedBackup}
+            onDiscoverLocation={discoverRecoveryLocation}
+            onSelectLocation={selectRecoveryLocation}
+            onForgetLocation={forgetRecoveryLocation}
             detailsLoading={detailsLoading && !detailsData}
             detailsError={detailsError}
             onRetryDetails={refreshDetails}
@@ -865,8 +928,9 @@ export default function RecoveryScreen() {
         <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading restore confirmation…</div>}>
           <RecoveryConfirmSheetLazy
             kind={restoreConfirmation || 'lite'}
-            backup={restoreConfirmation === 'database' ? latestDatabaseBackup : latestBackup}
-            preview={restoreConfirmation === 'database' ? latestDatabasePreview : latestPreview}
+            backup={restoreConfirmation === 'database' ? latestDatabaseBackup : selectedRestorePoint}
+            location={restoreConfirmation === 'database' ? null : selectedBackupLocation}
+            preview={restoreConfirmation === 'database' ? latestDatabasePreview : selectedRestorePreview}
             busy={busy === 'restore' || busy === 'database-restore'}
             onCancel={cancelRestoreConfirmation}
             onConfirm={restoreConfirmation === 'database' ? confirmDatabaseRestore : confirmRestoreLatestBackup}

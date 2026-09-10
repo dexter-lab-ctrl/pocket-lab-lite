@@ -553,6 +553,62 @@
           "src/lite/LiteRecovery.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.recoveryLocations",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations",
+        "source_module": "src/lite/LiteRecovery.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRecovery.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.discoverRecoveryLocation",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations/discover",
+        "source_module": "src/lite/LiteRecovery.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRecovery.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.forgetRecoveryLocation",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations/forget",
+        "source_module": "src/lite/LiteRecovery.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRecovery.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.selectRecoveryLocation",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations/select",
+        "source_module": "src/lite/LiteRecovery.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRecovery.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "POST",
         "mocked": false,
         "owner": "liteApi.restoreBackup",
@@ -1766,6 +1822,58 @@
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
+        "route": "/api/lite/recovery/locations",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations/discover",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations/forget",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/recovery/locations/select",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
         "route": "/api/lite/recovery/receipts/:backupId",
         "source_module": "src/mocks/handlers.js",
         "usage": "mock"
@@ -2859,7 +2967,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "7c9b41445bdd67d17bb7f8cdaf2624c0ec35658c6b2dddc75ffd30a65f752dd8",
+    "aggregate_fingerprint": "d8d64fb9748068b6b69252f3f1477d0a48a73b84c8e2c083c641ea8e776dfb56",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2869,11 +2977,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
-      "contracts/metadata/documentation-platform.json": "a3e0298f5c0729d928b8afd542822860e74eca48e7b99a3c0e3c39fea8f676b8",
+      "contracts/generated/lite-openapi.json": "9aaf78e327569a667b09bb41c17fd48f3fcef0cc09f572b64f16690214fae6f9",
+      "contracts/metadata/documentation-platform.json": "0cf70bc3b615ca28541bb8926f73331417870e576aaeb8fbdf6420225f8453d6",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
-      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353",
-      "src/lib/liteApi.js": "cef8ecf7027611150c3f1bb20ddbf9513262fb4821a4aa5b93e233841000f553",
+      "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1",
+      "src/lib/liteApi.js": "cf1a84bfef1cd3de108be00fe8ec5874b7ece405e2637f9cf274a6438f836b6e",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
       "src/lite/LiteApp.jsx": "3979db90fbd79f2222c2579c9261808270eba437a8338328f49ca679ec08a832",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
@@ -2892,7 +3000,7 @@
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
       "src/lite/LitePrimitives.stories.jsx": "7c5e2879ea4785426ba23b45f820bde10ad64955d2ad5a4ad2e85ef3ff6c22e9",
-      "src/lite/LiteRecovery.jsx": "91cfd9203aea8f1353f6eaf8526d810db0840eaf03a3b5b2f97acb59a67b7f1f",
+      "src/lite/LiteRecovery.jsx": "554d174424577ba860a4b6e1f1c62cc0d5a8dfda6f6a5c31d9d915a82c09ef44",
       "src/lite/LiteRecovery.stories.jsx": "c52888ba8f51947de64807d83c320488b64e23375fbe3abf9bc909fe3b0a71c6",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
@@ -2907,7 +3015,7 @@
       "src/lite/LiteToastHost.jsx": "956b9a1acd325db430d4c7c790240f3a759c64c7d66cba6e3ae6d7a2e97ac5dd",
       "src/lite/LiteUi.jsx": "fa400a7f1abf6ac224b13dcb6266c0d89bf210a9e5056bbf83dec641ccf90882",
       "src/lite/LiteUi.test.jsx": "093d6ff249215181da5956756c2d059d78f57339c2ccfd2b96c1b2a4f09d526d",
-      "src/mocks/handlers.js": "effffc215f6eb5a80452b84fd1115634065c319854d4fea8b6b4262164bff2a7"
+      "src/mocks/handlers.js": "eddca18ed93e1826399c741633b0fb6d64104d34455f5736487564af0a4b91c8"
     },
     "validation_state": "generated"
   }

@@ -169,6 +169,9 @@
         "subject:pocketlab.commands.lite.app.safety",
         "subject:pocketlab.commands.lite.app.update.check",
         "subject:pocketlab.commands.lite.backup.create",
+        "subject:pocketlab.commands.lite.backup.location.discover",
+        "subject:pocketlab.commands.lite.backup.location.forget",
+        "subject:pocketlab.commands.lite.backup.location.select",
         "subject:pocketlab.commands.lite.backup.verify",
         "subject:pocketlab.commands.lite.catalog.install",
         "subject:pocketlab.commands.lite.database.backup",
@@ -263,6 +266,9 @@
         "subject:pocketlab.events.lite.app.{event_prefix}.started",
         "subject:pocketlab.events.lite.app.{event_prefix}.updated",
         "subject:pocketlab.events.lite.backup.failed",
+        "subject:pocketlab.events.lite.backup.location.{event_prefix}_completed",
+        "subject:pocketlab.events.lite.backup.location.{event_prefix}_failed",
+        "subject:pocketlab.events.lite.backup.location.{event_prefix}_started",
         "subject:pocketlab.events.lite.backup.snapshot_created",
         "subject:pocketlab.events.lite.backup.started",
         "subject:pocketlab.events.lite.backup.verified",
@@ -428,6 +434,7 @@
         "api:get:/api/lite/recovery/database/restore/previews/{preview_id}",
         "api:get:/api/lite/recovery/database/restore/{restore_id}",
         "api:get:/api/lite/recovery/details",
+        "api:get:/api/lite/recovery/locations",
         "api:get:/api/lite/recovery/maintenance",
         "api:get:/api/lite/recovery/operations",
         "api:get:/api/lite/recovery/receipts/{backup_id}",
@@ -528,6 +535,9 @@
         "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
         "api:post:/api/lite/recovery/database/backups/{backup_id}/restore",
         "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+        "api:post:/api/lite/recovery/locations/discover",
+        "api:post:/api/lite/recovery/locations/forget",
+        "api:post:/api/lite/recovery/locations/select",
         "api:post:/api/lite/recovery/maintenance/checkpoint",
         "api:post:/api/lite/recovery/maintenance/retention",
         "api:post:/api/lite/recovery/restore",
@@ -664,6 +674,8 @@
         "table:policy_temporary_exceptions",
         "table:projection_dirty_signals",
         "table:projection_refresh_state",
+        "table:recovery_backup_location_events",
+        "table:recovery_backup_locations",
         "table:recovery_code_batches",
         "table:recovery_codes",
         "table:recovery_current_state",
@@ -785,6 +797,7 @@
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
+        "reason:location_not_registered",
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
@@ -858,6 +871,7 @@
         "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
+        "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
         "reason:test_bypass_explicit",
@@ -1046,6 +1060,7 @@
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
+        "reason:location_not_registered",
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
@@ -1119,6 +1134,7 @@
         "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
+        "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
         "reason:test_bypass_explicit",
@@ -1653,6 +1669,13 @@
     },
     {
       "entities": [
+        "table:recovery_backup_location_events",
+        "table:recovery_backup_locations"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+    },
+    {
+      "entities": [
         "subject:pocketlab.events.api.started",
         "subject:pocketlab.events.api.stopped"
       ],
@@ -1704,6 +1727,9 @@
         "component:lite-api",
         "journey:change-password",
         "subject:pocketlab.commands.lite.backup.create",
+        "subject:pocketlab.commands.lite.backup.location.discover",
+        "subject:pocketlab.commands.lite.backup.location.forget",
+        "subject:pocketlab.commands.lite.backup.location.select",
         "subject:pocketlab.commands.lite.backup.verify",
         "subject:pocketlab.commands.lite.database.backup",
         "subject:pocketlab.commands.lite.database.backup.verify",
@@ -1801,6 +1827,9 @@
         "subject:pocketlab.commands.lite.app.safety",
         "subject:pocketlab.commands.lite.app.update.check",
         "subject:pocketlab.commands.lite.backup.create",
+        "subject:pocketlab.commands.lite.backup.location.discover",
+        "subject:pocketlab.commands.lite.backup.location.forget",
+        "subject:pocketlab.commands.lite.backup.location.select",
         "subject:pocketlab.commands.lite.backup.verify",
         "subject:pocketlab.commands.lite.catalog.install",
         "subject:pocketlab.commands.lite.database.backup",
@@ -1848,6 +1877,9 @@
         "subject:pocketlab.events.lite.app.{event_prefix}.started",
         "subject:pocketlab.events.lite.app.{event_prefix}.updated",
         "subject:pocketlab.events.lite.backup.failed",
+        "subject:pocketlab.events.lite.backup.location.{event_prefix}_completed",
+        "subject:pocketlab.events.lite.backup.location.{event_prefix}_failed",
+        "subject:pocketlab.events.lite.backup.location.{event_prefix}_started",
         "subject:pocketlab.events.lite.backup.snapshot_created",
         "subject:pocketlab.events.lite.backup.started",
         "subject:pocketlab.events.lite.backup.verified",
@@ -2574,6 +2606,12 @@
         "test:tests/backend/test_lite_app_runtime_reconciliation.py"
       ],
       "source": "tests/backend/test_lite_app_runtime_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_backup_locations.py"
+      ],
+      "source": "tests/backend/test_lite_backup_locations.py"
     },
     {
       "entities": [
@@ -3758,6 +3796,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

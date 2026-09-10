@@ -694,9 +694,12 @@ def recovery_outputs() -> dict[Path, str]:
     endpoints = sorted(path for path in schema.get("paths", {}) if "/recovery" in path)
     source_files = [
         ROOT / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py",
+        ROOT / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py",
+        ROOT / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_manifest.py",
         ROOT / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py",
         ROOT / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_transaction.py",
         ROOT / "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
+        ROOT / "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql",
         OPENAPI_PATH,
     ]
     lifecycle = {
@@ -705,12 +708,15 @@ def recovery_outputs() -> dict[Path, str]:
         "restore_preview": ["not_ready","running","ready","blocked","failed"],
         "checkpoint": ["not_created","creating","created","failed"],
         "restore": ["queued","running","validating","succeeded","rolled_back","failed"],
+        "backup_location": ["checking","available","ready","low_space","read_only","missing","unavailable"],
         "confirmation_required": ["restore_latest","destructive replacement"],
         "api_ownership": "FastAPI validates and publishes commands",
         "worker_ownership": "workers own backup, verification, checkpoint, restore, validation, and rollback",
         "endpoints": endpoints,
         "evidence": ["backup manifest","verification receipt","restore preview","checkpoint receipt","restore run","health result"],
         "projection_freshness": "prepared Recovery summary revision and stale metadata",
+        "location_ownership": "protected Server Phone only; opaque location IDs; browser raw paths rejected",
+        "location_picker": "Android system folder picker not implemented; backend-discovered candidates only",
     }
     contract = json_envelope("recovery_contract", lifecycle, source_files)
     md = frontmatter("Recovery contract", "Authoritative source-derived Backup and Restore lifecycle and ownership contract.", source_files) + "# Recovery contract\n\n" + md_table(

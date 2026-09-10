@@ -793,6 +793,88 @@ async def handle_lite_backup_verify(command: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+async def _handle_lite_backup_location_command(
+    command: Dict[str, Any],
+    *,
+    operation: str,
+    event_prefix: str,
+    executor,
+) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    location_id = str(command.get("location_id") or command.get("candidate_id") or "")[:120]
+    await _publish(
+        f"pocketlab.events.lite.backup.location.{event_prefix}_started",
+        f"lite.backup.location.{event_prefix}_started",
+        {"command_id": command_id, "location_id": location_id, **_audit_actor(command)},
+        trace_id=command_id,
+    )
+    from . import lite_backup_locations
+
+    try:
+        result = await asyncio.to_thread(executor, location_id, actor=_audit_actor(command))
+    except Exception as exc:
+        await _publish(
+            f"pocketlab.events.lite.backup.location.{event_prefix}_failed",
+            f"lite.backup.location.{event_prefix}_failed",
+            {"command_id": command_id, "location_id": location_id, "error_type": type(exc).__name__, "sanitized": True, **_audit_actor(command)},
+            trace_id=command_id,
+        )
+        raise
+    selected = result.get("selected_location") if isinstance(result, dict) else None
+    await _publish(
+        f"pocketlab.events.lite.backup.location.{event_prefix}_completed",
+        f"lite.backup.location.{event_prefix}_completed",
+        {
+            "command_id": command_id,
+            "location_id": location_id,
+            "selected_location_id": (selected or {}).get("location_id") if isinstance(selected, dict) else result.get("selected_location_id") if isinstance(result, dict) else None,
+            "status": result.get("status") if isinstance(result, dict) else "completed",
+            **_audit_actor(command),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        f"pocketlab.audit.lite.backup.location.{event_prefix}",
+        f"lite.backup.location.{event_prefix}",
+        {"command_id": command_id, "location_id": location_id, "status": "completed", **_audit_actor(command)},
+        trace_id=command_id,
+    )
+    return {"status": "succeeded", "command_id": command_id, "location_id": location_id, "locations": result}
+
+
+async def handle_lite_backup_location_discover(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_backup_locations
+
+    return await _handle_lite_backup_location_command(
+        command,
+        operation="discover",
+        event_prefix="discovered",
+        executor=lite_backup_locations.discover_candidate,
+    )
+
+
+async def handle_lite_backup_location_select(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_backup_locations
+
+    return await _handle_lite_backup_location_command(
+        command,
+        operation="select",
+        event_prefix="selected",
+        executor=lite_backup_locations.select_location,
+    )
+
+
+async def handle_lite_backup_location_forget(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_backup_locations
+
+    return await _handle_lite_backup_location_command(
+        command,
+        operation="forget",
+        event_prefix="forgotten",
+        executor=lite_backup_locations.forget_location,
+    )
+
+
 async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     backup_id = str(command.get("backup_id") or "latest")
@@ -1465,6 +1547,9 @@ HANDLERS = {
     "pocketlab.commands.vault.rotate": handle_vault_rotate,
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
+    "pocketlab.commands.lite.backup.location.discover": handle_lite_backup_location_discover,
+    "pocketlab.commands.lite.backup.location.select": handle_lite_backup_location_select,
+    "pocketlab.commands.lite.backup.location.forget": handle_lite_backup_location_forget,
     "pocketlab.commands.lite.app.backup.create": handle_lite_app_backup_create,
     "pocketlab.commands.lite.app.restore.preview": handle_lite_app_restore_preview,
     "pocketlab.commands.lite.app.update.check": handle_lite_app_update_check,

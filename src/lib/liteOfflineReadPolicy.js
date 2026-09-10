@@ -22,6 +22,7 @@ const SAFE_RUNTIME_READ_PATHS = Object.freeze([
   /^\/api\/lite\/security\/profiles\/(?:quick|full|app)$/,
   /^\/api\/lite\/security\/history$/,
   /^\/api\/lite\/recovery\/(?:summary|backups)$/,
+  /^\/api\/lite\/recovery\/locations$/,
 ]);
 
 const PWA_NAVIGATION_DENYLIST = /^\/(?:api|terminal|apps|gitea|docs)(?:\/|$)|^\/openapi\.json$/;

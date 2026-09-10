@@ -1576,6 +1576,70 @@
             <column ascending="true" name="domain"/>
          </index>
       </table>
+      <table name="recovery_backup_location_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="location_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="location_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="recovery_backup_locations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'authenticated'" digits="0" id="8" name="actor_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="auth_method" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="10" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="recovery_backup_location_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_recovery_backup_location_events_location" unique="false">
+            <column ascending="true" name="location_id"/>
+            <column ascending="true" name="occurred_at"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_recovery_backup_location_events_time" unique="false">
+            <column ascending="true" name="occurred_at"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+      <table name="recovery_backup_locations" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="location_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="location_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="recovery_backup_location_events"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="root_path" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="canonical_root" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="repository_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="repository_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="is_default" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="is_selected" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="is_removable" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="is_forgotten" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'checking'" digits="0" id="11" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="free_bytes" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="capacity_bytes" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="15" name="repository_present" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="last_checked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="location_id" sequenceNumberInPK="1"/>
+         <index name="recovery_backup_locations_s_pk" unique="true">
+            <column ascending="true" name="location_id"/>
+         </index>
+         <index name="idx_recovery_backup_locations_default" unique="true">
+            <column ascending="true" name="is_default"/>
+         </index>
+         <index name="idx_recovery_backup_locations_selected" unique="true">
+            <column ascending="true" name="is_selected"/>
+         </index>
+         <index name="sqlite_autoindex_recovery_backup_locations_1" unique="true">
+            <column ascending="true" name="location_id"/>
+         </index>
+      </table>
       <table name="recovery_code_batches" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="batch_id" foreignKey="" implied="false" onDeleteCascade="true" table="recovery_codes"/>

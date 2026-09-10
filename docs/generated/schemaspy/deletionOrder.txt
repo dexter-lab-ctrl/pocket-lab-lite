@@ -34,6 +34,7 @@ security_profile_snapshots
 release_runtime_projection
 recovery_current_state
 recovery_codes
+recovery_backup_location_events
 lite_revision_events
 lite_installed_release_identity
 identity_audit_events
@@ -58,6 +59,7 @@ workflow_event_index
 app_current_state
 device_current_state
 human_identities
+recovery_backup_locations
 policy_decisions
 owner_claims
 device_recovery_history

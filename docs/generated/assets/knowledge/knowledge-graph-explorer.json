@@ -882,6 +882,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Recovery Locations",
+      "domain": "recovery",
+      "id": "api:get:/api/lite/recovery/locations",
+      "name": "GET /api/lite/recovery/locations",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Recovery Maintenance",
       "domain": "recovery",
       "id": "api:get:/api/lite/recovery/maintenance",
@@ -1975,6 +1986,39 @@
       "domain": "recovery",
       "id": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
       "name": "POST /api/lite/recovery/database/backups/{backup_id}/verify",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Discover Lite Recovery Location",
+      "domain": "recovery",
+      "id": "api:post:/api/lite/recovery/locations/discover",
+      "name": "POST /api/lite/recovery/locations/discover",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Forget Lite Recovery Location",
+      "domain": "recovery",
+      "id": "api:post:/api/lite/recovery/locations/forget",
+      "name": "POST /api/lite/recovery/locations/forget",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Select Lite Recovery Location",
+      "domain": "recovery",
+      "id": "api:post:/api/lite/recovery/locations/select",
+      "name": "POST /api/lite/recovery/locations/select",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -5097,6 +5141,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A restore point refers to a backup location that is not currently registered on the protected Server Phone.",
+      "domain": "recovery",
+      "id": "reason:location_not_registered",
+      "name": "location_not_registered",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Only metadata was evaluated.",
       "domain": "validation",
       "id": "reason:metadata_only",
@@ -5973,6 +6029,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A registered backup location cannot currently be reached or inspected safely.",
+      "domain": "recovery",
+      "id": "reason:storage_unavailable",
+      "name": "storage_unavailable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "The work request could not be admitted.",
       "domain": "system",
       "id": "reason:submit_failed",
@@ -6699,7 +6767,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1444"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1526"
       ],
       "type": "subject"
     },
@@ -6711,7 +6779,7 @@
       "name": "pocketlab.commands.drift.apply",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1451"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1533"
       ],
       "type": "subject"
     },
@@ -6723,7 +6791,7 @@
       "name": "pocketlab.commands.drift.approve",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1448"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1530"
       ],
       "type": "subject"
     },
@@ -6735,7 +6803,7 @@
       "name": "pocketlab.commands.drift.ignore",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1454"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1536"
       ],
       "type": "subject"
     },
@@ -6748,7 +6816,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:92",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1447"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1529"
       ],
       "type": "subject"
     },
@@ -6760,7 +6828,7 @@
       "name": "pocketlab.commands.drift.rescan",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1446"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1528"
       ],
       "type": "subject"
     },
@@ -6773,7 +6841,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:81",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1445"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1527"
       ],
       "type": "subject"
     },
@@ -6800,7 +6868,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:661",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1457",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1539",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
       ],
       "type": "subject"
@@ -6813,7 +6881,7 @@
       "name": "pocketlab.commands.fleet.save_tailscale_key",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1458"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1540"
       ],
       "type": "subject"
     },
@@ -6826,7 +6894,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py:74",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1461"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1543"
       ],
       "type": "subject"
     },
@@ -6838,7 +6906,7 @@
       "name": "pocketlab.commands.lite.app.backup.create",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1468",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1553",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:18"
       ],
       "type": "subject"
@@ -6863,7 +6931,7 @@
       "name": "pocketlab.commands.lite.app.media",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1471",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1556",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py:22"
       ],
       "type": "subject"
@@ -6876,7 +6944,7 @@
       "name": "pocketlab.commands.lite.app.repair",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1473",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1558",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:24"
       ],
       "type": "subject"
@@ -6889,7 +6957,7 @@
       "name": "pocketlab.commands.lite.app.restore.preview",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1469",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1554",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:19"
       ],
       "type": "subject"
@@ -6902,7 +6970,7 @@
       "name": "pocketlab.commands.lite.app.safety",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1472",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1557",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:23"
       ],
       "type": "subject"
@@ -6915,7 +6983,7 @@
       "name": "pocketlab.commands.lite.app.update.check",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1470",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1555",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py:19"
       ],
       "type": "subject"
@@ -6928,8 +6996,47 @@
       "name": "pocketlab.commands.lite.backup.create",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3793",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1467"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3920",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1549"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "lite command subject",
+      "domain": "lite",
+      "id": "subject:pocketlab.commands.lite.backup.location.discover",
+      "name": "pocketlab.commands.lite.backup.location.discover",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3537",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1550"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "lite command subject",
+      "domain": "lite",
+      "id": "subject:pocketlab.commands.lite.backup.location.forget",
+      "name": "pocketlab.commands.lite.backup.location.forget",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3567",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1552"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "lite command subject",
+      "domain": "lite",
+      "id": "subject:pocketlab.commands.lite.backup.location.select",
+      "name": "pocketlab.commands.lite.backup.location.select",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3550",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1551"
       ],
       "type": "subject"
     },
@@ -6941,8 +7048,8 @@
       "name": "pocketlab.commands.lite.backup.verify",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3879",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1474"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4007",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1559"
       ],
       "type": "subject"
     },
@@ -6954,7 +7061,7 @@
       "name": "pocketlab.commands.lite.catalog.install",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1443",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1525",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py:16"
       ],
       "type": "subject"
@@ -6967,8 +7074,8 @@
       "name": "pocketlab.commands.lite.database.backup",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3483",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1477"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3607",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1562"
       ],
       "type": "subject"
     },
@@ -6980,8 +7087,8 @@
       "name": "pocketlab.commands.lite.database.backup.verify",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3526",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1478"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3650",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1563"
       ],
       "type": "subject"
     },
@@ -6993,8 +7100,8 @@
       "name": "pocketlab.commands.lite.database.restore",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3584",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1480"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1565"
       ],
       "type": "subject"
     },
@@ -7006,8 +7113,8 @@
       "name": "pocketlab.commands.lite.database.restore.preview",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3544",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1479"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1564"
       ],
       "type": "subject"
     },
@@ -7030,8 +7137,8 @@
       "name": "pocketlab.commands.lite.maintenance.checkpoint",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3652",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1482"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3776",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1567"
       ],
       "type": "subject"
     },
@@ -7043,8 +7150,8 @@
       "name": "pocketlab.commands.lite.maintenance.retention",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3626",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1481"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3750",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1566"
       ],
       "type": "subject"
     },
@@ -7056,8 +7163,8 @@
       "name": "pocketlab.commands.lite.restore.apply",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4041",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1476"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4169",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1561"
       ],
       "type": "subject"
     },
@@ -7069,8 +7176,8 @@
       "name": "pocketlab.commands.lite.restore.preview",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3914",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1475"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4042",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1560"
       ],
       "type": "subject"
     },
@@ -7094,7 +7201,7 @@
       "name": "pocketlab.commands.lite.security.scan",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1463",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1545",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:526"
       ],
@@ -7217,7 +7324,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:53",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1460"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1542"
       ],
       "type": "subject"
     },
@@ -7230,7 +7337,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:42",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1459"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1541"
       ],
       "type": "subject"
     },
@@ -7290,7 +7397,7 @@
       "name": "pocketlab.commands.security.configure_opa",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1464"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1546"
       ],
       "type": "subject"
     },
@@ -7303,7 +7410,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:68",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1462"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1544"
       ],
       "type": "subject"
     },
@@ -7329,7 +7436,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1466"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1548"
       ],
       "type": "subject"
     },
@@ -7342,7 +7449,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1465"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1547"
       ],
       "type": "subject"
     },
@@ -7914,7 +8021,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:565",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:343"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:345"
       ],
       "type": "subject"
     },
@@ -7939,7 +8046,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:540",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:342"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:344"
       ],
       "type": "subject"
     },
@@ -7951,7 +8058,7 @@
       "name": "pocketlab.events.lite.app.media.completed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1217"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1299"
       ],
       "type": "subject"
     },
@@ -7963,7 +8070,7 @@
       "name": "pocketlab.events.lite.app.media.failed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1191"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1273"
       ],
       "type": "subject"
     },
@@ -7975,7 +8082,7 @@
       "name": "pocketlab.events.lite.app.media.started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1179"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1261"
       ],
       "type": "subject"
     },
@@ -7987,7 +8094,7 @@
       "name": "pocketlab.events.lite.app.media.updated",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1217"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1299"
       ],
       "type": "subject"
     },
@@ -8071,7 +8178,7 @@
       "name": "pocketlab.events.lite.app.{event_prefix}.completed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1158"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1240"
       ],
       "type": "subject"
     },
@@ -8083,7 +8190,7 @@
       "name": "pocketlab.events.lite.app.{event_prefix}.failed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1138"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1220"
       ],
       "type": "subject"
     },
@@ -8095,7 +8202,7 @@
       "name": "pocketlab.events.lite.app.{event_prefix}.started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1126"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1208"
       ],
       "type": "subject"
     },
@@ -8107,7 +8214,7 @@
       "name": "pocketlab.events.lite.app.{event_prefix}.updated",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1158"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1240"
       ],
       "type": "subject"
     },
@@ -8127,12 +8234,48 @@
       "confidence": "contract-derived",
       "description": "lite event subject",
       "domain": "lite",
+      "id": "subject:pocketlab.events.lite.backup.location.{event_prefix}_completed",
+      "name": "pocketlab.events.lite.backup.location.{event_prefix}_completed",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:825"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "lite event subject",
+      "domain": "lite",
+      "id": "subject:pocketlab.events.lite.backup.location.{event_prefix}_failed",
+      "name": "pocketlab.events.lite.backup.location.{event_prefix}_failed",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:817"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "lite event subject",
+      "domain": "lite",
+      "id": "subject:pocketlab.events.lite.backup.location.{event_prefix}_started",
+      "name": "pocketlab.events.lite.backup.location.{event_prefix}_started",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:806"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "lite event subject",
+      "domain": "lite",
       "id": "subject:pocketlab.events.lite.backup.snapshot_created",
       "name": "pocketlab.events.lite.backup.snapshot_created",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:724",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2244"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2288"
       ],
       "type": "subject"
     },
@@ -8145,7 +8288,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:700",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2243"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2287"
       ],
       "type": "subject"
     },
@@ -8230,7 +8373,7 @@
       "name": "pocketlab.events.lite.database.backup.started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1236"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1318"
       ],
       "type": "subject"
     },
@@ -8242,8 +8385,8 @@
       "name": "pocketlab.events.lite.database.backup.verified",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1245",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1278"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1327",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1360"
       ],
       "type": "subject"
     },
@@ -8255,7 +8398,7 @@
       "name": "pocketlab.events.lite.database.restore.preview_ready",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1295"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1377"
       ],
       "type": "subject"
     },
@@ -8267,7 +8410,7 @@
       "name": "pocketlab.events.lite.database.restore.started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1313"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1395"
       ],
       "type": "subject"
     },
@@ -8279,7 +8422,7 @@
       "name": "pocketlab.events.lite.database.restore.{event_suffix}",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1323"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1405"
       ],
       "type": "subject"
     },
@@ -8291,7 +8434,7 @@
       "name": "pocketlab.events.lite.database.restore.{rollback_status}",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1338"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1420"
       ],
       "type": "subject"
     },
@@ -8303,9 +8446,9 @@
       "name": "pocketlab.events.lite.restore.checkpoint_created",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:883",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1674",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1943"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:965",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1706",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1980"
       ],
       "type": "subject"
     },
@@ -8317,9 +8460,9 @@
       "name": "pocketlab.events.lite.restore.completed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:963",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1676",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1946"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1045",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1708",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1983"
       ],
       "type": "subject"
     },
@@ -8331,8 +8474,8 @@
       "name": "pocketlab.events.lite.restore.failed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:859",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:904"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:941",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:986"
       ],
       "type": "subject"
     },
@@ -8344,9 +8487,9 @@
       "name": "pocketlab.events.lite.restore.health_validated",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:951",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1675",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1945"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1033",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1707",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1982"
       ],
       "type": "subject"
     },
@@ -8358,7 +8501,7 @@
       "name": "pocketlab.events.lite.restore.preview_created",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:822"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:904"
       ],
       "type": "subject"
     },
@@ -8370,7 +8513,7 @@
       "name": "pocketlab.events.lite.restore.preview_failed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:815"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:897"
       ],
       "type": "subject"
     },
@@ -8382,7 +8525,7 @@
       "name": "pocketlab.events.lite.restore.preview_started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:800"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:882"
       ],
       "type": "subject"
     },
@@ -8394,8 +8537,8 @@
       "name": "pocketlab.events.lite.restore.service_restart_checked",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:939",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1944"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1021",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1981"
       ],
       "type": "subject"
     },
@@ -8407,9 +8550,9 @@
       "name": "pocketlab.events.lite.restore.started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:848",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1673",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1942"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:930",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1705",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1979"
       ],
       "type": "subject"
     },
@@ -8421,7 +8564,7 @@
       "name": "pocketlab.events.lite.security.critical_found",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1073"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1155"
       ],
       "type": "subject"
     },
@@ -8433,7 +8576,7 @@
       "name": "pocketlab.events.lite.security.scan.completed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1098"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1180"
       ],
       "type": "subject"
     },
@@ -8445,7 +8588,7 @@
       "name": "pocketlab.events.lite.security.scan.started",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:999"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1081"
       ],
       "type": "subject"
     },
@@ -8457,7 +8600,7 @@
       "name": "pocketlab.events.lite.security.tool_missing",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1051"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1133"
       ],
       "type": "subject"
     },
@@ -8469,7 +8612,7 @@
       "name": "pocketlab.events.lite.security.{tool}.completed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1058"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1140"
       ],
       "type": "subject"
     },
@@ -9783,6 +9926,30 @@
       "confidence": "inferred",
       "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "recovery",
+      "id": "table:recovery_backup_location_events",
+      "name": "recovery_backup_location_events",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:recovery_backup_locations",
+      "name": "recovery_backup_locations",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
       "id": "table:recovery_code_batches",
       "name": "recovery_code_batches",
       "source_refs": [
@@ -10288,6 +10455,17 @@
       "name": "tests/backend/test_lite_app_runtime_reconciliation.py",
       "source_refs": [
         "tests/backend/test_lite_app_runtime_reconciliation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_backup_locations.py",
+      "name": "tests/backend/test_lite_backup_locations.py",
+      "source_refs": [
+        "tests/backend/test_lite_backup_locations.py"
       ],
       "type": "test"
     },
@@ -13834,7 +14012,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3526"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3650"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -17469,6 +17647,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:1552a78512ee28d9",
+      "source": "domain:recovery",
+      "target": "reason:location_not_registered",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:15602b117ead66e0",
@@ -18937,6 +19129,20 @@
       "source": "domain:security",
       "target": "journey:security-review",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "id": "rel:1d6af8a3ddfebe81",
+      "source": "ui:literecovery",
+      "target": "api:post:/api/lite/recovery/locations/discover",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -20770,6 +20976,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:27f8f9ca0c038739",
+      "source": "api:post:/api/lite/recovery/locations/forget",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:28016a246fa6f271",
@@ -20943,6 +21163,20 @@
       "id": "rel:28dd1ef3bc4d3630",
       "source": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:28e84b9e7511573e",
+      "source": "api:post:/api/lite/recovery/locations/discover",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -21555,6 +21789,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2c973e00b9976817",
+      "source": "domain:recovery",
+      "target": "api:post:/api/lite/recovery/locations/select",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:2c9fd76769ca3b0d",
@@ -22103,6 +22351,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:2ffd99b23f019637",
+      "source": "api:get:/api/lite/recovery/details",
+      "target": "table:recovery_backup_location_events",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:3004962585c3af64",
@@ -22179,6 +22441,20 @@
       "source": "domain:enterprise",
       "target": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:30cd046d80e97957",
+      "source": "reason:location_not_registered",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -25338,6 +25614,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:40ca9a7e8acac2c2",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.events.lite.backup.location.{event_prefix}_failed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:40d8116025ef4ef8",
@@ -26438,6 +26728,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "id": "rel:467c75822f291efd",
+      "source": "ui:literecovery",
+      "target": "api:get:/api/lite/recovery/locations",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteApp.jsx"
       ],
       "id": "rel:468b3d1de51227ae",
@@ -26767,6 +27071,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:4868a5c310f5493d",
+      "source": "domain:recovery",
+      "target": "table:recovery_backup_locations",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:487f9a46c78f2dac",
@@ -26893,7 +27211,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3879"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4007"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -27243,7 +27561,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3793"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3920"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -27271,7 +27589,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1942"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1979"
       ],
       "id": "rel:4b2e7ea09d783c4e",
       "source": "component:backup-engine",
@@ -27607,6 +27925,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:4d3a5e8ccab13a82",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.events.lite.backup.location.{event_prefix}_started",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:4d3bd8a39eb5d67b",
@@ -27627,6 +27959,20 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.security.scan.started",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "id": "rel:4d9d49115727663a",
+      "source": "ui:literecovery",
+      "target": "api:post:/api/lite/recovery/locations/forget",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -28418,6 +28764,20 @@
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/rules/source-sync/status",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "id": "rel:520562f962279a42",
+      "source": "ui:literecovery",
+      "target": "api:post:/api/lite/recovery/locations/select",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -29747,6 +30107,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:5a09af13764f35c6",
+      "source": "api:post:/api/lite/recovery/locations/discover",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:5a1372dee3671c3d",
@@ -30804,6 +31178,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:607a2b761cf562ce",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.commands.lite.backup.location.discover",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:608831b926b1afab",
@@ -31070,6 +31458,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:627a626bca3f2eae",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.commands.lite.backup.location.forget",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:628c9ce62d47a0c7",
@@ -31298,7 +31700,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1943"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1980"
       ],
       "id": "rel:63ef7457476a5e43",
       "source": "component:backup-engine",
@@ -33401,6 +33803,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:6f415942fcdcec93",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.events.lite.backup.location.{event_prefix}_completed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:6f68f455aa90168a",
@@ -34087,6 +34503,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:7290b9bcf23f9f59",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.commands.lite.backup.location.select",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:729743dab1229537",
@@ -34219,6 +34649,20 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:7351b759dfc0abea",
+      "source": "domain:recovery",
+      "target": "api:post:/api/lite/recovery/locations/discover",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -34899,7 +35343,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2243"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2287"
       ],
       "id": "rel:77432012a93e196b",
       "source": "component:backup-engine",
@@ -37626,6 +38070,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:87405922f246e533",
+      "source": "api:get:/api/lite/recovery/details",
+      "target": "table:recovery_backup_locations",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:8740c23793830a80",
@@ -38767,6 +39225,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:8cb8cbf6bd15436e",
+      "source": "api:get:/api/lite/recovery",
+      "target": "table:recovery_backup_locations",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_f12_f14_stability_contract.py"
       ],
       "id": "rel:8cc60471f5a18a27",
@@ -39523,6 +39995,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:91cd317458c69737",
+      "source": "domain:recovery",
+      "target": "table:recovery_backup_location_events",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:91e99ae057529f3e",
@@ -40251,6 +40737,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3567"
+      ],
+      "id": "rel:9622c3144190ef74",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.commands.lite.backup.location.forget",
+      "type": "related_to"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:96305742fcfdee49",
@@ -40788,7 +41288,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3584"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -40862,6 +41362,20 @@
       ],
       "id": "rel:9a2d6098705fe21b",
       "source": "reason:session_not_found",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:9a3ce6aae86b83bb",
+      "source": "reason:storage_unavailable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
@@ -42066,6 +42580,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:a14db33f500bef35",
+      "source": "api:post:/api/lite/recovery/locations/select",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:a14eb5a8b8b154b3",
@@ -42253,6 +42781,20 @@
       "id": "rel:a274cefee6a62218",
       "source": "api:get:/api/lite/apps/{app_id}/evidence",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a29526293fa37b35",
+      "source": "reason:storage_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -42702,6 +43244,20 @@
       "id": "rel:a458bf316a0c2e48",
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/rules/decisions/{decision_id}",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a492411fbde644d1",
+      "source": "domain:recovery",
+      "target": "reason:storage_unavailable",
       "type": "owns"
     },
     {
@@ -43178,7 +43734,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4041"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4169"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -44504,7 +45060,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2244"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2288"
       ],
       "id": "rel:ae6bb6a19c0eac57",
       "source": "component:backup-engine",
@@ -44910,7 +45466,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3483"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3607"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
@@ -46195,6 +46751,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:b96395d6de776b65",
+      "source": "domain:recovery",
+      "target": "api:get:/api/lite/recovery/locations",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/parity/parity-model.json"
       ],
       "id": "rel:b9672a1fc047d339",
@@ -46967,7 +47537,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3626"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3750"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -47669,7 +48239,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3544"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -50244,6 +50814,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3537"
+      ],
+      "id": "rel:d0ac21c0cffa28c9",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.commands.lite.backup.location.discover",
+      "type": "related_to"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
         "src/lite/LiteIdentity.jsx"
@@ -50654,7 +51238,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1945"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1982"
       ],
       "id": "rel:d3335e1343264579",
       "source": "component:backup-engine",
@@ -50758,6 +51342,20 @@
       "source": "reason:webauthn_origin_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:d3e1295dbe9a9cf3",
+      "source": "domain:recovery",
+      "target": "api:post:/api/lite/recovery/locations/forget",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -50870,6 +51468,20 @@
       "source": "domain:rules",
       "target": "reason:policy_source_contract_missing",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:d4c45411b2f11db9",
+      "source": "api:post:/api/lite/recovery/locations/select",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -51440,7 +52052,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3914"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4042"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -52811,6 +53423,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:de62b8c86441d45e",
+      "source": "api:get:/api/lite/recovery/locations",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:de79710492622328",
@@ -52931,6 +53557,20 @@
       "source": "journey:documentation-generation",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:df65b492c90476f6",
+      "source": "api:get:/api/lite/recovery",
+      "target": "table:recovery_backup_location_events",
+      "type": "reads"
     },
     {
       "derivation": {
@@ -53897,6 +54537,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:e55e9f08707bf505",
+      "source": "api:get:/api/lite/recovery/locations",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:e57255e08dbe6e41",
@@ -53917,6 +54571,20 @@
       "source": "domain:release",
       "target": "api:post:/api/lite/release/check",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e57aef64f19f0fed",
+      "source": "reason:storage_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -56538,6 +57206,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3550"
+      ],
+      "id": "rel:f38477f0420ebc7b",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.commands.lite.backup.location.select",
+      "type": "related_to"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:f3ad6c3505eb19e4",
@@ -57189,7 +57871,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1946"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1983"
       ],
       "id": "rel:f7355da6626b1e82",
       "source": "component:backup-engine",
@@ -57763,6 +58445,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:f9f66c4ff52157b4",
+      "source": "api:post:/api/lite/recovery/locations/forget",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
@@ -57829,6 +58525,20 @@
       "source": "domain:runbook",
       "target": "subject:pocketlab.events.runbook.rejected",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:fa5be5477e1eedbe",
+      "source": "reason:location_not_registered",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -58080,7 +58790,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1944"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1981"
       ],
       "id": "rel:fc0ed38063fb718d",
       "source": "component:backup-engine",
@@ -58100,6 +58810,20 @@
       "source": "journey:restore-preview",
       "target": "api:get:/api/lite/recovery/summary",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:fc4a65e1acaa025b",
+      "source": "reason:location_not_registered",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -58304,7 +59028,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3652"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3776"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",

@@ -90,6 +90,7 @@ confidence: generated
 | legacy_secret_rotation_retired | identity | info | no | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | Review the owning evidence and operator guidance before another action. |
 | legacy_telemetry_value | devices | info | no | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | Review the owning evidence and operator guidance before another action. |
 | local_owner_required | identity | warning | yes | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | Correct the prerequisite and retry through the owning backend workflow. |
+| location_not_registered | recovery | warning | yes | A restore point refers to a backup location that is not currently registered on the protected Server Phone. | Correct the prerequisite and retry through the owning backend workflow. |
 | metadata_only | validation | warning | yes | Only metadata was evaluated. | Correct the prerequisite and retry through the owning backend workflow. |
 | no_active_generation | projections | warning | yes | There is no active generation. | Correct the prerequisite and retry through the owning backend workflow. |
 | not_found_in_restored_snapshot | system | warning | yes | The record is not present in the restored snapshot. | Correct the prerequisite and retry through the owning backend workflow. |
@@ -163,6 +164,7 @@ confidence: generated
 | session_not_found | identity | warning | no | The requested human session is absent, expired, revoked, or no longer active. | Review the owning evidence and operator guidance before another action. |
 | shutdown | system | warning | yes | The process is shutting down. | Correct the prerequisite and retry through the owning backend workflow. |
 | shutdown_during_mailbox_backpressure | projections | warning | yes | Shutdown occurred while the bounded mailbox was under pressure. | Correct the prerequisite and retry through the owning backend workflow. |
+| storage_unavailable | recovery | warning | yes | A registered backup location cannot currently be reached or inspected safely. | Correct the prerequisite and retry through the owning backend workflow. |
 | submit_failed | system | warning | yes | The work request could not be admitted. | Correct the prerequisite and retry through the owning backend workflow. |
 | target_not_allowed | validation | warning | no | The requested target is outside the approved scope. | Review the owning evidence and operator guidance before another action. |
 | test_bypass_explicit | rules | info | no | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | Review the owning evidence and operator guidance before another action. |

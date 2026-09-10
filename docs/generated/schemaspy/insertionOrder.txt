@@ -5,6 +5,7 @@ device_invite_lifecycle
 device_recovery_history
 owner_claims
 policy_decisions
+recovery_backup_locations
 human_identities
 device_current_state
 app_current_state
@@ -29,6 +30,7 @@ human_credentials
 identity_audit_events
 lite_installed_release_identity
 lite_revision_events
+recovery_backup_location_events
 recovery_codes
 recovery_current_state
 release_runtime_projection

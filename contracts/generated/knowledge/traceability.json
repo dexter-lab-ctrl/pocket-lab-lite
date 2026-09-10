@@ -804,6 +804,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/recovery/locations",
+      "name": "GET /api/lite/recovery/locations",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/recovery/maintenance",
       "name": "GET /api/lite/recovery/maintenance",
       "note": "A test link does not by itself prove runtime verification.",
@@ -1895,6 +1906,39 @@
     {
       "entity": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
       "name": "POST /api/lite/recovery/database/backups/{backup_id}/verify",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/locations/discover",
+      "name": "POST /api/lite/recovery/locations/discover",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/locations/forget",
+      "name": "POST /api/lite/recovery/locations/forget",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/recovery/locations/select",
+      "name": "POST /api/lite/recovery/locations/select",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -3913,6 +3957,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

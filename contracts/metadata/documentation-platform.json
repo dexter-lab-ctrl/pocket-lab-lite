@@ -1502,6 +1502,36 @@
       "terminal": true,
       "ui_mapping": [],
       "user_message": "The worker did not start the accepted work within the recovery window."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "location_not_registered",
+      "deprecated_aliases": [],
+      "domain": "recovery",
+      "event_mapping": ["recovery.location.unavailable"],
+      "http_status": 409,
+      "meaning": "A restore point refers to a backup location that is not currently registered on the protected Server Phone.",
+      "projection_mapping": ["backup_locations"],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": ["Location unavailable"],
+      "user_message": "Reconnect or rediscover the backup location before continuing."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "storage_unavailable",
+      "deprecated_aliases": [],
+      "domain": "recovery",
+      "event_mapping": ["recovery.location.unavailable"],
+      "http_status": 409,
+      "meaning": "A registered backup location cannot currently be reached or inspected safely.",
+      "projection_mapping": ["backup_locations"],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": ["Location unavailable"],
+      "user_message": "Reconnect this storage or choose another backup location before continuing."
     }
   ],
   "redaction": {

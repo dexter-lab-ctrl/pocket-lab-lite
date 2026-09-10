@@ -85,6 +85,9 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 - recovers_with: `FastAPI unavailable`
 - recovers_with: `Caddy unavailable`
 - related_to: `pocketlab.commands.lite.backup.create`
+- related_to: `pocketlab.commands.lite.backup.location.discover`
+- related_to: `pocketlab.commands.lite.backup.location.forget`
+- related_to: `pocketlab.commands.lite.backup.location.select`
 - related_to: `pocketlab.commands.lite.backup.verify`
 - related_to: `pocketlab.commands.lite.database.backup`
 - related_to: `pocketlab.commands.lite.database.backup.verify`

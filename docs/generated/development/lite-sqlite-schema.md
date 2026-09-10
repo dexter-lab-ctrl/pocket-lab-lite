@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 392685425f2ae5d9b878ba1ea22ba21834ac4d1cbf07fc7c61f740ef48d956e1
+source_fingerprint: c4e2aa1b01f1bf90f2e8507e1aec3c2b3588249bf3aadbd2a4c7acfc30b8a672
 schema_revision: 1
 validation_status: generated
 ---
@@ -73,6 +73,8 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `policy_temporary_exceptions` | table | 13 | 2 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `projection_dirty_signals` | table | 7 | 0 | 2 | projections | prepared projection scheduler | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `projection_refresh_state` | table | 30 | 0 | 2 | projections | projection scheduler | internal metadata | verified | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
+| `recovery_backup_location_events` | table | 11 | 0 | 2 | recovery | Recovery services and worker completion handlers | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql |
+| `recovery_backup_locations` | table | 19 | 0 | 3 | recovery | Recovery services and worker completion handlers | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql |
 | `recovery_code_batches` | table | 5 | 1 | 2 | recovery | Recovery services and worker completion handlers | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `recovery_codes` | table | 5 | 1 | 3 | recovery | Recovery services and worker completion handlers | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `recovery_current_state` | table | 11 | 0 | 0 | recovery | Recovery services and worker completion handlers | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql |
@@ -1081,6 +1083,52 @@ Bounded projection scheduler state
 | `execution_owner` | TEXT | no | 'unknown' | 0 |
 | `executor_build_version` | TEXT | no | 'unavailable' | 0 |
 | `executor_process_generation` | TEXT | no | 'unknown' | 0 |
+
+<a id="recovery-backup-location-events"></a>
+## `recovery_backup_location_events`
+
+Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `event_id` | INTEGER | yes | — | 1 |
+| `occurred_at` | TEXT | no | — | 0 |
+| `event_type` | TEXT | no | — | 0 |
+| `location_id` | TEXT | no | — | 0 |
+| `kind` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | '' | 0 |
+| `summary` | TEXT | no | — | 0 |
+| `actor_type` | TEXT | no | 'authenticated' | 0 |
+| `auth_method` | TEXT | no | '' | 0 |
+| `sanitized` | INTEGER | no | 1 | 0 |
+
+<a id="recovery-backup-locations"></a>
+## `recovery_backup_locations`
+
+Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `location_id` | TEXT | yes | — | 1 |
+| `kind` | TEXT | no | — | 0 |
+| `display_name` | TEXT | no | — | 0 |
+| `root_path` | TEXT | no | — | 0 |
+| `canonical_root` | TEXT | no | — | 0 |
+| `repository_id` | TEXT | no | — | 0 |
+| `repository_fingerprint` | TEXT | no | '' | 0 |
+| `is_default` | INTEGER | no | 0 | 0 |
+| `is_selected` | INTEGER | no | 0 | 0 |
+| `is_removable` | INTEGER | no | 0 | 0 |
+| `is_forgotten` | INTEGER | no | 0 | 0 |
+| `status` | TEXT | no | 'checking' | 0 |
+| `reason_code` | TEXT | no | '' | 0 |
+| `free_bytes` | INTEGER | yes | — | 0 |
+| `capacity_bytes` | INTEGER | yes | — | 0 |
+| `repository_present` | INTEGER | no | 0 | 0 |
+| `last_checked_at` | TEXT | yes | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
 
 <a id="recovery-code-batches"></a>
 ## `recovery_code_batches`

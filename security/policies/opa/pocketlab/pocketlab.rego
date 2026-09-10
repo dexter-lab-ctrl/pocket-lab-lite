@@ -27,6 +27,22 @@ recovery_action if {
 	input.target.id != ""
 }
 
+backup_location_action if {
+	input.action.id == "backup.location.manage"
+	authenticated_actor
+	input.target.type == "recovery_location"
+	input.target.id != ""
+	input.target.state.protected_server_host == true
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "protected_server_host"],
+	"reason_code": "authenticated_backup_location_operation",
+} if {
+	backup_location_action
+}
+
 decision := {
 	"allow": true,
 	"constraints": ["authenticated_actor", "recovery_target"],

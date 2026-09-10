@@ -655,6 +655,16 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/recovery/locations": [
+        {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/recovery/maintenance": [
         {
           "source": "domain:recovery",
@@ -1634,6 +1644,36 @@
         }
       ],
       "api:post:/api/lite/recovery/database/backups/{backup_id}/verify": [
+        {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/recovery/locations/discover": [
+        {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/recovery/locations/forget": [
+        {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/recovery/locations/select": [
         {
           "source": "ui:literecovery",
           "type": "calls"
@@ -3573,6 +3613,12 @@
           "type": "owns"
         }
       ],
+      "reason:location_not_registered": [
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
       "reason:metadata_only": [
         {
           "source": "domain:validation",
@@ -4011,6 +4057,12 @@
           "type": "owns"
         }
       ],
+      "reason:storage_unavailable": [
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
       "reason:submit_failed": [
         {
           "source": "domain:system",
@@ -4385,6 +4437,36 @@
         {
           "source": "component:backup-engine",
           "type": "related_to"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "related_to"
+        }
+      ],
+      "subject:pocketlab.commands.lite.backup.location.discover": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "related_to"
+        }
+      ],
+      "subject:pocketlab.commands.lite.backup.location.forget": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "related_to"
+        }
+      ],
+      "subject:pocketlab.commands.lite.backup.location.select": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
         },
         {
           "source": "component:lite-api",
@@ -5326,6 +5408,24 @@
         }
       ],
       "subject:pocketlab.events.lite.backup.failed": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.backup.location.{event_prefix}_completed": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.backup.location.{event_prefix}_failed": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.backup.location.{event_prefix}_started": [
         {
           "source": "domain:lite",
           "type": "owns"
@@ -6667,6 +6767,34 @@
           "type": "owns"
         }
       ],
+      "table:recovery_backup_location_events": [
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/recovery",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/recovery/details",
+          "type": "reads"
+        }
+      ],
+      "table:recovery_backup_locations": [
+        {
+          "source": "domain:recovery",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/recovery",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/recovery/details",
+          "type": "reads"
+        }
+      ],
       "table:recovery_code_batches": [
         {
           "source": "component:api-guards",
@@ -7503,6 +7631,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:metadata_only",
           "type": "verified_by"
         },
@@ -7792,6 +7924,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_unavailable",
           "type": "verified_by"
         },
         {
@@ -8293,6 +8429,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/recovery/locations",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/recovery/maintenance",
           "type": "verified_by"
         },
@@ -8690,6 +8830,18 @@
         },
         {
           "source": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/recovery/locations/discover",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/recovery/locations/forget",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/recovery/locations/select",
           "type": "verified_by"
         },
         {
@@ -11811,6 +11963,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:metadata_only",
           "type": "verified_by"
         },
@@ -12100,6 +12256,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_unavailable",
           "type": "verified_by"
         },
         {
@@ -12601,6 +12761,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:metadata_only",
           "type": "verified_by"
         },
@@ -12890,6 +13054,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_unavailable",
           "type": "verified_by"
         },
         {
@@ -13507,6 +13675,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/recovery/locations",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/recovery/maintenance",
           "type": "verified_by"
         },
@@ -13904,6 +14076,18 @@
         },
         {
           "source": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/recovery/locations/discover",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/recovery/locations/forget",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/recovery/locations/select",
           "type": "verified_by"
         },
         {
@@ -15399,6 +15583,14 @@
           "type": "reads"
         },
         {
+          "target": "table:recovery_backup_location_events",
+          "type": "reads"
+        },
+        {
+          "target": "table:recovery_backup_locations",
+          "type": "reads"
+        },
+        {
           "target": "table:recovery_code_batches",
           "type": "reads"
         },
@@ -15539,6 +15731,14 @@
           "type": "reads"
         },
         {
+          "target": "table:recovery_backup_location_events",
+          "type": "reads"
+        },
+        {
+          "target": "table:recovery_backup_locations",
+          "type": "reads"
+        },
+        {
           "target": "table:recovery_code_batches",
           "type": "reads"
         },
@@ -15554,6 +15754,16 @@
           "target": "table:recovery_operations",
           "type": "reads"
         },
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/recovery/locations": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -16650,6 +16860,36 @@
         }
       ],
       "api:post:/api/lite/recovery/database/backups/{backup_id}/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/recovery/locations/discover": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/recovery/locations/forget": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/recovery/locations/select": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -18622,6 +18862,18 @@
         },
         {
           "target": "subject:pocketlab.commands.lite.backup.create",
+          "type": "related_to"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.backup.location.discover",
+          "type": "related_to"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.backup.location.forget",
+          "type": "related_to"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.backup.location.select",
           "type": "related_to"
         },
         {
@@ -22115,6 +22367,18 @@
           "type": "owns"
         },
         {
+          "target": "subject:pocketlab.commands.lite.backup.location.discover",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.backup.location.forget",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.backup.location.select",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.commands.lite.backup.verify",
           "type": "owns"
         },
@@ -22228,6 +22492,18 @@
         },
         {
           "target": "subject:pocketlab.events.lite.backup.failed",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.backup.location.{event_prefix}_completed",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.backup.location.{event_prefix}_failed",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.backup.location.{event_prefix}_started",
           "type": "owns"
         },
         {
@@ -22639,6 +22915,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/recovery/locations",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/recovery/maintenance",
           "type": "owns"
         },
@@ -22707,6 +22987,18 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/recovery/locations/discover",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/recovery/locations/forget",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/recovery/locations/select",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/recovery/maintenance/checkpoint",
           "type": "owns"
         },
@@ -22739,7 +23031,23 @@
           "type": "owns"
         },
         {
+          "target": "reason:location_not_registered",
+          "type": "owns"
+        },
+        {
+          "target": "reason:storage_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "table:backup_manifest_index",
+          "type": "owns"
+        },
+        {
+          "target": "table:recovery_backup_location_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:recovery_backup_locations",
           "type": "owns"
         },
         {
@@ -26267,6 +26575,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:location_not_registered": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:metadata_only": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -27581,6 +27903,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:storage_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:submit_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28361,6 +28697,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/recovery/locations",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/recovery/summary",
           "type": "calls"
         },
@@ -28390,6 +28730,18 @@
         },
         {
           "target": "api:post:/api/lite/recovery/database/backups/{backup_id}/verify",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/recovery/locations/discover",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/recovery/locations/forget",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/recovery/locations/select",
           "type": "calls"
         },
         {
@@ -28491,6 +28843,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

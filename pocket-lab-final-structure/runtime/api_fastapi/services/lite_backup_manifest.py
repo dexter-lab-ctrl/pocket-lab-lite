@@ -62,52 +62,109 @@ def canonical_checksum(payload: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def manifest_path(backup_id: str) -> Path:
+def _layout_for_location(location_id: str | None = None):
+    if not location_id:
+        return backup_layout()
+    try:
+        from . import lite_backup_locations
+
+        return lite_backup_locations.layout_for_location(location_id)
+    except Exception:
+        # Legacy format-2 manifests were all written to the default layout.
+        # Keep this fallback for callers that inspect old evidence before the
+        # location registry has been initialized.
+        return backup_layout()
+
+
+def _history_layouts() -> list[tuple[str, Any]]:
+    layouts: list[tuple[str, Any]] = []
+    seen: set[str] = set()
+    try:
+        from . import lite_backup_locations
+
+        rows = lite_backup_locations._all_rows(include_forgotten=True)
+        for row in rows:
+            location_id = str(row.get("location_id") or "").strip()
+            if not location_id:
+                continue
+            try:
+                layout = lite_backup_locations.layout_for_location(location_id, allow_forgotten=True)
+            except Exception:
+                continue
+            marker = str(layout.manifests)
+            if marker not in seen:
+                seen.add(marker)
+                layouts.append((location_id, layout))
+    except Exception:
+        pass
+    default = backup_layout()
+    if str(default.manifests) not in seen:
+        layouts.insert(0, ("default-private", default))
+    return layouts
+
+
+def manifest_path(backup_id: str, *, location_id: str | None = None, layout: Any | None = None) -> Path:
     if not _SAFE_BACKUP_ID.fullmatch(str(backup_id or "").strip()):
         raise ValueError("invalid backup id")
-    return backup_layout().manifests / f"{backup_id}.json"
+    current = layout or _layout_for_location(location_id)
+    return current.manifests / f"{backup_id}.json"
 
 
-def receipt_path(backup_id: str) -> Path:
+def receipt_path(backup_id: str, *, location_id: str | None = None, layout: Any | None = None) -> Path:
     if not _SAFE_BACKUP_ID.fullmatch(str(backup_id or "").strip()):
         raise ValueError("invalid backup id")
-    return backup_layout().receipts / f"{backup_id}.json"
+    current = layout or _layout_for_location(location_id)
+    return current.receipts / f"{backup_id}.json"
 
 
-def write_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+def write_manifest(manifest: dict[str, Any], *, location_id: str | None = None, layout: Any | None = None) -> dict[str, Any]:
     backup_id = str(manifest.get("backup_id") or "").strip()
     if not backup_id:
         raise ValueError("backup_id is required")
     manifest = dict(manifest)
     manifest["manifest_checksum"] = canonical_checksum(manifest)
-    path = manifest_path(backup_id)
+    location_id = str(location_id or manifest.get("location_id") or "default-private").strip() or "default-private"
+    path = manifest_path(backup_id, location_id=location_id, layout=layout)
     _write_json(path, manifest)
     with _SUMMARY_CACHE_LOCK:
         _SUMMARY_CACHE.pop(str(path), None)
     return manifest
 
 
-def write_receipt(backup_id: str, receipt: dict[str, Any]) -> dict[str, Any]:
+def write_receipt(backup_id: str, receipt: dict[str, Any], *, location_id: str | None = None, layout: Any | None = None) -> dict[str, Any]:
     payload = dict(receipt)
     payload.setdefault("backup_id", backup_id)
-    _write_json(receipt_path(backup_id), payload)
+    selected_location_id = str(location_id or payload.get("location_id") or "default-private").strip() or "default-private"
+    _write_json(receipt_path(backup_id, location_id=selected_location_id, layout=layout), payload)
     return payload
 
 
-def read_manifest(backup_id: str) -> dict[str, Any] | None:
+def read_manifest(backup_id: str, *, location_id: str | None = None, layout: Any | None = None) -> dict[str, Any] | None:
     backup_id = str(backup_id or "").strip()
     if not backup_id:
         return None
-    payload = _read_json(manifest_path(backup_id), None)
-    return payload if isinstance(payload, dict) else None
+    if location_id or layout is not None:
+        payload = _read_json(manifest_path(backup_id, location_id=location_id, layout=layout), None)
+        return payload if isinstance(payload, dict) else None
+    for _location_id, current in _history_layouts():
+        payload = _read_json(manifest_path(backup_id, layout=current), None)
+        if isinstance(payload, dict):
+            return payload
+    return None
 
 
-def read_receipt(backup_id: str) -> dict[str, Any] | None:
+def read_receipt(backup_id: str, *, location_id: str | None = None, layout: Any | None = None) -> dict[str, Any] | None:
     backup_id = str(backup_id or "").strip()
     if not backup_id:
         return None
-    payload = _read_json(receipt_path(backup_id), None)
-    return payload if isinstance(payload, dict) else None
+    if location_id or layout is not None:
+        payload = _read_json(receipt_path(backup_id, location_id=location_id, layout=layout), None)
+        return payload if isinstance(payload, dict) else None
+    for _location_id, current in _history_layouts():
+        payload = _read_json(receipt_path(backup_id, layout=current), None)
+        if isinstance(payload, dict):
+            return payload
+    return None
 
 
 def _manifest_sort_key(path: Path, payload: dict[str, Any]) -> tuple[int, str]:
@@ -151,7 +208,7 @@ def _compact_app_backup(value: Any) -> dict[str, Any] | None:
     return compact if compact.get("app_id") else None
 
 
-def _compact_manifest(path: Path, payload: dict[str, Any]) -> dict[str, Any] | None:
+def _compact_manifest(path: Path, payload: dict[str, Any], location_id: str = "default-private") -> dict[str, Any] | None:
     """Retain only bounded history metadata, never the full file inventory.
 
     Full manifests remain the durable restore/verification authority and are
@@ -162,7 +219,7 @@ def _compact_manifest(path: Path, payload: dict[str, Any]) -> dict[str, Any] | N
     """
     if not payload.get("backup_id"):
         return None
-    compact = api_manifest(payload)
+    compact = api_manifest(payload, location_id=location_id)
     app_backup = _compact_app_backup(payload.get("app_backup"))
     if app_backup is not None:
         compact["app_backup"] = app_backup
@@ -170,34 +227,34 @@ def _compact_manifest(path: Path, payload: dict[str, Any]) -> dict[str, Any] | N
 
 
 def _sorted_manifest_records() -> list[tuple[tuple[int, str], dict[str, Any]]]:
-    layout = backup_layout()
-    layout.ensure()
     records: list[tuple[tuple[int, str], dict[str, Any]]] = []
     seen: set[str] = set()
-    for path in layout.manifests.glob("*.json"):
-        fingerprint = _manifest_fingerprint(path)
-        if fingerprint is None:
+    for location_id, layout in _history_layouts():
+        if not layout.manifests.exists():
             continue
-        cache_key = str(path)
-        seen.add(cache_key)
-        with _SUMMARY_CACHE_LOCK:
-            cached = _SUMMARY_CACHE.get(cache_key)
-        if cached is not None and cached[0] == fingerprint:
-            sort_key, compact = cached[1], cached[2]
-        else:
-            payload = _read_json(path, {})
-            if not isinstance(payload, dict):
+        for path in layout.manifests.glob("*.json"):
+            fingerprint = _manifest_fingerprint(path)
+            if fingerprint is None:
                 continue
-            compact = _compact_manifest(path, payload)
-            if compact is None:
-                continue
-            sort_key = _manifest_sort_key(path, compact)
+            cache_key = str(path)
+            seen.add(cache_key)
             with _SUMMARY_CACHE_LOCK:
-                _SUMMARY_CACHE[cache_key] = (fingerprint, sort_key, compact)
-        # A shallow copy keeps callers from mutating the cached record while
-        # avoiding another copy of any large historical inventory (which is
-        # intentionally absent from the compact value).
-        records.append((sort_key, dict(compact)))
+                cached = _SUMMARY_CACHE.get(cache_key)
+            if cached is not None and cached[0] == fingerprint:
+                sort_key, compact = cached[1], cached[2]
+            else:
+                payload = _read_json(path, {})
+                if not isinstance(payload, dict):
+                    continue
+                compact = _compact_manifest(path, payload, location_id=location_id)
+                if compact is None:
+                    continue
+                sort_key = _manifest_sort_key(path, compact)
+                with _SUMMARY_CACHE_LOCK:
+                    _SUMMARY_CACHE[cache_key] = (fingerprint, sort_key, compact)
+            # A shallow copy keeps callers from mutating the cached record
+            # while avoiding another copy of a full historical inventory.
+            records.append((sort_key, dict(compact)))
     with _SUMMARY_CACHE_LOCK:
         for key in tuple(_SUMMARY_CACHE):
             if key not in seen:
@@ -292,9 +349,34 @@ def no_backup_payload(*, backup_id: str = "latest", kind: str = "backup") -> dic
     }
 
 
-def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+def api_manifest(manifest: dict[str, Any], *, location_id: str | None = None) -> dict[str, Any]:
     repository = manifest.get("repository") if isinstance(manifest.get("repository"), dict) else {}
     included_files = manifest.get("included_files") or []
+    selected_location_id = str(manifest.get("location_id") or location_id or "default-private").strip() or "default-private"
+    stored_location = manifest.get("backup_location") if isinstance(manifest.get("backup_location"), dict) else {}
+    location = {
+        "location_id": selected_location_id,
+        "display_name": str(stored_location.get("display_name") or repository.get("location") or "Configured encrypted repository")[:120],
+        "kind": str(stored_location.get("kind") or "private_default")[:40],
+        "repository_id": str(stored_location.get("repository_id") or "")[:120],
+        "repository_fingerprint": str(stored_location.get("repository_fingerprint") or "")[:64],
+        "status": str(stored_location.get("status") or "unknown")[:32],
+    }
+    # Pre-location manifests are intentionally presented with the historical
+    # safe label.  Only a manifest carrying the immutable binding is resolved
+    # through the registry; never echo its legacy repository path.
+    if manifest.get("location_id") or manifest.get("backup_location"):
+        try:
+            from . import lite_backup_locations
+
+            resolved_location = lite_backup_locations.manifest_location({**manifest, "location_id": selected_location_id})
+            for key in ("display_name", "kind", "repository_id", "repository_fingerprint", "status", "available", "reason_code"):
+                if resolved_location.get(key) not in (None, ""):
+                    location[key] = resolved_location.get(key)
+        except Exception:
+            pass
+    else:
+        location["display_name"] = "Configured encrypted repository"
 
     def included_file_size(item: Any) -> int:
         if not isinstance(item, dict):
@@ -328,8 +410,10 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             "type": repository.get("type") or "local",
             "engine": repository.get("engine") or "restic",
             "encrypted": bool(repository.get("encrypted", True)),
-            "location": "Configured encrypted repository",
+            "location": location["display_name"],
         },
+        "location_id": selected_location_id,
+        "location": location,
         "snapshot_id": manifest.get("snapshot_id"),
         "included_sets": manifest.get("included_sets", []),
         "included_file_count": included_file_count,
@@ -367,6 +451,8 @@ def api_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
         "verification_status",
         "verified_at",
         "verification_checks",
+        "location_id",
+        "backup_location",
     }
     payload = {k: v for k, v in receipt.items() if k in allowed}
     repository = payload.get("repository")
@@ -375,6 +461,6 @@ def api_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
             "type": repository.get("type") or "local",
             "engine": repository.get("engine") or "restic",
             "encrypted": bool(repository.get("encrypted", True)),
-            "location": "Configured encrypted repository",
+            "location": str(repository.get("location") or "Configured encrypted repository")[:120],
         }
     return payload

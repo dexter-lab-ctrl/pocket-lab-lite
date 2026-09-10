@@ -24,6 +24,39 @@ checksums, and an encrypted restic repository reference. It is not restorable un
 manifest, component, and repository verification pass. History is bounded and
 cursor-paginated through `GET /api/lite/recovery/backups`.
 
+## Backup location selection
+
+Backup locations are backend-owned records on the protected Server Phone. The
+default private location remains the normal destination. Additional removable
+or configured locations are admitted only when the backend discovers them under
+its trusted candidate policy; the browser never submits an arbitrary filesystem
+path, connects to storage directly, or receives a raw path in an API response.
+Each location has an opaque `location_id`, a stable repository identity, a
+sanitized display label, and bounded health/capacity state. The Android system
+folder picker is **not implemented** in this release, so the UI truthfully
+shows backend-discovered candidates and does not imply that a native picker is
+available.
+
+Selection, discovery, and forgetting use the existing FastAPI → NATS/JetStream
+→ worker command path and the protected `backup.location.manage` policy action.
+Only the protected Server Phone target is selectable; device selection is not a
+separate browser concern. Location changes are serialized with backup/restore
+work, and a location cannot be forgotten while it is the active default.
+
+Every new manifest and receipt records the immutable location identity and
+repository fingerprint. History remains bound to the location that produced
+it, even after the current selection changes. A forgotten or unavailable
+location remains visible in history with a truthful unavailable state, but
+verification, preview, and restore fail closed until the backend discovers the
+location again. Restore staging and checkpoints remain on the active Server
+Phone while the source read uses the manifest's recorded repository.
+
+The location registry stores private paths only in the backend control-plane
+database. It does not copy restic passwords, tokens, or other secrets to
+removable storage. Android shared/media roots, runtime/database paths,
+symlinks, nested repositories, and unsafe storage mappings are rejected before
+registration.
+
 The backup contract excludes Android shared storage (`/storage/emulated/*` and
 `/sdcard`-style paths), PhotoPrism originals/import media/photos/videos/thumbnails
 and recreatable caches, raw scanner output, `node_modules`, `.venv`, temporary

@@ -85,6 +85,7 @@ generator_version: 3
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | info | no | yes | Use the Identity password controls instead. |
 | `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | info | no | no | Pocket Lab is using a compatible device telemetry value. |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
+| `location_not_registered` | recovery | A restore point refers to a backup location that is not currently registered on the protected Server Phone. | warning | yes | no | Reconnect or rediscover the backup location before continuing. |
 | `metadata_only` | validation | Only metadata was evaluated. | warning | yes | no | Only metadata was evaluated. |
 | `no_active_generation` | projections | There is no active generation. | warning | yes | no | There is no active generation. |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | warning | yes | no | The record is not present in the restored snapshot. |
@@ -158,6 +159,7 @@ generator_version: 3
 | `session_not_found` | identity | The requested human session is absent, expired, revoked, or no longer active. | warning | no | yes | That session is no longer active. |
 | `shutdown` | system | The process is shutting down. | warning | yes | no | The process is shutting down. |
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | warning | yes | no | Shutdown occurred while the bounded mailbox was under pressure. |
+| `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | warning | yes | no | Reconnect this storage or choose another backup location before continuing. |
 | `submit_failed` | system | The work request could not be admitted. | warning | yes | no | The work request could not be admitted. |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | warning | no | yes | The requested target is outside the approved scope. |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | info | no | yes | Test-only policy bypass. |

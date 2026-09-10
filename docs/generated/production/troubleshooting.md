@@ -7,7 +7,7 @@ audience: production
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 195fc9da224c0854ac598e2da7574750ce3b3748156668533076dd0595967bf8
+source_fingerprint: 9085e81a12fd1d6805333b96f1baac6009db2c4e4473d38484618ad81d0e0b82
 schema_revision: 1
 validation_status: generated
 ---
@@ -26,3 +26,5 @@ Use truthful Lite states before restarting services.
 - Stopped without supervisor: follow recovery guidance; do not fabricate command delivery.
 - Security scan accepted but not starting: verify durable consumer health and stale-run recovery evidence.
 - Recovery projection stale: inspect freshness/revision and refresh prepared reads; do not treat saved state as fresh.
+- Backup location unavailable: reconnect the registered storage or explicitly select the private default; never assume a future backup silently moved.
+- Repository identity mismatch: do not reuse a replacement repository at the same apparent location; rediscover and verify it before recovery.

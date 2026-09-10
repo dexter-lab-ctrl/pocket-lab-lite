@@ -25,7 +25,8 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
 | `GET /api/lite/recovery/database` | ui:literecovery | — | unvalidated |
-| `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_code_batches, table:recovery_codes, table:recovery_current_state, table:recovery_operations | contract-derived |
+| `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_backup_location_events, table:recovery_backup_locations, table:recovery_code_batches, table:recovery_codes, table:recovery_current_state, table:recovery_operations | contract-derived |
+| `GET /api/lite/recovery/locations` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/summary` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/release` | ui:litereleaseupdatecard | table:lite_installed_release_identity, table:release_runtime_projection | contract-derived |
 | `GET /api/lite/revisions` | ui:literevisionsyncbridge | table:domain_revisions, table:projection_dirty_signals | contract-derived |
@@ -59,6 +60,9 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/recovery/database/backups/{backup_id}/preview` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/database/backups/{backup_id}/restore` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/database/backups/{backup_id}/verify` | ui:literecovery | — | unvalidated |
+| `POST /api/lite/recovery/locations/discover` | ui:literecovery | — | unvalidated |
+| `POST /api/lite/recovery/locations/forget` | ui:literecovery | — | unvalidated |
+| `POST /api/lite/recovery/locations/select` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/restore` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/recovery/restore/preview` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/release/apply` | ui:litereleaseupdatecard | — | unvalidated |

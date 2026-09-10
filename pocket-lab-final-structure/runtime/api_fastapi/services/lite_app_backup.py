@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_backup, lite_backup_manifest
+from . import lite_app_backup_targets, lite_backup, lite_backup_locations, lite_backup_manifest
 from .lite_backup_policy import backup_layout
 
 SUPPORTED_APP_IDS = {"photoprism"}
@@ -314,6 +314,8 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
     manifest = lite_backup_manifest.read_manifest(backup_id)
     if not manifest:
         raise RuntimeError("App backup manifest was not found after backup creation.")
+    location_id = str(manifest.get("location_id") or "default-private")
+    location_layout = lite_backup_locations.layout_for_location(location_id)
     mode = str(command.get("app_backup_mode") or "config_only")
     app_metadata = {
         "app_id": command.get("app_id") or "photoprism",
@@ -346,9 +348,9 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
         if ref not in refs:
             refs.append(ref)
     manifest["evidence_references"] = refs
-    manifest = lite_backup_manifest.write_manifest(manifest)
+    manifest = lite_backup_manifest.write_manifest(manifest, location_id=location_id, layout=location_layout)
 
-    receipt = lite_backup_manifest.read_receipt(backup_id) or {"backup_id": backup_id}
+    receipt = lite_backup_manifest.read_receipt(backup_id, location_id=location_id, layout=location_layout) or {"backup_id": backup_id}
     receipt.update({
         "backup_id": backup_id,
         "app_id": "photoprism",
@@ -366,7 +368,7 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
         "app_backup": app_metadata,
         "restore_apply_supported": False,
     })
-    lite_backup_manifest.write_receipt(backup_id, receipt)
+    lite_backup_manifest.write_receipt(backup_id, receipt, location_id=location_id, layout=location_layout)
     return manifest
 
 

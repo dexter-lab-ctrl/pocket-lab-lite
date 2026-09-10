@@ -27,6 +27,7 @@ PROTECTED_ACTIONS = frozenset(
         "identity.passkey.revoke",
         "backup.create",
         "backup.verify",
+        "backup.location.manage",
         "restore.preview",
         "restore.apply",
     }

@@ -120,11 +120,26 @@
       ],
       "sqlite": [
         "table:backup_manifest_index",
+        "table:recovery_backup_location_events",
+        "table:recovery_backup_locations",
         "table:recovery_code_batches",
         "table:recovery_codes",
         "table:recovery_current_state",
         "table:recovery_operations"
       ],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:get:/api/lite/recovery/locations",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/recovery/locations",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
       "ui": [
         "ui:literecovery"
       ]
@@ -591,6 +606,45 @@
       ]
     },
     {
+      "api": "api:post:/api/lite/recovery/locations/discover",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/locations/discover",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/locations/forget",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/locations/forget",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/recovery/locations/select",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/recovery/locations/select",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:literecovery"
+      ]
+    },
+    {
       "api": "api:post:/api/lite/recovery/restore",
       "confidence": "unvalidated",
       "method": "POST",
@@ -688,6 +742,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

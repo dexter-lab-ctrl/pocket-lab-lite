@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9441928e3f1c4987a9692e9e4967020e77369767b2e1aa7ee149edc73ac57bae
+source_fingerprint: 77bd6ab0bdc5a87c07a98c163e1271ed68e79de8a34c73a83779128d669937bb
 schema_revision: 1
 validation_status: generated
 ---
@@ -329,6 +329,9 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_LITE_APP_SUBPROJECTION_WORKERS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py |
 | `POCKETLAB_LITE_APP_UPSTREAM` | configuration | 127.0.0.1:2342 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
 | `POCKETLAB_LITE_APP_VERSION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py |
+| `POCKETLAB_LITE_BACKUP_ALLOWED_ROOTS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py |
+| `POCKETLAB_LITE_BACKUP_LOCATION_CANDIDATES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py |
+| `POCKETLAB_LITE_BACKUP_MIN_FREE_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py |
 | `POCKETLAB_LITE_BACKUP_ROOT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_policy.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py |
 | `POCKETLAB_LITE_BOOTSTRAP_HOST` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `POCKETLAB_LITE_DATABASE_SWITCH_QUIESCE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_database_recovery.py |

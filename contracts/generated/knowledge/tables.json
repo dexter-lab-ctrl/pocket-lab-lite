@@ -1366,6 +1366,65 @@
       "confidence": "inferred",
       "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "recovery",
+      "id": "table:recovery_backup_location_events",
+      "indexes": [
+        "idx_recovery_backup_location_events_location",
+        "idx_recovery_backup_location_events_time"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+      ],
+      "name": "recovery_backup_location_events",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
+      "id": "table:recovery_backup_locations",
+      "indexes": [
+        "idx_recovery_backup_locations_selected",
+        "idx_recovery_backup_locations_default",
+        "sqlite_autoindex_recovery_backup_locations_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+      ],
+      "name": "recovery_backup_locations",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/recovery",
+        "/api/lite/recovery/details"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "root_path"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql"
+      ],
+      "type": "table",
+      "writer": "Recovery services and worker completion handlers"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived recovery persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "recovery",
       "id": "table:recovery_code_batches",
       "indexes": [
         "idx_recovery_code_batch_generation",
@@ -2011,6 +2070,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "4e66ed6f6b2d87762be0a454711948f9390a4b37b8d77a89addc29a54cb8974f"
+    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
   }
 }

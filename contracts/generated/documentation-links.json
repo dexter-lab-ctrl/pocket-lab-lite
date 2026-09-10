@@ -341,6 +341,10 @@
         "title": "GET /api/lite/recovery/details",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-details"
       },
+      "endpoint:GET:/api/lite/recovery/locations": {
+        "title": "GET /api/lite/recovery/locations",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-locations"
+      },
       "endpoint:GET:/api/lite/recovery/maintenance": {
         "title": "GET /api/lite/recovery/maintenance",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-maintenance"
@@ -741,6 +745,18 @@
         "title": "POST /api/lite/recovery/database/backups/{backup_id}/verify",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-database-backups-backup-id-verify"
       },
+      "endpoint:POST:/api/lite/recovery/locations/discover": {
+        "title": "POST /api/lite/recovery/locations/discover",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-locations-discover"
+      },
+      "endpoint:POST:/api/lite/recovery/locations/forget": {
+        "title": "POST /api/lite/recovery/locations/forget",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-locations-forget"
+      },
+      "endpoint:POST:/api/lite/recovery/locations/select": {
+        "title": "POST /api/lite/recovery/locations/select",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-locations-select"
+      },
       "endpoint:POST:/api/lite/recovery/maintenance/checkpoint": {
         "title": "POST /api/lite/recovery/maintenance/checkpoint",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-maintenance-checkpoint"
@@ -872,6 +888,18 @@
       "event:pocketlab.commands.lite.backup.create": {
         "title": "pocketlab.commands.lite.backup.create",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-backup-create"
+      },
+      "event:pocketlab.commands.lite.backup.location.discover": {
+        "title": "pocketlab.commands.lite.backup.location.discover",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-backup-location-discover"
+      },
+      "event:pocketlab.commands.lite.backup.location.forget": {
+        "title": "pocketlab.commands.lite.backup.location.forget",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-backup-location-forget"
+      },
+      "event:pocketlab.commands.lite.backup.location.select": {
+        "title": "pocketlab.commands.lite.backup.location.select",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-backup-location-select"
       },
       "event:pocketlab.commands.lite.backup.verify": {
         "title": "pocketlab.commands.lite.backup.verify",
@@ -1248,6 +1276,18 @@
       "event:pocketlab.events.lite.backup.failed": {
         "title": "pocketlab.events.lite.backup.failed",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-failed"
+      },
+      "event:pocketlab.events.lite.backup.location.{event_prefix}_completed": {
+        "title": "pocketlab.events.lite.backup.location.{event_prefix}_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-location-event-prefix-completed"
+      },
+      "event:pocketlab.events.lite.backup.location.{event_prefix}_failed": {
+        "title": "pocketlab.events.lite.backup.location.{event_prefix}_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-location-event-prefix-failed"
+      },
+      "event:pocketlab.events.lite.backup.location.{event_prefix}_started": {
+        "title": "pocketlab.events.lite.backup.location.{event_prefix}_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-location-event-prefix-started"
       },
       "event:pocketlab.events.lite.backup.snapshot_created": {
         "title": "pocketlab.events.lite.backup.snapshot_created",
@@ -1909,6 +1949,10 @@
         "title": "local_owner_required",
         "url": "../../docs/generated/development/reason-codes.md#local-owner-required"
       },
+      "reason:location_not_registered": {
+        "title": "location_not_registered",
+        "url": "../../docs/generated/development/reason-codes.md#location-not-registered"
+      },
       "reason:metadata_only": {
         "title": "metadata_only",
         "url": "../../docs/generated/development/reason-codes.md#metadata-only"
@@ -2200,6 +2244,10 @@
       "reason:shutdown_during_mailbox_backpressure": {
         "title": "shutdown_during_mailbox_backpressure",
         "url": "../../docs/generated/development/reason-codes.md#shutdown-during-mailbox-backpressure"
+      },
+      "reason:storage_unavailable": {
+        "title": "storage_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#storage-unavailable"
       },
       "reason:submit_failed": {
         "title": "submit_failed",
@@ -2586,6 +2634,16 @@
         "schema_url": "../../docs/generated/schemaspy/tables/projection_refresh_state.html",
         "title": "projection_refresh_state"
       },
+      "table:recovery_backup_location_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-backup-location-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/recovery_backup_location_events.html",
+        "title": "recovery_backup_location_events"
+      },
+      "table:recovery_backup_locations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-backup-locations",
+        "schema_url": "../../docs/generated/schemaspy/tables/recovery_backup_locations.html",
+        "title": "recovery_backup_locations"
+      },
       "table:recovery_code_batches": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-code-batches",
         "schema_url": "../../docs/generated/schemaspy/tables/recovery_code_batches.html",
@@ -2699,7 +2757,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "36da1bc249a812b633559813f3bbbb55ca04f43036953ca0cb94d665ef7ac2a6",
+    "aggregate_fingerprint": "cdf0b446ab2f1a39ba441d744d59267aa8dd7036da1b902b602bb60d86a56edb",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2709,8 +2767,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
-      "contracts/metadata/documentation-platform.json": "a3e0298f5c0729d928b8afd542822860e74eca48e7b99a3c0e3c39fea8f676b8",
+      "contracts/generated/lite-openapi.json": "9aaf78e327569a667b09bb41c17fd48f3fcef0cc09f572b64f16690214fae6f9",
+      "contracts/metadata/documentation-platform.json": "0cf70bc3b615ca28541bb8926f73331417870e576aaeb8fbdf6420225f8453d6",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -2744,7 +2802,8 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql": "fe887f0f99c1180ef479ea6ac45e0b1f7c25dfd3446d090fe5b58ecefbc93dfe",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql": "8e128d0c96d0751ba80e1636665a5e49bd5501c0597747caa96ff6654729287b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql": "5df12b0987a752160dda4f2970aa28fe1e127be8ee65359bbfaf736127c181e1",
-      "scripts/docs/lite/generate_platform_catalogs.py": "00a2ca4ce21d2c8475313d870a43d05537a35a919b10a8023162b3df6d526353"
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
+      "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
     },
     "validation_state": "generated"
   }

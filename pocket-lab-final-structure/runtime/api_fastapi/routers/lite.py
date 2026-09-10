@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -872,6 +872,25 @@ class LiteBackupRequest(BaseModel):
     include_app_data: bool = True
     reason: str | None = None
     dry_run: bool = False
+
+
+class LiteBackupLocationRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    location_id: str = Field(min_length=1, max_length=120)
+
+
+class LiteBackupLocationCandidateRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    candidate_id: str = Field(min_length=1, max_length=120)
+
+
+class LiteBackupLocationForgetRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    location_id: str = Field(min_length=1, max_length=120)
+    confirm: bool = False
 
 
 class LiteBackupVerifyRequest(BaseModel):
@@ -3448,6 +3467,111 @@ def get_lite_recovery_details(request: Request) -> Response:
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
+@router.get("/recovery/locations")
+def get_lite_recovery_locations(request: Request) -> dict[str, Any]:
+    """Return safe, backend-discovered repository choices for this Server Host."""
+    deps.require_auth(request)
+    return lite_backup_locations.locations_projection()
+
+
+async def _queue_lite_backup_location_command(
+    *,
+    request: Request,
+    action: str,
+    subject: str,
+    event_type: str,
+    location_id: str,
+    operation: str,
+    candidate_id: str | None = None,
+    confirm: bool = False,
+) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    command_id = uuid.uuid4().hex
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="backup.location.manage",
+        target_type="recovery_location",
+        target_id=location_id,
+        target_revision=_recovery_target_revision(),
+        target={
+            "operation": operation,
+            "location_id": location_id,
+            "candidate_id": candidate_id or "",
+            "confirm": bool(confirm),
+            "state": {"protected_server_host": True},
+        },
+        correlation_id=command_id,
+    )
+    submitted = await submit_domain_command(
+        subject,
+        event_type,
+        {
+            "command_id": command_id,
+            "location_id": location_id,
+            "candidate_id": candidate_id or "",
+            "confirm": bool(confirm),
+            "operation": operation,
+            "requested_by": "lite-api",
+            "requested_by_actor": _safe_recovery_actor(auth_context),
+        },
+    )
+    submitted.update({
+        "location_id": location_id,
+        "candidate_id": candidate_id,
+        "operation": operation,
+        "authorization": {
+            "decision_id": policy_decision.get("decision_id"),
+            "reason_code": policy_decision.get("reason_code"),
+            "policy_revision": policy_decision.get("policy_revision"),
+        },
+        "summary": "Backup location change queued for the protected Server Host.",
+    })
+    return submitted
+
+
+@router.post("/recovery/locations/discover", status_code=202)
+async def discover_lite_recovery_location(payload: LiteBackupLocationCandidateRequest, request: Request) -> dict[str, Any]:
+    return await _queue_lite_backup_location_command(
+        request=request,
+        action="discover",
+        subject="pocketlab.commands.lite.backup.location.discover",
+        event_type="lite.backup.location.discover_queued",
+        location_id=payload.candidate_id,
+        candidate_id=payload.candidate_id,
+        operation="discover",
+    )
+
+
+@router.post("/recovery/locations/select", status_code=202)
+async def select_lite_recovery_location(payload: LiteBackupLocationRequest, request: Request) -> dict[str, Any]:
+    return await _queue_lite_backup_location_command(
+        request=request,
+        action="select",
+        subject="pocketlab.commands.lite.backup.location.select",
+        event_type="lite.backup.location.select_queued",
+        location_id=payload.location_id,
+        operation="select",
+    )
+
+
+@router.post("/recovery/locations/forget", status_code=202)
+async def forget_lite_recovery_location(payload: LiteBackupLocationForgetRequest, request: Request) -> dict[str, Any]:
+    if not payload.confirm:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "confirmation_required", "summary": "Confirm forgetting this backup location before continuing."},
+        )
+    return await _queue_lite_backup_location_command(
+        request=request,
+        action="forget",
+        subject="pocketlab.commands.lite.backup.location.forget",
+        event_type="lite.backup.location.forget_queued",
+        location_id=payload.location_id,
+        operation="forget",
+        confirm=True,
+    )
+
+
 @router.get("/recovery/operations")
 def get_lite_recovery_operation_history(
     request: Request,
@@ -3765,6 +3889,7 @@ def restore_lite_app(app_id: str, payload: LiteAppRestoreRequest, request: Reque
 async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str, Any]:
     auth_context = deps.require_auth(request, write=True)
     command_id = uuid.uuid4().hex
+    selected_location_id = lite_backup_locations.selected_location_id()
     policy_decision = await _enforce_lite_policy(
         auth_context=auth_context,
         action_id="backup.create",
@@ -3773,6 +3898,7 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
         target_revision=_recovery_target_revision(),
         target={
             "operation": "backup",
+            "location_id": selected_location_id,
             "include_event_journal": bool(payload.include_event_journal),
             "include_app_data": bool(payload.include_app_data),
             "dry_run": bool(payload.dry_run),
@@ -3781,6 +3907,7 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
     )
     command = {
         "command_id": command_id,
+        "location_id": selected_location_id,
         "include_event_journal": payload.include_event_journal,
         "include_app_data": payload.include_app_data,
         "reason": payload.reason or "manual backup",
@@ -3807,6 +3934,7 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
         ) from exc
     pending = lite_backup.record_backup_request(command)
     submitted["backup_id"] = command_id
+    submitted["location_id"] = selected_location_id
     submitted["pending_backup"] = pending
     submitted["authorization"] = {
         "decision_id": policy_decision.get("decision_id"),

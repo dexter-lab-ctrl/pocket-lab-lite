@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ac462873723c6df217778a308a6e19ff3299f8ce8de288147ba08a345f31a1bc
+source_fingerprint: e9a4239c6820aace4dd351ac077bde91f80ab3dbc00a1e8b13b886d8ee550856
 schema_revision: 1
 validation_status: generated
 ---
@@ -3088,6 +3088,90 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-recovery-locations"></a>
+## GET `/api/lite/recovery/locations`
+
+- Operation ID: `get_lite_recovery_locations_api_lite_recovery_locations_get`
+- Summary: Get Lite Recovery Locations
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-recovery-locations-discover"></a>
+## POST `/api/lite/recovery/locations/discover`
+
+- Operation ID: `discover_lite_recovery_location_api_lite_recovery_locations_discover_post`
+- Summary: Discover Lite Recovery Location
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteBackupLocationCandidateRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-recovery-locations-forget"></a>
+## POST `/api/lite/recovery/locations/forget`
+
+- Operation ID: `forget_lite_recovery_location_api_lite_recovery_locations_forget_post`
+- Summary: Forget Lite Recovery Location
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteBackupLocationForgetRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-recovery-locations-select"></a>
+## POST `/api/lite/recovery/locations/select`
+
+- Operation ID: `select_lite_recovery_location_api_lite_recovery_locations_select_post`
+- Summary: Select Lite Recovery Location
+- Deprecated: no
+- Tags: `lite`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteBackupLocationRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-maintenance"></a>
