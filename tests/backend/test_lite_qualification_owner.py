@@ -312,11 +312,16 @@ def test_qualification_audit_classification_is_sanitized(qualification_runtime, 
     assert deps.QUALIFICATION_OWNER_ID not in serialized
 
 
-def test_caddy_strips_qualification_proof_headers():
+@pytest.mark.parametrize("route", [
+    "/health", "/ready", "/healthz", "/api/lite/security/events",
+    "/api/*", "/openapi.json", "/docs*", "/redoc*", "/ws/*",
+])
+def test_caddy_strips_qualification_proof_headers(route):
     source = Path(
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
     ).read_text(encoding="utf-8")
-    assert source.count("header_up -X-Pocket-Lab-Test") >= 8
-    assert source.count("header_up -X-Pocket-Lab-Qualification") >= 8
-    assert "header_up -X-Pocket-Lab-Test" in source
-    assert "header_up -X-Pocket-Lab-Qualification" in source
+    handler = source.split(f"  handle {route} {{", 1)[1].split("\n  }", 1)[0]
+    assert "header_up -X-Pocket-Lab-Test" in handler
+    assert "header_up -X-Pocket-Lab-Qualification" in handler
+    if route == "/api/lite/security/events":
+        assert "flush_interval -1" in handler

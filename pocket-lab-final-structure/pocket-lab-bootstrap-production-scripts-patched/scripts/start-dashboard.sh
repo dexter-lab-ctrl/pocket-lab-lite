@@ -442,34 +442,60 @@ write_caddy_site() {
   header Referrer-Policy "no-referrer"
 
   handle /health {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /ready {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /healthz {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /api/lite/security/events {
     reverse_proxy 127.0.0.1:${API_PORT} {
       flush_interval -1
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
     }
   }
 
   handle /api/* {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /openapi.json {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /docs* {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /redoc* {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   handle /ws/* {
-    reverse_proxy 127.0.0.1:${API_PORT}
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      header_up -X-Pocket-Lab-Test
+      header_up -X-Pocket-Lab-Qualification
+    }
   }
   @pocketlab_versioned_assets {
     path /assets/*
