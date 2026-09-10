@@ -1209,3 +1209,84 @@ checkpoint/rollback protection, policy and identity continuity, sanitized
 operator evidence, media exclusion, truthful runtime freshness and a clear
 boundary between qualified control-plane behavior and remaining physical
 device qualification.
+
+## Post-Qualification Follow-Up Coverage
+
+Date: 2026-09-10
+
+This section records the follow-up work performed from the frozen qualified
+PR head `1aa331cec4e7b5c8bbc464e06990b42b856d2b33` on the local branch
+`feat/recovery-qualification-followups`. It does not rewrite the historical
+qualification sections above. No backup, verify, preview, restore, service
+restart, storage allocation, credential access, or live qualification bypass
+was used during this follow-up.
+
+### B1 — Authenticated live Recovery UI
+
+`UNVALIDATED`. The supported browser connector contained only an empty
+`about:blank` tab and no normal authenticated Owner session. No qualification
+Owner, test-auth bypass, copied cookie, CSRF proof, API token, or browser role
+header was used to manufacture UI evidence. Existing mocked desktop/mobile
+coverage, Storybook states, and accessibility coverage remain source/test
+evidence only. A future operator run must use a real supported Owner session
+to inspect timestamped history, selected-backup details, preview, confirmation,
+active backup, active restore, rollback, and projection-refreshing states.
+
+### B2 — Safe ENOSPC seam decision
+
+`VERIFIED` for the safe local seam; `UNVALIDATED` for live disk exhaustion.
+`lite_storage_faults.py` remains an allowlisted isolated fault mechanism and
+the focused storage tests pass. The repository-owned long-gate dry run
+selected only deterministic isolated low-storage behavior with zero live
+allocation. No `--allow-storage-pressure`, real storage fill, or production
+restore fault was invoked. This is the correct bounded decision for a live
+Server Phone consumer until an operator authorizes an isolated target with a
+measured reserve and an explicit allocation cap.
+
+### B3 — Staging-cleanup retry decision
+
+`PARTIAL / VERIFIED LOCALLY`. The backend cleanup helper uses bounded retry
+evidence (`attempts` and a truthful failed status), and the regression test
+simulates a transient Termux handle-release error: the first removal fails,
+the second succeeds, and the staging tree is gone. No additional destructive
+restore was forced solely to observe this branch live. If a future interrupted
+restore naturally exercises it, the journal must remain the authority for a
+cleanup failure and never be reported as successful recovery.
+
+### B4 — PhotoPrism/MariaDB scope decision
+
+`VERIFIED` for the current SQLite deployment; `UNVALIDATED / FAIL CLOSED` for
+MariaDB deployments. The registered PhotoPrism adapter proves the configured
+driver before inspecting metadata and rejects MySQL/MariaDB/PostgreSQL when no
+logical adapter is registered. Focused tests cover SQLite metadata and the
+MariaDB fail-closed path. The current Server Phone qualification used SQLite;
+no MariaDB completeness claim is made, and no speculative adapter was added
+on this branch.
+
+### B5 — Secondary peer
+
+`UNVALIDATED`. A bounded read-only fleet probe returned a healthy projection
+with two records: one online server host and one offline compute peer;
+`remote_access` was ready for the server host and false for the offline peer.
+No enrollment, identity, repair, or restart action was attempted. Secondary
+device recovery remains an operator qualification requirement after that peer
+is online and converged.
+
+### B6 — Bounded runtime soak
+
+`VERIFIED` for read-only fleet/NATS stability; `UNVALIDATED` for an
+authenticated Recovery projection soak. Six samples at 30-second intervals
+returned healthy fleet state, bounded projection ages of approximately
+0.6–18.8 seconds, `read_degraded=false`, no persistent refresh pending state,
+one online/one offline peer, and connected NATS on every sample. This did not
+read protected Recovery summary/details because no normal Owner session was
+available, so it does not replace the prior five-sample authenticated Recovery
+freshness window or prove a longer protected-read soak.
+
+### Follow-up disposition
+
+No source defect was found in these six seams that could be repaired safely
+without changing the qualified PR. The follow-up branch therefore contains
+qualification documentation only, remains local, is not pushed, and has no
+second PR. The qualified PR remains frozen and must be reviewed independently
+before any merge decision.
