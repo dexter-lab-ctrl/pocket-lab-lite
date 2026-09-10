@@ -395,20 +395,30 @@ def _build_lite_status_from_inputs(
     mariadb_socket = _mysql_socket_available()
 
     catalog_items_count = lite_catalog_service.catalog_apps_count()
-    try:
-        from .lite_control_plane_store import CONTROL_PLANE
-
-        fleet_health_summary = CONTROL_PLANE.fleet_health_summary()
-    except Exception:
-        fleet_health_summary = {
-            "status": "unavailable",
-            "device_count": 0,
-            "attention_count": 0,
-            "by_status": {},
-            "by_severity": {},
-            "attention_by_category": {},
-            "sanitized": True,
-        }
+    # Keep the scheduler builder on prepared inputs only.  The canonical Fleet
+    # projection already carries the public device health fragments; querying
+    # the control-plane health tables here can wait behind a writer during a
+    # restore and defeat the database-switch fence.
+    by_status: dict[str, int] = {}
+    by_severity: dict[str, int] = {}
+    attention_count = 0
+    for device in fleet_nodes:
+        health = device.get("system_health") if isinstance(device, dict) else {}
+        health = health if isinstance(health, dict) else {}
+        status = _text(health.get("status") or "unknown").lower()
+        severity = _text(health.get("severity") or "none").lower()
+        by_status[status] = by_status.get(status, 0) + 1
+        by_severity[severity] = by_severity.get(severity, 0) + 1
+        attention_count += max(0, min(1000, int(health.get("attention_count") or 0)))
+    fleet_health_summary = {
+        "status": "ready" if fleet_nodes else "unknown",
+        "device_count": len(fleet_nodes),
+        "attention_count": attention_count,
+        "by_status": by_status,
+        "by_severity": by_severity,
+        "attention_by_category": {},
+        "sanitized": True,
+    }
     device_health_attention_current = bool(
         fleet_health_summary.get("status") == "ready"
         and max(0, int(fleet_health_summary.get("device_count") or 0)) == len(fleet_nodes)
@@ -418,13 +428,21 @@ def _build_lite_status_from_inputs(
         if device_health_attention_current
         else 0
     )
-    opa_evaluations = deps.core.build_opa_evaluations()
-    blocked_findings = [
-        item
-        for item in opa_evaluations
-        if _text(item.get("decision") or item.get("status")).lower()
-        in {"deny", "failed", "blocked"}
-    ]
+    security_snapshot = current_state.get("security_summary")
+    security_snapshot = security_snapshot if isinstance(security_snapshot, dict) else {}
+    blocked_count = max(
+        0,
+        min(
+            1000,
+            int(security_snapshot.get("critical_count") or 0)
+            + int(security_snapshot.get("attention_count") or 0),
+        ),
+    )
+    if str(security_snapshot.get("status") or "").lower() in {"failed", "blocked"}:
+        blocked_count = max(1, blocked_count)
+    # Only the bounded count is surfaced below; do not carry raw policy
+    # evaluation material through the status projection.
+    blocked_findings = [None] * blocked_count
 
     services = [
         _service(
@@ -606,23 +624,24 @@ def build_lite_status_projection() -> dict[str, Any]:
     from .lite_control_plane_store import CONTROL_PLANE
     from . import lite_phase3b_projections as phase3b
 
-    dependency_builders = (
-        ("system.processes", phase3b.collect_process_state),
-        ("system.agent", phase3b.collect_agent_state),
-        ("system.supervisor", phase3b.collect_supervisor_state),
-        ("system.nats_remote", phase3b.collect_nats_remote_state),
-        ("system.remote_access", phase3b.collect_remote_access_state),
-        ("system.fleet_probe", phase3b.collect_fleet_probe_state),
-        ("security.summary", phase3b.collect_security_summary_state),
+    dependency_domains = (
+        "system.processes",
+        "system.agent",
+        "system.supervisor",
+        "system.nats_remote",
+        "system.remote_access",
+        "system.fleet_probe",
+        "security.summary",
     )
-    for domain, collector in dependency_builders:
-        if phase3b.snapshot(domain):
-            continue
-        try:
-            phase3b.project(domain, collector())
-        except Exception:
-            # Keep the last-good prepared dependency when one bounded collector fails.
-            continue
+    # The dedicated Phase 3B jobs own live collection.  Do not invoke those
+    # collectors from the system.status builder: this builder runs inside the
+    # projection scheduler and a missing snapshot must not turn a prepared
+    # status refresh into an unbounded remote/process/DB probe.  The next
+    # source-revision signal will rebuild status after the child snapshots have
+    # committed; missing children are represented by the bounded fallbacks
+    # below during bootstrap or pressure.
+    for domain in dependency_domains:
+        phase3b.snapshot(domain)
     prepared_health = phase3b.snapshot("system.health")
     if prepared_health:
         components = (
@@ -639,11 +658,7 @@ def build_lite_status_projection() -> dict[str, Any]:
             ),
         }
     else:
-        engine = deps.core.build_health_engine_snapshot()
-        try:
-            phase3b.project("system.health", phase3b.collect_system_health_state(engine))
-        except Exception:
-            pass
+        engine = {"status": "unknown", "services": {}}
     snapshots = {
         domain: phase3b.snapshot(domain) or {}
         for domain in (
@@ -664,14 +679,16 @@ def build_lite_status_projection() -> dict[str, Any]:
     }
     bus = snapshots["system.nats_remote"] or BUS.status()
     live = LIVE_STATUS.status()
-    remote_access = snapshots["system.remote_access"] or lite_remote_access_status()
+    remote_access = snapshots["system.remote_access"] or {
+        "status": "unavailable",
+        "ready": False,
+        "summary": "Remote access status is refreshing.",
+        "sanitized": True,
+    }
     semantic_telemetry = snapshots["system.telemetry_thresholds"]
     raw_telemetry = LIVE_STATUS.last_telemetry_snapshot()
     if not raw_telemetry:
-        try:
-            raw_telemetry = deps.core.telemetry_snapshot()
-        except Exception:
-            raw_telemetry = {"status": "unknown"}
+        raw_telemetry = {"status": "unknown"}
     telemetry = dict(raw_telemetry) if isinstance(raw_telemetry, dict) else {"status": "unknown"}
     if isinstance(semantic_telemetry, dict) and semantic_telemetry:
         # Preserve worker-prepared semantic status while retaining the local numeric
@@ -687,9 +704,13 @@ def build_lite_status_projection() -> dict[str, Any]:
             "summary": prepared_fleet.get("summary") or {},
         }
     else:
-        # First warm-up only. Request handlers never call this builder.
-        fleet = fleet_health_snapshot()
-        fleet_nodes = merged_fleet_nodes()
+        fleet = {
+            "status": str(prepared_fleet.get("status") or "unknown"),
+            "summary": prepared_fleet.get("summary") or {},
+            "devices": [],
+            "sanitized": True,
+        }
+        fleet_nodes = []
 
     stable_times = [
         str(value.get("updated_at") or "")

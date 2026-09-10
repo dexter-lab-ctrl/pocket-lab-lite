@@ -226,6 +226,34 @@ def test_phase3b_contracts_reuse_shared_projection_scheduler_guards():
         assert contract.deadline_seconds <= 10
 
 
+def test_phase3b_register_jobs_installs_every_worker_domain(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_phase3b_projections as phase3b
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+
+    registered = []
+    monkeypatch.setattr(
+        PROJECTION_SCHEDULER,
+        "register",
+        lambda job: registered.append(job.domain),
+    )
+
+    phase3b.register_jobs()
+
+    assert registered == list(phase3b.PHASE3B_DOMAINS)
+    assert "system.nats_remote" in registered
+
+
+def test_nats_projection_has_control_plane_priority():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_semantic_revisions import contract_for
+
+    contract = contract_for("system", "nats_remote")
+    assert contract is not None
+    assert contract.priority == 5
+    assert contract.work_class == "critical"
+
+
 def test_fleet_probe_reuses_prepared_fleet_projection(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_phase3b_projections as phase3b
@@ -450,14 +478,19 @@ def test_phase3b_system_read_routes_are_side_effect_free_prepared_reads():
             assert forbidden not in block
 
 
-def test_status_projection_reuses_prepared_dependencies_before_bounded_fallback():
+def test_status_projection_composes_prepared_dependencies_without_live_collectors():
     source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py").read_text(encoding="utf-8")
     builder = source[source.index("def build_lite_status_projection("):source.index("async def build_lite_status(")]
-    assert "if phase3b.snapshot(domain):" in builder
+    assert "dependency_domains = (" in builder
+    assert "phase3b.snapshot(domain)" in builder
+    assert "collector()" not in builder
+    assert "phase3b.project(domain" not in builder
     assert "prepared_health = phase3b.snapshot(\"system.health\")" in builder
     assert "if prepared_health:" in builder
-    assert "else:\n        engine = deps.core.build_health_engine_snapshot()" in builder
-    assert "First warm-up only. Request handlers never call this builder." in builder
+    assert 'engine = {"status": "unknown", "services": {}}' in builder
+    assert "Remote access status is refreshing." in builder
+    assert "build_opa_evaluations" not in builder
+    assert "fleet_health_summary()" not in builder
 
 
 def test_fleet_heartbeat_invalidation_is_coalesced_by_semantic_revision(monkeypatch):

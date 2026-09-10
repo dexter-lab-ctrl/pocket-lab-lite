@@ -266,7 +266,7 @@
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="created_by_human_id">created_by_human_id</span></td>
                                     <td>TEXT</td>
                                     <td>2000000000</td>
-                                    <td title=''></td>
+                                    <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -280,6 +280,40 @@
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="created_by_principal_type">created_by_principal_type</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>&#39;human&#39;</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="created_by_principal_id">created_by_principal_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>&#39;&#39;</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
                                     <td></td>
@@ -483,7 +517,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="784,5,1124,275">
-<area shape="rect" id="node2" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="296,138,740,652">
+<area shape="rect" id="node2" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="296,138,740,710">
 <area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,191,252,373">
 <area shape="rect" id="node4" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="816,293,1091,475">
 </map>
@@ -491,29 +525,29 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="405,1416,614,1510">
-<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,1007,244,1101">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="405,1475,614,1569">
+<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,1065,244,1159">
 <area shape="rect" id="node3" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="356,5,663,99">
 <area shape="rect" id="node4" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="356,117,663,211">
 <area shape="rect" id="node5" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="383,229,636,323">
 <area shape="rect" id="node6" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="351,341,668,435">
-<area shape="rect" id="node7" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="776,785,1115,879">
-<area shape="rect" id="node8" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="288,477,732,990">
-<area shape="rect" id="node9" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="393,1080,626,1174">
-<area shape="rect" id="node10" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1159,968,1491,1062">
+<area shape="rect" id="node7" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="776,815,1115,909">
+<area shape="rect" id="node8" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="288,477,732,1049">
+<area shape="rect" id="node9" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="393,1139,626,1233">
+<area shape="rect" id="node10" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1159,1027,1491,1121">
 <area shape="rect" id="node11" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="808,436,1083,618">
-<area shape="rect" id="node12" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="337,1192,682,1286">
-<area shape="rect" id="node13" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="364,1304,655,1398">
-<area shape="rect" id="node14" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="807,1451,1084,1545">
-<area shape="rect" id="node15" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="369,1563,650,1657">
-<area shape="rect" id="node16" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="394,1675,625,1769">
+<area shape="rect" id="node12" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="337,1251,682,1345">
+<area shape="rect" id="node13" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="364,1363,655,1457">
+<area shape="rect" id="node14" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="807,1509,1084,1603">
+<area shape="rect" id="node15" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="369,1621,650,1715">
+<area shape="rect" id="node16" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="394,1733,625,1827">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/policy_revisions.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
 <area shape="rect" id="node1" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="784,50,1124,320">
-<area shape="rect" id="node2" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="296,238,740,751">
+<area shape="rect" id="node2" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="296,238,740,810">
 <area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,80,252,262">
 <area shape="rect" id="node4" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1168,21,1499,262">
 <area shape="rect" id="node5" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="816,373,1091,555">
@@ -522,7 +556,7 @@
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="706,1675,915,1769">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="706,1733,915,1827">
 <area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,491,262,585">
 <area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,672,545,766">
 <area shape="rect" id="node4" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="657,5,964,99">
@@ -530,15 +564,15 @@
 <area shape="rect" id="node6" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="684,229,937,323">
 <area shape="rect" id="node7" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="652,341,969,435">
 <area shape="rect" id="node8" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1076,488,1416,582">
-<area shape="rect" id="node9" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="589,549,1032,1062">
-<area shape="rect" id="node10" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="694,1080,927,1174">
+<area shape="rect" id="node9" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="589,549,1032,1121">
+<area shape="rect" id="node10" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="694,1139,927,1233">
 <area shape="rect" id="node11" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1460,488,1792,582">
 <area shape="rect" id="node12" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="1109,635,1384,817">
-<area shape="rect" id="node13" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="638,1192,983,1286">
-<area shape="rect" id="node14" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="665,1304,956,1398">
-<area shape="rect" id="node15" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1108,1524,1385,1618">
-<area shape="rect" id="node16" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="670,1451,951,1545">
-<area shape="rect" id="node17" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="695,1563,926,1657">
+<area shape="rect" id="node13" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="638,1251,983,1345">
+<area shape="rect" id="node14" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="665,1363,956,1457">
+<area shape="rect" id="node15" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1108,1583,1385,1677">
+<area shape="rect" id="node16" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="670,1509,951,1603">
+<area shape="rect" id="node17" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="695,1621,926,1715">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/policy_revisions.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

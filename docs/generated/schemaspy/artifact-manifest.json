@@ -567,8 +567,8 @@
     },
     {
       "path": "columns.html",
-      "sha256": "ef9c92efcf33aeb3a8f1649c09830045eec09c30db2c6df96dc197dc2b22eba2",
-      "size_bytes": 385416
+      "sha256": "803f35baab02da88fad221b7a9fa6f77671a96b9436b6041ecf1851182b2b494",
+      "size_bytes": 387000
     },
     {
       "path": "constraint.js",
@@ -607,13 +607,13 @@
     },
     {
       "path": "diagrams/summary/relationships.implied.large.dot",
-      "sha256": "2c1e729e4d7d835182fdef5b467567b63f5672bb555b2d082339f1fb458039bf",
-      "size_bytes": 265575
+      "sha256": "887ff507027fd338e6b00cff32fd1f906d58dedd53a56f664a1948acc11108bf",
+      "size_bytes": 266815
     },
     {
       "path": "diagrams/summary/relationships.implied.large.png",
-      "sha256": "8b04c4c069b5f00a82e7cb1053d2e13e607a7eedf325996a244da2c87de62231",
-      "size_bytes": 1874704
+      "sha256": "c5f044faf1f7b88ce4ae1f97d1807688e70fc6eeb60d0170b7b17007b2796da2",
+      "size_bytes": 2095032
     },
     {
       "path": "diagrams/summary/relationships.real.compact.dot",
@@ -627,13 +627,13 @@
     },
     {
       "path": "diagrams/summary/relationships.real.large.dot",
-      "sha256": "99de406d3cce85ca389f160e4b3190dc7a78d94f943a3adb22203e720cf8c3ba",
-      "size_bytes": 191812
+      "sha256": "1442026724a394a19eca2cc42b747194fa1674515e72c2f28bca58ac1afdb100",
+      "size_bytes": 193052
     },
     {
       "path": "diagrams/summary/relationships.real.large.png",
-      "sha256": "4f6c113ddfc1806490867509456ad2e8bc0b87fe25ffb4a2bf396cd6e59c61b3",
-      "size_bytes": 1277078
+      "sha256": "00a6f5e21b583f609045e6cfecbc680442c126238c27aec4db3387f6875e6180",
+      "size_bytes": 1288712
     },
     {
       "path": "diagrams/tables/app_action_lifecycle.1degree.dot",
@@ -1587,43 +1587,43 @@
     },
     {
       "path": "diagrams/tables/policy_activation_operations.1degree.dot",
-      "sha256": "1bb5391254c5bb0868b5877ddfbdcf7ef9934136309de40a5c34e84af6f5706c",
-      "size_bytes": 12846
+      "sha256": "73427aac88dc2d05885a8277c0303a2368a1de54cdf8e4b0a6e526a7737cd5db",
+      "size_bytes": 13624
     },
     {
       "path": "diagrams/tables/policy_activation_operations.1degree.png",
-      "sha256": "8a8e7ef167359574608769f6973635a953cdb2cf18fdbc940fcb0c9f893324c7",
-      "size_bytes": 113917
+      "sha256": "ec799ddb45cfbbf26f104ed3d2e58ab8585bb5b92aac1a74c49fe561b2e707be",
+      "size_bytes": 120851
     },
     {
       "path": "diagrams/tables/policy_activation_operations.2degrees.dot",
-      "sha256": "f6e4d4307c4092319a2dc9f39dc72223838fd2e32d7014d12bc6b5c8d495c505",
-      "size_bytes": 18498
+      "sha256": "2c0656c0f9a7ed916776861dd453e4b61df2454d224c7a46fd223ede37ef4d42",
+      "size_bytes": 19276
     },
     {
       "path": "diagrams/tables/policy_activation_operations.2degrees.png",
-      "sha256": "3a9d084a2431c25584c3ceaf81e7f7d9acf657e8629bb32aef056170be8231c8",
-      "size_bytes": 231682
+      "sha256": "0473c923d0bc714395d6b83db83445b44503d6114d98e03f292f3b5c8c3ed5ec",
+      "size_bytes": 239182
     },
     {
       "path": "diagrams/tables/policy_activation_operations.implied1degrees.dot",
-      "sha256": "d511f7c7e0f99e76a8a4b3f643059e23c3b9f6313afdc1f658361327a1a3ef15",
-      "size_bytes": 13008
+      "sha256": "469e7c9f24a8e02db402fff821cc9e0cc1ecf7aec4bc82282b6dbf1cdf1d0a0b",
+      "size_bytes": 13786
     },
     {
       "path": "diagrams/tables/policy_activation_operations.implied1degrees.png",
-      "sha256": "65401f67165e582222b31e71495cce91424ddd1c8e2ce45084e038616b5979a3",
-      "size_bytes": 114276
+      "sha256": "08d478c7b61f77ba549831349fe481eb0886b9b42eaf1be138d9d125a7f8a217",
+      "size_bytes": 123328
     },
     {
       "path": "diagrams/tables/policy_activation_operations.implied2degrees.dot",
-      "sha256": "2498609b2d5ca558cf21bb3ada52b676da5979061f4b6a2f43df15d15255d146",
-      "size_bytes": 19838
+      "sha256": "cdaea9835626f8592e90de8f2695a1dec5031d55866280dc33542f7afb8afaf4",
+      "size_bytes": 20616
     },
     {
       "path": "diagrams/tables/policy_activation_operations.implied2degrees.png",
-      "sha256": "ceb383c485ea79929b145776bf2364d062358e5960cc0a344f3054bdf99bc5aa",
-      "size_bytes": 261494
+      "sha256": "dafcb0d26add98d12f8e1c51497cb5b620c1936d2a4e7fbb8f60dce422bd80d2",
+      "size_bytes": 267481
     },
     {
       "path": "diagrams/tables/policy_approvals.1degree.dot",
@@ -1777,43 +1777,43 @@
     },
     {
       "path": "diagrams/tables/policy_revisions.1degree.dot",
-      "sha256": "2e9403ef1f05c22f7b12b416727c6334d6570dcd1c7f09c77ff480ad62dd4989",
-      "size_bytes": 13353
+      "sha256": "15c9fb9831f1cb93d73775151963754f65d3454fc6e1f4f129e9f13b0ec41020",
+      "size_bytes": 14119
     },
     {
       "path": "diagrams/tables/policy_revisions.1degree.png",
-      "sha256": "57b8ce1793230b02078fc7d54ecc336910a34929f886d266afe9fa6ef34db8de",
-      "size_bytes": 115047
+      "sha256": "62b999d405f43be0210446bfa9dcc2341de3d0405a3d6f682ec93eeeb9503979",
+      "size_bytes": 122062
     },
     {
       "path": "diagrams/tables/policy_revisions.2degrees.dot",
-      "sha256": "7dd5ee44bab67c09dc96665446441b3fe2eef6ea8ed62567397108175354803d",
-      "size_bytes": 20667
+      "sha256": "3573b424f6203ce8f2947a84b5a4384619c9bb92e28aea6cbd64eec00b689842",
+      "size_bytes": 21433
     },
     {
       "path": "diagrams/tables/policy_revisions.2degrees.png",
-      "sha256": "83691020b2a89d857d07d4047e57557d4bacd40d59fca3e71f09a7bebd4d9cd7",
-      "size_bytes": 249948
+      "sha256": "561866c90429a1b5fcff3dde9acbb05bdfbfc5f0f9d19667246f479ebeaf3774",
+      "size_bytes": 287440
     },
     {
       "path": "diagrams/tables/policy_revisions.implied1degrees.dot",
-      "sha256": "62967113cfc1df5ed047596cd789e19deec90e2798e43e3f89a0b38268738e4e",
-      "size_bytes": 16149
+      "sha256": "1b46f0ff4b31c4cc80d34d001b3da58cd4d81d09bcf7884de899f0d03f42dc49",
+      "size_bytes": 16915
     },
     {
       "path": "diagrams/tables/policy_revisions.implied1degrees.png",
-      "sha256": "1cdaeaecbb9107410a6f75f85b648c0d0cbf99097b73d5ab986d4cc1fedd5c7a",
-      "size_bytes": 144566
+      "sha256": "f2ef61b0b2f1f95e387045508a8da3e42463347f8361aea4b5f9aa14003eb5cf",
+      "size_bytes": 152158
     },
     {
       "path": "diagrams/tables/policy_revisions.implied2degrees.dot",
-      "sha256": "6a480bc456f3d6dad246b092abd6b34551cdd88528a62d39b27409bbe178352d",
-      "size_bytes": 22031
+      "sha256": "9337b26f547da37e920905ed04268859242c90fb56c364b4e9cccbd8c2b5872b",
+      "size_bytes": 22797
     },
     {
       "path": "diagrams/tables/policy_revisions.implied2degrees.png",
-      "sha256": "9227b732679f6622af7891123869fd1af8b4d369bf835f02d6c9efdfa78e030c",
-      "size_bytes": 270744
+      "sha256": "e800b7fcb8d2bb9da34bc80857b0bb53e7e3382a5ed8467a7744ff58f2e995b8",
+      "size_bytes": 313159
     },
     {
       "path": "diagrams/tables/policy_runtime_state.1degree.dot",
@@ -2807,7 +2807,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "1dfe3b341e554fa51119271836777cecbbf9bb8340d23787065d08d3d9630fbc",
+      "sha256": "db3e1e4e756a05db48642f63f40e60cb9c9b1f44ce77ee59573b790853df4a14",
       "size_bytes": 60072
     },
     {
@@ -2832,12 +2832,12 @@
     },
     {
       "path": "pocketlab-lite-schema.sqlite3.main.xml",
-      "sha256": "831be663ea8bde77090d667d46180603e11621ae713371c3253435a9d846884d",
-      "size_bytes": 233891
+      "sha256": "e696fe4c6edd1f61cbdedd65eea66f8e41b94b90cceeb5d85876b388b0a1c877",
+      "size_bytes": 234623
     },
     {
       "path": "relationships.html",
-      "sha256": "6961d5ea891db592a0a1ecb047d6c2258d91893b6585b8ea5eb40f76224e76f0",
+      "sha256": "728e8e70007a68e697ff3dfdfc2cd31ecdb588a28bcf67d788786bd084f58878",
       "size_bytes": 39246
     },
     {
@@ -2872,8 +2872,8 @@
     },
     {
       "path": "source-metadata.json",
-      "sha256": "a0fb5530376c82e26f75a81fdae01f3899e9094e5a8233137e20fd3069792724",
-      "size_bytes": 8916
+      "sha256": "377453204b72185947dfaee35575854b73acdeaf13522294c1a55aaa0e77d435",
+      "size_bytes": 9192
     },
     {
       "path": "tables/app_action_lifecycle.html",
@@ -3047,8 +3047,8 @@
     },
     {
       "path": "tables/policy_activation_operations.html",
-      "sha256": "cd26658227eee63e224977d6a9d8de987e0473d167985fb9bfeea47a951487f6",
-      "size_bytes": 37730
+      "sha256": "761b0ca739d097d1699f1d31578de7ada2d294800a137ce7ea4b531366020ebf",
+      "size_bytes": 39659
     },
     {
       "path": "tables/policy_approvals.html",
@@ -3077,8 +3077,8 @@
     },
     {
       "path": "tables/policy_revisions.html",
-      "sha256": "f104c555a963627595ed3533b5dc3eb473716df236618eabe5005e14ae376bb5",
-      "size_bytes": 43237
+      "sha256": "35839118ede947c5cbca771c1fe9bdf5083291e8de62094d0102b44153e7106e",
+      "size_bytes": 45159
     },
     {
       "path": "tables/policy_runtime_state.html",

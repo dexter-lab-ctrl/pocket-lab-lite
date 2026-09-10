@@ -761,6 +761,50 @@ def test_e4_database_generation_mismatch_and_pressure_deferral(tmp_path, monkeyp
     scheduler.shutdown(drain_seconds=1.0)
 
 
+def test_e4_primary_prepared_projection_drains_queue_pressure(tmp_path, monkeypatch):
+    scheduler = _new_scheduler(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob
+    from api_fastapi.services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
+
+    calls = {"count": 0}
+
+    def builder():
+        calls["count"] += 1
+        return {"count": calls["count"]}
+
+    job = ProjectionJob(
+        "system.agent",
+        builder,
+        lambda _payload: calls["count"],
+        40,
+        "io",
+        1.0,
+    )
+    scheduler.mark_dirty("system.agent", job=job)
+    assert _wait_for(lambda: scheduler.status("system.agent").get("committed_count") == 1)
+
+    # A stale primary prepared read must still get one bounded refresh while
+    # the queue is under pressure. Lower-priority/background work remains
+    # eligible for adaptive deferral.
+    monkeypatch.setattr(
+        RUNTIME_DIAGNOSTICS,
+        "latest_event_loop_lag_ms",
+        lambda: scheduler.critical_lag_ms + 1,
+    )
+    with scheduler._condition:
+        scheduler._states["system.agent"].next_retry_at = 0.0
+    scheduler.mark_dirty("system.agent", job=job)
+    assert _wait_for(
+        lambda: scheduler.status("system.agent").get("committed_count") == 2,
+        2.0,
+    )
+    status = scheduler.status("system.agent")
+    assert status["active"] is False
+    assert status["last_error_type"] == ""
+    assert status["pressure_reason"] == ""
+    scheduler.shutdown(drain_seconds=1.0)
+
+
 def test_e4_dirty_signal_never_persists_diagnostics_on_request_thread(tmp_path, monkeypatch):
     scheduler = _new_scheduler(tmp_path, monkeypatch)
     from api_fastapi.services.projection_scheduler import ProjectionJob

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: a1e707e07a841ff41d16a5e247de1656be1b0b34692b67b699c8655316036580
+source_fingerprint: 392685425f2ae5d9b878ba1ea22ba21834ac4d1cbf07fc7c61f740ef48d956e1
 schema_revision: 1
 validation_status: generated
 ---
@@ -55,21 +55,21 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `enterprise_memberships` | table | 8 | 3 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql |
 | `human_credentials` | table | 10 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `human_enrollment_claims` | table | 16 | 2 | 5 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql |
-| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql |
+| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
 | `identity_audit_events` | table | 8 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
 | `owner_claims` | table | 12 | 0 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `phase3b_current_state` | table | 12 | 0 | 3 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `phase3b_revision_events` | table | 16 | 0 | 4 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
-| `policy_activation_operations` | table | 12 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql |
+| `policy_activation_operations` | table | 14 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
 | `policy_approvals` | table | 23 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql |
 | `policy_continuation_events` | table | 9 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `policy_decision_details` | table | 3 | 1 | 1 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `policy_decisions` | table | 14 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
-| `policy_recovery_resolutions` | table | 10 | 2 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql |
-| `policy_revisions` | table | 15 | 2 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql |
-| `policy_runtime_state` | table | 5 | 2 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql |
+| `policy_recovery_resolutions` | table | 10 | 2 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
+| `policy_revisions` | table | 17 | 2 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
+| `policy_runtime_state` | table | 5 | 2 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
 | `policy_temporary_exceptions` | table | 13 | 2 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `projection_dirty_signals` | table | 7 | 0 | 2 | projections | prepared projection scheduler | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `projection_refresh_state` | table | 30 | 0 | 2 | projections | projection scheduler | internal metadata | verified | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
@@ -857,7 +857,9 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Column | Type | Nullable | Default | Primary key |
 | --- | --- | --- | --- | --- |
 | `operation_id` | TEXT | yes | — | 1 |
-| `requested_by_human_id` | TEXT | no | — | 0 |
+| `requested_by_human_id` | TEXT | yes | — | 0 |
+| `requested_by_principal_type` | TEXT | no | 'human' | 0 |
+| `requested_by_principal_id` | TEXT | no | '' | 0 |
 | `correlation_id` | TEXT | no | — | 0 |
 | `candidate_revision_id` | TEXT | no | — | 0 |
 | `prior_known_good_revision_id` | TEXT | yes | — | 0 |
@@ -982,7 +984,9 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `canonical_parameters_json` | TEXT | no | — | 0 |
 | `manifest_json` | TEXT | no | — | 0 |
 | `content_hash` | TEXT | no | — | 0 |
-| `created_by_human_id` | TEXT | no | — | 0 |
+| `created_by_human_id` | TEXT | yes | — | 0 |
+| `created_by_principal_type` | TEXT | no | 'human' | 0 |
+| `created_by_principal_id` | TEXT | no | '' | 0 |
 | `created_at` | TEXT | no | — | 0 |
 | `validation_status` | TEXT | no | — | 0 |
 | `validated_at` | TEXT | yes | — | 0 |

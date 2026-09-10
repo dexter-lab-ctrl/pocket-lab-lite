@@ -163,12 +163,17 @@ def status_summary(
     api_nats_status: Optional[Dict[str, Any]],
     caddy_tcp: bool,
     caddy_upstream_http: bool,
+    api_http_reachable: bool = True,
 ) -> Dict[str, Any]:
     return {
         "services": statuses,
         "checks": {
             "nats_tcp_reachable": nats_tcp,
             "api_nats_connected": not nats_api_status_unhealthy(api_nats_status),
+            # A PM2 status transition can briefly lag the actual listener while
+            # an old process is draining. The local endpoint is the authority
+            # for whether a restart would create avoidable port pressure.
+            "api_http_reachable": api_http_reachable,
             # caddy_tcp_reachable is the proxy-owned liveness signal.
             # caddy_upstream_http_reachable traverses Caddy to FastAPI and is
             # diagnostic only; it must never trigger a Caddy restart by itself.
@@ -448,8 +453,10 @@ class LiteCoreSupervisor:
         statuses = {spec.name: process_status(processes, spec.name) for spec in CORE_SERVICES}
         nats_tcp = tcp_reachable("127.0.0.1", self.nats_port)
         api_nats_url = f"http://127.0.0.1:{self.api_port}/api/nats/status"
+        api_health_url = f"http://127.0.0.1:{self.api_port}/health"
         caddy_url = f"http://127.0.0.1:{self.caddy_port}/health"
         api_nats = fetch_json(api_nats_url)
+        api_http_reachable = fetch_json(api_health_url) is not None
         caddy_tcp = tcp_reachable("127.0.0.1", self.caddy_port)
         caddy_upstream_http = fetch_json(caddy_url) is not None
         return status_summary(
@@ -458,6 +465,7 @@ class LiteCoreSupervisor:
             api_nats,
             caddy_tcp,
             caddy_upstream_http,
+            api_http_reachable,
         )
 
     def _restore_guard_state(self) -> Dict[str, Any]:
@@ -869,7 +877,19 @@ class LiteCoreSupervisor:
                 actions.append(self.restart_pm2("pocket-worker", "nats_recovered_refresh_worker_client"))
         else:
             if not is_online(statuses.get("pocket-api", "missing")):
-                actions.append(self.restart_pm2("pocket-api", "api_pm2_not_online"))
+                if observed["checks"].get("api_http_reachable") is True:
+                    # Do not restart a responding API solely because PM2 is
+                    # reporting a transient waiting/stopping state. Repeated
+                    # restarts can leave old Python listeners alive on Termux,
+                    # causing EADDRINUSE and a self-sustaining outage.
+                    self._append_event({
+                        "event": "api_pm2_status_degraded_endpoint_reachable",
+                        "service": "pocket-api",
+                        "reason": "api_pm2_not_online_but_health_reachable",
+                        "acted": False,
+                    })
+                else:
+                    actions.append(self.restart_pm2("pocket-api", "api_pm2_not_online"))
             elif observed["checks"].get("api_nats_connected") is not True:
                 # Do not restart a healthy FastAPI process merely because its own
                 # NATS status probe is briefly degraded.  App actions and UI
@@ -938,7 +958,12 @@ class LiteCoreSupervisor:
         required_unhealthy = [
             spec.name
             for spec in CORE_SERVICES
-            if spec.required and not is_online(post["services"].get(spec.name, "missing"))
+            if spec.required
+            and not is_online(post["services"].get(spec.name, "missing"))
+            and not (
+                spec.name == "pocket-api"
+                and post["checks"].get("api_http_reachable") is True
+            )
         ]
         supervisor_status = "healthy"
         if actions:

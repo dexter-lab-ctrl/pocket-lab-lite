@@ -437,6 +437,98 @@ def test_single_writer_queue_is_bounded_and_reports_sanitized_metrics(tmp_path, 
     assert "transaction_ms_avg" in metrics
 
 
+def test_single_writer_prioritizes_recovery_class_writes_over_queued_background_work(
+    tmp_path, monkeypatch
+):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.runtime import SQLiteWriteService
+
+    apply_migrations()
+    writer = SQLiteWriteService(max_queue=4)
+    entered = threading.Event()
+    release = threading.Event()
+    order: list[str] = []
+    failures: list[BaseException] = []
+
+    def blocking(conn):
+        entered.set()
+        release.wait(2)
+        order.append("blocking")
+        return 1
+
+    def queued(label: str):
+        def callback(conn):
+            order.append(label)
+            return label
+
+        try:
+            writer.submit(
+                label,
+                callback,
+                deadline_seconds=3,
+                priority=50 if label == "background" else 5,
+            )
+        except BaseException as exc:  # pragma: no cover - diagnostic on failure
+            failures.append(exc)
+
+    first = threading.Thread(
+        target=lambda: writer.submit("blocking", blocking, deadline_seconds=3, priority=50)
+    )
+    first.start()
+    assert entered.wait(1)
+    background = threading.Thread(target=queued, args=("background",))
+    critical = threading.Thread(target=queued, args=("critical",))
+    background.start()
+    time.sleep(0.05)
+    critical.start()
+    time.sleep(0.05)
+    release.set()
+    first.join(3)
+    background.join(3)
+    critical.join(3)
+    writer.shutdown()
+
+    assert not failures
+    assert order == ["blocking", "critical", "background"]
+
+
+def test_recovery_projection_writer_failure_is_not_reported_as_a_refresh(
+    tmp_path, monkeypatch
+):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.db.runtime import SQLiteWriteDeadlineExceeded
+    from api_fastapi.services import lite_control_plane_store
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    captured: dict[str, object] = {}
+
+    def fail_submit(name, callback, *, deadline_seconds=2.0, priority=50):
+        captured.update(
+            name=name,
+            deadline_seconds=deadline_seconds,
+            priority=priority,
+        )
+        raise SQLiteWriteDeadlineExceeded("test writer pressure")
+
+    monkeypatch.setattr(lite_control_plane_store.SQLITE_WRITER, "submit", fail_submit)
+    with pytest.raises(SQLiteWriteDeadlineExceeded, match="test writer pressure"):
+        ControlPlaneProjectionStore().project_recovery(
+            {
+                "status": "healthy",
+                "summary": "Recovery ready",
+                "maintenance": {"active": False, "status": "idle"},
+                "updated_at": "2026-07-21T12:00:00Z",
+            }
+        )
+
+    assert captured == {
+        "name": "recovery.projection",
+        "deadline_seconds": 8.0,
+        "priority": 5,
+    }
+
+
 def test_read_connection_generation_invalidation_reopens_connection(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
     from api_fastapi.db.migrations import apply_migrations
@@ -456,6 +548,22 @@ def test_read_connection_generation_invalidation_reopens_connection(tmp_path, mo
     assert third.generation == generation
     assert third.connection is not first_connection
     manager.release(third)
+    manager.close()
+
+
+def test_read_connection_open_failure_returns_reserved_permit(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.runtime import SQLiteReadConnectionManager
+
+    manager = SQLiteReadConnectionManager(max_connections=1)
+    with pytest.raises(FileNotFoundError):
+        manager.acquire()
+
+    apply_migrations()
+    entry, _ = manager.acquire()
+    manager.release(entry)
+    assert manager.snapshot()["acquire_timeout"] == 0
     manager.close()
 
 
@@ -934,6 +1042,10 @@ def test_cold_prepared_read_without_snapshot_fails_fast_with_controlled_signal(t
     )
 
     store = ControlPlaneProjectionStore()
+    # Keep the assertion focused on the bounded prepared-read path.  The first
+    # call also pays one-time migration/writer initialization, which is outside
+    # the read deadline and varies materially on Termux/CI hosts.
+    store.initialize()
     started = time.monotonic()
     with pytest.raises(PreparedProjectionUnavailable):
         store.prepared_read(
@@ -962,6 +1074,44 @@ def test_database_replacement_fence_clears_prepared_refresh_state(tmp_path, monk
     metrics = store.prepared_metrics()
     assert metrics["refreshing"] == {}
     assert metrics["prepared_keys"] == []
+
+
+def test_startup_warm_read_accepts_committed_sqlite_snapshot(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+
+    store = ControlPlaneProjectionStore()
+    payload = {
+        "status": "healthy",
+        "summary": "Recovery ready",
+        "maintenance": {"status": "idle"},
+        "updated_at": "2026-07-21T12:00:00Z",
+    }
+    assert store.warm_prepared_read(
+        domain="test",
+        key="warm-recovery",
+        snapshot_builder=store.recovery_projection_snapshot,
+        builder=lambda: payload,
+        projector=store.project_recovery,
+        deadline_seconds=1.0,
+        priority=10,
+        work_class="recovery",
+    ) is True
+
+    deadline = time.monotonic() + 3.0
+    status = PROJECTION_SCHEDULER.status("test.warm-recovery")
+    while time.monotonic() < deadline and (
+        status.get("committed_generation", 0) < status.get("generation", 0)
+        or status.get("last_error_type")
+    ):
+        time.sleep(0.02)
+        status = PROJECTION_SCHEDULER.status("test.warm-recovery")
+
+    assert status["committed_generation"] >= 1
+    assert status["last_error_type"] == ""
+    assert store.recovery_projection_snapshot() is not None
+    assert "test:warm-recovery" in store.prepared_metrics()["prepared_keys"]
 
 
 def test_dynamic_stale_budget_and_success_cooldown_prevent_refresh_storms(tmp_path, monkeypatch):
@@ -1050,6 +1200,7 @@ def test_refresh_failure_backoff_blocks_immediate_reschedule(tmp_path, monkeypat
 def test_recovery_subprojections_cache_slow_sources_and_serve_stale(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
     from api_fastapi.services import lite_recovery_subprojections as sub
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
     with sub._LOCK:
         sub._VALUES.clear()
@@ -1060,11 +1211,16 @@ def test_recovery_subprojections_cache_slow_sources_and_serve_stale(tmp_path, mo
 
     calls = 0
 
-    def source():
+    def source(*, fleet_payload=None):
         nonlocal calls
         calls += 1
         return {"status": "healthy", "targets": [{"id": "storage-1"}], "count": 1}
 
+    monkeypatch.setattr(
+        CONTROL_PLANE,
+        "fleet_projection_snapshot",
+        lambda: {"devices": []},
+    )
     monkeypatch.setattr(sub.lite_app_backup_targets, "backup_targets", source)
     first = sub.backup_targets()
     second = sub.backup_targets()

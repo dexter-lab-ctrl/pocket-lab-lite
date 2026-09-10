@@ -2281,6 +2281,7 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+        "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -2512,6 +2513,7 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+        "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -2563,6 +2565,7 @@
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+        "test:tests/backend/test_lite_photoprism_backup.py",
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
@@ -2587,6 +2590,7 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+        "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -3305,6 +3309,7 @@
         "test:tests/backend/test_lite_long_gate_group4_reporting.py",
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
+        "test:tests/backend/test_lite_recovery.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -3395,6 +3400,7 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/backend/test_lite_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -3760,6 +3766,7 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+        "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -3906,6 +3913,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "17541b9d7baf5786cb1f3269b2c6cb685959862bfa0cdf1141d06998011abd6e"
+    "source_fingerprint": "da6c7356ae23ba42389f552d7306ff692e274282e5b0ded1ab4972e3f05d8f67"
   }
 }

@@ -11,6 +11,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
+from .. import deps
 from ..db.connection import connection
 from ..db.migrations import apply_migrations
 from . import lite_enterprise_identity, lite_policy_lifecycle
@@ -57,6 +58,10 @@ ACTION_CATALOG = (
     ("approvals.review", "Review requests", "Approve or reject another person's protected request."),
     ("exceptions.manage", "Temporary access", "Create and revoke narrow, expiring policy exceptions."),
     ("evidence.read", "Review activity", "Read sanitized Identity and Rules evidence."),
+    ("backup.create", "Create backups", "Create an encrypted Pocket Lab restore point."),
+    ("backup.verify", "Verify backups", "Verify a selected encrypted restore point."),
+    ("restore.preview", "Preview restores", "Inspect a selected restore point before changing local state."),
+    ("restore.apply", "Apply restores", "Apply a confirmed, preview-bound restore point."),
 )
 
 
@@ -150,11 +155,15 @@ def _mode_for(action: str, role: str, params: dict[str, int]) -> str:
             return "approval" if params["admin_device_remove_approval"] else "allow"
         if action in {"people.manage", "catalog.install", "rules.draft", "rules.simulate", "approvals.review", "exceptions.manage", "evidence.read"}:
             return "allow"
+        if action in {"backup.create", "backup.verify", "restore.preview"}:
+            return "allow"
         return "deny"
     if role == "Operator":
         if action == "device.remove":
             return "approval" if params["operator_device_remove_approval"] else "allow"
         if action in {"catalog.install", "rules.simulate", "evidence.read"}:
+            return "allow"
+        if action in {"backup.create", "backup.verify", "restore.preview"}:
             return "allow"
         return "deny"
     if role == "Auditor":
@@ -183,9 +192,13 @@ def access_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
     actor_id = str(actor.get("identity_id") or "")
     enabled = bool(authorization.get("enterprise_enabled"))
     role = str(authorization.get("role") or "")
-    if actor.get("type") != "human" or not actor_id:
+    qualification = deps.is_qualification_owner_context(context)
+    if (actor.get("type") != "human" and not qualification) or not actor_id:
         raise GovernanceError("human_session_required", "Sign in to review Identity and Rules authority.", 401)
-    if not enabled:
+    if qualification:
+        enabled = False
+        role = "Owner"
+    elif not enabled:
         with connection() as conn:
             owner = conn.execute("SELECT human_id FROM human_identities WHERE status='active' ORDER BY created_at ASC LIMIT 1").fetchone()
         role = "Owner" if owner and str(owner["human_id"]) == actor_id else ""
@@ -200,6 +213,11 @@ def access_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
     return {
         "mode": "enterprise" if enabled else "personal",
         "enterprise_enabled": enabled,
+        "principal": {
+            "type": str(actor.get("type") or "human"),
+            "synthetic": qualification,
+            "auth_method": str(context.get("auth_method") or "")[:48],
+        },
         "current_role": role,
         "owner_authority": role == "Owner",
         "role": {"id": role, **ROLE_CATALOG.get(role, {"label": role, "summary": "Server-resolved Pocket Lab role."})},
@@ -215,6 +233,8 @@ def access_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
 
 def require_root_owner(auth_context: dict[str, Any]) -> tuple[dict[str, Any], str]:
     context = lite_enterprise_identity.enrich_auth_context(auth_context)
+    if deps.is_qualification_owner_context(context):
+        return context, deps.QUALIFICATION_OWNER_ID
     actor = context.get("actor") or {}
     authorization = context.get("authorization") or {}
     actor_id = str(actor.get("identity_id") or "")

@@ -847,6 +847,7 @@
         "reason:projection_too_old",
         "reason:projection_unavailable",
         "reason:protected_server_host",
+        "reason:qualification_authentication_required",
         "reason:queue_full",
         "reason:read_degraded",
         "reason:release_projection_unavailable",
@@ -1107,6 +1108,7 @@
         "reason:projection_too_old",
         "reason:projection_unavailable",
         "reason:protected_server_host",
+        "reason:qualification_authentication_required",
         "reason:queue_full",
         "reason:read_degraded",
         "reason:release_projection_unavailable",
@@ -1638,6 +1640,16 @@
         "table:policy_approvals"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:policy_activation_operations",
+        "table:policy_recovery_resolutions",
+        "table:policy_revisions",
+        "table:policy_runtime_state"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
     },
     {
       "entities": [
@@ -2883,6 +2895,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_photoprism_backup.py"
+      ],
+      "source": "tests/backend/test_lite_photoprism_backup.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py"
       ],
       "source": "tests/backend/test_lite_platform_release_inventory_isolation.py"
@@ -2946,6 +2964,12 @@
         "test:tests/backend/test_lite_projection_semantic_hardening.py"
       ],
       "source": "tests/backend/test_lite_projection_semantic_hardening.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_qualification_owner.py"
+      ],
+      "source": "tests/backend/test_lite_qualification_owner.py"
     },
     {
       "entities": [
@@ -3734,6 +3758,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "17541b9d7baf5786cb1f3269b2c6cb685959862bfa0cdf1141d06998011abd6e"
+    "source_fingerprint": "da6c7356ae23ba42389f552d7306ff692e274282e5b0ded1ab4972e3f05d8f67"
   }
 }

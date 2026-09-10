@@ -7075,6 +7075,17 @@
       "target_type": "boundary"
     },
     {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:cbc63df5b7c595e6",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "target_type": "test"
+    },
+    {
       "evidence": [
         "contracts/generated/documentation-enterprise/security-controls.json",
         "contracts/generated/knowledge/cross-references.json"

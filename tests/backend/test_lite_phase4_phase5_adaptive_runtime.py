@@ -689,8 +689,8 @@ def test_unregistered_mailbox_rows_are_separate_from_runnable_pressure() -> None
     ).read_text(encoding="utf-8")
 
     assert '"runnable_pending": runnable_pending' in scheduler
-    assert '"total_pending": max(0, len(rows) - claimed)' in scheduler
+    assert '"total_pending": max(0, len(rows) - claimed - retired)' in scheduler
     assert '"unregistered_domains": sorted(unregistered_domains)' in scheduler
     assert "queue_depth=0 if bootstrap_required" in scheduler
-    assert "optional=False if bootstrap_required" in scheduler
+    assert "False\n                        if bootstrap_required or primary_prepared_projection" in scheduler
     assert "bootstrap_admission_count" in scheduler

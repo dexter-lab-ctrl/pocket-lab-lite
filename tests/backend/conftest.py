@@ -84,6 +84,8 @@ def _freshen_projection_scheduler() -> None:
         scheduler._active_futures.clear()
         scheduler._sequence = 0
         scheduler._dispatcher = None
+        scheduler._critical_executor = None
+        scheduler._recovery_executor = None
         scheduler._io_executor = None
         scheduler._cpu_executor = None
         scheduler._accepting = False

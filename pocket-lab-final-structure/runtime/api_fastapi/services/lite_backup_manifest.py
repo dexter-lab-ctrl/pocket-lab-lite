@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import tempfile
+import threading
 from datetime import datetime
 from pathlib import Path
 import re
@@ -15,6 +16,11 @@ from . import lite_storage_faults
 
 CURRENT_FORMAT_VERSION = 2
 _SAFE_BACKUP_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
+_MAX_MANIFEST_SUMMARY_CACHE = 256
+_SUMMARY_CACHE_LOCK = threading.RLock()
+_SUMMARY_CACHE: dict[
+    str, tuple[tuple[int, int, int], tuple[int, str], dict[str, Any]]
+] = {}
 
 
 def _read_json(path: Path, default: Any) -> Any:
@@ -74,7 +80,10 @@ def write_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("backup_id is required")
     manifest = dict(manifest)
     manifest["manifest_checksum"] = canonical_checksum(manifest)
-    _write_json(manifest_path(backup_id), manifest)
+    path = manifest_path(backup_id)
+    _write_json(path, manifest)
+    with _SUMMARY_CACHE_LOCK:
+        _SUMMARY_CACHE.pop(str(path), None)
     return manifest
 
 
@@ -113,15 +122,88 @@ def _manifest_sort_key(path: Path, payload: dict[str, Any]) -> tuple[int, str]:
     return path.stat().st_mtime_ns // 1_000, backup_id
 
 
+def _manifest_fingerprint(path: Path) -> tuple[int, int, int] | None:
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    if not path.is_file():
+        return None
+    return (
+        int(getattr(stat, "st_ino", 0) or 0),
+        int(stat.st_size),
+        int(getattr(stat, "st_mtime_ns", 0) or 0),
+    )
+
+
+def _compact_app_backup(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    allowed = (
+        "app_id",
+        "app_label",
+        "mode",
+        "included_sets",
+        "excluded_sets",
+        "media_included",
+    )
+    compact = {key: value[key] for key in allowed if key in value}
+    return compact if compact.get("app_id") else None
+
+
+def _compact_manifest(path: Path, payload: dict[str, Any]) -> dict[str, Any] | None:
+    """Retain only bounded history metadata, never the full file inventory.
+
+    Full manifests remain the durable restore/verification authority and are
+    read by ``read_manifest`` for a selected backup.  Recovery summary and
+    history probes only need the public metadata below; retaining
+    ``included_files`` for every historical point inflated the Termux worker's
+    heap into the PM2 memory ceiling.
+    """
+    if not payload.get("backup_id"):
+        return None
+    compact = api_manifest(payload)
+    app_backup = _compact_app_backup(payload.get("app_backup"))
+    if app_backup is not None:
+        compact["app_backup"] = app_backup
+    return compact
+
+
 def _sorted_manifest_records() -> list[tuple[tuple[int, str], dict[str, Any]]]:
     layout = backup_layout()
     layout.ensure()
     records: list[tuple[tuple[int, str], dict[str, Any]]] = []
+    seen: set[str] = set()
     for path in layout.manifests.glob("*.json"):
-        payload = _read_json(path, {})
-        if not isinstance(payload, dict) or not payload.get("backup_id"):
+        fingerprint = _manifest_fingerprint(path)
+        if fingerprint is None:
             continue
-        records.append((_manifest_sort_key(path, payload), payload))
+        cache_key = str(path)
+        seen.add(cache_key)
+        with _SUMMARY_CACHE_LOCK:
+            cached = _SUMMARY_CACHE.get(cache_key)
+        if cached is not None and cached[0] == fingerprint:
+            sort_key, compact = cached[1], cached[2]
+        else:
+            payload = _read_json(path, {})
+            if not isinstance(payload, dict):
+                continue
+            compact = _compact_manifest(path, payload)
+            if compact is None:
+                continue
+            sort_key = _manifest_sort_key(path, compact)
+            with _SUMMARY_CACHE_LOCK:
+                _SUMMARY_CACHE[cache_key] = (fingerprint, sort_key, compact)
+        # A shallow copy keeps callers from mutating the cached record while
+        # avoiding another copy of any large historical inventory (which is
+        # intentionally absent from the compact value).
+        records.append((sort_key, dict(compact)))
+    with _SUMMARY_CACHE_LOCK:
+        for key in tuple(_SUMMARY_CACHE):
+            if key not in seen:
+                _SUMMARY_CACHE.pop(key, None)
+        while len(_SUMMARY_CACHE) > _MAX_MANIFEST_SUMMARY_CACHE:
+            _SUMMARY_CACHE.pop(next(iter(_SUMMARY_CACHE)), None)
     return sorted(records, key=lambda item: item[0], reverse=True)
 
 
@@ -222,6 +304,15 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         except (TypeError, ValueError):
             return 0
 
+    try:
+        included_file_count = max(
+            0,
+            int(manifest.get("included_file_count"))
+            if "included_file_count" in manifest and not included_files
+            else len(included_files),
+        )
+    except (TypeError, ValueError):
+        included_file_count = len(included_files) if hasattr(included_files, "__len__") else 0
     return {
         "backup_id": manifest.get("backup_id"),
         "created_at": manifest.get("created_at"),
@@ -231,6 +322,7 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         "status": manifest.get("status") or manifest.get("verification_status") or "unknown",
         "app_version": manifest.get("app_version"),
         "schema_version": manifest.get("schema_version"),
+        "include_event_journal": bool(manifest.get("include_event_journal", True)),
         "engine": manifest.get("engine"),
         "repository": {
             "type": repository.get("type") or "local",
@@ -240,7 +332,7 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         },
         "snapshot_id": manifest.get("snapshot_id"),
         "included_sets": manifest.get("included_sets", []),
-        "included_file_count": len(included_files),
+        "included_file_count": included_file_count,
         "excluded_sensitive_items": manifest.get("excluded_sensitive_items", []),
         "verification_status": manifest.get("verification_status", "not_verified"),
         "restorable": bool(manifest.get("restorable", manifest.get("verification_status") == "verified")),

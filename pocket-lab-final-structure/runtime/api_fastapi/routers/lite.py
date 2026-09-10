@@ -219,6 +219,29 @@ async def _enforce_lite_policy(
         ) from exc
 
 
+def _safe_recovery_actor(auth_context: dict[str, Any]) -> dict[str, str | bool]:
+    """Carry only non-sensitive actor classification into worker audit data."""
+    actor = auth_context.get("actor") or {}
+    auth_method = str(
+        (auth_context.get("session") or {}).get("auth_method")
+        or auth_context.get("auth_method")
+        or ""
+    ).strip()[:48]
+    actor_type = str(actor.get("type") or "authenticated")[:32]
+    return {
+        "actor_type": actor_type,
+        "actor_label": "Qualification Owner" if actor_type == "qualification" else "Authenticated actor",
+        "auth_method": auth_method,
+        "synthetic": actor_type == "qualification",
+    }
+
+
+def _recovery_target_revision() -> str:
+    try:
+        return str(max(0, int(lite_backup._current_recovery_target_revision())))
+    except Exception:
+        return "0"
+
 
 def _security_compact_headers(payload: dict[str, Any]) -> dict[str, str]:
     return {
@@ -3400,7 +3423,7 @@ def get_lite_recovery_summary(request: Request) -> Response:
             projector=CONTROL_PLANE.project_recovery,
             stale_after_ms=lite_core_projections.RECOVERY_SUMMARY_STALE_AFTER_MS,
             max_stale_ms=lite_core_projections.RECOVERY_SUMMARY_MAX_STALE_MS,
-            deadline_seconds=8.0, priority=50, work_class="io",
+            deadline_seconds=8.0, priority=10, work_class="critical",
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="recovery", view_model=view_model)
@@ -3418,7 +3441,7 @@ def get_lite_recovery_details(request: Request) -> Response:
             builder=lite_core_projections.recovery_details_payload, projector=CONTROL_PLANE.project_recovery,
             stale_after_ms=lite_core_projections.RECOVERY_DETAILS_STALE_AFTER_MS,
             max_stale_ms=lite_core_projections.RECOVERY_DETAILS_MAX_STALE_MS,
-            deadline_seconds=10.0, priority=60, work_class="io",
+            deadline_seconds=10.0, priority=15, work_class="critical",
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="recovery", view_model=view_model)
@@ -3740,8 +3763,22 @@ def restore_lite_app(app_id: str, payload: LiteAppRestoreRequest, request: Reque
 
 @router.post("/recovery/backup", status_code=202)
 async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command_id = uuid.uuid4().hex
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="backup.create",
+        target_type="recovery",
+        target_id=command_id,
+        target_revision=_recovery_target_revision(),
+        target={
+            "operation": "backup",
+            "include_event_journal": bool(payload.include_event_journal),
+            "include_app_data": bool(payload.include_app_data),
+            "dry_run": bool(payload.dry_run),
+        },
+        correlation_id=command_id,
+    )
     command = {
         "command_id": command_id,
         "include_event_journal": payload.include_event_journal,
@@ -3749,6 +3786,7 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
         "reason": payload.reason or "manual backup",
         "dry_run": payload.dry_run,
         "requested_by": "lite-api",
+        "requested_by_actor": _safe_recovery_actor(auth_context),
     }
     try:
         submitted = await submit_domain_command(
@@ -3770,6 +3808,11 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
     pending = lite_backup.record_backup_request(command)
     submitted["backup_id"] = command_id
     submitted["pending_backup"] = pending
+    submitted["authorization"] = {
+        "decision_id": policy_decision.get("decision_id"),
+        "reason_code": policy_decision.get("reason_code"),
+        "policy_revision": policy_decision.get("policy_revision"),
+    }
     submitted["summary"] = "Backup request queued. The encrypted repository will be initialized automatically if this is the first backup."
     return submitted
 
@@ -3820,9 +3863,18 @@ def get_lite_backup_receipt(backup_id: str, request: Request) -> dict[str, Any]:
 
 @router.post("/recovery/backups/{backup_id}/verify", status_code=202)
 async def verify_lite_backup(backup_id: str, payload: LiteBackupVerifyRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     selected = backup_id or payload.backup_id or "latest"
     command_id = uuid.uuid4().hex
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="backup.verify",
+        target_type="recovery",
+        target_id=selected,
+        target_revision=_recovery_target_revision(),
+        target={"operation": "verify", "backup_id": selected},
+        correlation_id=command_id,
+    )
     submitted = await submit_domain_command(
         "pocketlab.commands.lite.backup.verify",
         "lite.backup.verify_queued",
@@ -3831,18 +3883,33 @@ async def verify_lite_backup(backup_id: str, payload: LiteBackupVerifyRequest, r
             "backup_id": selected,
             "reason": payload.reason or "manual verification",
             "requested_by": "lite-api",
+            "requested_by_actor": _safe_recovery_actor(auth_context),
         },
     )
     submitted["backup_id"] = selected
+    submitted["authorization"] = {
+        "decision_id": policy_decision.get("decision_id"),
+        "reason_code": policy_decision.get("reason_code"),
+        "policy_revision": policy_decision.get("policy_revision"),
+    }
     submitted["summary"] = "Backup verification queued. The worker will check the manifest, restic snapshot, and repository metadata."
     return submitted
 
 
 @router.post("/recovery/restore/preview", status_code=202)
 async def preview_lite_restore(payload: LiteRestorePreviewRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command_id = uuid.uuid4().hex
     selected = payload.backup_id or "latest"
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="restore.preview",
+        target_type="recovery",
+        target_id=selected,
+        target_revision=_recovery_target_revision(),
+        target={"operation": "restore_preview", "backup_id": selected},
+        correlation_id=command_id,
+    )
     submitted = await submit_domain_command(
         "pocketlab.commands.lite.restore.preview",
         "lite.restore.preview_queued",
@@ -3851,9 +3918,15 @@ async def preview_lite_restore(payload: LiteRestorePreviewRequest, request: Requ
             "backup_id": selected,
             "reason": payload.reason or "manual restore preview",
             "requested_by": "lite-api",
+            "requested_by_actor": _safe_recovery_actor(auth_context),
         },
     )
     submitted["backup_id"] = selected
+    submitted["authorization"] = {
+        "decision_id": policy_decision.get("decision_id"),
+        "reason_code": policy_decision.get("reason_code"),
+        "policy_revision": policy_decision.get("policy_revision"),
+    }
     submitted["summary"] = "Restore preview queued. The worker will inspect the verified backup without changing local state."
     return submitted
 
@@ -3896,7 +3969,7 @@ def get_lite_restore_run(restore_id: str, request: Request) -> dict[str, Any]:
 
 @router.post("/recovery/restore", status_code=202)
 async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     if not payload.confirm:
         raise HTTPException(
             status_code=409,
@@ -3948,6 +4021,22 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
         ) from exc
     command_id = uuid.uuid4().hex
     selected = payload.backup_id
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="restore.apply",
+        target_type="recovery",
+        target_id=selected,
+        target_revision=_recovery_target_revision(),
+        target={
+            "operation": "restore",
+            "backup_id": selected,
+            "preview_id": payload.preview_id,
+            "confirmed": True,
+            "preview_bound": True,
+            "restorable": True,
+        },
+        correlation_id=command_id,
+    )
     submitted = await submit_domain_command(
         "pocketlab.commands.lite.restore.apply",
         "lite.restore.apply_queued",
@@ -3958,9 +4047,15 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
             "confirm": True,
             "reason": "manual confirmed restore",
             "requested_by": "lite-api",
+            "requested_by_actor": _safe_recovery_actor(auth_context),
         },
     )
     submitted["backup_id"] = selected
     submitted["preview_id"] = payload.preview_id
+    submitted["authorization"] = {
+        "decision_id": policy_decision.get("decision_id"),
+        "reason_code": policy_decision.get("reason_code"),
+        "policy_revision": policy_decision.get("policy_revision"),
+    }
     submitted["summary"] = "Restore queued. Pocket Lab will create a pre-restore checkpoint before changing Lite state."
     return submitted

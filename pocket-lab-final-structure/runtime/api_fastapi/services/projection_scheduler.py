@@ -8,6 +8,7 @@ SQLite writer. Payload contents are never retained in diagnostics.
 """
 
 import concurrent.futures
+from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -31,13 +32,18 @@ from .hot_path_profiler import HOT_PATH_PROFILER
 from .adaptive_runtime import ADAPTIVE_RUNTIME
 
 _LOGGER = logging.getLogger(__name__)
-WorkClass = Literal["critical", "io", "cpu"]
+WorkClass = Literal["critical", "recovery", "io", "cpu"]
 _PROJECTION_CONTEXT: ContextVar[dict[str, Any]] = ContextVar(
     "pocketlab_projection_context", default={}
 )
 _PROCESS_START_GENERATION = hashlib.sha256(
     f"{time.time_ns()}:{os.getpid()}".encode("utf-8")
 ).hexdigest()[:16]
+# Older releases emitted an app-backup mailbox key before app backup state was
+# folded into the canonical App Lifecycle/Recovery projections.  It is safe to
+# acknowledge this one known compatibility signal; unknown domains remain
+# visible and unclaimed so a missing registration still fails closed.
+_RETIRED_LEGACY_MAILBOX_DOMAINS = frozenset({"apps.backup:photoprism"})
 
 
 def _loaded_build_version() -> str:
@@ -201,6 +207,21 @@ class ProjectionScheduler:
         self.io_workers = _bounded_int(
             "POCKETLAB_LITE_PROJECTION_IO_WORKERS", 2 if not termux else 2, 1, 4
         )
+        # Keep critical prepared reads on their own bounded lane. Termux can
+        # legitimately have one slow app/config collector while Recovery,
+        # health, and NATS readiness also need to refresh. Two bounded workers
+        # prevent that optional collector from serializing the operator-critical
+        # projections without increasing the low-power I/O or CPU budgets.
+        self.critical_workers = _bounded_int(
+            "POCKETLAB_LITE_PROJECTION_CRITICAL_WORKERS", 2, 1, 2
+        )
+        # Recovery has its own bounded lane. Fleet and App projections may be
+        # classified as critical for their screens, but a slow optional
+        # collector must never occupy every slot needed to refresh the Recovery
+        # contract within its prepared-read freshness fence.
+        self.recovery_workers = _bounded_int(
+            "POCKETLAB_LITE_PROJECTION_RECOVERY_WORKERS", 2, 1, 2
+        )
         self.cpu_workers = _bounded_int(
             "POCKETLAB_LITE_PROJECTION_CPU_WORKERS", 1, 1, 2
         )
@@ -225,11 +246,14 @@ class ProjectionScheduler:
         self._heap: list[tuple[int, int, str, int]] = []
         self._sequence = 0
         self._dispatcher: threading.Thread | None = None
+        self._critical_executor: concurrent.futures.ThreadPoolExecutor | None = None
+        self._recovery_executor: concurrent.futures.ThreadPoolExecutor | None = None
         self._io_executor: concurrent.futures.ThreadPoolExecutor | None = None
         self._cpu_executor: concurrent.futures.ThreadPoolExecutor | None = None
         self._active_futures: dict[concurrent.futures.Future[Any], tuple[str, int]] = {}
         self._accepting = False
         self._shutdown = False
+        self._database_switch_fenced = False
         self._startup_complete = False
         self._event_signal_count = 0
         self._signal_schema_ready = False
@@ -265,6 +289,16 @@ class ProjectionScheduler:
             return False
         if dispatcher is not None:
             self._dispatcher_restart_count += 1
+        if self._critical_executor is None:
+            self._critical_executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.critical_workers,
+                thread_name_prefix="pocketlab-projection-critical",
+            )
+        if self._recovery_executor is None:
+            self._recovery_executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.recovery_workers,
+                thread_name_prefix="pocketlab-projection-recovery",
+            )
         if self._io_executor is None:
             self._io_executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=self.io_workers,
@@ -296,6 +330,7 @@ class ProjectionScheduler:
                 self._startup_complete = True
                 return False
             self._shutdown = False
+            self._database_switch_fenced = False
             self._accepting = True
             self._startup_complete = True
             return self._ensure_dispatcher_alive_locked()
@@ -306,7 +341,7 @@ class ProjectionScheduler:
             raise ValueError("projection domain is required")
         if not 0 <= int(job.priority) <= 100:
             raise ValueError("projection priority must be between 0 and 100")
-        if job.work_class not in {"critical", "io", "cpu"}:
+        if job.work_class not in {"critical", "recovery", "io", "cpu"}:
             raise ValueError("invalid projection work class")
         with self._condition:
             if domain not in self._states and len(self._states) >= self.max_domains:
@@ -361,6 +396,167 @@ class ProjectionScheduler:
                 optional=optional,
             )
 
+    def reconcile_durable_state(self) -> dict[str, Any]:
+        """Requeue dirty work left behind by a worker process interruption.
+
+        A worker may claim a durable dirty signal and then stop before its
+        in-memory scheduler has persisted a successful projection commit.  The
+        refresh row is intentionally left dirty in that hand-off window, but
+        a newly-started scheduler previously only loaded job definitions and
+        therefore never put that row back on its executor heap.  Rehydrate the
+        durable dirty/active state after registration so a claimed signal can
+        never strand a prepared projection until another unrelated event.
+        """
+        if not _is_execution_owner():
+            return {
+                "requeued": 0,
+                "orphaned_active": 0,
+                "execution_owner": _configured_execution_owner(),
+            }
+        self._ensure_signal_schema()
+        from ..db.connection import read_connection
+
+        # Hydrate every registered domain, not only rows that need work.  A
+        # clean row still carries the worker's last successful completion
+        # timestamp, which is the source of truth for API prepared-read
+        # freshness after a worker restart.  If clean rows are omitted here,
+        # adaptive warm-up creates a new in-memory state with an empty
+        # ``last_completed_at`` and temporarily exposes epoch-zero freshness
+        # (``projection_too_old``) until the next collector commit.
+        with self._condition:
+            registered_domains = tuple(sorted(self._jobs))[: self.max_domains]
+        if not registered_domains:
+            rows = []
+        else:
+            placeholders = ",".join("?" for _ in registered_domains)
+            with read_connection() as conn:
+                rows = [
+                    dict(row)
+                    for row in conn.execute(
+                        f"""
+                        SELECT domain,generation,committed_generation,dirty,active,
+                               failure_count,next_retry_epoch_ms,last_started_at,
+                               last_completed_at,last_error_type,last_pressure_reason,
+                               source_revision
+                        FROM projection_refresh_state
+                        WHERE domain IN ({placeholders})
+                        ORDER BY priority,domain
+                        """,
+                        registered_domains,
+                    )
+                ]
+
+        now_epoch_ms = _epoch_ms()
+        requeued = 0
+        orphaned_active = 0
+        with self._condition:
+            if self._shutdown:
+                return {
+                    "requeued": 0,
+                    "orphaned_active": 0,
+                    "execution_owner": _configured_execution_owner(),
+                }
+            # Reconcile before the worker starts dispatching when possible. A
+            # process restart has no in-memory futures for durable active rows;
+            # starting the dispatcher first can race a fresh job against an
+            # orphaned active marker and make the database-switch fence treat
+            # stale ownership as live work. Existing callers that already
+            # started the scheduler keep the historical behavior.
+            if self._dispatcher is not None and not self._dispatcher.is_alive():
+                self._ensure_dispatcher_alive_locked()
+            for row in rows:
+                domain = _safe_domain(row.get("domain") or "")
+                state = self._states.get(domain)
+                job = self._jobs.get(domain)
+                if not domain or state is None or job is None:
+                    continue
+
+                durable_generation = max(
+                    0,
+                    int(row.get("generation") or 0),
+                    int(row.get("committed_generation") or 0),
+                )
+                durable_dirty = bool(
+                    row.get("dirty")
+                    or row.get("active")
+                    or int(row.get("generation") or 0)
+                    > int(row.get("committed_generation") or 0)
+                )
+
+                state.generation = max(state.generation, durable_generation, 1)
+                state.committed_generation = max(
+                    state.committed_generation,
+                    int(row.get("committed_generation") or 0),
+                )
+                state.priority = job.priority
+                state.work_class = job.work_class
+                state.failure_count = max(
+                    state.failure_count, int(row.get("failure_count") or 0)
+                )
+                state.last_started_iso = str(row.get("last_started_at") or "")
+                state.last_completed_iso = str(row.get("last_completed_at") or "")
+                state.last_error_type = str(row.get("last_error_type") or "")[:80]
+                state.last_pressure_reason = str(row.get("last_pressure_reason") or "")[:80]
+                if row.get("source_revision") is not None:
+                    state.last_source_revision = int(row.get("source_revision") or -1)
+                retry_epoch_ms = int(row.get("next_retry_epoch_ms") or 0)
+                if job.priority <= 40:
+                    # Durable retry backoff is useful while one worker is
+                    # alive, but it must not strand an operator-critical
+                    # prepared read across a worker restart.  A restart is a
+                    # bounded retry boundary: re-run the primary projection
+                    # immediately, then let the normal deadline/backoff and
+                    # degraded-read safeguards apply if it fails again.
+                    retry_epoch_ms = 0
+                state.next_retry_epoch_ms = max(0, retry_epoch_ms)
+                state.next_retry_at = time.monotonic() + max(
+                    0.0, (retry_epoch_ms - now_epoch_ms) / 1000.0
+                )
+                state.execution_owner = _process_role()
+
+                # Clean rows are fully hydrated for the next adaptive probe,
+                # but must not be requeued merely because this process has
+                # restarted.  In particular, retain last_completed_iso so a
+                # prepared read can remain fresh while the first probe is
+                # waiting for its normal cadence.
+                if not durable_dirty:
+                    state.dirty = False
+                    state.queued = False
+                    state.followup_requested = False
+                    continue
+
+                if state.active:
+                    # A process restart cannot observe the old in-memory future.
+                    # Preserve one bounded follow-up after the active generation
+                    # is reconciled, but never leave a stale heap entry behind.
+                    state.followup_requested = True
+                else:
+                    # Startup warm-up may have queued generation N before the
+                    # durable row is rehydrated at generation N+1. Replace every
+                    # old entry for this domain so the dirty durable generation
+                    # cannot be popped and silently discarded.
+                    state.dirty = True
+                    state.trigger_reason = "durable_recovery"
+                    if state.queued:
+                        self._heap = [item for item in self._heap if item[2] != domain]
+                        heapq.heapify(self._heap)
+                        state.queued = False
+                    self._enqueue_locked(domain, state)
+                    # Clear an orphaned durable active marker before the fresh
+                    # generation is dispatched. This write is best effort like
+                    # all scheduler diagnostics, but normally completes before
+                    # the worker starts its first future.
+                    self._persist_state_best_effort(domain, state)
+                    requeued += 1
+                if bool(row.get("active")):
+                    orphaned_active += 1
+            self._condition.notify_all()
+        return {
+            "requeued": requeued,
+            "orphaned_active": orphaned_active,
+            "execution_owner": _configured_execution_owner(),
+        }
+
     def _ensure_signal_schema(self) -> None:
         if self._signal_schema_ready:
             return
@@ -413,12 +609,21 @@ class ProjectionScheduler:
 
     def _claim_dirty_signal(self, domain: str, generation: int) -> None:
         self._ensure_signal_schema()
+        completed_at = _utc_now()
 
         def _write(conn):
             conn.execute(
                 "UPDATE projection_dirty_signals SET claimed_generation=MAX(claimed_generation, ?) "
                 "WHERE domain=? AND signal_generation>=?",
                 (int(generation), domain, int(generation)),
+            )
+            # Make the hand-off fail closed even if the worker process is
+            # interrupted between claiming the mailbox row and persisting its
+            # in-memory scheduler state. The normal dispatcher write clears
+            # this bit after the generation is reconciled.
+            conn.execute(
+                "UPDATE projection_refresh_state SET dirty=1, updated_at=? WHERE domain=?",
+                (completed_at, domain),
             )
 
         SQLITE_WRITER.submit(
@@ -428,6 +633,25 @@ class ProjectionScheduler:
     def consume_dirty_signals(self, *, limit: int = 32) -> dict[str, Any]:
         if not _is_execution_owner():
             return {"claimed": 0, "pending": 0, "execution_owner": _configured_execution_owner()}
+        # A database promotion/rollback fences the scheduler before it takes
+        # the SQLite switch lock.  Do not even claim durable dirty signals
+        # during that interval: claiming updates SQLite and can otherwise
+        # contend with the transaction while its writer fence is held.
+        with self._condition:
+            if self._database_switch_fenced:
+                return {
+                    "claimed": 0,
+                    "pending": 0,
+                    "runnable_pending": 0,
+                    "total_pending": 0,
+                    "unregistered": 0,
+                    "unregistered_domains": [],
+                    "retired": 0,
+                    "retired_domains": [],
+                    "execution_owner": _configured_execution_owner(),
+                    "process_role": _process_role(),
+                    "database_switch_fenced": True,
+                }
         self._ensure_signal_schema()
         from ..db.connection import read_connection
 
@@ -447,14 +671,27 @@ class ProjectionScheduler:
                 )
             ]
         claimed = 0
+        retired = 0
         runnable_pending = 0
         unregistered_domains: list[str] = []
+        retired_domains: list[str] = []
         for row in rows:
             domain = _safe_domain(row.get("domain") or "")
             generation = int(row.get("signal_generation") or 0)
             with self._condition:
                 registered = domain in self._jobs
             if not registered:
+                if domain in _RETIRED_LEGACY_MAILBOX_DOMAINS:
+                    try:
+                        self._claim_dirty_signal(domain, generation)
+                    except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded, OSError):
+                        if domain and domain not in unregistered_domains:
+                            unregistered_domains.append(domain)
+                        continue
+                    if domain not in retired_domains:
+                        retired_domains.append(domain)
+                    retired += 1
+                    continue
                 if domain and domain not in unregistered_domains:
                     unregistered_domains.append(domain)
                 continue
@@ -475,9 +712,11 @@ class ProjectionScheduler:
             # inflate adaptive queue-pressure admission.
             "pending": runnable_pending,
             "runnable_pending": runnable_pending,
-            "total_pending": max(0, len(rows) - claimed),
+            "total_pending": max(0, len(rows) - claimed - retired),
             "unregistered": len(unregistered_domains),
             "unregistered_domains": sorted(unregistered_domains),
+            "retired": retired,
+            "retired_domains": sorted(retired_domains),
             "execution_owner": _configured_execution_owner(),
             "process_role": _process_role(),
         }
@@ -651,7 +890,7 @@ class ProjectionScheduler:
         )
 
     def _pressure_reason(self, job: ProjectionJob) -> str:
-        if job.work_class == "critical":
+        if job.work_class in {"critical", "recovery"}:
             return ""
         if not self._startup_complete:
             return "startup_incomplete"
@@ -685,6 +924,10 @@ class ProjectionScheduler:
         return ""
 
     def _executor_for(self, work_class: WorkClass) -> concurrent.futures.ThreadPoolExecutor | None:
+        if work_class == "critical":
+            return self._critical_executor
+        if work_class == "recovery":
+            return self._recovery_executor
         return self._cpu_executor if work_class == "cpu" else self._io_executor
 
     def _active_count_locked(self, work_class: WorkClass) -> int:
@@ -693,7 +936,7 @@ class ProjectionScheduler:
             if future.done():
                 continue
             job = self._jobs.get(domain)
-            if job and ((work_class == "cpu" and job.work_class == "cpu") or (work_class != "cpu" and job.work_class != "cpu")):
+            if job and job.work_class == work_class:
                 count += 1
         return count
 
@@ -758,6 +1001,11 @@ class ProjectionScheduler:
                 continue
             if int(queued_generation) != int(state.generation):
                 state.queued = False
+                # A durable-generation rehydration or a coalesced event can make
+                # this heap entry stale after it was inserted. Keep the
+                # authoritative dirty state runnable instead of dropping it.
+                if not state.active and not state.queued and not self._shutdown:
+                    self._enqueue_locked(domain, state)
                 continue
             due_at = max(float(state.not_before_at), float(state.next_retry_at))
             if due_at > now:
@@ -776,9 +1024,15 @@ class ProjectionScheduler:
         while True:
             with self._condition:
                 self._reap_done_locked()
-                self._enqueue_due_reconciliations_locked()
                 if self._shutdown:
                     return
+                # A database promotion/rollback owns a process-wide writer
+                # fence. Do not let adaptive reconciliation enqueue new work
+                # while the handoff is draining active collectors.
+                if self._database_switch_fenced:
+                    self._condition.wait(timeout=0.1)
+                    continue
+                self._enqueue_due_reconciliations_locked()
                 if not self._heap:
                     # One interruptible scheduler loop owns both event-driven and
                     # adaptive reconciliation. No second timer thread is created.
@@ -808,8 +1062,35 @@ class ProjectionScheduler:
                     # due-aware pop scan choose another eligible domain.
                     self._enqueue_locked(domain, state)
                     continue
-                pressure = self._pressure_reason(job)
-                capacity = self.cpu_workers if job.work_class == "cpu" else self.io_workers
+                # Pressure probes may inspect bounded runtime files and the
+                # restore guard. They must not run while the scheduler condition
+                # is held: a large historical restore journal can otherwise
+                # block every projection worker from re-entering this lock and
+                # make healthy Recovery projections appear permanently stale.
+                pressure_job = job
+                self._condition.release()
+                try:
+                    pressure = self._pressure_reason(pressure_job)
+                finally:
+                    self._condition.acquire()
+                state = self._states.get(domain)
+                job = self._jobs.get(domain)
+                if (
+                    state is None
+                    or job is None
+                    or state.active
+                    or not state.dirty
+                    or state.generation != queued_generation
+                ):
+                    if state is not None and state.dirty and not state.active and not state.queued:
+                        self._enqueue_locked(domain, state)
+                    continue
+                capacity = {
+                    "critical": self.critical_workers,
+                    "recovery": self.recovery_workers,
+                    "io": self.io_workers,
+                    "cpu": self.cpu_workers,
+                }[job.work_class]
                 active_count = self._active_count_locked(job.work_class)
                 try:
                     event_loop_lag_ms = float(RUNTIME_DIAGNOSTICS.latest_event_loop_lag_ms())
@@ -824,6 +1105,15 @@ class ProjectionScheduler:
                     )
                 except Exception:
                     bootstrap_required = False
+                # Primary prepared projections must be able to drain a dirty
+                # startup queue after a worker restart.  The Phase 3B status,
+                # agent, supervisor, fleet-probe and app projection contracts
+                # use priorities <= 40; treating those jobs as optional under
+                # queue pressure created a self-sustaining loop where the
+                # queue could never fall below the pressure threshold because
+                # the stale probes were the work being deferred.  Keep lower
+                # priority/background collectors pressure-throttled.
+                primary_prepared_projection = int(job.priority) <= 40
                 admission = ADAPTIVE_RUNTIME.decide(
                     domain,
                     priority=job.priority,
@@ -832,7 +1122,11 @@ class ProjectionScheduler:
                     # build. Capacity, deadlines, generation fences and circuit
                     # breakers still apply; only adaptive pressure deferral is
                     # bypassed until the first durable commit exists.
-                    optional=False if bootstrap_required else job.optional,
+                    optional=(
+                        False
+                        if bootstrap_required or primary_prepared_projection
+                        else job.optional
+                    ),
                     queue_depth=0 if bootstrap_required else len(self._heap) + len(self._active_futures) + 1,
                     queue_age_ms=queue_age_ms,
                     active_count=active_count,
@@ -1521,16 +1815,17 @@ class ProjectionScheduler:
                 and current_hash == str(database_instance_hash or "")
             )
 
-    def quiesce_for_database_switch(self, *, timeout_seconds: float = 5.0) -> bool:
-        """Cancel queued refreshes and wait for active jobs before changing databases.
+    def begin_database_switch(self, *, timeout_seconds: float = 5.0) -> bool:
+        """Drain collectors and hold the scheduler fence for a DB handoff.
 
-        Registrations are preserved so the process can continue serving after a
-        restore, test database switch, or other explicit database handoff.
-        Active collectors are generation-fenced and allowed to finish; no new
-        queued work is admitted during the bounded drain.
+        The older quiesce operation only fenced the short drain window. That
+        allowed adaptive reconciliation to dispatch a fresh collector between
+        the drain and the SQLite replacement. Callers performing a promotion
+        must keep this fence held until validation or rollback is complete.
         """
-        deadline = time.monotonic() + max(0.1, min(float(timeout_seconds), 30.0))
+        deadline = time.monotonic() + max(0.1, min(float(timeout_seconds), 120.0))
         with self._condition:
+            self._database_switch_fenced = True
             self._heap.clear()
             for state in self._states.values():
                 state.generation += 1
@@ -1562,7 +1857,32 @@ class ProjectionScheduler:
                 active,
                 timeout=min(0.1, remaining),
                 return_when=concurrent.futures.FIRST_COMPLETED,
-            )
+                )
+
+    def end_database_switch(self) -> None:
+        """Release a previously acquired database-switch fence."""
+        with self._condition:
+            self._database_switch_fenced = False
+            self._condition.notify_all()
+
+    @contextmanager
+    def database_switch_fence(self, *, timeout_seconds: float = 5.0):
+        """Hold the scheduler quiescent across an atomic DB handoff."""
+        if not self.begin_database_switch(timeout_seconds=timeout_seconds):
+            self.end_database_switch()
+            raise RuntimeError("Projection scheduler did not quiesce before database promotion")
+        try:
+            yield
+        finally:
+            self.end_database_switch()
+
+    def quiesce_for_database_switch(self, *, timeout_seconds: float = 5.0) -> bool:
+        """Cancel queued refreshes and drain active jobs for compatibility."""
+        try:
+            with self.database_switch_fence(timeout_seconds=timeout_seconds):
+                return True
+        except RuntimeError:
+            return False
 
     def _reconcile_queue_state_locked(self) -> dict[str, int]:
         """Reconcile heap entries against authoritative in-memory domain state.
@@ -1703,6 +2023,9 @@ class ProjectionScheduler:
             queue = self._reconcile_queue_state_locked()
             return {
                 "status": "stopping" if self._shutdown else "running" if self._accepting else "stopped",
+                "database_switch_fenced": bool(self._database_switch_fenced),
+                "critical_workers": self.critical_workers,
+                "recovery_workers": self.recovery_workers,
                 "io_workers": self.io_workers,
                 "cpu_workers": self.cpu_workers,
                 "max_domains": self.max_domains,
@@ -1714,6 +2037,8 @@ class ProjectionScheduler:
                 "queued_domains": int(queue["executor_depth"]),
                 "active_domains": int(queue["active_domains"]),
                 "queue": queue,
+                "active_critical": self._active_count_locked("critical"),
+                "active_recovery": self._active_count_locked("recovery"),
                 "active_io": self._active_count_locked("io"),
                 "active_cpu": self._active_count_locked("cpu"),
                 "circuit_failure_threshold": self.circuit_failure_threshold,
@@ -1749,7 +2074,12 @@ class ProjectionScheduler:
             dispatcher = self._dispatcher
         if dispatcher is not None:
             dispatcher.join(timeout=max(0.1, min(float(drain_seconds), 30.0)))
-        for executor in (self._io_executor, self._cpu_executor):
+        for executor in (
+            self._critical_executor,
+            self._recovery_executor,
+            self._io_executor,
+            self._cpu_executor,
+        ):
             if executor is not None:
                 executor.shutdown(wait=False, cancel_futures=True)
 

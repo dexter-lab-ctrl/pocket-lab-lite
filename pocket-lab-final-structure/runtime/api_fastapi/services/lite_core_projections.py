@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+from contextlib import contextmanager
 import logging
 import os
 import threading
@@ -37,6 +38,7 @@ _RECOVERY_BASE_VALUE: tuple[dict[str, Any], float] | None = None
 _RECOVERY_BASE_FUTURE: concurrent.futures.Future[Any] | None = None
 _RECOVERY_BASE_FAILURES = 0
 _RECOVERY_BASE_NEXT_ALLOWED = 0.0
+_RECOVERY_BASE_QUIESCING_FOR_DATABASE_SWITCH = False
 RECOVERY_SUMMARY_STALE_AFTER_MS = 10_000
 RECOVERY_SUMMARY_MAX_STALE_MS = 60_000
 RECOVERY_DETAILS_STALE_AFTER_MS = 15_000
@@ -149,6 +151,11 @@ def _timed_stage(timings: dict[str, float], name: str, callback: Callable[[], An
 def _recovery_base_done(future: concurrent.futures.Future[Any]) -> None:
     global _RECOVERY_BASE_VALUE, _RECOVERY_BASE_FUTURE
     global _RECOVERY_BASE_FAILURES, _RECOVERY_BASE_NEXT_ALLOWED
+    if future.cancelled():
+        with _RECOVERY_BASE_LOCK:
+            if _RECOVERY_BASE_FUTURE is future:
+                _RECOVERY_BASE_FUTURE = None
+        return
     try:
         value = future.result()
         if not isinstance(value, dict):
@@ -178,10 +185,13 @@ def recovery_base_subprojection() -> dict[str, Any]:
         future = _RECOVERY_BASE_FUTURE
         if cached is not None and now - cached[1] <= 8.0:
             return dict(cached[0])
-        if future is None and now >= _RECOVERY_BASE_NEXT_ALLOWED:
-            future = _RECOVERY_BASE_EXECUTOR.submit(lite_status.lite_recovery_details)
-            _RECOVERY_BASE_FUTURE = future
-            future.add_done_callback(_recovery_base_done)
+        # Do not launch a collector from this fence-sensitive path. Recovery
+        # details are assembled from independently prepared SQLite-backed
+        # stages below; the worker-owned recovery.summary job will populate
+        # the prepared base snapshot. Launching either the legacy deep details
+        # collector or a repository-backed summary fallback here can monopolize
+        # the single Recovery-base executor on Termux and prevent the database
+        # switch fence from quiescing.
     if future is not None:
         try:
             result = future.result(timeout=1.5)
@@ -204,14 +214,136 @@ def recovery_base_subprojection() -> dict[str, Any]:
     }
 
 
+def begin_recovery_base_database_switch(*, timeout_seconds: float = 5.0) -> bool:
+    """Drain and hold the core Recovery-base reader for a SQLite handoff."""
+    global _RECOVERY_BASE_FUTURE, _RECOVERY_BASE_VALUE
+    global _RECOVERY_BASE_FAILURES, _RECOVERY_BASE_NEXT_ALLOWED
+    global _RECOVERY_BASE_QUIESCING_FOR_DATABASE_SWITCH
+
+    deadline = time.monotonic() + max(0.1, min(float(timeout_seconds), 120.0))
+    with _RECOVERY_BASE_LOCK:
+        _RECOVERY_BASE_QUIESCING_FOR_DATABASE_SWITCH = True
+        future = _RECOVERY_BASE_FUTURE
+        if future is not None and not future.running():
+            future.cancel()
+
+    try:
+        if future is not None:
+            while not future.done():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return False
+                concurrent.futures.wait(
+                    (future,),
+                    timeout=min(0.1, remaining),
+                    return_when=concurrent.futures.FIRST_COMPLETED,
+                )
+        with _RECOVERY_BASE_LOCK:
+            if _RECOVERY_BASE_FUTURE is future:
+                _RECOVERY_BASE_FUTURE = None
+            _RECOVERY_BASE_VALUE = None
+            _RECOVERY_BASE_FAILURES = 0
+            _RECOVERY_BASE_NEXT_ALLOWED = 0.0
+        return True
+    except BaseException:
+        end_recovery_base_database_switch()
+        raise
+
+
+def end_recovery_base_database_switch() -> None:
+    """Release the core Recovery-base database-switch fence."""
+    global _RECOVERY_BASE_QUIESCING_FOR_DATABASE_SWITCH
+    with _RECOVERY_BASE_LOCK:
+        _RECOVERY_BASE_QUIESCING_FOR_DATABASE_SWITCH = False
+
+
+@contextmanager
+def recovery_base_database_switch_fence(*, timeout_seconds: float = 5.0):
+    """Hold the core Recovery-base reader quiescent across SQLite replacement."""
+    if not begin_recovery_base_database_switch(timeout_seconds=timeout_seconds):
+        end_recovery_base_database_switch()
+        raise RuntimeError("Recovery base reader did not quiesce before database promotion")
+    try:
+        yield
+    finally:
+        end_recovery_base_database_switch()
+
+
+def quiesce_recovery_base_for_database_switch(*, timeout_seconds: float = 5.0) -> bool:
+    """Drain the core Recovery-base reader for compatibility with existing callers."""
+    try:
+        with recovery_base_database_switch_fence(timeout_seconds=timeout_seconds):
+            return True
+    except RuntimeError:
+        return False
+
+
 def recovery_details_payload() -> dict[str, Any]:
     timings: dict[str, float] = {}
     state = _timed_stage(timings, "recovery_base", recovery_base_subprojection)
-    profiles = _timed_stage(timings, "app_backup_profiles", lite_app_lifecycle.cached_app_backup_profiles)
+
+    def saved_app_lifecycle() -> dict[str, Any]:
+        """Use the canonical App projection when the worker cache is cold.
+
+        Recovery details are a critical prepared read. Re-running the full
+        App Lifecycle collector here couples its freshness to the app-stage
+        executor and can consume most of the Recovery deadline on Termux.
+        The dedicated apps.lifecycle job owns that collector; Recovery should
+        compose its last committed SQLite snapshot and let that job refresh it.
+        """
+        prepared = CONTROL_PLANE.prepared_payload(APP_LIFECYCLE_CACHE_KEY)
+        if isinstance(prepared, dict):
+            return prepared
+        snapshot = CONTROL_PLANE.app_lifecycle_projection_snapshot()
+        if isinstance(snapshot, dict):
+            return snapshot
+        return {
+            "status": "degraded",
+            "summary": "Saved App Lifecycle state is refreshing.",
+            "apps": [],
+            "items": [],
+            "count": 0,
+            "projection_only": True,
+        }
+
     lifecycle = _timed_stage(
         timings,
         "app_lifecycle_profiles",
-        lambda: CONTROL_PLANE.prepared_payload(APP_LIFECYCLE_CACHE_KEY) or lite_app_lifecycle.app_lifecycle_profiles(),
+        saved_app_lifecycle,
+    )
+
+    def saved_app_backup_profiles() -> dict[str, Any]:
+        """Compose app-backup cards from the committed App Lifecycle snapshot."""
+        apps = lifecycle.get("apps") if isinstance(lifecycle, dict) else []
+        profiles: list[dict[str, Any]] = []
+        for app in apps if isinstance(apps, list) else []:
+            if not isinstance(app, dict):
+                continue
+            backup = app.get("backup") if isinstance(app.get("backup"), dict) else {}
+            profiles.append(
+                {
+                    "app_id": str(app.get("app_id") or "photoprism"),
+                    "name": str(app.get("name") or "PhotoPrism"),
+                    **backup,
+                }
+            )
+        return {
+            "status": lifecycle.get("status") or "degraded",
+            "summary": "Saved app backup profiles are available."
+            if profiles
+            else "Saved app backup profiles are refreshing.",
+            "apps": profiles,
+            "count": len(profiles),
+            "updated_at": lifecycle.get("updated_at"),
+            "read_degraded": bool(lifecycle.get("read_degraded")) or not profiles,
+            "refresh_pending": bool(lifecycle.get("refresh_pending")),
+            "projection_only": True,
+        }
+
+    profiles = _timed_stage(
+        timings,
+        "app_backup_profiles",
+        saved_app_backup_profiles,
     )
     targets = _timed_stage(timings, "backup_targets", lite_recovery_subprojections.backup_targets)
     state["view_model"] = "recovery-details-r3-v1"
@@ -250,21 +382,38 @@ def _register_job(
     builder: Callable[[], dict[str, Any]], projector: Callable[[dict[str, Any]], int],
     deadline_seconds: float, priority: int, work_class: str,
 ) -> bool:
-    try:
-        CONTROL_PLANE.prepared_only_read(
-            domain=domain,
-            key=key,
-            snapshot_builder=snapshot_builder,
+    # Registration is a scheduler concern, not a prepared-read request. The
+    # previous implementation called prepared_only_read for every core job,
+    # which performed request-path status work (and could start the dispatcher)
+    # while the worker was still booting. Install the same semantic contract
+    # directly, just as the Phase 3B/3C registries do; startup warm-up remains
+    # the only path that marks these jobs dirty.
+    from .lite_semantic_revisions import contract_for
+    from .projection_scheduler import PROJECTION_SCHEDULER, ProjectionJob
+
+    contract = contract_for(domain, key)
+    effective_priority = int(contract.priority if contract is not None else priority)
+    effective_work_class = str(contract.work_class if contract is not None else work_class)
+    effective_deadline = float(
+        contract.deadline_seconds if contract is not None else deadline_seconds
+    )
+    source_revision = contract.source_revision if contract is not None else None
+    max_probe_seconds = contract.max_probe_seconds if contract is not None else 900.0
+    quiet_window_seconds = contract.quiet_window_seconds if contract is not None else 0.0
+    PROJECTION_SCHEDULER.register(
+        ProjectionJob(
+            domain=f"{domain}.{key}",
             builder=builder,
             projector=projector,
-            stale_after_ms=0,
-            max_stale_ms=0,
-            deadline_seconds=deadline_seconds,
-            priority=priority,
-            work_class=work_class,
+            priority=effective_priority,
+            work_class=effective_work_class,
+            deadline_seconds=effective_deadline,
+            optional=effective_work_class not in {"critical", "recovery"},
+            source_revision=source_revision,
+            max_probe_seconds=max_probe_seconds,
+            quiet_window_seconds=quiet_window_seconds,
         )
-    except PreparedProjectionUnavailable:
-        pass
+    )
     return True
 
 
@@ -316,13 +465,13 @@ def register_jobs() -> dict[str, bool]:
             domain="recovery", key="summary", snapshot_builder=CONTROL_PLANE.recovery_projection_snapshot,
             builder=recovery_summary_payload,
             projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_recovery, payload),
-            deadline_seconds=4.0, priority=50, work_class="io",
+            deadline_seconds=8.0, priority=10, work_class="recovery",
         ),
         "recovery_details": _register_job(
             domain="recovery", key="details", snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True),
             builder=recovery_details_payload,
             projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_recovery, payload),
-            deadline_seconds=8.0, priority=60, work_class="io",
+            deadline_seconds=10.0, priority=15, work_class="recovery",
         ),
     }
 
@@ -352,22 +501,23 @@ def schedule_startup_warmup() -> dict[str, bool]:
     expected_database_path = str(database_path())
     jobs = (
         # Canonical dependency order: lifecycle truth, catalog card, actions.
-        ("apps", "apps", "lifecycle", lite_app_lifecycle.app_lifecycle_profiles, CONTROL_PLANE.project_app_lifecycle, 8.0, 40, "cpu"),
-        ("catalog", "apps", "catalog", catalog_payload, CONTROL_PLANE.project_app_catalog, 8.0, 45, "io"),
+        ("apps", "apps", "lifecycle", lite_app_lifecycle.app_lifecycle_profiles, CONTROL_PLANE.app_lifecycle_projection_snapshot, CONTROL_PLANE.project_app_lifecycle, 8.0, 40, "cpu"),
+        ("catalog", "apps", "catalog", catalog_payload, CONTROL_PLANE.app_catalog_projection_snapshot, CONTROL_PLANE.project_app_catalog, 8.0, 45, "io"),
         (
-            "app_actions_photoprism", "apps", "actions:photoprism", app_actions_payload,
+            "app_actions_photoprism", "apps", "actions:photoprism", app_actions_payload, app_actions_snapshot,
             lambda payload: project_app_actions_payload("photoprism", payload),
             6.0, 30, "io",
         ),
-        ("fleet", "fleet", "summary", lambda: lite_status.lite_fleet(), CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),
-        ("recovery_summary", "recovery", "summary", recovery_summary_payload, CONTROL_PLANE.project_recovery, 4.0, 50, "io"),
-        ("recovery_details", "recovery", "details", recovery_details_payload, CONTROL_PLANE.project_recovery, 8.0, 60, "io"),
+        ("fleet", "fleet", "summary", lambda: lite_status.lite_fleet(), CONTROL_PLANE.fleet_projection_snapshot, CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),
+        ("recovery_summary", "recovery", "summary", recovery_summary_payload, CONTROL_PLANE.recovery_projection_snapshot, CONTROL_PLANE.project_recovery, 8.0, 10, "recovery"),
+        ("recovery_details", "recovery", "details", recovery_details_payload, lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True), CONTROL_PLANE.project_recovery, 10.0, 15, "recovery"),
     )
     results: dict[str, bool] = {}
-    for name, domain, key, builder, projector, deadline, priority, work_class in jobs:
+    for name, domain, key, builder, snapshot_builder, projector, deadline, priority, work_class in jobs:
         results[name] = CONTROL_PLANE.warm_prepared_read(
             domain=domain,
             key=key,
+            snapshot_builder=snapshot_builder,
             builder=builder,
             projector=lambda payload, p=projector: _project_for_database(expected_database_path, p, payload),
             deadline_seconds=deadline,

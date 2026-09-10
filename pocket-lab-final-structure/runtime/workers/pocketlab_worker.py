@@ -8,6 +8,7 @@ import os
 import signal
 import sys
 import time
+import inspect
 from pathlib import Path
 from typing import Any, Dict
 
@@ -52,6 +53,37 @@ def _env_int(name: str, default: int, *, minimum: int, maximum: int) -> int:
     except (TypeError, ValueError):
         value = default
     return max(minimum, min(value, maximum))
+
+
+async def _command_ack_heartbeat(
+    msg: Any,
+    *,
+    interval_seconds: float | None = None,
+) -> None:
+    """Keep long JetStream deliveries owned while backend work is running."""
+    in_progress = getattr(msg, "in_progress", None)
+    if not callable(in_progress):
+        return
+    if interval_seconds is None:
+        try:
+            ack_wait = max(5.0, float(getattr(BUS, "command_ack_wait_seconds", 60)))
+        except (TypeError, ValueError):
+            ack_wait = 60.0
+        interval_seconds = max(5.0, min(30.0, ack_wait / 3.0))
+    else:
+        interval_seconds = max(0.001, float(interval_seconds))
+    while True:
+        await asyncio.sleep(interval_seconds)
+        try:
+            result = in_progress()
+            if inspect.isawaitable(result):
+                await result
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            # A heartbeat failure must not hide the domain result.  JetStream
+            # recovery will redeliver if ownership cannot be retained.
+            continue
 
 
 def _worker_log(event: str, **data: Any) -> None:
@@ -352,17 +384,38 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
     try:
         result = await run_domain_command(subject, command)
         result_status = str(result.get("status") or "success").strip().lower()
-        if result_status in {"failed", "error", "degraded"}:
+        terminal_failure = result_status in {
+            "failed",
+            "error",
+            "degraded",
+            "failed_with_rollback",
+            "failed_rollback_required",
+            "rollback_failed",
+            "rolled_back",
+        }
+        if terminal_failure:
             await publish(
                 "pocketlab.events.command.failed",
                 "command.failed",
                 {
                     "command_id": command_id,
                     "command_subject": subject,
-                    "status": result_status,
+                    # Command lifecycle storage has a deliberately small
+                    # terminal vocabulary. Preserve the domain result in a
+                    # safe auxiliary field while recording every failed
+                    # restore/rollback outcome as the canonical `failed`
+                    # lifecycle state.
+                    "status": "failed",
+                    "result_status": result_status,
                     "error_type": str(
                         result.get("failure_code")
                         or result.get("last_failure_code")
+                        or result.get("failure_category")
+                        or (
+                            result.get("database_restore", {}).get("failure_category")
+                            if isinstance(result.get("database_restore"), dict)
+                            else None
+                        )
                         or "DomainCommandFailed"
                     )[:80],
                     "last_known_good": bool(result.get("last_known_good")),
@@ -547,48 +600,57 @@ async def command_callback(msg: Any) -> None:
                 lifecycle_payload,
                 trace_id=command_id or None,
             )
-        if subject == "pocketlab.commands.runbook.execute":
-            from api_fastapi.services.runbook_commands import execute_runbook_command  # type: ignore
+        heartbeat_task = None
+        if callable(getattr(msg, "in_progress", None)):
+            heartbeat_task = asyncio.create_task(_command_ack_heartbeat(msg))
+        try:
+            if subject == "pocketlab.commands.runbook.execute":
+                from api_fastapi.services.runbook_commands import execute_runbook_command  # type: ignore
 
-            await execute_runbook_command(command, publish)
-        elif subject == "pocketlab.commands.runbook.approve":
-            from api_fastapi.services.runbook_commands import approve_runbook_command  # type: ignore
+                await execute_runbook_command(command, publish)
+            elif subject == "pocketlab.commands.runbook.approve":
+                from api_fastapi.services.runbook_commands import approve_runbook_command  # type: ignore
 
-            await approve_runbook_command(command, publish)
-        elif subject == "pocketlab.commands.runbook.reject":
-            from api_fastapi.services.runbook_commands import reject_runbook_command  # type: ignore
+                await approve_runbook_command(command, publish)
+            elif subject == "pocketlab.commands.runbook.reject":
+                from api_fastapi.services.runbook_commands import reject_runbook_command  # type: ignore
 
-            await reject_runbook_command(command, publish)
-        elif subject == "pocketlab.commands.operation.execute":
-            await execute_operation_command(command)
-        elif subject.startswith("pocketlab.commands."):
-            # Domain commands may carry an ``operation`` field for lifecycle context.
-            # Route by subject first so Lite app/media commands are handled by their
-            # domain handlers instead of the generic operation runner.
-            await execute_domain_command(subject, command)
-        elif str(command.get("operation") or ""):
-            await execute_operation_command(command)
-        else:
-            await execute_domain_command(subject, command)
-        if generic_lifecycle:
-            await publish(
-                "pocketlab.events.command.succeeded",
-                "command.succeeded",
-                {**lifecycle_payload, "terminal": True},
-                trace_id=command_id or None,
+                await reject_runbook_command(command, publish)
+            elif subject == "pocketlab.commands.operation.execute":
+                await execute_operation_command(command)
+            elif subject.startswith("pocketlab.commands."):
+                # Domain commands may carry an ``operation`` field for lifecycle context.
+                # Route by subject first so Lite app/media commands are handled by their
+                # domain handlers instead of the generic operation runner.
+                await execute_domain_command(subject, command)
+            elif str(command.get("operation") or ""):
+                await execute_operation_command(command)
+            else:
+                await execute_domain_command(subject, command)
+            if generic_lifecycle:
+                await publish(
+                    "pocketlab.events.command.succeeded",
+                    "command.succeeded",
+                    {**lifecycle_payload, "terminal": True},
+                    trace_id=command_id or None,
+                )
+            await BUS.ack_message(msg)
+            _worker_log(
+                "worker.command_acked",
+                subject=subject,
+                command_id=str(
+                    command.get("command_id")
+                    or command.get("job_id")
+                    or command.get("run_id")
+                    or ""
+                ),
+                attempt=attempt,
             )
-        await BUS.ack_message(msg)
-        _worker_log(
-            "worker.command_acked",
-            subject=subject,
-            command_id=str(
-                command.get("command_id")
-                or command.get("job_id")
-                or command.get("run_id")
-                or ""
-            ),
-            attempt=attempt,
-        )
+        finally:
+            if heartbeat_task is not None:
+                heartbeat_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await heartbeat_task
     except Exception as exc:
         error = str(exc)
         from api_fastapi.services import reliability  # type: ignore
@@ -1011,17 +1073,25 @@ def _compact_scheduler_snapshot(
 
     compact_scheduler = {
         key: scheduler.get(key)
-        for key in (
-            "status",
-            "registered_domains",
-            "projection_execution_owner",
-            "is_execution_owner",
-            "process_role",
-            "loaded_build_version",
-            "process_start_generation",
-            "required_domains",
-            "missing_required_domains",
-        )
+            for key in (
+                "status",
+                "registered_domains",
+                "projection_execution_owner",
+                "is_execution_owner",
+                "process_role",
+                "loaded_build_version",
+                "process_start_generation",
+                "required_domains",
+                "missing_required_domains",
+                "critical_workers",
+                "recovery_workers",
+                "io_workers",
+                "cpu_workers",
+                "active_critical",
+                "active_recovery",
+                "active_io",
+                "active_cpu",
+            )
     }
     compact_scheduler.update(
         {
@@ -1087,19 +1157,30 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
             await asyncio.to_thread(CONTROL_PLANE.initialize)
             await asyncio.to_thread(lite_core_projections.register_jobs)
             await asyncio.to_thread(lite_phase3c_projections.register_jobs)
+            await asyncio.to_thread(lite_phase3b_projections.register_jobs)
             await asyncio.to_thread(lite_phase3b_projections.schedule_startup_warmup)
+            durable_reconciliation = await asyncio.to_thread(
+                PROJECTION_SCHEDULER.reconcile_durable_state
+            )
+            _worker_log(
+                "worker.projection_durable_state_reconciled",
+                requeued=int(durable_reconciliation.get("requeued") or 0),
+                orphaned_active=int(durable_reconciliation.get("orphaned_active") or 0),
+            )
+            # Reconcile durable dirty/active rows before dispatching the new
+            # worker generation. Starting the scheduler first can race fresh
+            # work with orphaned active markers left by an interrupted worker,
+            # which blocks the SQLite database-switch fence during restore.
             await asyncio.to_thread(PROJECTION_SCHEDULER.start)
             await asyncio.to_thread(lite_core_projections.schedule_startup_warmup)
             await asyncio.to_thread(lite_phase3c_projections.schedule_startup_warmup)
 
             registry = PROJECTION_SCHEDULER.diagnostics()
             registered = set((registry.get("domains") or {}).keys())
-            required = set(lite_core_projections.CORE_PROJECTION_DOMAINS) | {
-                "security.progress",
-                "security.summary",
-                "system.status",
-                "system.health",
-            }
+            required = (
+                set(lite_core_projections.CORE_PROJECTION_DOMAINS)
+                | set(lite_phase3b_projections.PHASE3B_DOMAINS)
+            )
             missing = sorted(required - registered)
             registry["required_domains"] = sorted(required)
             registry["missing_required_domains"] = missing
@@ -1161,6 +1242,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                     claimed=claimed,
                     pending=pending,
                     unregistered=unregistered,
+                    unregistered_domains=list(result.get("unregistered_domains") or [])[:32],
                 )
                 last_signal_log = signal_state
                 last_signal_log_at = now

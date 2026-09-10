@@ -3945,6 +3945,12 @@
           "type": "owns"
         }
       ],
+      "reason:qualification_authentication_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
       "reason:queue_full": [
         {
           "source": "domain:projections",
@@ -7745,6 +7751,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_authentication_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -9429,6 +9439,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_photoprism_backup.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_policy_analysis_p2_3.py": [
         {
           "source": "reason:authenticated_app_install",
@@ -9568,6 +9584,58 @@
         },
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_qualification_owner.py": [
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_authentication_required",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_recovery.py": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:projection_too_old",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:read_degraded",
           "type": "verified_by"
         }
       ],
@@ -11991,6 +12059,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_authentication_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -12774,6 +12846,10 @@
         },
         {
           "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_authentication_required",
           "type": "verified_by"
         },
         {
@@ -17921,6 +17997,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -18795,6 +18875,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -19029,6 +19113,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photoprism_backup.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
           "type": "verified_by"
         },
@@ -19116,6 +19204,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
           "type": "verified_by"
         },
         {
@@ -21801,6 +21893,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:qualification_authentication_required",
+          "type": "owns"
+        },
+        {
           "target": "reason:session_not_found",
           "type": "owns"
         },
@@ -23397,6 +23493,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_recovery.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
@@ -23730,6 +23830,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_recovery.py",
           "type": "verified_by"
         },
         {
@@ -24909,6 +25013,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s6_frontend_contract.py",
           "type": "verified_by"
         },
@@ -25231,6 +25339,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -25352,6 +25464,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_production_gate_reporting.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
           "type": "verified_by"
         },
         {
@@ -25996,6 +26112,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_long_gate_checkpointing.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_recovery.py",
           "type": "verified_by"
         },
         {
@@ -27079,6 +27199,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_recovery.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/mkdocs.spec.ts",
           "type": "verified_by"
         },
@@ -27195,6 +27319,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:qualification_authentication_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_qualification_owner.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:queue_full": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -27236,6 +27378,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_recovery.py",
           "type": "verified_by"
         },
         {
@@ -28345,6 +28491,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "17541b9d7baf5786cb1f3269b2c6cb685959862bfa0cdf1141d06998011abd6e"
+    "source_fingerprint": "da6c7356ae23ba42389f552d7306ff692e274282e5b0ded1ab4972e3f05d8f67"
   }
 }

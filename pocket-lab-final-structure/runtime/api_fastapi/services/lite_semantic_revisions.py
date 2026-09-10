@@ -395,7 +395,7 @@ def _read_rows(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
 
 
 def _app_current_rows(app_id: str) -> list[dict[str, Any]]:
-    return _read_rows(
+    rows = _read_rows(
         "SELECT app_id,app_name,status,installed,health_state,latest_action_id,"
         "latest_action_status,latest_backup_id,source_revision,summary,"
         "catalog_state_json,media_state_json,operation_state_json,"
@@ -404,6 +404,33 @@ def _app_current_rows(app_id: str) -> list[dict[str, Any]]:
         "FROM app_current_state WHERE app_id=? LIMIT 1",
         (str(app_id or "photoprism")[:120],),
     )
+    # These columns are canonical JSON projections, not opaque strings. Decode
+    # them before the semantic filter so volatile nested timestamps are
+    # removed by _semantic_value instead of changing a recovery target revision
+    # every time a healthy app projection refreshes.
+    projection_columns = (
+        "catalog_state_json",
+        "media_state_json",
+        "operation_state_json",
+        "update_state_json",
+        "backup_profile_json",
+        "security_profile_json",
+        "backup_targets_json",
+    )
+    for row in rows:
+        # app_current_state.source_revision is prepared-projection provenance.
+        # It advances when the same canonical app state is reprojected and
+        # must not invalidate a restore preview by itself.
+        row.pop("source_revision", None)
+        for column in projection_columns:
+            value = row.get(column)
+            if value in (None, "") or isinstance(value, (dict, list)):
+                continue
+            try:
+                row[column] = json.loads(str(value))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                row[column] = {"state": "invalid"}
+    return rows
 
 
 def _compatibility_file_diagnostics(state_dir: Path) -> list[dict[str, Any]]:
@@ -579,6 +606,35 @@ def app_source_revision(*, scope: str = "lifecycle", app_id: str = "photoprism")
     return _probe(name, lambda: app_semantic_material(scope=scope, app_id=app_id))
 
 
+def recovery_target_app_material() -> dict[str, Any]:
+    """Return app state that a selected full restore would replace.
+
+    App action projections and command rows are operational history. They can
+    reconcile after a preview is created without changing the app configuration
+    or lifecycle state that the restore targets. Keep those rows in the normal
+    App Catalog semantic revision, but exclude them from preview binding so a
+    healthy action projector cannot self-stale an otherwise valid preview.
+    """
+    material = app_semantic_material(
+        scope="lifecycle", app_id="photoprism", include_manifests=True
+    )
+    stable_rows: list[dict[str, Any]] = []
+    for row in material.get("current_state") or []:
+        if not isinstance(row, dict):
+            continue
+        stable = dict(row)
+        for field in (
+            "latest_action_id",
+            "latest_action_status",
+            "operation_state_json",
+        ):
+            stable.pop(field, None)
+        stable_rows.append(stable)
+    material["current_state"] = stable_rows
+    material["commands"] = []
+    return material
+
+
 def recovery_summary_material() -> dict[str, Any]:
     state_dir = deps.settings().state_dir
     return {
@@ -594,21 +650,61 @@ def recovery_summary_source_revision() -> int:
 
 def recovery_details_material() -> dict[str, Any]:
     state_dir = deps.settings().state_dir
-    fleet_revision_rows = _read_rows(
-        "SELECT domain,revision FROM domain_revisions WHERE domain IN ('fleet','storage') ORDER BY domain"
-    )
     return {
         "files": [_read_json_semantics(state_dir / name) for name in _RECOVERY_DETAILS_FILES],
         "summary": recovery_summary_material(),
         "apps": app_semantic_material(
             scope="lifecycle", app_id="photoprism", include_manifests=False
         ),
-        "related_domain_revisions": fleet_revision_rows,
     }
 
 
 def recovery_details_source_revision() -> int:
     return _probe("recovery.details", recovery_details_material)
+
+
+def recovery_target_material() -> dict[str, Any]:
+    """Return state that can invalidate a selected restore preview.
+
+    Command lifecycle rows are operational history, not the target state that
+    the selected restore would replace.  Including them here made a restore
+    request self-stale: submitting the request added its own lifecycle row
+    before the worker could validate the preview.  Keep canonical files,
+    manifest/database recovery state, maintenance state, and app state in the
+    binding while leaving command-history churn to the prepared projection.
+    """
+    state_dir = deps.settings().state_dir
+    rows = _recovery_rows()
+    rows.pop("commands", None)
+    stable_files: list[dict[str, Any]] = []
+    for name in (*_APP_SCOPE_FILES["lifecycle"], "backup_state.json"):
+        value = _read_json_semantics(state_dir / name)
+        if name == "backup_state.json" and isinstance(value.get("value"), dict):
+            # Preview/restore progress is operational history.  The manifest
+            # index and database restore rows below remain the target-state
+            # authorities for actual backup/restore changes.
+            stable_value = dict(value["value"])
+            for transient in (
+                "pending_backup",
+                "latest_restore_preview",
+                "restore_preview",
+                "pre_restore_checkpoint",
+                "last_restore",
+            ):
+                stable_value.pop(transient, None)
+            value["value"] = stable_value
+        stable_files.append(value)
+    return {
+        "files": stable_files,
+        "manifests": _manifest_semantics(),
+        "rows": rows,
+        "apps": recovery_target_app_material(),
+    }
+
+
+def recovery_target_revision() -> int:
+    """Return the stable target revision used by preview/restore binding."""
+    return _probe("recovery.target", recovery_target_material)
 
 
 def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
@@ -623,7 +719,11 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 quiet_window_seconds=1.0,
                 priority=20,
                 work_class="critical",
-                deadline_seconds=8.0,
+                # The first PhotoPrism catalog hydration can include bounded
+                # local service/config probes on low-power Termux. Keep the
+                # collector finite, but do not turn a measured cold-start
+                # envelope into a false stale projection.
+                deadline_seconds=45.0,
             )
         if safe_key == "lifecycle":
             return ProjectionRevisionContract(
@@ -632,7 +732,7 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 quiet_window_seconds=1.0,
                 priority=25,
                 work_class="critical",
-                deadline_seconds=8.0,
+                deadline_seconds=20.0,
             )
         if safe_key.startswith("actions:"):
             return ProjectionRevisionContract(
@@ -641,7 +741,7 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 quiet_window_seconds=0.75,
                 priority=15,
                 work_class="critical",
-                deadline_seconds=6.0,
+                deadline_seconds=20.0,
             )
         if safe_key.startswith("update:"):
             return ProjectionRevisionContract(
@@ -666,8 +766,10 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
             source_revision=recovery_summary_source_revision,
             max_probe_seconds=5.0,
             quiet_window_seconds=1.0,
-            priority=50,
-            work_class="io",
+            # Recovery is a primary operator surface. It must remain runnable
+            # while all app/history collectors yield to Termux pressure.
+            priority=0,
+            work_class="recovery",
             deadline_seconds=8.0,
         )
     if safe_domain == "recovery" and safe_key == "details":
@@ -675,8 +777,8 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
             source_revision=recovery_details_source_revision,
             max_probe_seconds=8.0,
             quiet_window_seconds=1.5,
-            priority=60,
-            work_class="io",
+            priority=1,
+            work_class="recovery",
             deadline_seconds=10.0,
         )
     phase3b_domain = f"{safe_domain}.{safe_key}"
@@ -708,7 +810,16 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 else 300.0
             ),
             quiet_window_seconds=0.25 if phase3b_domain == "security.progress" else 1.0,
-            priority=(10 if phase3b_domain == "security.progress" else 20 if high_priority else 40),
+            # NATS readiness is a control-plane dependency for worker-owned
+            # recovery and command delivery. Keep it immediately behind the
+            # Recovery/Security bootstrap lane so ordinary system probes cannot
+            # starve the durable NATS projection.
+            priority=(
+                5 if phase3b_domain == "system.nats_remote"
+                else 10 if phase3b_domain == "security.progress"
+                else 20 if high_priority
+                else 40
+            ),
             work_class="critical" if critical else "io",
             deadline_seconds=(
                 10.0 if phase3b_domain in {"system.processes", "system.remote_access"}

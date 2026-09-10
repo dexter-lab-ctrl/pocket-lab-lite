@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from collections.abc import Iterator
 from typing import Any
 
 from .. import deps
@@ -160,38 +161,74 @@ def _safe_relative(path: Path, base: Path) -> str:
         return path.name
 
 
-def discover_state_sources() -> list[dict[str, Any]]:
+def _raise_state_walk_error(error: OSError) -> None:
+    """Fail closed when a registered state directory cannot be inventoried."""
+    raise RuntimeError("Registered Pocket Lab state could not be inventoried safely") from error
+
+
+def iter_state_sources(*, include_event_journal: bool = True) -> Iterator[dict[str, Any]]:
+    """Yield only registered, non-media application state with bounded memory.
+
+    The state directories contain historical event/workflow records and can be
+    substantially larger than the small canonical state files.  ``os.walk``
+    keeps only one directory's names in memory at a time and never follows
+    symlinked directories.  A walk error is a backup failure, rather than an
+    implicit partial restore point.
+    """
     state_dir = deps.settings().state_dir
-    sources: list[dict[str, Any]] = []
 
     for name in DEFAULT_STATE_FILES:
         candidate = state_dir / name
         if candidate.exists() and candidate.is_file() and not candidate.is_symlink() and not is_sensitive_path(candidate) and not is_excluded_media_path(candidate):
-            sources.append(
-                {
-                    "path": candidate,
-                    "relative_path": f"state/{name}",
-                    "set": "Lite runtime state",
-                    "kind": "file",
-                }
-            )
+            if not _is_safe_state_path(candidate, state_dir):
+                raise RuntimeError("Registered Pocket Lab state path is not safely contained")
+            yield {
+                "path": candidate,
+                "relative_path": f"state/{name}",
+                "set": "Lite runtime state",
+                "kind": "file",
+            }
 
-    for dirname in DEFAULT_STATE_DIRS:
-        directory = state_dir / dirname
-        if not directory.exists() or not directory.is_dir() or directory.is_symlink() or is_sensitive_path(directory) or is_excluded_media_path(directory):
-            continue
-        for candidate in sorted(directory.rglob("*")):
-            if not candidate.is_file() or candidate.is_symlink() or is_sensitive_path(candidate) or is_excluded_media_path(candidate):
+    if include_event_journal:
+        for dirname in DEFAULT_STATE_DIRS:
+            directory = state_dir / dirname
+            if not directory.exists():
                 continue
-            rel = _safe_relative(candidate, state_dir)
-            sources.append(
-                {
-                    "path": candidate,
-                    "relative_path": f"state/{rel}",
-                    "set": "Lite runtime state",
-                    "kind": "file",
-                }
-            )
+            if not directory.is_dir() or directory.is_symlink() or is_sensitive_path(directory) or is_excluded_media_path(directory):
+                raise RuntimeError("Registered Pocket Lab event state is not a safe application path")
+
+            def onerror(error: OSError) -> None:
+                _raise_state_walk_error(error)
+
+            for root, dirnames, filenames in os.walk(
+                directory,
+                topdown=True,
+                followlinks=False,
+                onerror=onerror,
+            ):
+                root_path = Path(root)
+                if not _is_safe_state_path(root_path, state_dir):
+                    raise RuntimeError("Registered Pocket Lab event state escaped its state root")
+                dirnames[:] = [
+                    name
+                    for name in sorted(dirnames)
+                    if not (root_path / name).is_symlink()
+                    and not is_sensitive_path(root_path / name)
+                    and not is_excluded_media_path(root_path / name)
+                ]
+                for name in sorted(filenames):
+                    candidate = root_path / name
+                    if not candidate.is_file() or candidate.is_symlink() or is_sensitive_path(candidate) or is_excluded_media_path(candidate):
+                        continue
+                    if not _is_safe_state_path(candidate, state_dir):
+                        raise RuntimeError("Registered Pocket Lab event state is not safely contained")
+                    rel = _safe_relative(candidate, state_dir)
+                    yield {
+                        "path": candidate,
+                        "relative_path": f"state/{rel}",
+                        "set": "Lite runtime state",
+                        "kind": "file",
+                    }
 
     # Security evidence is backend-owned and already redacted at write time.
     # Copy only bounded summaries and run metadata; never copy scanner output,
@@ -204,14 +241,17 @@ def discover_state_sources() -> list[dict[str, Any]]:
         if not candidate.is_file() or candidate.is_symlink() or not _is_safe_state_path(candidate, state_dir):
             continue
         rel = _safe_relative(candidate, state_dir)
-        sources.append({
+        yield {
             "path": candidate,
             "relative_path": f"state/{rel}",
             "set": "Sanitized Security evidence",
             "kind": "sanitized_evidence",
-        })
+        }
 
-    return sources
+
+def discover_state_sources(*, include_event_journal: bool = True) -> list[dict[str, Any]]:
+    """Compatibility materialization for callers that need an inventory list."""
+    return list(iter_state_sources(include_event_journal=include_event_journal))
 
 
 def _is_safe_state_path(path: Path, state_dir: Path) -> bool:
@@ -223,7 +263,10 @@ def _is_safe_state_path(path: Path, state_dir: Path) -> bool:
         return False
 
 
-def backup_scope(include_app_data: bool = True) -> dict[str, Any]:
+def backup_scope(
+    include_app_data: bool = True,
+    include_event_journal: bool = True,
+) -> dict[str, Any]:
     included = [
         "Lite runtime state",
         "Device records and heartbeats",
@@ -231,10 +274,18 @@ def backup_scope(include_app_data: bool = True) -> dict[str, Any]:
         "Device audit and command evidence",
         "Rules/protection state",
         "App catalog/install metadata",
+        "PhotoPrism safe configuration and application metadata (when registered)",
         "Recovery metadata",
         "Backup manifests and receipts",
     ]
+    if include_event_journal:
+        included.append("Historical event and workflow journal")
     conditional = [
+        {
+            "name": "PhotoPrism SQLite metadata database",
+            "enabled": bool(include_app_data),
+            "reason": "The registered PhotoPrism SQLite index is copied through its online logical-backup adapter; media paths are never walked.",
+        },
         {
             "name": "MariaDB logical dump",
             "enabled": False,
@@ -254,6 +305,11 @@ def backup_scope(include_app_data: bool = True) -> dict[str, Any]:
             "name": "Encrypted secret recovery bundle",
             "enabled": False,
             "reason": "Secrets are excluded by default; encrypted secret recovery is a later explicit opt-in flow.",
+        },
+        {
+            "name": "Historical event and workflow journal",
+            "enabled": bool(include_event_journal),
+            "reason": "Registered event, workflow, command, and runner history is streamed when selected; no unregistered filesystem paths are scanned.",
         },
     ]
     return {

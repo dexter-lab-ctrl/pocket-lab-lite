@@ -2480,7 +2480,7 @@ function normalizeRecoveryRepository(repository = {}) {
 
 function normalizeRecoveryBackup(backup = {}) {
   if (!isObject(backup)) return null;
-  return copySafeKeys(backup, [
+  const selected = copySafeKeys(backup, [
     'backup_id',
     'snapshot_id',
     'manifest_checksum',
@@ -2500,11 +2500,14 @@ function normalizeRecoveryBackup(backup = {}) {
     'size_bytes',
     'risk_level',
   ]);
+  selected.included_components = safeList(backup.included_components || backup.included_sets);
+  selected.excluded_components = safeList(backup.excluded_components || backup.excluded_runtime_items);
+  return selected;
 }
 
 function normalizeRecoveryPreview(preview = {}) {
   if (!isObject(preview)) return null;
-  return copySafeKeys(preview, [
+  const selected = copySafeKeys(preview, [
     'preview_id',
     'backup_id',
     'status',
@@ -2521,6 +2524,9 @@ function normalizeRecoveryPreview(preview = {}) {
     'completed_at',
     'updated_at',
   ]);
+  selected.included_components = safeList(preview.included_components || preview.included_sets);
+  selected.excluded_components = safeList(preview.excluded_components || preview.excluded_runtime_items);
+  return selected;
 }
 
 function normalizeRecoveryCheckpoint(checkpoint = {}) {

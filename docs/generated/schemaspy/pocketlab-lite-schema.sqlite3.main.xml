@@ -1229,23 +1229,25 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="operation_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_recovery_resolutions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="requested_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="requested_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="candidate_revision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="'human'" digits="0" id="2" name="requested_by_principal_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="requested_by_principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="candidate_revision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="prior_known_good_revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="prior_known_good_revision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="observed_filesystem_revision" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="observed_opa_revision" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="evidence_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="observed_filesystem_revision" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="observed_opa_revision" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="evidence_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="operation_id" sequenceNumberInPK="1"/>
          <index name="policy_activation_operations_s_pk" unique="true">
             <column ascending="true" name="operation_id"/>
@@ -1428,16 +1430,18 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="canonical_parameters_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="manifest_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="content_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="validation_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="validated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="validation_reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="lifecycle_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="activated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="change_summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'human'" digits="0" id="8" name="created_by_principal_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="created_by_principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="validation_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="validated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="validation_reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="lifecycle_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="activated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="change_summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="revision_id" sequenceNumberInPK="1"/>
          <index name="policy_revisions_s_pk" unique="true">
             <column ascending="true" name="revision_id"/>

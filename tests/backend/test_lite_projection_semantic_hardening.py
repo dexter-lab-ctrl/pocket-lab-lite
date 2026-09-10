@@ -77,6 +77,94 @@ def test_semantic_diff_is_bounded_and_value_free():
     assert "secret-value" not in encoded
 
 
+def test_app_projection_target_revision_ignores_embedded_refresh_timestamps(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions as revisions
+
+    row = {
+        "app_id": "photoprism",
+        "status": "ready",
+        "installed": 1,
+        "health_state": "protected",
+        "source_revision": 10,
+        "projection_version": 2,
+        "backup_targets_json": json.dumps(
+            {"status": "healthy", "updated_at": "2026-09-09T16:08:30Z"}
+        ),
+        "catalog_state_json": json.dumps(
+            {"status": "ready", "route_ready": True, "updated_at": "2026-09-09T16:08:30Z"}
+        ),
+    }
+
+    monkeypatch.setattr(revisions, "_read_rows", lambda *args, **kwargs: [dict(row)])
+    before = revisions.canonical_semantic_revision(
+        "recovery.target.apps",
+        {"current_state": revisions._app_current_rows("photoprism")},
+    )
+
+    row["backup_targets_json"] = json.dumps(
+        {"status": "healthy", "updated_at": "2026-09-09T16:08:35Z"}
+    )
+    row["source_revision"] = 11
+    row["catalog_state_json"] = json.dumps(
+        {"status": "ready", "route_ready": True, "updated_at": "2026-09-09T16:08:35Z"}
+    )
+    after_refresh = revisions.canonical_semantic_revision(
+        "recovery.target.apps",
+        {"current_state": revisions._app_current_rows("photoprism")},
+    )
+
+    assert after_refresh == before
+
+    row["backup_targets_json"] = json.dumps(
+        {"status": "attention", "updated_at": "2026-09-09T16:08:35Z"}
+    )
+    after_material_change = revisions.canonical_semantic_revision(
+        "recovery.target.apps",
+        {"current_state": revisions._app_current_rows("photoprism")},
+    )
+    assert after_material_change != before
+
+
+def test_recovery_target_app_material_ignores_operational_action_reconciliation(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions as revisions
+
+    material = {
+        "files": [],
+        "compatibility_files": [],
+        "current_state": [
+            {
+                "app_id": "photoprism",
+                "status": "ready",
+                "operation_state_json": {"actions": {"open": {"status": "ready", "run_count": 1}}},
+            }
+        ],
+        "commands": [{"command_id": "app-command-1", "status": "running"}],
+        "security": [],
+    }
+    monkeypatch.setattr(revisions, "app_semantic_material", lambda **kwargs: material)
+
+    before = revisions.canonical_semantic_revision(
+        "recovery.target.apps", revisions.recovery_target_app_material()
+    )
+    material["current_state"][0]["operation_state_json"] = {
+        "actions": {"open": {"status": "succeeded", "run_count": 2}}
+    }
+    material["commands"] = [{"command_id": "app-command-2", "status": "succeeded"}]
+    after_operational_reconciliation = revisions.canonical_semantic_revision(
+        "recovery.target.apps", revisions.recovery_target_app_material()
+    )
+
+    assert after_operational_reconciliation == before
+
+    material["current_state"][0]["status"] = "attention"
+    after_lifecycle_change = revisions.canonical_semantic_revision(
+        "recovery.target.apps", revisions.recovery_target_app_material()
+    )
+    assert after_lifecycle_change != before
+
+
 def test_canonical_commit_skips_identical_semantics_and_explains_change(
     tmp_path, monkeypatch
 ):
@@ -333,6 +421,350 @@ def test_api_dirty_admission_is_consumed_by_worker_owner(tmp_path, monkeypatch):
     assert diagnostics["process_role"] == "worker"
     assert str(diagnostics["loaded_build_version"]).startswith("sha256:")
     assert len(str(diagnostics["process_start_generation"])) == 16
+
+
+def test_worker_rehydrates_durable_dirty_projection_after_claimed_signal(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    built = threading.Event()
+    projected = threading.Event()
+
+    def builder():
+        built.set()
+        return {"status": "healthy", "item_count": 0, "sanitized": True}
+
+    def projector(_payload):
+        projected.set()
+        return 1
+
+    conn = sqlite3.connect(database)
+    try:
+        conn.execute(
+            """
+            INSERT INTO projection_refresh_state(
+                domain,generation,committed_generation,dirty,active,priority,work_class,
+                updated_at
+            ) VALUES ('recovery.details',7,6,1,1,10,'critical','2026-09-08T00:00:00Z')
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    scheduler = ProjectionScheduler()
+    scheduler.register(
+        ProjectionJob(
+            domain="recovery.details",
+            builder=builder,
+            projector=projector,
+            priority=10,
+            work_class="critical",
+            deadline_seconds=2.0,
+            source_revision=lambda: 1,
+            max_probe_seconds=5.0,
+        )
+    )
+    result = scheduler.reconcile_durable_state()
+    assert result["requeued"] == 1
+    assert result["orphaned_active"] == 1
+    with sqlite3.connect(database) as conn:
+        active = conn.execute(
+            "SELECT active FROM projection_refresh_state WHERE domain='recovery.details'"
+        ).fetchone()[0]
+    assert active == 0
+    scheduler.start()
+    assert built.wait(3.0)
+    assert projected.wait(3.0)
+
+    deadline = time.time() + 3.0
+    while time.time() < deadline:
+        state = scheduler.status("recovery.details")
+        if state.get("execution_count", 0) >= 1 and not state.get("refresh_pending"):
+            break
+        time.sleep(0.02)
+    scheduler.shutdown()
+    assert state.get("execution_count", 0) >= 1
+    assert state.get("committed_count", 0) >= 1
+
+
+def test_worker_restart_does_not_preserve_primary_projection_backoff(
+    tmp_path, monkeypatch
+):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    retry_epoch_ms = int(time.time() * 1000) + 60_000
+    with sqlite3.connect(database) as conn:
+        conn.execute(
+            """
+            INSERT INTO projection_refresh_state(
+                domain,generation,committed_generation,dirty,active,priority,work_class,
+                failure_count,next_retry_epoch_ms,updated_at
+            ) VALUES ('apps.catalog',4,3,1,0,20,'critical',4,?,
+                      '2026-09-08T00:00:00Z')
+            """,
+            (retry_epoch_ms,),
+        )
+
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    scheduler = ProjectionScheduler()
+    scheduler.register(
+        ProjectionJob(
+            domain="apps.catalog",
+            builder=lambda: {"status": "healthy", "sanitized": True},
+            projector=lambda _payload: 1,
+            priority=20,
+            work_class="critical",
+            deadline_seconds=2.0,
+            source_revision=lambda: 1,
+            max_probe_seconds=5.0,
+        )
+    )
+
+    result = scheduler.reconcile_durable_state()
+    assert result["requeued"] == 1
+    status = scheduler.status("apps.catalog")
+    assert status["retry_after_seconds"] == 0
+    assert status["refresh_pending"] is True
+    scheduler.shutdown(drain_seconds=0.1)
+
+
+def test_worker_rehydrates_clean_projection_completion_for_idle_freshness(
+    tmp_path, monkeypatch
+):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    completed_at = "2026-09-09T18:00:00Z"
+    with sqlite3.connect(database) as conn:
+        conn.execute(
+            """
+            INSERT INTO projection_refresh_state(
+                domain,generation,committed_generation,dirty,active,priority,work_class,
+                last_started_at,last_completed_at,last_error_type,source_revision,updated_at
+            ) VALUES ('recovery.details',7,7,0,0,1,'recovery',?,?, '',23,?)
+            """,
+            (completed_at, completed_at, completed_at),
+        )
+
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    scheduler = ProjectionScheduler()
+    scheduler.register(
+        ProjectionJob(
+            domain="recovery.details",
+            builder=lambda: {"status": "healthy", "sanitized": True},
+            projector=lambda _payload: 7,
+            priority=1,
+            work_class="recovery",
+            deadline_seconds=2.0,
+            source_revision=lambda: 23,
+            max_probe_seconds=8.0,
+        )
+    )
+
+    result = scheduler.reconcile_durable_state()
+    state = scheduler._states["recovery.details"]
+    assert result["requeued"] == 0
+    assert state.last_completed_iso == completed_at
+    assert state.last_started_iso == completed_at
+    assert state.committed_generation == 7
+    assert state.generation == 7
+    assert state.dirty is False
+    assert state.queued is False
+    scheduler.shutdown(drain_seconds=0.1)
+
+
+def test_worker_replaces_startup_queue_when_rehydrating_newer_durable_generation(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    built = threading.Event()
+    projected = threading.Event()
+
+    def builder():
+        built.set()
+        return {"status": "healthy", "sanitized": True}
+
+    def projector(_payload):
+        projected.set()
+        return 1
+
+    with sqlite3.connect(database) as conn:
+        conn.execute(
+            """
+            INSERT INTO projection_refresh_state(
+                domain,generation,committed_generation,dirty,active,priority,work_class,
+                updated_at
+            ) VALUES ('recovery.summary',7,6,1,0,10,'critical','2026-09-08T00:00:00Z')
+            """
+        )
+
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    scheduler = ProjectionScheduler()
+    job = ProjectionJob(
+        domain="recovery.summary",
+        builder=builder,
+        projector=projector,
+        priority=10,
+        work_class="critical",
+        deadline_seconds=2.0,
+        source_revision=lambda: 1,
+        max_probe_seconds=5.0,
+    )
+    scheduler.register(job)
+    # Simulate startup warm-up inserting an older local heap generation before
+    # durable worker state is reconciled. Keep the dispatcher blocked behind the
+    # scheduler condition until reconciliation replaces that heap entry.
+    with scheduler._condition:
+        state = scheduler._states["recovery.summary"]
+        state.generation = 1
+        state.dirty = True
+        state.trigger_reason = "startup_warmup"
+        scheduler._enqueue_locked("recovery.summary", state)
+    result = scheduler.reconcile_durable_state()
+    assert result["requeued"] == 1
+    scheduler.start()
+    assert built.wait(3.0)
+    assert projected.wait(3.0)
+
+    deadline = time.time() + 3.0
+    while time.time() < deadline:
+        state = scheduler.status("recovery.summary")
+        if state.get("execution_count", 0) >= 1 and not state.get("refresh_pending"):
+            break
+        time.sleep(0.02)
+    scheduler.shutdown()
+    assert state.get("execution_count", 0) >= 1
+    assert state.get("committed_count", 0) >= 1
+
+
+def test_database_switch_fence_blocks_new_projection_dispatch_until_released(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    built = threading.Event()
+    scheduler = ProjectionScheduler()
+    scheduler.register(
+        ProjectionJob(
+            domain="recovery.summary",
+            builder=lambda: (built.set() or {"status": "healthy", "sanitized": True}),
+            projector=lambda _payload: 1,
+            priority=10,
+            work_class="critical",
+            deadline_seconds=2.0,
+            source_revision=lambda: 1,
+            max_probe_seconds=5.0,
+        )
+    )
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    scheduler.start()
+    try:
+        assert scheduler.begin_database_switch(timeout_seconds=1.0) is True
+        scheduler.mark_dirty("recovery.summary", reason="restore_fence_test")
+        assert built.wait(0.2) is False
+        scheduler.end_database_switch()
+        assert built.wait(3.0) is True
+    finally:
+        scheduler.end_database_switch()
+        scheduler.shutdown(drain_seconds=1.0)
+
+
+def test_database_switch_fence_does_not_claim_durable_dirty_signals(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    monkeypatch.setattr(
+        scheduler,
+        "_ensure_signal_schema",
+        lambda: pytest.fail("database-switch fence must avoid SQLite signal writes"),
+    )
+    try:
+        assert scheduler.begin_database_switch(timeout_seconds=1.0) is True
+        result = scheduler.consume_dirty_signals()
+        assert result["claimed"] == 0
+        assert result["database_switch_fenced"] is True
+    finally:
+        scheduler.end_database_switch()
+        scheduler.shutdown(drain_seconds=1.0)
+
+
+def test_known_legacy_mailbox_signal_is_retired_without_hiding_unknown_domains(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    scheduler.start()
+    try:
+        conn = sqlite3.connect(database)
+        try:
+            conn.execute(
+                "INSERT INTO projection_dirty_signals(domain,signal_generation,claimed_generation,"
+                "trigger_reason,requested_by,updated_at,updated_at_epoch_ms) "
+                "VALUES ('apps.backup:photoprism', 1, 0, 'legacy', 'test', ?, 1)",
+                ("2026-09-09T00:00:00Z",),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        result = scheduler.consume_dirty_signals()
+        assert result["retired"] == 1
+        assert result["retired_domains"] == ["apps.backup:photoprism"]
+        assert result["unregistered"] == 0
+        assert result["total_pending"] == 0
+
+        with sqlite3.connect(database) as conn:
+            claimed = conn.execute(
+                "SELECT signal_generation,claimed_generation "
+                "FROM projection_dirty_signals WHERE domain='apps.backup:photoprism'"
+            ).fetchone()
+        assert claimed == (1, 1)
+        assert scheduler.consume_dirty_signals()["unregistered"] == 0
+    finally:
+        scheduler.shutdown(drain_seconds=1.0)
+
+
+def test_database_switch_state_write_fence_blocks_concurrent_json_writers(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi import deps
+
+    blocked = threading.Event()
+    completed = threading.Event()
+
+    def contender():
+        try:
+            with deps.core.state_write_fence(timeout_seconds=0.1):
+                pass
+        except TimeoutError:
+            blocked.set()
+        with deps.core.state_write_fence(timeout_seconds=1.0):
+            completed.set()
+
+    with deps.core.state_write_fence(timeout_seconds=1.0):
+        thread = threading.Thread(target=contender)
+        thread.start()
+        thread.join(timeout=1.0)
+        assert blocked.is_set()
+        assert completed.is_set() is False
+    thread.join(timeout=1.0)
+    assert completed.is_set()
+
+
+def test_recovery_projection_contract_has_dedicated_lane_and_priority_ordering():
+    from api_fastapi.services.lite_semantic_revisions import contract_for
+
+    summary = contract_for("recovery", "summary")
+    details = contract_for("recovery", "details")
+    assert summary is not None and details is not None
+    assert summary.work_class == "recovery"
+    assert details.work_class == "recovery"
+    assert summary.priority < details.priority
+    assert details.priority <= 20
 
 
 def test_projection_execution_ownership_is_explicit_in_api_and_worker_sources():

@@ -147,12 +147,15 @@ def _target_from_device(device: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
-def backup_targets() -> dict[str, Any]:
-    try:
-        fleet = __import__("api_fastapi.services.lite_status", fromlist=["lite_fleet"]).lite_fleet()
-        devices = fleet.get("devices") if isinstance(fleet, dict) else []
-    except Exception:
-        devices = []
+def backup_targets(*, fleet_payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    if isinstance(fleet_payload, dict):
+        fleet = fleet_payload
+    else:
+        try:
+            fleet = __import__("api_fastapi.services.lite_status", fromlist=["lite_fleet"]).lite_fleet()
+        except Exception:
+            fleet = {}
+    devices = fleet.get("devices") if isinstance(fleet, dict) else []
     targets = [target for item in devices if isinstance(item, dict) for target in [_target_from_device(item)] if target]
     ready_count = sum(1 for target in targets if target.get("ready"))
     return {
