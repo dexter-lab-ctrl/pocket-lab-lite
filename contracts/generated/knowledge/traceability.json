@@ -23,6 +23,28 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:delete:/api/lite/harness/principals/{principal_id}",
+      "name": "DELETE /api/lite/harness/principals/{principal_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:delete:/api/lite/harness/session/{session_id}",
+      "name": "DELETE /api/lite/harness/session/{session_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:delete:/api/lite/identity/passkeys/{credential_id}",
       "name": "DELETE /api/lite/identity/passkeys/{credential_id}",
       "note": "A test link does not by itself prove runtime verification.",
@@ -597,6 +619,39 @@
     {
       "entity": "api:get:/api/lite/fleet/invites/latest",
       "name": "GET /api/lite/fleet/invites/latest",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/harness/capabilities",
+      "name": "GET /api/lite/harness/capabilities",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/harness/session/{session_id}",
+      "name": "GET /api/lite/harness/session/{session_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/harness/status",
+      "name": "GET /api/lite/harness/status",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -1587,6 +1642,50 @@
     {
       "entity": "api:post:/api/lite/fleet/remove-device",
       "name": "POST /api/lite/fleet/remove-device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/challenge",
+      "name": "POST /api/lite/harness/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/principals",
+      "name": "POST /api/lite/harness/principals",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+      "name": "POST /api/lite/harness/principals/{principal_id}/revoke",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/session",
+      "name": "POST /api/lite/harness/session",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -3132,6 +3231,14 @@
       "verification_status": "unvalidated"
     },
     {
+      "entity": "domain:harness",
+      "name": "Harness",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
       "entity": "domain:health",
       "name": "Health",
       "note": "A test link does not by itself prove runtime verification.",
@@ -3957,6 +4064,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
+    "source_fingerprint": "f030b2ac5e41f961c57794b8e0526a91977d123555fcf3e1742d4ebec0acbda2"
   }
 }

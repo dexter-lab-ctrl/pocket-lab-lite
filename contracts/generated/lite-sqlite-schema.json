@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 33,
+    "migration_count": 34,
     "objects": [
       {
         "checks": [],
@@ -4288,6 +4288,503 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE enterprise_memberships (\n    human_id TEXT PRIMARY KEY,\n    role TEXT NOT NULL CHECK (role IN ('Owner', 'Admin', 'Operator', 'Viewer', 'Auditor')),\n    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'removed')),\n    authorization_version INTEGER NOT NULL DEFAULT 1,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    created_by_human_id TEXT,\n    updated_by_human_id TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id) ON DELETE RESTRICT,\n    FOREIGN KEY(created_by_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(updated_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "event_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "occurred_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "event_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_class",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "harness_session_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "capability",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_scope",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "environment",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "result",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "summary",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "correlation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "principal_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "synthetic_principals",
+            "sequence": 0,
+            "to": "principal_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "harness_session_id",
+              "occurred_at",
+              "event_id"
+            ],
+            "name": "idx_harness_audit_events_session",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "occurred_at",
+              "event_id"
+            ],
+            "name": "idx_harness_audit_events_time",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        ],
+        "name": "harness_audit_events",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE harness_audit_events (\n    event_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    occurred_at TEXT NOT NULL,\n    event_type TEXT NOT NULL,\n    reason_code TEXT NOT NULL,\n    principal_id TEXT,\n    principal_class TEXT,\n    harness_session_id TEXT,\n    purpose TEXT,\n    capability TEXT,\n    target_scope TEXT,\n    environment TEXT NOT NULL,\n    operation_id TEXT,\n    result TEXT NOT NULL,\n    summary TEXT NOT NULL,\n    correlation_id TEXT NOT NULL,\n    FOREIGN KEY (principal_id) REFERENCES synthetic_principals(principal_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "target_scope = 'local_server_host_only'",
+          "failed_attempts >= 0"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "challenge_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "nonce_hash",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "signing_payload_hash",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "issued_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_profile",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_scope",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "runtime_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "failed_attempts",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "consumed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "principal_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "synthetic_principals",
+            "sequence": 0,
+            "to": "principal_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "expires_at",
+              "consumed_at"
+            ],
+            "name": "idx_harness_challenges_expiry",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "nonce_hash"
+            ],
+            "name": "sqlite_autoindex_harness_challenges_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "challenge_id"
+            ],
+            "name": "sqlite_autoindex_harness_challenges_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        ],
+        "name": "harness_challenges",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "nonce_hash",
+          "signing_payload_hash"
+        ],
+        "sql": "CREATE TABLE harness_challenges (\n    challenge_id TEXT PRIMARY KEY,\n    principal_id TEXT NOT NULL,\n    nonce_hash TEXT NOT NULL UNIQUE,\n    signing_payload_hash TEXT NOT NULL,\n    issued_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    purpose TEXT NOT NULL,\n    requested_profile TEXT NOT NULL,\n    target_scope TEXT NOT NULL\n        CHECK (target_scope = 'local_server_host_only'),\n    runtime_id TEXT NOT NULL,\n    failed_attempts INTEGER NOT NULL DEFAULT 0 CHECK (failed_attempts >= 0),\n    consumed_at TEXT,\n    created_at TEXT NOT NULL,\n    FOREIGN KEY (principal_id) REFERENCES synthetic_principals(principal_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "target_scope = 'local_server_host_only'",
+          "destructive_allowed IN (0, 1",
+          "status IN ('active', 'expired', 'revoked'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "harness_session_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_class",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "capability_profile",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "capabilities_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_scope",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "runtime_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "token_hash",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "started_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_used_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "destructive_allowed",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'active'",
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "revoke_reason",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "principal_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "synthetic_principals",
+            "sequence": 0,
+            "to": "principal_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "status",
+              "expires_at",
+              "principal_id"
+            ],
+            "name": "idx_harness_sessions_status",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "token_hash"
+            ],
+            "name": "sqlite_autoindex_harness_sessions_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "harness_session_id"
+            ],
+            "name": "sqlite_autoindex_harness_sessions_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        ],
+        "name": "harness_sessions",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "token_hash"
+        ],
+        "sql": "CREATE TABLE harness_sessions (\n    harness_session_id TEXT PRIMARY KEY,\n    principal_id TEXT NOT NULL,\n    principal_class TEXT NOT NULL,\n    purpose TEXT NOT NULL,\n    capability_profile TEXT NOT NULL,\n    capabilities_json TEXT NOT NULL,\n    target_scope TEXT NOT NULL\n        CHECK (target_scope = 'local_server_host_only'),\n    runtime_id TEXT NOT NULL,\n    token_hash TEXT NOT NULL UNIQUE,\n    started_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    last_used_at TEXT,\n    destructive_allowed INTEGER NOT NULL DEFAULT 0 CHECK (destructive_allowed IN (0, 1)),\n    status TEXT NOT NULL DEFAULT 'active'\n        CHECK (status IN ('active', 'expired', 'revoked')),\n    revoked_at TEXT,\n    revoke_reason TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY (principal_id) REFERENCES synthetic_principals(principal_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -10222,6 +10719,183 @@
         "writer": "Security store and scanner completion services"
       },
       {
+        "checks": [
+          "principal_type = 'synthetic_machine'",
+          "principal_class IN ('debug', 'test', 'qualification', 'maintenance'",
+          "enabled IN (0, 1",
+          "target_scope = 'local_server_host_only'",
+          "algorithm = 'ed25519'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'synthetic_machine'",
+            "name": "principal_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_class",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "display_name",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "enabled",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "environment_scope",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_scope",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "allowed_profiles_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "default_profile",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'ed25519'",
+            "name": "algorithm",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "public_key",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "public_key_fingerprint",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_used_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "revoke_reason",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "enabled",
+              "revoked_at",
+              "expires_at"
+            ],
+            "name": "idx_synthetic_principals_status",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "public_key_fingerprint"
+            ],
+            "name": "sqlite_autoindex_synthetic_principals_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "principal_id"
+            ],
+            "name": "sqlite_autoindex_synthetic_principals_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        ],
+        "name": "synthetic_principals",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE synthetic_principals (\n    principal_id TEXT PRIMARY KEY,\n    principal_type TEXT NOT NULL DEFAULT 'synthetic_machine'\n        CHECK (principal_type = 'synthetic_machine'),\n    principal_class TEXT NOT NULL\n        CHECK (principal_class IN ('debug', 'test', 'qualification', 'maintenance')),\n    display_name TEXT NOT NULL,\n    enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),\n    environment_scope TEXT NOT NULL,\n    target_scope TEXT NOT NULL\n        CHECK (target_scope = 'local_server_host_only'),\n    allowed_profiles_json TEXT NOT NULL,\n    default_profile TEXT NOT NULL,\n    algorithm TEXT NOT NULL DEFAULT 'ed25519'\n        CHECK (algorithm = 'ed25519'),\n    public_key TEXT NOT NULL,\n    public_key_fingerprint TEXT NOT NULL UNIQUE,\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    last_used_at TEXT,\n    revoked_at TEXT,\n    revoke_reason TEXT NOT NULL DEFAULT ''\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
         "checks": [],
         "classification": "restricted operational metadata",
         "columns": [
@@ -10948,7 +11622,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "2cf6290881447aec911518ebff6f1c29771a32419ace1e7173db8917d7b3ba90",
+    "aggregate_fingerprint": "e2cd7436a000a861aa668ff550d6444dfb2f8020befcf8c132db8cd97249abae",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10958,7 +11632,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "0cf70bc3b615ca28541bb8926f73331417870e576aaeb8fbdf6420225f8453d6",
+      "contracts/metadata/documentation-platform.json": "2a270bfc7ee22c1da8db611c26a78e99ca9e45463c9b79a3bdce2d578e1c541d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -10993,6 +11667,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql": "8e128d0c96d0751ba80e1636665a5e49bd5501c0597747caa96ff6654729287b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql": "5df12b0987a752160dda4f2970aa28fe1e127be8ee65359bbfaf736127c181e1",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
       "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
     },
     "validation_state": "generated"

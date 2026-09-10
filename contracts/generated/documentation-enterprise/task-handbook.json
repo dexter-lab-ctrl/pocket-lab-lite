@@ -4712,6 +4712,206 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py principal-create --principal-id \"{{.PRINCIPAL_ID}}\" --display-name \"{{.DISPLAY_NAME}}\" --key-file \"{{.KEY_FILE}}\" --profile \"{{.PROFILE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:principal:create",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:principal:create",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Register public Ed25519 material with a server-owned profile",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py profiles"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:profiles",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:profiles",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Show the backend-owned synthetic harness capability profiles",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py session-start --principal-id \"{{.PRINCIPAL_ID}}\" --profile \"{{.PROFILE}}\" --purpose \"{{.PURPOSE}}\" --key-file \"{{.KEY_FILE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:session:start",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:session:start",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Start a short-lived signed harness session",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py status"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:status",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:status",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Show bounded backend harness status over loopback",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py verify-off"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:verify-off",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:verify-off",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "node scripts/dev/lite/resolve-browser.mjs --write-evidence \"{{.VALIDATION_DIR}}/browser.json\""
       ],
       "dependencies": [],
@@ -4741,6 +4941,46 @@
       "side_effects": {
         "network_or_external_tools": true,
         "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/lite/start-qualification.sh"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:qualification:start",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "name": "lite:qualification:start",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Explicitly start the qualification profile; requires a provisioning token and remains separate from normal Lite startup",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
         "runtime_mutation": false
       },
       "source": "tasks/Taskfile.lite.yml",

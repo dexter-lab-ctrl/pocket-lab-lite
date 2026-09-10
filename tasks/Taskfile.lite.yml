@@ -71,6 +71,50 @@ tasks:
     cmds:
       - bash scripts/dev/run-nats-dev.sh
 
+  lite:harness:profiles:
+    desc: Show the backend-owned synthetic harness capability profiles
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py profiles'
+
+  lite:harness:status:
+    desc: Show bounded backend harness status over loopback
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py status'
+
+  lite:harness:verify-off:
+    desc: Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py verify-off'
+
+  lite:harness:principal:create:
+    desc: Register public Ed25519 material with a server-owned profile
+    requires:
+      vars: [PRINCIPAL_ID, DISPLAY_NAME, KEY_FILE, PROFILE]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/harness.py principal-create
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --display-name "{{.DISPLAY_NAME}}"
+        --key-file "{{.KEY_FILE}}"
+        --profile "{{.PROFILE}}"
+
+  lite:harness:session:start:
+    desc: Start a short-lived signed harness session
+    requires:
+      vars: [PRINCIPAL_ID, PROFILE, PURPOSE, KEY_FILE]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/harness.py session-start
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --profile "{{.PROFILE}}"
+        --purpose "{{.PURPOSE}}"
+        --key-file "{{.KEY_FILE}}"
+
+  lite:qualification:start:
+    desc: Explicitly start the qualification profile; requires a provisioning token and remains separate from normal Lite startup
+    cmds:
+      - bash scripts/dev/lite/start-qualification.sh
+
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'
     deps: [lite:dev:scratch:prepare]

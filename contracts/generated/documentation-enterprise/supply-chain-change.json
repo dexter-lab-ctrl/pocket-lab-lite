@@ -256,7 +256,14 @@
       "scanner_disagreement_is_failure": false
     }
   },
-  "dependencies_added": [],
+  "dependencies_added": [
+    {
+      "classification": "dependency-added",
+      "ecosystem": "PyPI",
+      "name": "cryptography",
+      "version": "42.0.0"
+    }
+  ],
   "dependencies_removed": [
     {
       "classification": "dependency-removed",

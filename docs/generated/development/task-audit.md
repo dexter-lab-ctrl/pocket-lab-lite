@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 9085e81a12fd1d6805333b96f1baac6009db2c4e4473d38484618ad81d0e0b82
+source_fingerprint: b28a73f26d5d1fe5a14b54c998516d1848edb8c54ebf78e4b394a52dc53a77df
 schema_revision: 1
 validation_status: generated
 ---
@@ -247,6 +247,11 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:evidence:runtime:promote`
 - `lite:har:inspect`
 - `lite:har:sanitize`
+- `lite:harness:principal:create`
+- `lite:harness:profiles`
+- `lite:harness:session:start`
+- `lite:harness:status`
+- `lite:harness:verify-off`
 - `lite:parity:api`
 - `lite:parity:backend`
 - `lite:parity:check`
@@ -266,6 +271,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:performance:edge`
 - `lite:performance:wsl`
 - `lite:playwright:preflight`
+- `lite:qualification:start`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
 - `lite:runtime:ssh:check`

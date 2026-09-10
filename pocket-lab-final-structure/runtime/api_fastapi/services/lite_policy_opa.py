@@ -241,7 +241,7 @@ def build_authorization_input(
             "satisfied_at": str(item.get("satisfied_at") or "")[:40],
             "expires_at": str(item.get("expires_at") or "")[:40],
         })
-    return {
+    result: dict[str, Any] = {
         "actor": actor,
         "session": {
             "authenticated": bool(session.get("authenticated")),
@@ -257,6 +257,23 @@ def build_authorization_input(
         },
         "request": redact_value(request_context or {}),
     }
+    harness = (auth_context or {}).get("harness")
+    if isinstance(harness, dict):
+        result["harness"] = {
+            "enabled": bool(harness.get("enabled")),
+            "session_id": str(harness.get("session_id") or "")[:100],
+            "principal_id": str(harness.get("principal_id") or "")[:80],
+            "principal_class": str(harness.get("principal_class") or "")[:40],
+            "profile": str(harness.get("profile") or "")[:64],
+            "purpose": str(harness.get("purpose") or "")[:80],
+            "capabilities": [str(item)[:120] for item in (harness.get("capabilities") or [])[:64]],
+            "target_scope": str(harness.get("target_scope") or "")[:64],
+            "runtime_id": str(harness.get("runtime_id") or "")[:64],
+            "qualification_environment": bool(harness.get("qualification_environment")),
+            "destructive_allowed": bool(harness.get("destructive_allowed")),
+        }
+        result["target"]["scope"] = str(harness.get("target_scope") or "")[:64]
+    return result
 
 
 def _test_decision(input_doc: dict[str, Any]) -> dict[str, Any] | None:

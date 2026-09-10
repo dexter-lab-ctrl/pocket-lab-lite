@@ -2419,6 +2419,18 @@
         "user_message": "This legacy Rules action is no longer available."
       },
       {
+        "code": "harness_transport_rejected",
+        "domain": "validation",
+        "http_status": 401,
+        "meaning": "Synthetic harness proof was presented over a non-loopback or forwarded transport.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Use the harness only over direct loopback transport."
+      },
+      {
         "code": "human_session_required",
         "domain": "identity",
         "http_status": 403,
@@ -6598,5 +6610,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "7293e51589e6a84c4830f417b64247beb2067402c2b7cb04dea6adfbeba19d5d"
+  "source_fingerprint": "67ff5f34e5d5bc56cd5715ec9c86dbf5225d840e746ef46c0a805377e0fed892"
 }

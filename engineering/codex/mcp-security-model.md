@@ -4,6 +4,10 @@
 
 `pocketlab-dev-mcp` is a local developer helper, not a Pocket Lab control plane. It does not expose arbitrary shell, SQL, SSH, Git mutation, NATS publishing, PM2 mutation, Tailscale mutation, Server Phone operations, invite issuance, release operations, or secrets. Its Increment 3 Server Phone observation is restricted to policy-owned, fixed read-only argv through the opaque machine-owned `pocketlab-termux` alias.
 
+The backend-only synthetic qualification contract is separate; see
+[Qualification & maintenance harness](../../docs/validation/qualification-maintenance-harness.md).
+No harness private key is accepted by or returned through this MCP.
+
 `node_repl` and `cua_repl` are Desktop-managed and outside the repository-owned Pocket Lab MCP implementation.
 
 ## Enforced controls

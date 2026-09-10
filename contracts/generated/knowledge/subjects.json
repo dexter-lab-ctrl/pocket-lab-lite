@@ -48,7 +48,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1526"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1539"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -67,7 +67,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1533"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1546"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -86,7 +86,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1530"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1543"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -105,7 +105,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1536"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1549"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -125,7 +125,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:92",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1529"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1542"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -144,7 +144,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1528"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1541"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -164,7 +164,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:81",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1527"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1540"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -207,7 +207,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:661",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1539",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1552",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
       ],
       "stream": "incomplete",
@@ -227,7 +227,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1540"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1553"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -247,7 +247,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py:74",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1543"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1556"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -266,7 +266,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1553",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1566",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:18"
       ],
       "stream": "incomplete",
@@ -305,7 +305,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1556",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1569",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py:22"
       ],
       "stream": "incomplete",
@@ -325,7 +325,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1558",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1571",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:24"
       ],
       "stream": "incomplete",
@@ -345,7 +345,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1554",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1567",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:19"
       ],
       "stream": "incomplete",
@@ -365,7 +365,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1557",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1570",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:23"
       ],
       "stream": "incomplete",
@@ -385,7 +385,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1555",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1568",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py:19"
       ],
       "stream": "incomplete",
@@ -405,8 +405,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3920",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1549"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3958",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1562"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -425,8 +425,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3537",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1550"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3575",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1563"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -445,8 +445,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3567",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1552"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3605",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1565"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -465,8 +465,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3550",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1551"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3588",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1564"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -485,8 +485,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4007",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1559"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4045",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1572"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -505,7 +505,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1525",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1538",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py:16"
       ],
       "stream": "incomplete",
@@ -525,8 +525,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3607",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1562"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3645",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1575"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -545,8 +545,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3650",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1563"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3688",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1576"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -565,8 +565,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1565"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3746",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1578"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -585,8 +585,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1564"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3706",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1577"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -627,8 +627,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3776",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1567"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3814",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1580"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -647,8 +647,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3750",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1566"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3788",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1579"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -667,8 +667,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4169",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1561"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4207",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1574"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -687,8 +687,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4042",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1560"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4080",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1573"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -728,7 +728,7 @@
       "retry": "bounded max-deliver and stale-run recovery",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1545",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1558",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:526"
       ],
@@ -932,7 +932,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:53",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1542"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1555"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -952,7 +952,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:42",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1541"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1554"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1048,7 +1048,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1546"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1559"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1068,7 +1068,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:68",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1544"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1557"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1108,7 +1108,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1548"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1561"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1128,7 +1128,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1547"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1560"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1171,7 +1171,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:107"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:115"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1192,7 +1192,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:179"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:187"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1213,7 +1213,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:114"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:127"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1234,7 +1234,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:129"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:142"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1448,7 +1448,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:176"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:189"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1469,7 +1469,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:211"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:224"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1490,7 +1490,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:182"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:195"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1511,7 +1511,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:144"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:157"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1532,7 +1532,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:230"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:243"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1553,7 +1553,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:222"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:235"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1595,7 +1595,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:293"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:306"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1721,7 +1721,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:265",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
@@ -1764,7 +1764,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:243"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:256"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2041,7 +2041,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:327"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:340"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2104,7 +2104,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:565",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:578",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:345"
       ],
       "stream": "incomplete",
@@ -2126,7 +2126,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:551"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:564"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2147,7 +2147,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:540",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:553",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:344"
       ],
       "stream": "incomplete",
@@ -2169,7 +2169,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1299"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1312"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2190,7 +2190,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1273"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1286"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2211,7 +2211,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1261"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1274"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2232,7 +2232,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1299"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1312"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2253,7 +2253,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:616"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:629"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2274,7 +2274,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:602"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:615"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2295,7 +2295,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:591"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:604"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2316,7 +2316,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:667"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:680"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2337,7 +2337,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:653"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:666"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2358,7 +2358,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:642"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:655"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2379,7 +2379,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1240"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1253"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2400,7 +2400,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1220"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1233"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2421,7 +2421,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1208"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1221"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2442,7 +2442,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1240"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1253"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2463,7 +2463,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:711"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:724"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2484,7 +2484,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:825"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:838"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2505,7 +2505,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:817"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:830"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2526,7 +2526,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:806"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:819"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2547,7 +2547,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:724",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:737",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2288"
       ],
       "stream": "incomplete",
@@ -2569,7 +2569,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:700",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:713",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2287"
       ],
       "stream": "incomplete",
@@ -2591,7 +2591,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:776"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:789"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2612,7 +2612,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:769"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:782"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2633,7 +2633,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:754"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:767"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2652,7 +2652,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:513"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:526"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2673,8 +2673,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:499",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:513"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:512",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:526"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2695,7 +2695,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:488"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:501"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2716,7 +2716,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1318"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1331"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2737,8 +2737,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1327",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1360"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1340",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1373"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2759,7 +2759,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1377"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1390"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2780,7 +2780,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1395"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1408"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2801,7 +2801,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1405"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1418"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2822,7 +2822,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1420"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1433"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2843,7 +2843,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:965",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:978",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1706",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1980"
       ],
@@ -2866,7 +2866,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1045",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1058",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1708",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1983"
       ],
@@ -2889,8 +2889,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:941",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:986"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:954",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:999"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2911,7 +2911,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1033",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1046",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1707",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1982"
       ],
@@ -2934,7 +2934,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:904"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:917"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2955,7 +2955,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:897"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:910"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2976,7 +2976,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:882"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:895"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2997,7 +2997,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1021",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1034",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1981"
       ],
       "stream": "incomplete",
@@ -3019,7 +3019,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:930",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:943",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1705",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1979"
       ],
@@ -3042,7 +3042,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1155"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1168"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3063,7 +3063,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1180"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1193"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3084,7 +3084,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1081"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1094"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3105,7 +3105,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1133"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1146"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3126,7 +3126,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1140"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1153"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3947,7 +3947,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:369"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:382"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3989,7 +3989,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:402"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:415"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4010,7 +4010,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:375"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:388"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4031,7 +4031,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:343"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:356"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4113,7 +4113,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:476"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:489"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4134,7 +4134,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:444"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:457"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4360,6 +4360,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ab82ceaa6ae32979149173587d9e919f5386818023159734bf615a07b7557261"
+    "source_fingerprint": "f030b2ac5e41f961c57794b8e0526a91977d123555fcf3e1742d4ebec0acbda2"
   }
 }

@@ -16,6 +16,11 @@ bash scripts/bootstrap.sh --lite
 
 The lite profile keeps the core control plane and skips the external observability stack by default.
 
+Normal Lite startup also sets the synthetic qualification harness, destructive
+harness, Qualification Owner, and test-bypass flags to disabled defaults. The
+explicit qualification launcher and its direct-loopback contract are documented
+in [Qualification & maintenance harness](../validation/qualification-maintenance-harness.md).
+
 
 The lite bootstrap profile starts only the core services needed for low-power devices.
 

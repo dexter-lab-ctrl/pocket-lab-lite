@@ -38,6 +38,13 @@ parse_start_dashboard_args(){
 parse_start_dashboard_args "$@"
 prepare_lite_state_path(){
   is_lite_profile || return 0
+  # Normal Lite startup is an explicit production-safe default. Qualification
+  # uses the separate repository-owned launcher and must opt in deliberately.
+  export POCKETLAB_ENVIRONMENT="${POCKETLAB_ENVIRONMENT:-production}"
+  export POCKETLAB_HARNESS_ENABLED="${POCKETLAB_HARNESS_ENABLED:-0}"
+  export POCKETLAB_HARNESS_DESTRUCTIVE="${POCKETLAB_HARNESS_DESTRUCTIVE:-0}"
+  export POCKETLAB_QUALIFICATION_OWNER="${POCKETLAB_QUALIFICATION_OWNER:-0}"
+  export POCKETLAB_TEST_AUTH_BYPASS="${POCKETLAB_TEST_AUTH_BYPASS:-0}"
   export POCKETLAB_BASE_DIR="${POCKETLAB_BASE_DIR:-$POCKET_LAB_BASE_DIR}"
   export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"
   export POCKETLAB_LITE_DB_PATH="${POCKETLAB_LITE_DB_PATH:-$POCKETLAB_STATE_DIR/pocketlab-lite.sqlite3}"
@@ -445,18 +452,42 @@ write_caddy_site() {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /ready {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /healthz {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /api/lite/security/events {
@@ -464,6 +495,14 @@ write_caddy_site() {
       flush_interval -1
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
 
@@ -471,30 +510,70 @@ write_caddy_site() {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /openapi.json {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /docs* {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /redoc* {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   handle /ws/* {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
       header_up -X-Pocket-Lab-Qualification
+      header_up -X-Pocket-Lab-Harness-Session
+      header_up -X-Pocket-Lab-Harness-Provisioning
+      header_up -X-Pocket-Lab-Harness-Provisioning-Token
+      header_up -X-Pocket-Lab-Harness-Principal
+      header_up -X-Pocket-Lab-Harness-Profile
+      header_up -X-Pocket-Lab-Harness-Purpose
+      header_up -X-Pocket-Lab-Harness-Signature
+      header_up -X-Pocket-Lab-Harness-Target-Scope
     }
   }
   @pocketlab_versioned_assets {

@@ -75,7 +75,9 @@ Compared **lite-2026.08.19.2** → **current-source** using verified canonical e
 
 ### Dependencies added
 
-No dependency additions observed.
+| Ecosystem | Name | Version |
+| --- | --- | --- |
+| PyPI | cryptography | 42.0.0 |
 
 ### Dependencies removed
 

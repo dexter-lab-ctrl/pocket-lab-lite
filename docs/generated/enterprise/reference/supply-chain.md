@@ -21,6 +21,7 @@ Heavy tools run only through explicit WSL2/CI tasks. MkDocs never invokes them. 
 | PyYAML | 6.0.1 | PyPI | yes | runtime Python dependency | runtime | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | PyYAML | 6.0.3 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | black | 24.0 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
+| cryptography | 42.0.0 | PyPI | yes | runtime Python dependency | runtime | unobserved until ScanCode/SBOM evidence | current-release-candidate |
 | fastapi | 0.115.0 | PyPI | yes | runtime Python dependency | runtime | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | httpx | 0.27 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | jinja2 | 3.1 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
@@ -366,7 +367,6 @@ Heavy tools run only through explicit WSL2/CI tasks. MkDocs never invokes them. 
 | @jsdevtools/ono | 7.1.3 | npm | no | development/tooling dependency | development | MIT | present-in-baseline |
 | @jsep-plugin/assignment | 1.3.0 | npm | no | development/tooling dependency | development | MIT | present-in-baseline |
 | @jsep-plugin/regex | 1.0.4 | npm | no | development/tooling dependency | development | MIT | present-in-baseline |
-| @jsep-plugin/ternary | 1.1.4 | npm | no | development/tooling dependency | development | MIT | present-in-baseline |
 
 ## Canonical promoted tool artifacts
 

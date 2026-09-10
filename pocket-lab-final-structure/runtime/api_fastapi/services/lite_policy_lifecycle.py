@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .. import deps
 from ..db.connection import begin_immediate, connection
 from ..db.migrations import apply_migrations
 from . import lite_enterprise_identity
@@ -69,6 +70,8 @@ def _actor(auth_context: dict[str, Any], *, mutate: bool) -> str:
     required = MUTATE_ROLES if mutate else READ_ROLES
     if not human_id:
         raise PolicyLifecycleError("human_session_required", "A signed-in human session is required.", status_code=401)
+    if deps.is_qualification_owner_context(resolved):
+        return human_id
     if not authorization.get("enterprise_enabled"):
         raise PolicyLifecycleError("enterprise_mode_disabled", "Enterprise Rules are unavailable in Personal Mode.", status_code=404)
     if not authorization.get("membership_active") or role not in required:

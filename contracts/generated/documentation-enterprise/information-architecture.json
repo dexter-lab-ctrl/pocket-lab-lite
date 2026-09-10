@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 433,
+  "page_count": 434,
   "page_types": [
     "overview",
     "guide",
@@ -16215,10 +16215,34 @@
       "source_or_generator": "validation/lite-validation.md",
       "title": "Lite Validation",
       "url": "/validation/lite-validation/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/qualification-maintenance-harness.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/qualification-maintenance-harness",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "validation/qualification-maintenance-harness.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "validation/qualification-maintenance-harness.md",
+      "title": "Pocket Lab Qualification & Maintenance Harness",
+      "url": "/validation/qualification-maintenance-harness/"
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9da574852020b503945fa4f8182342d7f52122fa28533492ed6827aa94afb120",
+  "source_fingerprint": "6a384728fa0ab67eb2066a8682d13ffb8a0c73504cbcc09d06a3c83e71400b30",
   "top_level": [
     "start-here",
     "use",

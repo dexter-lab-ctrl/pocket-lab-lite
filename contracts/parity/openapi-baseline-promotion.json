@@ -1,20 +1,20 @@
 {
   "approved_change_classes": [
-    "change LiteBackupRequest include_app_data default from false to true so the standard Backup action includes registered Pocket Lab app data by default while preserving an explicit false opt-out and the existing Android shared-storage, PhotoPrism media, secret-redaction, and backend execution boundaries"
+    "add the loopback-only Qualification and Maintenance Harness OpenAPI surface under /api/lite/harness/*, including capability/status reads plus synthetic-principal registration and revocation, challenge/session creation, session status, and session revocation; these endpoints remain fail-closed behind harness enablement, loopback-only transport, Ed25519 proof, short-lived session, capability, target-scope, and destructive-operation gates"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "5ebd82c6cb6c09be71783858f047baade56d4301e1dcf63db38a18fa9c2b4e05",
-  "promoted_sha256": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
+  "previous_sha256": "e987b9e673e5fe6068cba8fffe2b62d1028a1b54a2f92441729fc6cdc2e8b216",
+  "promoted_sha256": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
     "documents_500": false,
     "raw_secrets_included": false,
     "runtime_routes_removed": false,
-    "write_operations_added": false
+    "write_operations_added": true
   },
-  "source_revision": "feat/enterprise-backup-recovery",
+  "source_revision": "feat/qualification-maintenance-harness",
   "status": "promoted",
-  "validation_status": "ci-openapi-valid-enterprise-backup-recovery-contract"
+  "validation_status": "ci-openapi-valid-qualification-maintenance-harness-contract"
 }

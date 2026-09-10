@@ -712,6 +712,11 @@ running with the deployed remediation and no destructive state change.
 
 ## Qualification Owner Harness
 
+The reusable backend-only machine-authentication design is documented in
+[Qualification & maintenance harness](../validation/qualification-maintenance-harness.md).
+This historical record remains the authority for the live evidence below; it
+does not turn that evidence into a current Server Phone result for a new run.
+
 This appended closure supersedes the earlier authentication-blocked snapshot
 above. It records the separately authorized isolated Server Phone
 qualification run. The harness used the normal FastAPI write path and the

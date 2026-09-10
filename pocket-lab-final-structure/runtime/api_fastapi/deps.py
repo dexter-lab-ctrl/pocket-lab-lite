@@ -143,7 +143,7 @@ def is_qualification_owner_context(auth_context: Dict[str, Any] | None) -> bool:
     actor = context.get("actor") or {}
     session = context.get("session") or {}
     authorization = context.get("authorization") or {}
-    return bool(
+    legacy = (
         _qualification_owner_enabled()
         and actor.get("identity_id") == QUALIFICATION_OWNER_ID
         and actor.get("type") == "qualification"
@@ -157,6 +157,27 @@ def is_qualification_owner_context(auth_context: Dict[str, Any] | None) -> bool:
         and authorization.get("identity_class") == "qualification_principal"
         and authorization.get("enterprise_enabled") is False
     )
+    harness = context.get("harness") or {}
+    generalized = (
+        bool(harness)
+        and harness.get("enabled") is True
+        and harness.get("profile") == "qualification-owner"
+        and harness.get("principal_class") == "qualification"
+        and harness.get("qualification_environment") is True
+        and os.environ.get("POCKETLAB_HARNESS_ENABLED") == "1"
+        and os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification"
+        and os.environ.get("POCKETLAB_QUALIFICATION_OWNER") == "1"
+        and actor.get("type") == "qualification"
+        and session.get("authenticated") is True
+        and session.get("auth_method") == "harness_session"
+        and context.get("auth_method") == "harness_session"
+        and authorization.get("role") == "Owner"
+        and authorization.get("owner_authority") is True
+        and authorization.get("membership_active") is False
+        and authorization.get("identity_class") == "synthetic_machine"
+        and authorization.get("enterprise_enabled") is False
+    )
+    return bool(legacy or generalized)
 
 
 def _reject_qualification_request(*, status_code: int = status.HTTP_401_UNAUTHORIZED) -> None:
@@ -180,6 +201,21 @@ def bearer_token(request: Request) -> str:
 
 
 def resolve_auth_context(request: Request, *, write: bool = False) -> Dict[str, Any]:
+    # Harness proof is a distinct synthetic authentication path. Any
+    # harness-prefixed header is handled here rather than falling through to
+    # human, service-token, or test-bypass authentication.
+    from .services import lite_harness
+
+    if lite_harness.harness_headers_present(request):
+        try:
+            return lite_harness.authenticate_request(request)
+        except lite_harness.HarnessError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"reason_code": exc.reason_code, "message": exc.message, "sanitized": True},
+            ) from exc
+
     if _qualification_request_requested(request):
         if not (
             _qualification_owner_enabled()

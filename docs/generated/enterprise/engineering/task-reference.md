@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 50 |
+| Development loop | 56 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 24 |
@@ -3946,6 +3946,176 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:har:sanitize`
 
+## `lite:harness:principal:create`
+
+**Purpose:** Register public Ed25519 material with a server-owned profile
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py principal-create --principal-id "{{.PRINCIPAL_ID}}" --display-name "{{.DISPLAY_NAME}}" --key-file "{{.KEY_FILE}}" --profile "{{.PROFILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:principal:create`
+
+## `lite:harness:profiles`
+
+**Purpose:** Show the backend-owned synthetic harness capability profiles
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py profiles`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:profiles`
+
+## `lite:harness:session:start`
+
+**Purpose:** Start a short-lived signed harness session
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py session-start --principal-id "{{.PRINCIPAL_ID}}" --profile "{{.PROFILE}}" --purpose "{{.PURPOSE}}" --key-file "{{.KEY_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:session:start`
+
+## `lite:harness:status`
+
+**Purpose:** Show bounded backend harness status over loopback
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py status`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:status`
+
+## `lite:harness:verify-off`
+
+**Purpose:** Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py verify-off`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:harness:verify-off`
+
 ## `lite:playwright:preflight`
 
 **Purpose:** Validate the external WSL2 browser and record path/version evidence
@@ -3979,6 +4149,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:playwright:preflight`
+
+## `lite:qualification:start`
+
+**Purpose:** Explicitly start the qualification profile; requires a provisioning token and remains separate from normal Lite startup
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/start-qualification.sh`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start`
 
 ## `lite:setup`
 

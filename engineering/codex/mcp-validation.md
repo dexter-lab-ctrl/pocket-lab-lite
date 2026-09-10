@@ -2,6 +2,11 @@
 
 ## Repository qualification
 
+The harness qualification surface is separate from this developer-MCP gate.
+Use the [Qualification & maintenance harness](../../docs/validation/qualification-maintenance-harness.md)
+page for its loopback API, key lifecycle, and backend tests; do not add
+harness mutation to `diagnostic_summary`.
+
 Run these checks from the native WSL repository root:
 
 ```bash

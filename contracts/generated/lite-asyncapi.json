@@ -43,7 +43,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1526"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1539"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -58,7 +58,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1533"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1546"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -73,7 +73,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1530"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1543"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -88,7 +88,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1536"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1549"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -104,7 +104,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:92",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1529"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1542"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -119,7 +119,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1528"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1541"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -135,7 +135,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:81",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1527"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1540"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -170,7 +170,7 @@
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:661",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1539",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1552",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -186,7 +186,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1540"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1553"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -202,7 +202,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py:74",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1543"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1556"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -217,7 +217,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1553",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1566",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:18"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -248,7 +248,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1556",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1569",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py:22"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -264,7 +264,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1558",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1571",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:24"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -280,7 +280,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1554",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1567",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:19"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -296,7 +296,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1557",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1570",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:23"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -312,7 +312,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1555",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1568",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py:19"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -328,8 +328,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3920",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1549"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3958",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1562"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -344,8 +344,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3537",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1550"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3575",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1563"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -360,8 +360,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3567",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1552"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3605",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1565"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -376,8 +376,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3550",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1551"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3588",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1564"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -392,8 +392,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4007",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1559"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4045",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1572"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -408,7 +408,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1525",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1538",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py:16"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -424,8 +424,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3607",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1562"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3645",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1575"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -440,8 +440,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3650",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1563"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3688",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1576"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -456,8 +456,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1565"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3746",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1578"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -472,8 +472,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1564"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3706",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1577"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -508,8 +508,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3776",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1567"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3814",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1580"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -524,8 +524,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3750",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1566"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3788",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1579"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -540,8 +540,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4169",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1561"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4207",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1574"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -556,8 +556,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4042",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1560"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4080",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1573"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -595,7 +595,7 @@
       "x-pocketlab-retry": "bounded max-deliver and stale-run recovery",
       "x-pocketlab-security-classification": "restricted metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1545",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1558",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:526"
       ],
@@ -761,7 +761,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:53",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1542"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1555"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -777,7 +777,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:42",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1541"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1554"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -857,7 +857,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1546"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1559"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -873,7 +873,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:68",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1544"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1557"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -905,7 +905,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1548"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1561"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -921,7 +921,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1547"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1560"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -956,7 +956,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:107"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:115"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -973,7 +973,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:179"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:187"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -990,7 +990,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:114"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:127"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1007,7 +1007,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:129"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:142"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1181,7 +1181,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:176"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:189"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1198,7 +1198,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:211"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:224"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1215,7 +1215,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:182"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:195"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1232,7 +1232,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:144"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:157"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1249,7 +1249,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:230"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:243"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1266,7 +1266,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:222"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:235"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1300,7 +1300,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:293"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:306"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1402,7 +1402,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:265",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
@@ -1437,7 +1437,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:243"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:256"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1662,7 +1662,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:327"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:340"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1713,7 +1713,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:565",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:578",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:345"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -1731,7 +1731,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:551"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:564"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1748,7 +1748,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:540",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:553",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:344"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -1766,7 +1766,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1299"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1312"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1783,7 +1783,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1273"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1286"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1800,7 +1800,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1261"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1274"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1817,7 +1817,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1299"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1312"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1834,7 +1834,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:616"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:629"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1851,7 +1851,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:602"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:615"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1868,7 +1868,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:591"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:604"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1885,7 +1885,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:667"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:680"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1902,7 +1902,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:653"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:666"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1919,7 +1919,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:642"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:655"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1936,7 +1936,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1240"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1253"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1953,7 +1953,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1220"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1233"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1970,7 +1970,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1208"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1221"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1987,7 +1987,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1240"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1253"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2004,7 +2004,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:711"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:724"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2021,7 +2021,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:825"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:838"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2038,7 +2038,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:817"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:830"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2055,7 +2055,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:806"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:819"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2072,7 +2072,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:724",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:737",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2288"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -2090,7 +2090,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:700",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:713",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:2287"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -2108,7 +2108,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:776"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:789"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2125,7 +2125,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:769"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:782"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2142,7 +2142,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:754"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:767"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2157,7 +2157,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:513"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:526"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2174,8 +2174,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:499",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:513"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:512",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:526"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2192,7 +2192,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:488"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:501"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2209,7 +2209,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1318"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1331"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2226,8 +2226,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1327",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1360"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1340",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1373"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2244,7 +2244,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1377"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1390"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2261,7 +2261,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1395"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1408"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2278,7 +2278,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1405"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1418"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2295,7 +2295,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1420"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1433"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2312,7 +2312,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:965",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:978",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1706",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1980"
       ],
@@ -2331,7 +2331,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1045",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1058",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1708",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1983"
       ],
@@ -2350,8 +2350,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:941",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:986"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:954",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:999"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2368,7 +2368,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1033",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1046",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1707",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1982"
       ],
@@ -2387,7 +2387,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:904"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:917"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2404,7 +2404,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:897"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:910"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2421,7 +2421,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:882"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:895"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2438,7 +2438,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1021",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1034",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1981"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -2456,7 +2456,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:930",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:943",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1705",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1979"
       ],
@@ -2475,7 +2475,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1155"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1168"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2492,7 +2492,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1180"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1193"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2509,7 +2509,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1081"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1094"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2526,7 +2526,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1133"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1146"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -2543,7 +2543,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1140"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1153"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -3204,7 +3204,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:369"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:382"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -3238,7 +3238,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:402"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:415"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -3255,7 +3255,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:375"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:388"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -3272,7 +3272,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:343"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:356"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -3338,7 +3338,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:476"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:489"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -3355,7 +3355,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:444"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:457"
       ],
       "x-pocketlab-stream": "incomplete"
     },

@@ -49,10 +49,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -136,10 +136,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -170,10 +170,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -336,10 +336,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -478,10 +478,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -605,10 +605,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -742,10 +742,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -928,10 +928,10 @@
         "enterprise_mode_disabled",
         "enterprise_owner_authority_required",
         "enterprise_people_role_required",
+        "harness_transport_rejected",
         "legacy_telemetry_value",
         "owner_approval_policy_inconsistent",
-        "policy_source_contract_invalid",
-        "policy_source_contract_missing"
+        "policy_source_contract_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

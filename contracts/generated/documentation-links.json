@@ -57,6 +57,14 @@
         "title": "DELETE /api/lite/enterprise/identity/people/{human_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-enterprise-identity-people-human-id"
       },
+      "endpoint:DELETE:/api/lite/harness/principals/{principal_id}": {
+        "title": "DELETE /api/lite/harness/principals/{principal_id}",
+        "url": "../../docs/reference/api/lite-api.md#delete-api-lite-harness-principals-principal-id"
+      },
+      "endpoint:DELETE:/api/lite/harness/session/{session_id}": {
+        "title": "DELETE /api/lite/harness/session/{session_id}",
+        "url": "../../docs/reference/api/lite-api.md#delete-api-lite-harness-session-session-id"
+      },
       "endpoint:DELETE:/api/lite/identity/passkeys/{credential_id}": {
         "title": "DELETE /api/lite/identity/passkeys/{credential_id}",
         "url": "../../docs/reference/api/lite-api.md#delete-api-lite-identity-passkeys-credential-id"
@@ -268,6 +276,18 @@
       "endpoint:GET:/api/lite/fleet/invites/latest": {
         "title": "GET /api/lite/fleet/invites/latest",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-invites-latest"
+      },
+      "endpoint:GET:/api/lite/harness/capabilities": {
+        "title": "GET /api/lite/harness/capabilities",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-capabilities"
+      },
+      "endpoint:GET:/api/lite/harness/session/{session_id}": {
+        "title": "GET /api/lite/harness/session/{session_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-session-session-id"
+      },
+      "endpoint:GET:/api/lite/harness/status": {
+        "title": "GET /api/lite/harness/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-status"
       },
       "endpoint:GET:/api/lite/identity": {
         "title": "GET /api/lite/identity",
@@ -628,6 +648,22 @@
       "endpoint:POST:/api/lite/fleet/remove-device": {
         "title": "POST /api/lite/fleet/remove-device",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-remove-device"
+      },
+      "endpoint:POST:/api/lite/harness/challenge": {
+        "title": "POST /api/lite/harness/challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-challenge"
+      },
+      "endpoint:POST:/api/lite/harness/principals": {
+        "title": "POST /api/lite/harness/principals",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals"
+      },
+      "endpoint:POST:/api/lite/harness/principals/{principal_id}/revoke": {
+        "title": "POST /api/lite/harness/principals/{principal_id}/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals-principal-id-revoke"
+      },
+      "endpoint:POST:/api/lite/harness/session": {
+        "title": "POST /api/lite/harness/session",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-session"
       },
       "endpoint:POST:/api/lite/identity/login": {
         "title": "POST /api/lite/identity/login",
@@ -1853,6 +1889,10 @@
         "title": "generic_policy_toggle_retired",
         "url": "../../docs/generated/development/reason-codes.md#generic-policy-toggle-retired"
       },
+      "reason:harness_transport_rejected": {
+        "title": "harness_transport_rejected",
+        "url": "../../docs/generated/development/reason-codes.md#harness-transport-rejected"
+      },
       "reason:human_session_required": {
         "title": "human_session_required",
         "url": "../../docs/generated/development/reason-codes.md#human-session-required"
@@ -2534,6 +2574,21 @@
         "schema_url": "../../docs/generated/schemaspy/tables/enterprise_memberships.html",
         "title": "enterprise_memberships"
       },
+      "table:harness_audit_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#harness-audit-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/harness_audit_events.html",
+        "title": "harness_audit_events"
+      },
+      "table:harness_challenges": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#harness-challenges",
+        "schema_url": "../../docs/generated/schemaspy/tables/harness_challenges.html",
+        "title": "harness_challenges"
+      },
+      "table:harness_sessions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#harness-sessions",
+        "schema_url": "../../docs/generated/schemaspy/tables/harness_sessions.html",
+        "title": "harness_sessions"
+      },
       "table:human_credentials": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#human-credentials",
         "schema_url": "../../docs/generated/schemaspy/tables/human_credentials.html",
@@ -2724,6 +2779,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/security_store_metadata.html",
         "title": "security_store_metadata"
       },
+      "table:synthetic_principals": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#synthetic-principals",
+        "schema_url": "../../docs/generated/schemaspy/tables/synthetic_principals.html",
+        "title": "synthetic_principals"
+      },
       "table:webauthn_challenges": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#webauthn-challenges",
         "schema_url": "../../docs/generated/schemaspy/tables/webauthn_challenges.html",
@@ -2757,7 +2817,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "cdf0b446ab2f1a39ba441d744d59267aa8dd7036da1b902b602bb60d86a56edb",
+    "aggregate_fingerprint": "89c6aac0e7b782b52492e088fad9b157f96fc4a9ebe95dd19cf7de65b8a60055",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2767,8 +2827,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "9aaf78e327569a667b09bb41c17fd48f3fcef0cc09f572b64f16690214fae6f9",
-      "contracts/metadata/documentation-platform.json": "0cf70bc3b615ca28541bb8926f73331417870e576aaeb8fbdf6420225f8453d6",
+      "contracts/generated/lite-openapi.json": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
+      "contracts/metadata/documentation-platform.json": "2a270bfc7ee22c1da8db611c26a78e99ca9e45463c9b79a3bdce2d578e1c541d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -2803,6 +2863,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql": "8e128d0c96d0751ba80e1636665a5e49bd5501c0597747caa96ff6654729287b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql": "5df12b0987a752160dda4f2970aa28fe1e127be8ee65359bbfaf736127c181e1",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
       "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
     },
     "validation_state": "generated"

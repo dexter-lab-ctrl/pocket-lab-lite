@@ -22,12 +22,25 @@ def _audit_actor(command: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(raw, dict):
         return {}
     actor_type = str(raw.get("actor_type") or "authenticated")[:32]
-    return {
+    result = {
         "actor_type": actor_type,
         "actor_label": "Qualification Owner" if actor_type == "qualification" else "Authenticated actor",
         "auth_method": str(raw.get("auth_method") or "")[:48],
         "synthetic": actor_type == "qualification",
     }
+    # Generalized harness provenance is included only when the command was
+    # actually admitted under a synthetic session. Legacy fixtures retain
+    # their existing bounded shape.
+    for source_key, output_key, limit in (
+        ("principal_id", "principal_id", 80),
+        ("principal_class", "principal_class", 40),
+        ("harness_session_id", "harness_session_id", 100),
+        ("purpose", "purpose", 80),
+        ("target_scope", "target_scope", 64),
+    ):
+        if raw.get(source_key):
+            result[output_key] = str(raw[source_key])[:limit]
+    return result
 
 
 async def _publish(

@@ -389,6 +389,51 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_enterprise_memberships_active_role, sqlite_autoindex_enterprise_memberships_1 |
 | Confidence | inferred |
 
+## `harness_audit_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_harness_audit_events_session, idx_harness_audit_events_time |
+| Confidence | inferred |
+
+## `harness_challenges`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_harness_challenges_expiry, sqlite_autoindex_harness_challenges_2, sqlite_autoindex_harness_challenges_1 |
+| Confidence | inferred |
+
+## `harness_sessions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_harness_sessions_status, sqlite_autoindex_harness_sessions_2, sqlite_autoindex_harness_sessions_1 |
+| Confidence | inferred |
+
 ## `human_credentials`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -957,6 +1002,21 @@ Source-derived security persistence object; detailed ownership is conservatively
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | internal operational metadata |
 | Indexes | sqlite_autoindex_security_store_metadata_1 |
+| Confidence | inferred |
+
+## `synthetic_principals`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_synthetic_principals_status, sqlite_autoindex_synthetic_principals_2, sqlite_autoindex_synthetic_principals_1 |
 | Confidence | inferred |
 
 ## `webauthn_challenges`

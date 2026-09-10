@@ -928,6 +928,104 @@
             <column ascending="true" name="human_id"/>
          </index>
       </table>
+      <table name="harness_audit_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="principal_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="principal_class" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="harness_session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="purpose" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="capability" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="target_scope" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="environment" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="result" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="harness_audit_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_harness_audit_events_session" unique="false">
+            <column ascending="true" name="harness_session_id"/>
+            <column ascending="true" name="occurred_at"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_harness_audit_events_time" unique="false">
+            <column ascending="true" name="occurred_at"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+      <table name="harness_challenges" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="challenge_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="nonce_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="signing_payload_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="requested_profile" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="target_scope" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="runtime_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="failed_attempts" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="challenge_id" sequenceNumberInPK="1"/>
+         <index name="harness_challenges_s_pk" unique="true">
+            <column ascending="true" name="challenge_id"/>
+         </index>
+         <index name="idx_harness_challenges_expiry" unique="false">
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="consumed_at"/>
+         </index>
+         <index name="sqlite_autoindex_harness_challenges_1" unique="true">
+            <column ascending="true" name="challenge_id"/>
+         </index>
+         <index name="sqlite_autoindex_harness_challenges_2" unique="true">
+            <column ascending="true" name="nonce_hash"/>
+         </index>
+      </table>
+      <table name="harness_sessions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="harness_session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="principal_class" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="capability_profile" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="capabilities_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="target_scope" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="runtime_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="token_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="started_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="last_used_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="destructive_allowed" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'active'" digits="0" id="13" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="revoke_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="harness_session_id" sequenceNumberInPK="1"/>
+         <index name="harness_sessions_s_pk" unique="true">
+            <column ascending="true" name="harness_session_id"/>
+         </index>
+         <index name="idx_harness_sessions_status" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="principal_id"/>
+         </index>
+         <index name="sqlite_autoindex_harness_sessions_1" unique="true">
+            <column ascending="true" name="harness_session_id"/>
+         </index>
+         <index name="sqlite_autoindex_harness_sessions_2" unique="true">
+            <column ascending="true" name="token_hash"/>
+         </index>
+      </table>
       <table name="human_credentials" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="credential_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
@@ -1233,7 +1331,9 @@
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
          <column autoUpdated="false" defaultValue="'human'" digits="0" id="2" name="requested_by_principal_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="requested_by_principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="requested_by_principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="candidate_revision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="revision_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_revisions"/>
@@ -1434,7 +1534,9 @@
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
          <column autoUpdated="false" defaultValue="'human'" digits="0" id="8" name="created_by_principal_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="created_by_principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="created_by_principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="validation_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="validated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -2181,6 +2283,46 @@
          </index>
          <index name="sqlite_autoindex_security_store_metadata_1" unique="true">
             <column ascending="true" name="metadata_key"/>
+         </index>
+      </table>
+      <table name="synthetic_principals" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="principal_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_audit_events"/>
+            <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_challenges"/>
+            <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_sessions"/>
+            <child column="requested_by_principal_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_activation_operations"/>
+            <child column="created_by_principal_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_revisions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'synthetic_machine'" digits="0" id="1" name="principal_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="principal_class" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="4" name="enabled" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="environment_scope" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="target_scope" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="allowed_profiles_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="default_profile" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'ed25519'" digits="0" id="9" name="algorithm" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="public_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="public_key_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="last_used_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="16" name="revoke_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="principal_id" sequenceNumberInPK="1"/>
+         <index name="synthetic_principals_s_pk" unique="true">
+            <column ascending="true" name="principal_id"/>
+         </index>
+         <index name="idx_synthetic_principals_status" unique="false">
+            <column ascending="true" name="enabled"/>
+            <column ascending="true" name="revoked_at"/>
+            <column ascending="true" name="expires_at"/>
+         </index>
+         <index name="sqlite_autoindex_synthetic_principals_1" unique="true">
+            <column ascending="true" name="principal_id"/>
+         </index>
+         <index name="sqlite_autoindex_synthetic_principals_2" unique="true">
+            <column ascending="true" name="public_key_fingerprint"/>
          </index>
       </table>
       <table name="webauthn_challenges" remarks="" type="TABLE">
