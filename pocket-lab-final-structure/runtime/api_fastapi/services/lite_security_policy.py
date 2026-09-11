@@ -70,6 +70,7 @@ EXCLUDED_DIRS = [
     "state/runs",
     "state/operations",
     "state/runner_events",
+    "state/security",
     "state/security/evidence",
     "state/security/recovery",
     "state/.pocketlab-dev",
