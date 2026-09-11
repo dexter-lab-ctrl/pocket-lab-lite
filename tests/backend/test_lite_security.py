@@ -258,6 +258,14 @@ def test_security_identity_honors_nested_exclusions(tmp_path):
     assert "api" not in identity
 
 
+def test_full_trivy_excludes_index_database_as_a_file_not_a_directory():
+    from api_fastapi.services import lite_security_policy
+
+    excludes = lite_security_policy.full_scan_excludes()
+    assert ".pocket_lab/lite/apps/photoprism/storage/index.db" not in excludes["skip_dirs"]
+    assert "index.db" in excludes["skip_files"]
+
+
 def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):
     lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
 

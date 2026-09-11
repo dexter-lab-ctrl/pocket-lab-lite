@@ -184,7 +184,6 @@ FULL_EXTRA_EXCLUDED_DIRS = [
     "var/log",
     "var/tmp",
     "home/*/.cache",
-    ".pocket_lab/lite/apps/photoprism/storage/index.db",
     ".pocket_lab/lite/apps/photoprism/storage/sidecar",
     ".pocket_lab/lite/apps/photoprism/storage/cache",
     ".pocket_lab/lite/apps/photoprism/storage/cache/media",
