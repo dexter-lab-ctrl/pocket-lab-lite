@@ -161,6 +161,56 @@ raise SystemExit(0)
     assert "potential secret-like value found" in dumped
 
 
+def test_combined_trivy_normalization_preserves_categories_and_redacts_secret(tmp_path):
+    from api_fastapi.services import lite_security
+
+    payload = {
+        "Results": [
+            {
+                "Target": "workspace/config.yaml",
+                "Vulnerabilities": [
+                    {
+                        "VulnerabilityID": "CVE-COMBINED-1",
+                        "PkgName": "example-package",
+                        "Severity": "HIGH",
+                        "FixedVersion": "2.0.0",
+                    }
+                ],
+                "Misconfigurations": [
+                    {
+                        "ID": "AVD-COMBINED-1",
+                        "Severity": "MEDIUM",
+                        "Title": "Example configuration is too permissive.",
+                        "Resolution": "Restrict the configuration.",
+                    }
+                ],
+                "Secrets": [
+                    {
+                        "RuleID": "generic-api-key",
+                        "Severity": "CRITICAL",
+                        "Match": "password=do-not-leak-this-value",
+                    }
+                ],
+            }
+        ]
+    }
+
+    findings = lite_security.normalize_trivy_json(
+        payload,
+        "security-combined-normalization",
+        secret_mode=True,
+        root=tmp_path,
+    )
+
+    assert [(item["category"], item["severity"]) for item in findings] == [
+        ("dependency_vulnerability", "high"),
+        ("misconfiguration", "medium"),
+        ("secret_exposure", "critical"),
+    ]
+    assert findings[2]["summary"] == "Potential secret-like value found."
+    assert "do-not-leak-this-value" not in str(findings)
+
+
 def test_score_calculation_and_critical_status():
     from api_fastapi.services import lite_security
 
