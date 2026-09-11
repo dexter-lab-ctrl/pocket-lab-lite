@@ -500,6 +500,86 @@ def test_capability_resolution_denies_escalation_and_secondary_targets(harness_r
     assert error.value.reason_code == "harness_capability_denied"
 
 
+def test_security_qualifier_is_enforced_at_lite_security_routes(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    _register(
+        client,
+        private,
+        public,
+        principal_id="security-runner",
+        profiles=("security-qualifier",),
+    )
+    session, _ = _start_session(
+        client,
+        private,
+        principal_id="security-runner",
+        profile="security-qualifier",
+        purpose="security.scan.quick",
+    )
+    security_headers = {HARNESS_HEADER: session["session_token"]}
+
+    from api_fastapi import deps
+    from api_fastapi.services import lite_harness
+
+    context = deps.resolve_auth_context(_request(security_headers))
+    for action_id in (
+        "security.read",
+        "security.scan.quick",
+        "security.scan.full",
+        "security.scan.app",
+        "security.evidence.read",
+    ):
+        lite_harness.enforce_capability(
+            context,
+            action_id=action_id,
+            target_type="security",
+            target_id="qualification-target",
+        )
+
+    summary = client.get("/api/lite/security/summary", headers=security_headers)
+    assert summary.status_code == 200, summary.text
+
+    from api_fastapi.services.nats_bus import BUS
+
+    monkeypatch.setattr(BUS, "connected", True)
+    monkeypatch.setattr(BUS, "js", object())
+
+    async def publish_json(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(BUS, "publish_json", publish_json)
+    queued = client.post(
+        "/api/lite/security/check",
+        headers=security_headers,
+        json={"profile": "quick"},
+    )
+    assert queued.status_code == 202, queued.text
+
+    debug_private, debug_public = _key()
+    _register(
+        client,
+        debug_private,
+        debug_public,
+        principal_id="debug-security-runner",
+        profiles=("debug-observer",),
+    )
+    debug_session, _ = _start_session(
+        client,
+        debug_private,
+        principal_id="debug-security-runner",
+        profile="debug-observer",
+        purpose="security.scan.quick",
+    )
+    denied = client.post(
+        "/api/lite/security/check",
+        headers={HARNESS_HEADER: debug_session["session_token"]},
+        json={"profile": "quick"},
+    )
+    assert denied.status_code == 403, denied.text
+    assert denied.json().get("reason_code") == "harness_capability_denied", denied.text
+
+
 def test_qualification_owner_is_an_explicit_profile_with_no_membership(harness_runtime, monkeypatch):
     monkeypatch.setenv("POCKETLAB_QUALIFICATION_OWNER", "1")
     client = _client()
