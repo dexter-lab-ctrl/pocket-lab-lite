@@ -820,11 +820,11 @@ wait_for_nats_ready(){
 
 wait_for_lite_api_ready(){
   is_lite_profile || return 0
-  local timeout_seconds="${POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS:-900}"
+  local timeout_seconds="${POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS:-1800}"
   local deadline health_url ready_url health_ok ready_ok
 
   if ! [[ "$timeout_seconds" =~ ^[0-9]+$ ]]; then
-    timeout_seconds=900
+    timeout_seconds=1800
   fi
   (( timeout_seconds < 30 )) && timeout_seconds=30
   (( timeout_seconds > 1800 )) && timeout_seconds=1800

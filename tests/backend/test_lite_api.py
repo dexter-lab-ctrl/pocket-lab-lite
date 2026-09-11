@@ -258,6 +258,7 @@ def test_lite_startup_waits_for_api_health_and_readiness_after_pm2_spawn():
 
     assert api_start < api_ready < caddy_validation
     assert "POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS" in script
+    assert "POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS:-1800" in script
     assert "http://127.0.0.1:${API_PORT}/health" in script
     assert "http://127.0.0.1:${API_PORT}/ready" in script
     assert "Lite API did not become healthy and ready" in script
