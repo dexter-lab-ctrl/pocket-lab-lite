@@ -126,6 +126,9 @@ import os
 import pathlib
 import sys
 args = sys.argv[1:]
+if args == ['--version']:
+    print('Version: test-trivy')
+    raise SystemExit(0)
 format_value = args[args.index('--format') + 1] if '--format' in args else ''
 scanner_value = args[args.index('--scanners') + 1] if '--scanners' in args else ''
 pathlib.Path(os.environ['TRIVY_CALL_LOG']).open('a', encoding='utf-8').write(
@@ -159,6 +162,231 @@ raise SystemExit(0)
     dumped = json.dumps(evidence_payload).lower()
     assert "super-secret-value" not in dumped
     assert "potential secret-like value found" in dumped
+
+
+def _prepare_quick_cache_tools(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "cache-bin"
+    bin_dir.mkdir()
+    call_log = tmp_path / "cache-trivy-call-log"
+    monkeypatch.setenv("TRIVY_CALL_LOG", str(call_log))
+    _write_fake_tool(
+        bin_dir / "lynis",
+        """
+print('Lynis quick scan completed')
+raise SystemExit(0)
+""",
+    )
+    _write_fake_tool(
+        bin_dir / "trivy",
+        """
+import json
+import os
+import pathlib
+import sys
+args = sys.argv[1:]
+if args == ['--version']:
+    print('Version: cache-test-trivy')
+    raise SystemExit(0)
+format_value = args[args.index('--format') + 1] if '--format' in args else ''
+scanner_value = args[args.index('--scanners') + 1] if '--scanners' in args else ''
+pathlib.Path(os.environ['TRIVY_CALL_LOG']).open('a', encoding='utf-8').write(
+    (scanner_value or format_value) + '\\n'
+)
+if format_value == 'cyclonedx':
+    out = pathlib.Path(args[args.index('--output') + 1])
+    out.write_text(json.dumps({'bomFormat': 'CycloneDX', 'specVersion': '1.5', 'components': []}), encoding='utf-8')
+    raise SystemExit(0)
+print(json.dumps({'Results': [{'Target': 'workspace/config.yaml',
+    'Vulnerabilities': [{'VulnerabilityID': 'CVE-CACHE-1', 'PkgName': 'cache-package', 'Severity': 'HIGH', 'FixedVersion': '9.9.9'}],
+    'Misconfigurations': [{'ID': 'AVD-CACHE-1', 'Severity': 'MEDIUM', 'Title': 'Cache test misconfiguration'}],
+    'Secrets': [{'RuleID': 'cache-secret', 'Severity': 'CRITICAL', 'Match': 'password=cache-secret-value'}]}]}))
+raise SystemExit(0)
+""",
+    )
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+    from api_fastapi.services import lite_security
+
+    monkeypatch.setattr(
+        lite_security,
+        "_security_git_target_identity",
+        lambda root: {"kind": "git_clean_checkout", "commit": "a" * 40},
+    )
+    monkeypatch.setattr(
+        lite_security,
+        "_trivy_database_identity",
+        lambda: {
+            "revision": "sha256:cache-db-revision-1",
+            "version": "2",
+            "updated_at": "2026-09-11T00:00:00+00:00",
+            "valid_until": "2099-01-01T00:00:00+00:00",
+        },
+    )
+    return lite_security, call_log
+
+
+def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+
+    first = lite_security.run_security_scan({"command_id": "security-cache-first", "run_id": "security-cache-first"})
+    second = lite_security.run_security_scan({"command_id": "security-cache-second", "run_id": "security-cache-second"})
+
+    assert first["state"]["last_run"]["tool_results"]["trivy"]["status"] == "completed"
+    cached_result = second["state"]["last_run"]["tool_results"]["trivy"]
+    assert cached_result["status"] == "reused"
+    assert cached_result["cache"]["status"] == "hit"
+    assert cached_result["sbom_cache_hit"] is True
+    assert call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
+
+    categories = [item["category"] for item in second["findings"]]
+    assert categories.count("dependency_vulnerability") == 1
+    assert categories.count("misconfiguration") == 1
+    assert categories.count("secret_exposure") == 1
+    evidence_path = lite_security.evidence.evidence_dir("security-cache-second") / "target-pocketlab-quick-trivy.json"
+    evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert evidence_payload["status"] == "reused"
+    assert evidence_payload["cache_hit"] is True
+    assert "cache-secret-value" not in json.dumps(evidence_payload)
+    assert all("security-cache-second" in str(item.get("evidence_ref")) for item in second["findings"] if item.get("source") == "trivy")
+
+
+def test_quick_trivy_cache_misses_when_git_identity_is_uncertain(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+    first = lite_security.run_security_scan({"command_id": "security-cache-dirty-first", "run_id": "security-cache-dirty-first"})
+    assert first["state"]["last_run"]["tool_results"]["trivy"]["status"] == "completed"
+
+    monkeypatch.setattr(lite_security, "_security_git_target_identity", lambda root: None)
+    second = lite_security.run_security_scan({"command_id": "security-cache-dirty-second", "run_id": "security-cache-dirty-second"})
+    trivy_result = second["state"]["last_run"]["tool_results"]["trivy"]
+    assert trivy_result["status"] == "completed"
+    assert trivy_result["cache"]["status"] == "unavailable"
+    assert trivy_result["cache"]["reason"] == "identity_unavailable"
+    assert call_log.read_text(encoding="utf-8").splitlines() == [
+        "vuln,misconfig,secret", "cyclonedx", "vuln,misconfig,secret", "cyclonedx"
+    ]
+
+
+def test_quick_trivy_cache_misses_when_db_identity_is_unknown(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+    monkeypatch.setattr(lite_security, "_trivy_database_identity", lambda: None)
+
+    result = lite_security.run_security_scan({"command_id": "security-cache-no-db", "run_id": "security-cache-no-db"})
+    trivy_result = result["state"]["last_run"]["tool_results"]["trivy"]
+    assert trivy_result["status"] == "completed"
+    assert trivy_result["cache"]["status"] == "unavailable"
+    assert trivy_result["cache"]["reason"] == "identity_unavailable"
+    assert call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
+
+
+def test_quick_trivy_cache_invalidates_when_scanner_version_changes(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+    scanner_version = {"value": "cache-test-trivy-1"}
+    monkeypatch.setattr(lite_security, "_trivy_version_identity", lambda trivy, root: scanner_version["value"])
+    lite_security.run_security_scan({"command_id": "security-cache-version-first", "run_id": "security-cache-version-first"})
+
+    scanner_version["value"] = "cache-test-trivy-2"
+    result = lite_security.run_security_scan({"command_id": "security-cache-version-second", "run_id": "security-cache-version-second"})
+    assert result["state"]["last_run"]["tool_results"]["trivy"]["cache"]["status"] == "miss"
+    assert call_log.read_text(encoding="utf-8").splitlines() == [
+        "vuln,misconfig,secret", "cyclonedx", "vuln,misconfig,secret", "cyclonedx"
+    ]
+
+
+def test_quick_trivy_cache_invalidates_when_exclusion_policy_changes(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_security_policy as policy
+
+    original = policy.quick_scan_excludes
+    lite_security.run_security_scan({"command_id": "security-cache-policy-first", "run_id": "security-cache-policy-first"})
+    monkeypatch.setattr(
+        policy,
+        "quick_scan_excludes",
+        lambda: {**original(), "skip_dirs": [*original()["skip_dirs"], "new-policy-exclusion"]},
+    )
+    result = lite_security.run_security_scan({"command_id": "security-cache-policy-second", "run_id": "security-cache-policy-second"})
+    assert result["state"]["last_run"]["tool_results"]["trivy"]["cache"]["status"] == "miss"
+    assert call_log.read_text(encoding="utf-8").splitlines() == [
+        "vuln,misconfig,secret", "cyclonedx", "vuln,misconfig,secret", "cyclonedx"
+    ]
+
+
+def test_quick_trivy_cache_invalidates_when_db_revision_changes(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+    database = {"revision": "sha256:cache-db-revision-1", "version": "2", "valid_until": "2099-01-01T00:00:00+00:00"}
+    monkeypatch.setattr(lite_security, "_trivy_database_identity", lambda: database)
+    lite_security.run_security_scan({"command_id": "security-cache-db-first", "run_id": "security-cache-db-first"})
+
+    database = {"revision": "sha256:cache-db-revision-2", "version": "2", "valid_until": "2099-01-01T00:00:00+00:00"}
+    second = lite_security.run_security_scan({"command_id": "security-cache-db-second", "run_id": "security-cache-db-second"})
+    trivy_result = second["state"]["last_run"]["tool_results"]["trivy"]
+    assert trivy_result["status"] == "completed"
+    assert trivy_result["cache"]["status"] == "miss"
+    assert call_log.read_text(encoding="utf-8").splitlines() == [
+        "vuln,misconfig,secret", "cyclonedx", "vuln,misconfig,secret", "cyclonedx"
+    ]
+
+
+def test_full_pocketlab_source_uses_one_combined_trivy_pass(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "full-bin"
+    bin_dir.mkdir()
+    call_log = tmp_path / "full-trivy-call-log"
+    monkeypatch.setenv("TRIVY_CALL_LOG", str(call_log))
+    _write_fake_tool(
+        bin_dir / "lynis",
+        """
+print('Lynis full scan completed')
+raise SystemExit(0)
+""",
+    )
+    _write_fake_tool(
+        bin_dir / "trivy",
+        """
+import json
+import os
+import pathlib
+import sys
+args = sys.argv[1:]
+format_value = args[args.index('--format') + 1] if '--format' in args else ''
+scanner_value = args[args.index('--scanners') + 1] if '--scanners' in args else ''
+pathlib.Path(os.environ['TRIVY_CALL_LOG']).open('a', encoding='utf-8').write(
+    (scanner_value or format_value) + '\\n'
+)
+if format_value == 'cyclonedx':
+    pathlib.Path(args[args.index('--output') + 1]).write_text(
+        json.dumps({'bomFormat': 'CycloneDX', 'components': []}), encoding='utf-8'
+    )
+    raise SystemExit(0)
+print(json.dumps({'Results': [{'Target': 'workspace/config.yaml',
+    'Vulnerabilities': [{'VulnerabilityID': 'CVE-FULL-1', 'PkgName': 'full-package', 'Severity': 'HIGH'}],
+    'Misconfigurations': [{'ID': 'AVD-FULL-1', 'Severity': 'MEDIUM', 'Title': 'Full test configuration'}],
+    'Secrets': [{'RuleID': 'full-secret', 'Severity': 'CRITICAL', 'Match': 'password=full-secret-value'}]}]}))
+raise SystemExit(0)
+""",
+    )
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+    from api_fastapi.services import lite_security, lite_security_policy as policy
+
+    monkeypatch.setattr(lite_security, "runtime_config_posture", lambda root: {"status": "completed", "checks": []})
+    monkeypatch.setattr(policy, "discover_proot_ubuntu_rootfs", lambda root: None)
+    monkeypatch.setattr(policy, "photoprism_config_dir", lambda: tmp_path / "missing-photoprism-config")
+    monkeypatch.setattr(policy, "backup_metadata_candidates", lambda root: [])
+
+    result = lite_security.run_security_scan({
+        "command_id": "security-full-combined",
+        "run_id": "security-full-combined",
+        "profile": "full",
+    })
+    assert result["state"]["last_run"]["status"] == "succeeded"
+    assert result["state"]["last_run"]["tool_results"]["trivy_source"]["scanners"] == "vuln,misconfig,secret"
+    assert call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
+    source_statuses = [item for item in result["run"]["target_statuses"] if item.get("target_id") == "pocketlab_source"]
+    assert len(source_statuses) == 2
+    assert {item["tool"] for item in source_statuses} == {"trivy", "sbom"}
+    assert {item["category"] for item in result["findings"] if item.get("source") == "trivy"} == {
+        "dependency_vulnerability", "misconfiguration", "secret_exposure"
+    }
+    assert "full-secret-value" not in json.dumps(result)
 
 
 def test_combined_trivy_normalization_preserves_categories_and_redacts_secret(tmp_path):

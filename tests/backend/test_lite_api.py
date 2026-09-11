@@ -7214,7 +7214,7 @@ def test_lite_security_full_local_check_profile_source_contract():
     assert policy.normalize_scan_profile("full") == "full"
     assert policy.build_scan_plan("full", Path.cwd())["profile"] == "full"
     assert "def _run_full_security_scan" in security
-    assert "target-pocketlab-source-trivy-vuln.json" in security
+    assert "target-pocketlab-source-trivy.json" in security
     assert "target-proot-ubuntu-trivy" in security
     assert "target-photoprism-config-secret.json" in security
     assert "target-backup-metadata.json" in security
