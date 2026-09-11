@@ -108,6 +108,8 @@ def _write_fake_tool(path: Path, body: str) -> None:
 def test_trivy_secret_findings_are_redacted_and_critical(tmp_path, monkeypatch):
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
+    trivy_call_log = tmp_path / "trivy-call-log"
+    monkeypatch.setenv("TRIVY_CALL_LOG", str(trivy_call_log))
     _write_fake_tool(
         bin_dir / "lynis",
         """
@@ -120,15 +122,21 @@ raise SystemExit(0)
         bin_dir / "trivy",
         """
 import json
+import os
 import pathlib
 import sys
 args = sys.argv[1:]
-if '--format' in args and args[args.index('--format') + 1] == 'cyclonedx':
+format_value = args[args.index('--format') + 1] if '--format' in args else ''
+scanner_value = args[args.index('--scanners') + 1] if '--scanners' in args else ''
+pathlib.Path(os.environ['TRIVY_CALL_LOG']).open('a', encoding='utf-8').write(
+    (scanner_value or format_value) + '\\n'
+)
+if format_value == 'cyclonedx':
     out = pathlib.Path(args[args.index('--output') + 1])
     out.write_text(json.dumps({'bomFormat': 'CycloneDX', 'components': []}), encoding='utf-8')
     raise SystemExit(0)
-if '--scanners' in args and args[args.index('--scanners') + 1] == 'secret':
-    print(json.dumps({'Results': [{'Target': 'state/example.env', 'Secrets': [{'RuleID': 'generic-api-key', 'Severity': 'CRITICAL', 'Match': 'password=super-secret-value'}]}]}))
+if scanner_value == 'vuln,misconfig,secret':
+    print(json.dumps({'Results': [{'Target': 'state/example.env', 'Vulnerabilities': [{'VulnerabilityID': 'CVE-TEST-1', 'PkgName': 'example-package', 'Severity': 'HIGH', 'FixedVersion': '1.2.3'}], 'Secrets': [{'RuleID': 'generic-api-key', 'Severity': 'CRITICAL', 'Match': 'password=super-secret-value'}]}]}))
     raise SystemExit(0)
 print(json.dumps({'Results': [{'Target': 'package-lock.json', 'Vulnerabilities': [{'VulnerabilityID': 'CVE-TEST-1', 'PkgName': 'example-package', 'Severity': 'HIGH', 'FixedVersion': '1.2.3'}]}]}))
 raise SystemExit(0)
@@ -145,6 +153,7 @@ raise SystemExit(0)
     assert state["last_run"]["high_count"] == 1
     assert state["score"] == 55
     assert state["critical_issues"][0]["category"] == "secret_exposure"
+    assert trivy_call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
 
     evidence_payload = lite_security.read_evidence("security-critical")
     dumped = json.dumps(evidence_payload).lower()

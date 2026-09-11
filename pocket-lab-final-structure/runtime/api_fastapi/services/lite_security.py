@@ -5576,20 +5576,25 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             findings.append(missing)
             tool_results["trivy"] = {"status": "missing_tool", "available": False}
         else:
-            vuln_args = [trivy, "fs", "--format", "json", "--scanners", "vuln,misconfig"]
-            vuln_args.extend(policy.trivy_skip_args(root))
-            vuln_args.append(str(root))
-            vuln_result = _run_command(vuln_args, cwd=root, timeout=_command_timeout("trivy_vuln_misconfig"))
-            vuln_findings = normalize_trivy_json(_load_json_text(vuln_result.get("stdout") or ""), run_id, root=root)
-            findings.extend(vuln_findings)
-
-            secret_args = [trivy, "fs", "--format", "json", "--scanners", "secret"]
-            secret_args.extend(policy.trivy_skip_args(root))
-            secret_args.append(str(root))
-            secret_result = _run_command(secret_args, cwd=root, timeout=_command_timeout("trivy_secret"))
-            secret_findings = normalize_trivy_json(_load_json_text(secret_result.get("stdout") or ""), run_id, secret_mode=True, root=root)
-            findings.extend(secret_findings)
-            trivy_partial = bool(vuln_result.get("timed_out") or secret_result.get("timed_out"))
+            scanners = "vuln,misconfig,secret"
+            trivy_args = [trivy, "fs", "--format", "json", "--scanners", scanners]
+            trivy_args.extend(policy.trivy_skip_args(root))
+            trivy_args.append(str(root))
+            # Keep the longest existing per-pass timeout when the scanner groups
+            # share one traversal. This avoids weakening either prior bound.
+            trivy_timeout = max(
+                _command_timeout("trivy_vuln_misconfig"),
+                _command_timeout("trivy_secret"),
+            )
+            trivy_result = _run_command(trivy_args, cwd=root, timeout=trivy_timeout)
+            trivy_findings = normalize_trivy_json(
+                _load_json_text(trivy_result.get("stdout") or ""),
+                run_id,
+                secret_mode=True,
+                root=root,
+            )
+            findings.extend(trivy_findings)
+            trivy_partial = bool(trivy_result.get("timed_out"))
             partial = partial or trivy_partial
             sbom_ref = _write_sbom(run_id, trivy, root)
             if sbom_ref:
@@ -5597,9 +5602,10 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             tool_results["trivy"] = {
                 "status": "completed" if not trivy_partial else "partial",
                 "available": True,
-                "vuln_returncode": vuln_result.get("returncode"),
-                "secret_returncode": secret_result.get("returncode"),
-                "finding_count": len(vuln_findings) + len(secret_findings),
+                "scanners": scanners,
+                "vuln_returncode": trivy_result.get("returncode"),
+                "secret_returncode": trivy_result.get("returncode"),
+                "finding_count": len(trivy_findings),
                 "sbom_saved": bool(sbom_ref),
             }
 
