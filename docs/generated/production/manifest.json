@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "b28a73f26d5d1fe5a14b54c998516d1848edb8c54ebf78e4b394a52dc53a77df",
+  "source_fingerprint": "db973c6304d67a70aad3390cbc931edc9dadd7a2badfb6438f86b892c8a30272",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -45,7 +45,7 @@
     "package-lock.json": "e4d0c83b421c709c1d61ed740a7cf5f723c37d1d8cafaf5367629330a72f4bb6",
     "package.json": "b9a19d60282bc3428b44b53b90b580587eeb52a5e63e880ce22b0ec16870cb9d",
     "playwright.config.ts": "6cd01c76a1dd4aea441d67040c640d2863d4e188d2884e8fef91bd5a50c7a9a7",
-    "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "f1b67a34794ab521c024992d259c1a98762e8a79e4a0f6223c091bdc6e5f52c2",
+    "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "6f54f665f09410624387095b6be2f77a6409769878296a467a71f62df338c7d7",
     "redocly.yaml": "85718a1b05d38aae5d7ee5f2a0304b6b0773a9f957f04e39ada044fa19e0ec25",
     "requirements-dev.txt": "f4d2bb8bce877ef307ffa010db5b7e7ad6589d6b67b7a7db7767b4371356fc0c",
     "requirements-docs.txt": "cab2c67d3ed722efc5e9132c503e14fd1e3671759debfd8935edcd49ea63753c",

@@ -12221,6 +12221,31 @@
       },
       {
         "affected_components": [
+          "bootstrap/runtime",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS",
+        "owner": "bootstrap/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+          "tests/backend/test_lite_api.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI",
           "repository tooling"
         ],
@@ -27987,7 +28012,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3958",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4021",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1562"
         ],
         "tests": [],
@@ -28025,7 +28050,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3575",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3638",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1563"
         ],
         "tests": [],
@@ -28063,7 +28088,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3605",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1565"
         ],
         "tests": [],
@@ -28101,7 +28126,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3588",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3651",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1564"
         ],
         "tests": [],
@@ -28139,7 +28164,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4045",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4108",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1572"
         ],
         "tests": [],
@@ -28215,7 +28240,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3645",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1575"
         ],
         "tests": [],
@@ -28253,7 +28278,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3688",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3751",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1576"
         ],
         "tests": [],
@@ -28291,7 +28316,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3746",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3809",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1578"
         ],
         "tests": [],
@@ -28329,7 +28354,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3706",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3769",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1577"
         ],
         "tests": [],
@@ -28407,7 +28432,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3814",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3877",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1580"
         ],
         "tests": [],
@@ -28445,7 +28470,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3788",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3851",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1579"
         ],
         "tests": [],
@@ -28483,7 +28508,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4207",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4270",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1574"
         ],
         "tests": [],
@@ -28521,7 +28546,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4080",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1573"
         ],
         "tests": [],
@@ -35074,9 +35099,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35161,9 +35186,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35195,9 +35220,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35361,9 +35386,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35503,9 +35528,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35630,9 +35655,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35767,9 +35792,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35823,12 +35848,12 @@
         "reason_codes": [
           "policy_unavailable",
           "generic_policy_toggle_retired",
+          "identity_unavailable",
           "owner_approval_policy_inconsistent",
           "policy_action_not_registered",
           "policy_activation_in_progress",
           "policy_activation_not_uncertain",
-          "policy_activation_pending",
-          "policy_activation_state_changed"
+          "policy_activation_pending"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35857,12 +35882,12 @@
         "reason_codes": [
           "generic_policy_toggle_retired",
           "human_session_required",
+          "identity_unavailable",
           "owner_approval_policy_inconsistent",
           "policy_action_not_registered",
           "policy_activation_in_progress",
           "policy_activation_not_uncertain",
-          "policy_activation_pending",
-          "policy_activation_state_changed"
+          "policy_activation_pending"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35953,9 +35978,9 @@
           "enterprise_owner_authority_required",
           "enterprise_people_role_required",
           "harness_transport_rejected",
+          "identity_unavailable",
           "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent",
-          "policy_source_contract_invalid"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -40309,10 +40334,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "2555fdf87f70d4db30b9495313764149f7a329284061c9409f83c7ea32cba5e1",
-        "documentation": "22e3f6489bb1cd3cc9be61b4057e757f9a9de5c2bd89e7d907c174f941ec1866",
+        "asyncapi": "95c8279ba76c6547389503b6bba8387755ab1ce3eb313949054dc937d1f76afd",
+        "documentation": "c5cb6c3c266d02810987ec9f0f08b2e085ce2427fc4fa9ca5b7352a69f631ef3",
         "openapi": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-        "operational_health": "7098ad5b973d061994319ce14b5d420e139a3545fdbaedb60fe451bf23fc0035"
+        "operational_health": "1849be162e0721d25e137005311c1711ca9a66ff2b387b33e7b1d6e440a37195"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -107307,5 +107332,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "ad4ad8521b37b403364f8c77c40ebf20409240fe5e9c740d054153ac698856b9"
+  "source_fingerprint": "0e1bfbfe9fc2debdd0a3427243fbce9a6b5cf8083ea1e62a4df7120f5650ff13"
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ebae12f5bd34d1c12b076118cc72be05ade595b291873e55a44f1f9a5c8a8e88
+source_fingerprint: cb4ea37821c36785dd64ca784c0458876d67816ab1648bf47832f026eec5ddd7
 schema_revision: 1
 validation_status: generated
 ---
@@ -326,6 +326,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_LITE_ALLOW_REJOIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_LITE_API_NICE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/idle_efficiency.py |
 | `POCKETLAB_LITE_API_PM2_NAME` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py |
+| `POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS` | configuration | 1800 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_LITE_APP_CURRENT_STATE_MAX_AGE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py |
 | `POCKETLAB_LITE_APP_ID` | configuration | photoprism | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
 | `POCKETLAB_LITE_APP_OPERATION_ID` | configuration | app-photoprism-manual | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |

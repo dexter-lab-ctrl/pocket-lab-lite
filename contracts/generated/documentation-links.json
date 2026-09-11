@@ -1941,6 +1941,10 @@
         "title": "identity_setup_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#identity-setup-unavailable"
       },
+      "reason:identity_unavailable": {
+        "title": "identity_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#identity-unavailable"
+      },
       "reason:identity_username_invalid": {
         "title": "identity_username_invalid",
         "url": "../../docs/generated/development/reason-codes.md#identity-username-invalid"
@@ -2296,6 +2300,10 @@
       "reason:target_not_allowed": {
         "title": "target_not_allowed",
         "url": "../../docs/generated/development/reason-codes.md#target-not-allowed"
+      },
+      "reason:target_not_source_checkout": {
+        "title": "target_not_source_checkout",
+        "url": "../../docs/generated/development/reason-codes.md#target-not-source-checkout"
       },
       "reason:test_bypass_explicit": {
         "title": "test_bypass_explicit",
@@ -2817,7 +2825,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "89c6aac0e7b782b52492e088fad9b157f96fc4a9ebe95dd19cf7de65b8a60055",
+    "aggregate_fingerprint": "0ce216108b284d254e43181868eb9467212aa75407c8382f7ca9e61b851090d1",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2828,7 +2836,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-      "contracts/metadata/documentation-platform.json": "2a270bfc7ee22c1da8db611c26a78e99ca9e45463c9b79a3bdce2d578e1c541d",
+      "contracts/metadata/documentation-platform.json": "09850bb3c70a983efeeb9aa0ed41c2754901b48b2d59e3ba29e54c398d2731ec",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
