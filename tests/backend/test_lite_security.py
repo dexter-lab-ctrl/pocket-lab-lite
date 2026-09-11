@@ -283,6 +283,27 @@ def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):
     assert all("security-cache-second" in str(item.get("evidence_ref")) for item in second["findings"] if item.get("source") == "trivy")
 
 
+def test_quick_coverage_summary_records_written_evidence_refs(tmp_path, monkeypatch):
+    lite_security, _ = _prepare_quick_cache_tools(tmp_path, monkeypatch)
+
+    result = lite_security.run_security_scan({
+        "command_id": "security-coverage-evidence",
+        "run_id": "security-coverage-evidence",
+    })
+
+    coverage = result["run"]["coverage_summary"]
+    refs = coverage["evidence_files_written"]
+    assert refs
+    assert any(ref.endswith("/lynis-normalized.json") for ref in refs)
+    assert any(ref.endswith("/trivy-normalized.json") for ref in refs)
+    assert any(ref.endswith("/coverage-summary.json") for ref in refs)
+
+    coverage_path = lite_security.evidence.evidence_dir("security-coverage-evidence") / "coverage-summary.json"
+    persisted = json.loads(coverage_path.read_text(encoding="utf-8"))
+    assert persisted["evidence_files_written"]
+    assert any(ref.endswith("/trivy-normalized.json") for ref in persisted["evidence_files_written"])
+
+
 def test_quick_trivy_cache_misses_when_git_identity_is_uncertain(tmp_path, monkeypatch):
     lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
     first = lite_security.run_security_scan({"command_id": "security-cache-dirty-first", "run_id": "security-cache-dirty-first"})

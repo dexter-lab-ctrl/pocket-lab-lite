@@ -6240,7 +6240,12 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "finding_count": 0,
     }
     run["tool_results"] = tool_results
-    run["coverage_summary"] = build_coverage_summary(plan, tool_results, posture)
+    run["coverage_summary"] = build_coverage_summary(
+        plan,
+        tool_results,
+        posture,
+        evidence_refs=evidence_refs,
+    )
     coverage_ref = evidence.write_evidence(run_id, "coverage-summary.json", run["coverage_summary"])
     if coverage_ref not in evidence_refs:
         evidence_refs.append(coverage_ref)
@@ -6256,7 +6261,12 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "completed_at": deps.now_utc_iso(),
             "partial_results": partial,
             "tool_results": tool_results,
-            "coverage_summary": build_coverage_summary(plan, tool_results, posture),
+            "coverage_summary": build_coverage_summary(
+                plan,
+                tool_results,
+                posture,
+                evidence_refs=evidence_refs,
+            ),
             "critical_count": counts.get("critical", 0),
             "high_count": counts.get("high", 0),
             "medium_count": counts.get("medium", 0),
