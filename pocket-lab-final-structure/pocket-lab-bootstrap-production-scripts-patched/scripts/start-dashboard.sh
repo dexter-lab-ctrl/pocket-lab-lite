@@ -818,6 +818,41 @@ wait_for_nats_ready(){
   die "NATS did not become ready at $url"
 }
 
+wait_for_lite_api_ready(){
+  is_lite_profile || return 0
+  local timeout_seconds="${POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS:-1800}"
+  local deadline health_url ready_url health_ok ready_ok
+
+  if ! [[ "$timeout_seconds" =~ ^[0-9]+$ ]]; then
+    timeout_seconds=1800
+  fi
+  (( timeout_seconds < 30 )) && timeout_seconds=30
+  (( timeout_seconds > 1800 )) && timeout_seconds=1800
+
+  health_url="http://127.0.0.1:${API_PORT}/health"
+  ready_url="http://127.0.0.1:${API_PORT}/ready"
+  deadline=$(( $(date +%s) + timeout_seconds ))
+  log INFO "Waiting for Lite API health and readiness (timeout=${timeout_seconds}s)"
+
+  while (( $(date +%s) <= deadline )); do
+    health_ok=0
+    ready_ok=0
+    if curl -fsS --connect-timeout 1 --max-time 3 "$health_url" >/dev/null 2>&1; then
+      health_ok=1
+    fi
+    if curl -fsS --connect-timeout 1 --max-time 3 "$ready_url" >/dev/null 2>&1; then
+      ready_ok=1
+    fi
+    if (( health_ok == 1 && ready_ok == 1 )); then
+      log INFO "Lite API is healthy and ready"
+      return 0
+    fi
+    sleep 1
+  done
+
+  die "Lite API did not become healthy and ready within ${timeout_seconds}s"
+}
+
 configure_lite_runtime_limits(){
   # Conservative edge defaults. Users may override every value before
   # bootstrap; no hard CPU throttle is applied to latency-sensitive requests.
@@ -882,6 +917,7 @@ start_pm2_daemons(){
     log WARN "Pocket Lab node agent not started; this control plane will not publish NATS fleet heartbeats"
   fi
   POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-api "$API_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_API_MAX_MEMORY_RESTART:-384M}" --exp-backoff-restart-delay 250
+  wait_for_lite_api_ready
   validate_caddyfile
   pm2_start_or_restart caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   if is_lite_profile; then
