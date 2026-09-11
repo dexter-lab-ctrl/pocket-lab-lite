@@ -72,6 +72,7 @@ EXCLUDED_DIRS = [
     "state/runner_events",
     "state/security/evidence",
     "state/security/recovery",
+    "state/.pocketlab-dev",
     "vault/data",
     "gitea/data",
     "gitea/log",
@@ -103,6 +104,8 @@ EXCLUDED_FILES = [
     "*.sqlite3-wal",
     "index.db",
     "photoprism/index.db",
+    "operation_runs.json*",
+    "*.rollback.tmp*",
 ]
 
 QUICK_EXCLUDED_GROUPS = [

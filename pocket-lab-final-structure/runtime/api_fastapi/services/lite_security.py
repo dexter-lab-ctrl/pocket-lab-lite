@@ -5301,6 +5301,12 @@ def _security_path_is_excluded(relative: str) -> bool:
             ancestor = "/".join(parts[:index])
             if fnmatch.fnmatchcase(ancestor, normalized_pattern):
                 return True
+        # Keep basename-style exclusions such as node_modules and
+        # .pocketlab-dev effective at any depth.
+        if "/" not in normalized_pattern and any(
+            fnmatch.fnmatchcase(part, normalized_pattern) for part in parts
+        ):
+            return True
     basename = parts[-1]
     return any(
         fnmatch.fnmatchcase(normalized, str(pattern))
