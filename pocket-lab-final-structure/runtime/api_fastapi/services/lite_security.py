@@ -5284,12 +5284,16 @@ def _security_cache_digest(value: Any) -> str:
     return "sha256:" + hashlib.sha256(material.encode("utf-8")).hexdigest()
 
 
-def _security_path_is_excluded(relative: str) -> bool:
+def _security_path_is_excluded(
+    relative: str,
+    *,
+    profile: str = policy.SCAN_PROFILE_QUICK,
+) -> bool:
     normalized = str(relative or "").replace("\\", "/").strip("/")
     if not normalized:
         return True
     parts = normalized.split("/")
-    excludes = policy.quick_scan_excludes()
+    excludes = policy.scan_excludes_for_profile(profile)
     for pattern in excludes.get("skip_dirs") or []:
         normalized_pattern = str(pattern or "").replace("\\", "/").strip("/")
         if not normalized_pattern:
@@ -5315,7 +5319,12 @@ def _security_path_is_excluded(relative: str) -> bool:
     )
 
 
-def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | None:
+def _security_ignored_file_identity(
+    root: Path,
+    git: str,
+    *,
+    profile: str = policy.SCAN_PROFILE_QUICK,
+) -> dict[str, str] | None:
     """Hash only non-excluded ignored content so clean Git does not hide drift."""
     def tree_digest(directory: Path) -> str | None:
         digest = hashlib.sha256()
@@ -5332,11 +5341,11 @@ def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | No
                 entries += 1
                 if entries > 100_000 or child.is_symlink():
                     relative_child = str(child.relative_to(root)).replace("\\", "/")
-                    if _security_path_is_excluded(relative_child):
+                    if _security_path_is_excluded(relative_child, profile=profile):
                         continue
                     return None
                 relative_child = str(child.relative_to(root)).replace("\\", "/")
-                if _security_path_is_excluded(relative_child):
+                if _security_path_is_excluded(relative_child, profile=profile):
                     continue
                 try:
                     mode = child.stat().st_mode & 0o7777
@@ -5372,7 +5381,7 @@ def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | No
         identities: dict[str, str] = {}
         for line in result.stdout.splitlines():
             relative = line.strip().replace("\\", "/").rstrip("/")
-            if not relative or _security_path_is_excluded(relative):
+            if not relative or _security_path_is_excluded(relative, profile=profile):
                 continue
             if any(
                 relative.startswith(f"{parent}/")
@@ -5408,7 +5417,11 @@ def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | No
         return None
 
 
-def _security_git_target_identity(root: Path) -> dict[str, Any] | None:
+def _security_git_target_identity(
+    root: Path,
+    *,
+    profile: str = policy.SCAN_PROFILE_QUICK,
+) -> dict[str, Any] | None:
     """Return a cheap source identity only for a demonstrably clean checkout."""
     git = shutil.which("git")
     if not git:
@@ -5438,7 +5451,7 @@ def _security_git_target_identity(root: Path) -> dict[str, Any] | None:
         )
         if status.returncode != 0 or status.stdout.strip():
             return None
-        ignored_files = _security_ignored_file_identity(checkout_root, git)
+        ignored_files = _security_ignored_file_identity(checkout_root, git, profile=profile)
         if ignored_files is None:
             return None
         head = subprocess.run(
@@ -5542,16 +5555,18 @@ def _trivy_database_identity() -> dict[str, Any] | None:
     return None
 
 
-def _quick_trivy_cache_identity(
+def _trivy_target_cache_identity(
     *,
     root: Path,
     trivy: str,
     target_id: str,
     scanners: str,
     secret_mode: bool,
+    profile: str,
 ) -> dict[str, Any] | None:
-    """Build the fail-closed identity for the only currently cacheable target."""
-    source = _security_git_target_identity(root)
+    """Build a fail-closed identity for a source checkout Trivy target."""
+    normalized_profile = policy.normalize_scan_profile(profile)
+    source = _security_git_target_identity(root, profile=normalized_profile)
     if not source:
         return None
     scanner_version = _trivy_version_identity(trivy, root)
@@ -5560,11 +5575,11 @@ def _quick_trivy_cache_identity(
     database = _trivy_database_identity()
     if not database:
         return None
-    exclusions = policy.scan_excludes_for_profile(policy.SCAN_PROFILE_QUICK)
-    skip_args = policy.trivy_skip_args_for_profile(root, policy.SCAN_PROFILE_QUICK)
+    exclusions = policy.scan_excludes_for_profile(normalized_profile)
+    skip_args = policy.trivy_skip_args_for_profile(root, normalized_profile)
     policy_revision = _security_cache_digest(
         {
-            "profile": policy.SCAN_PROFILE_QUICK,
+            "profile": normalized_profile,
             "exclusions": exclusions,
             "normalizer_schema": 1,
         }
@@ -5578,9 +5593,27 @@ def _quick_trivy_cache_identity(
             "secret_mode": bool(secret_mode),
             "skip_args": skip_args,
             "timeouts": {
-                "trivy": _command_timeout("trivy_vuln_misconfig"),
-                "secret": _command_timeout("trivy_secret"),
-                "sbom": _command_timeout("trivy_sbom"),
+                "trivy": _command_timeout(
+                    "full_trivy_vuln_misconfig"
+                    if normalized_profile == policy.SCAN_PROFILE_FULL
+                    else "app_trivy_vuln_misconfig"
+                    if normalized_profile == policy.SCAN_PROFILE_APP
+                    else "trivy_vuln_misconfig"
+                ),
+                "secret": _command_timeout(
+                    "full_trivy_secret"
+                    if normalized_profile == policy.SCAN_PROFILE_FULL
+                    else "app_trivy_secret"
+                    if normalized_profile == policy.SCAN_PROFILE_APP
+                    else "trivy_secret"
+                ),
+                "sbom": _command_timeout(
+                    "full_trivy_sbom"
+                    if normalized_profile == policy.SCAN_PROFILE_FULL
+                    else "app_trivy_sbom"
+                    if normalized_profile == policy.SCAN_PROFILE_APP
+                    else "trivy_sbom"
+                ),
             },
         }
     )
@@ -5588,7 +5621,7 @@ def _quick_trivy_cache_identity(
     return policy.redact_value(
         {
             "schema": _SECURITY_TARGET_CACHE_SCHEMA,
-            "profile": policy.SCAN_PROFILE_QUICK,
+            "profile": normalized_profile,
             "target_id": target_id,
             "target_fingerprint": _security_cache_digest(source),
             "source_commit": source_commit,
@@ -5603,6 +5636,24 @@ def _quick_trivy_cache_identity(
             "secret_mode": bool(secret_mode),
             "sbom_format": "cyclonedx",
         }
+    )
+
+
+def _quick_trivy_cache_identity(
+    *,
+    root: Path,
+    trivy: str,
+    target_id: str,
+    scanners: str,
+    secret_mode: bool,
+) -> dict[str, Any] | None:
+    return _trivy_target_cache_identity(
+        root=root,
+        trivy=trivy,
+        target_id=target_id,
+        scanners=scanners,
+        secret_mode=secret_mode,
+        profile=policy.SCAN_PROFILE_QUICK,
     )
 
 
@@ -5734,6 +5785,33 @@ def _write_cached_sbom(run_id: str, entry: dict[str, Any]) -> str | None:
     except (OSError, TypeError, ValueError):
         return None
     return f"security/evidence/{run_id}/sbom.cdx.json"
+
+
+def _write_cached_target_sbom(
+    run_id: str,
+    entry: dict[str, Any],
+    target_id: str,
+    target_label: str,
+) -> dict[str, Any] | None:
+    """Materialize a validated cached SBOM under the target's evidence name."""
+    sbom = entry.get("sbom")
+    if not isinstance(sbom, dict) or not sbom.get("bomFormat"):
+        return None
+    filename = f"target-{target_id}-sbom.cdx.json"
+    out = evidence.evidence_dir(run_id) / filename
+    try:
+        evidence.write_json(out, policy.redact_value(sbom))
+    except (OSError, TypeError, ValueError):
+        return None
+    return _full_target_status(
+        target_id,
+        target_label,
+        "sbom",
+        "reused",
+        elapsed_seconds=0,
+        evidence_ref=f"security/evidence/{run_id}/{filename}",
+        summary=f"{target_label} SBOM was safely reused by revision.",
+    )
 
 
 def _write_sbom(run_id: str, trivy: str, root: Path) -> str | None:
@@ -6511,7 +6589,8 @@ def _run_trivy_target_job(
     profile: str,
     secret_mode: bool = False,
     evidence_name: str | None = None,
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    use_cache: bool = False,
+) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any] | None]:
     evidence_name = evidence_name or f"target-{target_id}-trivy-{scanners.replace(',', '-')}.json"
     if not target_path.exists():
         ref = _write_target_json(run_id, evidence_name, {
@@ -6522,7 +6601,7 @@ def _run_trivy_target_job(
             "status": "missing",
             "summary": f"{target_label} was not present on this device.",
         })
-        return [], _full_target_status(target_id, target_label, "trivy", "missing", evidence_ref=ref, summary=f"{target_label} was not present on this device.")
+        return [], _full_target_status(target_id, target_label, "trivy", "missing", evidence_ref=ref, summary=f"{target_label} was not present on this device."), None
     if not trivy:
         ref = _write_target_json(run_id, evidence_name, {
             "target_id": target_id,
@@ -6532,7 +6611,72 @@ def _run_trivy_target_job(
             "status": "missing_tool",
             "summary": "Trivy is not available on this device.",
         })
-        return [], _full_target_status(target_id, target_label, "trivy", "partial", evidence_ref=ref, summary="Trivy is not available on this device.")
+        return [], _full_target_status(target_id, target_label, "trivy", "partial", evidence_ref=ref, summary="Trivy is not available on this device."), None
+
+    cache_identity: dict[str, Any] | None = None
+    cache_entry: dict[str, Any] | None = None
+    cache_metadata: dict[str, Any] | None = None
+    if use_cache:
+        try:
+            is_source_target = target_path.resolve() == root.resolve()
+        except OSError:
+            is_source_target = False
+        if is_source_target:
+            cache_identity = _trivy_target_cache_identity(
+                root=root,
+                trivy=trivy,
+                target_id=target_id,
+                scanners=scanners,
+                secret_mode=secret_mode,
+                profile=profile,
+            )
+            if cache_identity:
+                cache_entry = _read_security_target_cache(cache_identity)
+                cache_metadata = {
+                    "status": "hit" if cache_entry else "miss",
+                    "reason": "entry_not_found" if not cache_entry else "",
+                    "target_fingerprint": cache_identity.get("target_fingerprint"),
+                    "scanner_version": cache_identity.get("scanner_version"),
+                    "scanner_db_revision": cache_identity.get("scanner_db_revision"),
+                    "policy_revision": cache_identity.get("policy_revision"),
+                }
+            else:
+                cache_metadata = {
+                    "status": "unavailable",
+                    "reason": "identity_unavailable",
+                }
+        else:
+            cache_metadata = {
+                "status": "unavailable",
+                "reason": "target_not_source_checkout",
+            }
+
+    if cache_entry:
+        cached_findings, ref = _cached_trivy_findings(
+            entry=cache_entry,
+            run_id=run_id,
+            target_id=target_id,
+            target_label=target_label,
+            scanners=scanners,
+            evidence_name=evidence_name,
+        )
+        status = _full_target_status(
+            target_id,
+            target_label,
+            "trivy",
+            "reused",
+            elapsed_seconds=0,
+            finding_count=len(cached_findings),
+            evidence_ref=ref,
+            summary=f"{target_label} Trivy findings were safely reused by revision.",
+        )
+        status["cache"] = {**(cache_metadata or {}), "cache_hit": True}
+        return cached_findings, status, {
+            "identity": cache_identity,
+            "entry": cache_entry,
+            "cache_hit": True,
+            "cacheable": True,
+        }
 
     started = time.monotonic()
     args = [trivy, "fs", "--format", "json", "--scanners", scanners]
@@ -6556,11 +6700,40 @@ def _run_trivy_target_job(
         "findings": findings,
         "returncode": result.get("returncode"),
         "timed_out": bool(result.get("timed_out")),
+        **({"cache": cache_metadata} if cache_metadata else {}),
     })
     for finding in findings:
         finding["evidence_ref"] = ref
     summary = f"{target_label} checked with Trivy {scanners}." if status == "checked" else f"{target_label} {status} during Trivy {scanners}."
-    return findings, _full_target_status(target_id, target_label, "trivy", status, elapsed_seconds=elapsed, finding_count=len(findings), evidence_ref=ref, summary=summary)
+    target_status = _full_target_status(target_id, target_label, "trivy", status, elapsed_seconds=elapsed, finding_count=len(findings), evidence_ref=ref, summary=summary)
+    cache_context = None
+    if cache_identity and status == "checked" and payload_valid:
+        stored = _write_security_target_cache(
+            identity=cache_identity,
+            target_id=target_id,
+            target_label=target_label,
+            scanners=scanners,
+            findings=findings,
+            sbom=None,
+        )
+        if cache_metadata is not None:
+            cache_metadata["stored"] = stored
+        cache_context = {
+            "identity": cache_identity,
+            "entry": None,
+            "cache_hit": False,
+            "cacheable": stored,
+        }
+    elif use_cache:
+        cache_context = {
+            "identity": cache_identity,
+            "entry": None,
+            "cache_hit": False,
+            "cacheable": False,
+        }
+    if cache_metadata:
+        target_status["cache"] = cache_metadata
+    return findings, target_status, cache_context
 
 
 def _write_target_sbom(trivy: str | None, run_id: str, root: Path, target_path: Path, target_id: str, target_label: str, profile: str) -> dict[str, Any]:
@@ -6669,7 +6842,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         target_statuses.append(_full_target_status("pocketlab_source", "Pocket Lab Lite", "trivy", "timed_out", summary="Full Local Check reached its overall budget before source scanning."))
     else:
         scanners = "vuln,misconfig,secret"
-        new_findings, status = _run_trivy_target_job(
+        new_findings, status, source_cache_context = _run_trivy_target_job(
             trivy=trivy,
             run_id=run_id,
             root=root,
@@ -6680,13 +6853,53 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             profile=policy.SCAN_PROFILE_FULL,
             secret_mode=True,
             evidence_name="target-pocketlab-source-trivy.json",
+            use_cache=True,
         )
         findings.extend(new_findings)
         target_statuses.append(status)
         if status.get("evidence_ref"):
             evidence_refs.append(str(status["evidence_ref"]))
         partial = partial or str(status.get("status")) in {"partial", "timed_out"}
-        sbom_status = _write_target_sbom(trivy, run_id, root, root, "pocketlab_source", "Pocket Lab Lite", policy.SCAN_PROFILE_FULL)
+        cached_source_entry = source_cache_context.get("entry") if source_cache_context else None
+        sbom_status = (
+            _write_cached_target_sbom(
+                run_id,
+                cached_source_entry,
+                "pocketlab_source",
+                "Pocket Lab Lite",
+            )
+            if cached_source_entry
+            else None
+        )
+        if sbom_status is None:
+            sbom_status = _write_target_sbom(
+                trivy,
+                run_id,
+                root,
+                root,
+                "pocketlab_source",
+                "Pocket Lab Lite",
+                policy.SCAN_PROFILE_FULL,
+            )
+        if (
+            source_cache_context
+            and source_cache_context.get("identity")
+            and not source_cache_context.get("cache_hit")
+            and sbom_status.get("status") == "checked"
+        ):
+            sbom_payload = evidence.read_json(
+                evidence.evidence_dir(run_id) / "target-pocketlab_source-sbom.cdx.json",
+                {},
+            )
+            if isinstance(sbom_payload, dict) and sbom_payload:
+                _write_security_target_cache(
+                    identity=source_cache_context["identity"],
+                    target_id="pocketlab_source",
+                    target_label="Pocket Lab Lite",
+                    scanners=scanners,
+                    findings=new_findings,
+                    sbom=sbom_payload,
+                )
         target_statuses.append(sbom_status)
         if sbom_status.get("evidence_ref"):
             evidence_refs.append(str(sbom_status["evidence_ref"]))
@@ -6696,6 +6909,8 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "label": "Pocket Lab Lite",
             "scanners": scanners,
             "finding_count": len([item for item in findings if item.get("source") == "trivy"]),
+            "cache": status.get("cache"),
+            "sbom_cache_hit": sbom_status.get("status") == "reused",
         }
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "runtime_running")
@@ -6718,7 +6933,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             proot_findings_total = 0
             proot_partial = False
             for index, candidate in enumerate(existing[:3]):
-                new_findings, status = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=candidate, target_id="proot_ubuntu", target_label="PROot Ubuntu", scanners="vuln,misconfig", profile=policy.SCAN_PROFILE_FULL, evidence_name=f"target-proot-ubuntu-trivy-{index + 1}.json")
+                new_findings, status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=candidate, target_id="proot_ubuntu", target_label="PROot Ubuntu", scanners="vuln,misconfig", profile=policy.SCAN_PROFILE_FULL, evidence_name=f"target-proot-ubuntu-trivy-{index + 1}.json")
                 findings.extend(new_findings)
                 target_statuses.append(status)
                 proot_findings_total += len(new_findings)
@@ -6744,7 +6959,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     for target_path, scanners, secret_mode, evidence_name, photoprism_label in photoprism_targets:
         if target_path.exists():
             photoprism_seen = True
-        new_findings, status = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism", target_label=photoprism_label, scanners=scanners, profile=policy.SCAN_PROFILE_FULL, secret_mode=secret_mode, evidence_name=evidence_name)
+        new_findings, status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism", target_label=photoprism_label, scanners=scanners, profile=policy.SCAN_PROFILE_FULL, secret_mode=secret_mode, evidence_name=evidence_name)
         findings.extend(new_findings)
         target_statuses.append(status)
         photoprism_finding_count += len(new_findings)
@@ -6857,7 +7072,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             continue
         if target_path.exists():
             app_seen = True
-        new_findings, status = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism_app_files", target_label=label, scanners=scanners, profile=policy.SCAN_PROFILE_APP, secret_mode=secret_mode, evidence_name=evidence_name)
+        new_findings, status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism_app_files", target_label=label, scanners=scanners, profile=policy.SCAN_PROFILE_APP, secret_mode=secret_mode, evidence_name=evidence_name)
         findings.extend(new_findings)
         target_statuses.append(status)
         app_finding_count += len(new_findings)
@@ -6881,7 +7096,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     _write_intermediate_running_state(run, findings, evidence_refs)
 
     config_path = policy.photoprism_config_dir()
-    config_findings, config_status = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=config_path, target_id="photoprism_settings", target_label="PhotoPrism settings", scanners="secret", profile=policy.SCAN_PROFILE_APP, secret_mode=True, evidence_name="target-photoprism-config-secret.json")
+    config_findings, config_status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=config_path, target_id="photoprism_settings", target_label="PhotoPrism settings", scanners="secret", profile=policy.SCAN_PROFILE_APP, secret_mode=True, evidence_name="target-photoprism-config-secret.json")
     findings.extend(config_findings)
     target_statuses.append(config_status)
     if config_status.get("evidence_ref"):

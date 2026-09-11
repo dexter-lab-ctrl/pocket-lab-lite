@@ -210,7 +210,7 @@ raise SystemExit(0)
     monkeypatch.setattr(
         lite_security,
         "_security_git_target_identity",
-        lambda root: {"kind": "git_clean_checkout", "commit": "a" * 40},
+        lambda root, **kwargs: {"kind": "git_clean_checkout", "commit": "a" * 40},
     )
     monkeypatch.setattr(
         lite_security,
@@ -309,7 +309,7 @@ def test_quick_trivy_cache_misses_when_git_identity_is_uncertain(tmp_path, monke
     first = lite_security.run_security_scan({"command_id": "security-cache-dirty-first", "run_id": "security-cache-dirty-first"})
     assert first["state"]["last_run"]["tool_results"]["trivy"]["status"] == "completed"
 
-    monkeypatch.setattr(lite_security, "_security_git_target_identity", lambda root: None)
+    monkeypatch.setattr(lite_security, "_security_git_target_identity", lambda root, **kwargs: None)
     second = lite_security.run_security_scan({"command_id": "security-cache-dirty-second", "run_id": "security-cache-dirty-second"})
     trivy_result = second["state"]["last_run"]["tool_results"]["trivy"]
     assert trivy_result["status"] == "completed"
@@ -400,6 +400,9 @@ import os
 import pathlib
 import sys
 args = sys.argv[1:]
+if args == ['--version']:
+    print('Version: full-cache-test-trivy')
+    raise SystemExit(0)
 format_value = args[args.index('--format') + 1] if '--format' in args else ''
 scanner_value = args[args.index('--scanners') + 1] if '--scanners' in args else ''
 pathlib.Path(os.environ['TRIVY_CALL_LOG']).open('a', encoding='utf-8').write(
@@ -422,6 +425,16 @@ raise SystemExit(0)
     from api_fastapi.services import lite_security, lite_security_policy as policy
 
     monkeypatch.setattr(lite_security, "runtime_config_posture", lambda root: {"status": "completed", "checks": []})
+    monkeypatch.setattr(
+        lite_security,
+        "_security_git_target_identity",
+        lambda root, **kwargs: {"kind": "git_clean_checkout", "commit": "a" * 40},
+    )
+    monkeypatch.setattr(lite_security, "_trivy_database_identity", lambda: {
+        "revision": "sha256:full-cache-db",
+        "version": "2",
+        "valid_until": "2099-01-01T00:00:00+00:00",
+    })
     monkeypatch.setattr(policy, "discover_proot_ubuntu_rootfs", lambda root: None)
     monkeypatch.setattr(policy, "photoprism_config_dir", lambda: tmp_path / "missing-photoprism-config")
     monkeypatch.setattr(policy, "backup_metadata_candidates", lambda root: [])
@@ -441,6 +454,94 @@ raise SystemExit(0)
         "dependency_vulnerability", "misconfiguration", "secret_exposure"
     }
     assert "full-secret-value" not in json.dumps(result)
+
+
+def test_full_pocketlab_source_cache_reuses_findings_and_sbom(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "full-cache-bin"
+    bin_dir.mkdir()
+    call_log = tmp_path / "full-cache-trivy-call-log"
+    monkeypatch.setenv("TRIVY_CALL_LOG", str(call_log))
+    _write_fake_tool(
+        bin_dir / "lynis",
+        """
+print('Lynis full scan completed')
+raise SystemExit(0)
+""",
+    )
+    _write_fake_tool(
+        bin_dir / "trivy",
+        """
+import json
+import os
+import pathlib
+import sys
+args = sys.argv[1:]
+if args == ['--version']:
+    print('Version: full-cache-test-trivy')
+    raise SystemExit(0)
+format_value = args[args.index('--format') + 1] if '--format' in args else ''
+scanner_value = args[args.index('--scanners') + 1] if '--scanners' in args else ''
+pathlib.Path(os.environ['TRIVY_CALL_LOG']).open('a', encoding='utf-8').write(
+    (scanner_value or format_value) + '\\n'
+)
+if format_value == 'cyclonedx':
+    pathlib.Path(args[args.index('--output') + 1]).write_text(
+        json.dumps({'bomFormat': 'CycloneDX', 'components': []}), encoding='utf-8'
+    )
+    raise SystemExit(0)
+print(json.dumps({'Results': [{'Target': 'workspace/config.yaml',
+    'Vulnerabilities': [{'VulnerabilityID': 'CVE-FULL-CACHE-1', 'PkgName': 'full-cache-package', 'Severity': 'HIGH'}],
+    'Misconfigurations': [{'ID': 'AVD-FULL-CACHE-1', 'Severity': 'MEDIUM', 'Title': 'Full cache configuration'}],
+    'Secrets': [{'RuleID': 'full-cache-secret', 'Severity': 'CRITICAL', 'Match': 'password=full-cache-secret-value'}]}]}))
+raise SystemExit(0)
+""",
+    )
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+    from api_fastapi.services import lite_security, lite_security_policy as policy
+
+    monkeypatch.setattr(lite_security, "runtime_config_posture", lambda root: {"status": "completed", "checks": []})
+    monkeypatch.setattr(
+        lite_security,
+        "_security_git_target_identity",
+        lambda root, **kwargs: {"kind": "git_clean_checkout", "commit": "b" * 40},
+    )
+    monkeypatch.setattr(lite_security, "_trivy_database_identity", lambda: {
+        "revision": "sha256:full-cache-db",
+        "version": "2",
+        "valid_until": "2099-01-01T00:00:00+00:00",
+    })
+    monkeypatch.setattr(policy, "discover_proot_ubuntu_rootfs", lambda root: None)
+    monkeypatch.setattr(policy, "photoprism_config_dir", lambda: tmp_path / "missing-photoprism-config")
+    monkeypatch.setattr(policy, "backup_metadata_candidates", lambda root: [])
+
+    first = lite_security.run_security_scan({
+        "command_id": "security-full-cache-first",
+        "run_id": "security-full-cache-first",
+        "profile": "full",
+    })
+    second = lite_security.run_security_scan({
+        "command_id": "security-full-cache-second",
+        "run_id": "security-full-cache-second",
+        "profile": "full",
+    })
+
+    assert first["state"]["last_run"]["tool_results"]["trivy_source"]["status"] == "completed"
+    second_trivy = second["state"]["last_run"]["tool_results"]["trivy_source"]
+    assert second_trivy["status"] == "reused"
+    assert second_trivy["cache"]["status"] == "hit"
+    assert second_trivy["sbom_cache_hit"] is True
+    assert call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
+
+    source_statuses = [
+        item for item in second["run"]["target_statuses"]
+        if item.get("target_id") == "pocketlab_source"
+    ]
+    assert [item["status"] for item in source_statuses] == ["reused", "reused"]
+    assert {item["tool"] for item in source_statuses} == {"trivy", "sbom"}
+    categories = {item["category"] for item in second["findings"] if item.get("source") == "trivy"}
+    assert categories == {"dependency_vulnerability", "misconfiguration", "secret_exposure"}
+    assert "full-cache-secret-value" not in json.dumps(second)
 
 
 def test_combined_trivy_normalization_preserves_categories_and_redacts_secret(tmp_path):
