@@ -266,6 +266,19 @@ def test_full_trivy_excludes_index_database_as_a_file_not_a_directory():
     assert "index.db" in excludes["skip_files"]
 
 
+def test_generated_tab_sync_reports_are_excluded_from_security_scan_targets():
+    from api_fastapi.services import lite_security
+    from api_fastapi.services import lite_security_policy
+
+    excludes = lite_security_policy.full_scan_excludes()
+    report = "pocketlab-tab-sync-report-20260801T103050Z"
+    assert "pocketlab-tab-sync-report-*" in excludes["skip_dirs"]
+    assert lite_security._security_path_is_excluded(
+        f"{report}/06_frontend/served-asset-references.json",
+        profile=lite_security_policy.SCAN_PROFILE_FULL,
+    )
+
+
 def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):
     lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
 

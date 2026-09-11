@@ -79,6 +79,10 @@ EXCLUDED_DIRS = [
     "state/security/recovery",
     "state/.pocketlab-dev",
     "state/opa",
+    # Tab-sync collection bundles are generated diagnostic artifacts, not
+    # canonical source inputs.  They can contain served-asset snapshots that
+    # Trivy's secret analyzer cannot reliably classify on Termux.
+    "pocketlab-tab-sync-report-*",
     # The root api/ directory contains generated health/telemetry snapshots;
     # authoritative service posture is read through the bounded API readers.
     "api",
