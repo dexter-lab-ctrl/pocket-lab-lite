@@ -225,6 +225,30 @@ raise SystemExit(0)
     return lite_security, call_log
 
 
+def test_security_identity_honors_nested_exclusions(tmp_path):
+    from api_fastapi.services import lite_security
+
+    assert lite_security._security_path_is_excluded("state/security/evidence/run/summary.json") is True
+    assert lite_security._security_path_is_excluded("state/security/recovery/restore-transactions/journal.json") is True
+    assert lite_security._security_path_is_excluded("state/security/security_state.json") is False
+
+    root = tmp_path / "checkout"
+    state = root / "state"
+    (state / "security").mkdir(parents=True)
+    (state / "security" / "security_state.json").write_text("{}", encoding="utf-8")
+    recovery = state / "security" / "recovery"
+    recovery.mkdir()
+    outside = tmp_path / "outside"
+    outside.write_text("not part of the scan identity", encoding="utf-8")
+    (recovery / "restore-transactions").symlink_to(outside)
+
+    fake_git = tmp_path / "git"
+    _write_fake_tool(fake_git, "print('state')\n")
+    identity = lite_security._security_ignored_file_identity(root, str(fake_git))
+    assert identity is not None
+    assert identity["state"].startswith("tree:")
+
+
 def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):
     lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
 

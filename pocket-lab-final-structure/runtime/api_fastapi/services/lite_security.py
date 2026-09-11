@@ -5290,12 +5290,17 @@ def _security_path_is_excluded(relative: str) -> bool:
         return True
     parts = normalized.split("/")
     excludes = policy.quick_scan_excludes()
-    if any(
-        fnmatch.fnmatchcase(part, str(pattern))
-        for part in parts
-        for pattern in excludes.get("skip_dirs") or []
-    ):
-        return True
+    for pattern in excludes.get("skip_dirs") or []:
+        normalized_pattern = str(pattern or "").replace("\\", "/").strip("/")
+        if not normalized_pattern:
+            continue
+        # A directory exclusion applies to the directory itself and every
+        # descendant. Check each ancestor so nested policy paths such as
+        # state/security/evidence also work when Git returns only `state`.
+        for index in range(1, len(parts) + 1):
+            ancestor = "/".join(parts[:index])
+            if fnmatch.fnmatchcase(ancestor, normalized_pattern):
+                return True
     basename = parts[-1]
     return any(
         fnmatch.fnmatchcase(normalized, str(pattern))
@@ -5320,8 +5325,13 @@ def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | No
             for child in children:
                 entries += 1
                 if entries > 100_000 or child.is_symlink():
+                    relative_child = str(child.relative_to(root)).replace("\\", "/")
+                    if _security_path_is_excluded(relative_child):
+                        continue
                     return None
-                relative_child = str(child.relative_to(directory)).replace("\\", "/")
+                relative_child = str(child.relative_to(root)).replace("\\", "/")
+                if _security_path_is_excluded(relative_child):
+                    continue
                 try:
                     mode = child.stat().st_mode & 0o7777
                     if child.is_dir():

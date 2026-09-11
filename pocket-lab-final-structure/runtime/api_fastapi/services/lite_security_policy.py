@@ -71,6 +71,7 @@ EXCLUDED_DIRS = [
     "state/operations",
     "state/runner_events",
     "state/security/evidence",
+    "state/security/recovery",
     "vault/data",
     "gitea/data",
     "gitea/log",
