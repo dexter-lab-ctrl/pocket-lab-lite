@@ -73,6 +73,7 @@ EXCLUDED_DIRS = [
     "state/security/evidence",
     "state/security/recovery",
     "state/.pocketlab-dev",
+    "state/opa",
     "vault/data",
     "gitea/data",
     "gitea/log",
