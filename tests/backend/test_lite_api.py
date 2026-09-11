@@ -7412,7 +7412,8 @@ def test_lite_security_enterprise_scanner_profile_history_contract():
     assert "_pm2_process_cmdline(\"pocket-nats\")" in security
     assert "target-aware" not in security.lower()
     assert "_photoprism_proot_targets" in security
-    assert "PhotoPrism app binary metadata" in security
+    assert "binary_path.exists()" in security
+    assert "PhotoPrism app binary" in security
     assert "POCKETLAB_LITE_BACKUP_ROOT" in policy_source
     assert "pocket-lab-lite-backups" in policy_source
     assert "scanner_quality" in security

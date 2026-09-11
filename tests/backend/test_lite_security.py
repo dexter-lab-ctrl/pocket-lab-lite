@@ -211,6 +211,28 @@ def test_combined_trivy_normalization_preserves_categories_and_redacts_secret(tm
     assert "do-not-leak-this-value" not in str(findings)
 
 
+def test_photoprism_proot_targets_do_not_duplicate_app_tree_without_binary(tmp_path):
+    from api_fastapi.services import lite_security
+
+    rootfs = tmp_path / "rootfs"
+    app_path = rootfs / "opt" / "photoprism"
+    app_path.mkdir(parents=True)
+
+    targets = lite_security._photoprism_proot_targets(rootfs)
+    assert len(targets) == 1
+    assert targets[0][0] == app_path
+    assert targets[0][4] == "PhotoPrism app files"
+
+    binary_path = rootfs / "usr" / "local" / "bin" / "photoprism"
+    binary_path.parent.mkdir(parents=True)
+    binary_path.write_text("binary", encoding="utf-8")
+
+    targets = lite_security._photoprism_proot_targets(rootfs)
+    assert len(targets) == 2
+    assert targets[1][0] == binary_path
+    assert targets[1][4] == "PhotoPrism app binary"
+
+
 def test_score_calculation_and_critical_status():
     from api_fastapi.services import lite_security
 

@@ -5963,10 +5963,6 @@ def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool
     targets = [(app_path, "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files")]
     if binary_path.exists():
         targets.append((binary_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary"))
-    elif app_path.exists():
-        # Keep the binary as optional metadata instead of marking the whole app missing when
-        # PhotoPrism is running from the app tree or through PROot launch metadata.
-        targets.append((app_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary metadata"))
     return targets
 
 
