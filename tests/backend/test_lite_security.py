@@ -235,11 +235,15 @@ def test_security_identity_honors_nested_exclusions(tmp_path):
     assert lite_security._security_path_is_excluded("state/opa/active") is True
     assert lite_security._security_path_is_excluded("state/security/security_state.json") is True
     assert lite_security._security_path_is_excluded("state/core-supervisor/events.jsonl") is True
+    assert lite_security._security_path_is_excluded("api/telemetry.json") is True
 
     root = tmp_path / "checkout"
     state = root / "state"
     (state / "security").mkdir(parents=True)
     (state / "security" / "security_state.json").write_text("{}", encoding="utf-8")
+    api = root / "api"
+    api.mkdir()
+    (api / "telemetry.json").write_text("{}", encoding="utf-8")
     recovery = state / "security" / "recovery"
     recovery.mkdir()
     outside = tmp_path / "outside"
@@ -247,10 +251,11 @@ def test_security_identity_honors_nested_exclusions(tmp_path):
     (recovery / "restore-transactions").symlink_to(outside)
 
     fake_git = tmp_path / "git"
-    _write_fake_tool(fake_git, "print('state')\n")
+    _write_fake_tool(fake_git, "print('state\\napi')\n")
     identity = lite_security._security_ignored_file_identity(root, str(fake_git))
     assert identity is not None
     assert "state" not in identity
+    assert "api" not in identity
 
 
 def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):

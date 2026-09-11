@@ -7094,6 +7094,7 @@ def test_lite_security_quick_safety_profile_defaults_and_exclusions_source():
     assert ".pocket_lab/trivy-cache" in plan["skip_dirs"]
     assert ".pocket_lab/lynis-tmp" in plan["skip_dirs"]
     assert "state" in plan["skip_dirs"]
+    assert "api" in plan["skip_dirs"]
     assert "*.pyc" in plan["skip_files"]
 
     skip_args = policy.trivy_skip_args(Path.cwd())

@@ -79,6 +79,9 @@ EXCLUDED_DIRS = [
     "state/security/recovery",
     "state/.pocketlab-dev",
     "state/opa",
+    # The root api/ directory contains generated health/telemetry snapshots;
+    # authoritative service posture is read through the bounded API readers.
+    "api",
     "vault/data",
     "gitea/data",
     "gitea/log",
