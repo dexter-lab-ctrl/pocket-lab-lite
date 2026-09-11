@@ -5305,7 +5305,43 @@ def _security_path_is_excluded(relative: str) -> bool:
 
 
 def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | None:
-    """Hash only non-excluded ignored files so clean Git does not hide .env drift."""
+    """Hash only non-excluded ignored content so clean Git does not hide drift."""
+    def tree_digest(directory: Path) -> str | None:
+        digest = hashlib.sha256()
+        total_bytes = 0
+        entries = 0
+        pending = [directory]
+        while pending:
+            current = pending.pop()
+            try:
+                children = sorted(current.iterdir(), key=lambda item: item.name)
+            except OSError:
+                return None
+            for child in children:
+                entries += 1
+                if entries > 100_000 or child.is_symlink():
+                    return None
+                relative_child = str(child.relative_to(directory)).replace("\\", "/")
+                try:
+                    mode = child.stat().st_mode & 0o7777
+                    if child.is_dir():
+                        digest.update(f"D:{relative_child}:{mode}\n".encode("utf-8"))
+                        pending.append(child)
+                        continue
+                    if not child.is_file():
+                        return None
+                    size = child.stat().st_size
+                    total_bytes += size
+                    if total_bytes > 512 * 1024 * 1024:
+                        return None
+                    digest.update(f"F:{relative_child}:{mode}:{size}\n".encode("utf-8"))
+                    with child.open("rb") as handle:
+                        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                            digest.update(chunk)
+                except OSError:
+                    return None
+        return "sha256:" + digest.hexdigest()
+
     try:
         result = subprocess.run(
             [git, "ls-files", "--others", "--ignored", "--exclude-standard", "--directory"],
@@ -5322,17 +5358,31 @@ def _security_ignored_file_identity(root: Path, git: str) -> dict[str, str] | No
             relative = line.strip().replace("\\", "/").rstrip("/")
             if not relative or _security_path_is_excluded(relative):
                 continue
+            if any(
+                relative.startswith(f"{parent}/")
+                for parent, digest in identities.items()
+                if digest.startswith("tree:")
+            ):
+                continue
             raw_candidate = root / relative
             if raw_candidate.is_symlink():
                 return None
             candidate = raw_candidate.resolve(strict=False)
             if candidate != root and root not in candidate.parents:
                 return None
+            if candidate.is_dir():
+                digest = tree_digest(candidate)
+                if digest is None:
+                    return None
+                identities[relative] = "tree:" + digest
+                continue
             if not candidate.is_file():
                 return None
-            if candidate.stat().st_size > 64 * 1024 * 1024:
+            size = candidate.stat().st_size
+            if size > 512 * 1024 * 1024:
                 return None
             digest = hashlib.sha256()
+            digest.update(f"mode:{candidate.stat().st_mode & 0o7777}:size:{size}\n".encode("ascii"))
             with candidate.open("rb") as handle:
                 for chunk in iter(lambda: handle.read(1024 * 1024), b""):
                     digest.update(chunk)
