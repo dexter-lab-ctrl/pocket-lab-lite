@@ -70,6 +70,10 @@ EXCLUDED_DIRS = [
     "state/runs",
     "state/operations",
     "state/runner_events",
+    # The source scan covers canonical repository inputs.  The runtime state
+    # tree is generated operational data and is checked through the bounded
+    # posture/evidence readers instead of being traversed as source.
+    "state",
     "state/security",
     "state/security/evidence",
     "state/security/recovery",

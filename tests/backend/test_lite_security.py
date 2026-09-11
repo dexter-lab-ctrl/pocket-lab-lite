@@ -234,6 +234,7 @@ def test_security_identity_honors_nested_exclusions(tmp_path):
     assert lite_security._security_path_is_excluded("state/operation_runs.json.temporary") is True
     assert lite_security._security_path_is_excluded("state/opa/active") is True
     assert lite_security._security_path_is_excluded("state/security/security_state.json") is True
+    assert lite_security._security_path_is_excluded("state/core-supervisor/events.jsonl") is True
 
     root = tmp_path / "checkout"
     state = root / "state"
@@ -249,7 +250,7 @@ def test_security_identity_honors_nested_exclusions(tmp_path):
     _write_fake_tool(fake_git, "print('state')\n")
     identity = lite_security._security_ignored_file_identity(root, str(fake_git))
     assert identity is not None
-    assert identity["state"].startswith("tree:")
+    assert "state" not in identity
 
 
 def test_quick_trivy_cache_hit_reuses_findings_and_sbom(tmp_path, monkeypatch):
