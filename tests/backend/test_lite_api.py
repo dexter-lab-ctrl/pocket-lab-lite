@@ -249,6 +249,20 @@ def test_lite_caddy_generator_supports_app_route_registry():
     assert "tailscale-status.XXXXXX.json" in script
 
 
+def test_lite_startup_waits_for_api_health_and_readiness_after_pm2_spawn():
+    script = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
+
+    api_start = script.index("pm2_start_or_restart pocket-api")
+    api_ready = script.index("wait_for_lite_api_ready", api_start)
+    caddy_validation = script.index("validate_caddyfile", api_ready)
+
+    assert api_start < api_ready < caddy_validation
+    assert "POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS" in script
+    assert "http://127.0.0.1:${API_PORT}/health" in script
+    assert "http://127.0.0.1:${API_PORT}/ready" in script
+    assert "Lite API did not become healthy and ready" in script
+
+
 def test_lite_read_summary_endpoints_registered():
     for path in (
         "/api/lite/identity",
