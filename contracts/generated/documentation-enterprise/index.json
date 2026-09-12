@@ -40559,9 +40559,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "95c8279ba76c6547389503b6bba8387755ab1ce3eb313949054dc937d1f76afd",
-        "documentation": "e783a7fe02dc601dffb837104c1b640b1dd3d148ac01aad1cdfcec56fab73aff",
+        "documentation": "a84b7464780655e57279071a4a05661475ba1115f1b9a99a6f28bcda342bec86",
         "openapi": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-        "operational_health": "06b84dce0e78a4810356d79a09eae3d259b817a02b6919f09dcfe3b2efa80df0"
+        "operational_health": "f628c977473d9470baaaed571d8d477393c6a45f05a1f09b3965e226f7c7a638"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -107556,5 +107556,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "911f58ded00677761238f9cc3a46a5b957dd1a851caf340646cd0c975b6f9aa4"
+  "source_fingerprint": "be5a94eeb3f75115544195616b8ace46e015292b69fde96df7d6eef0b340b831"
 }

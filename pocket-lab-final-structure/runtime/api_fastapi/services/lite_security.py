@@ -2130,11 +2130,14 @@ def recover_security_progress_generation_at_startup(
     marker_status = str(inspected.get("status") or "invalid")
     marker = inspected.get("marker") if isinstance(inspected.get("marker"), dict) else {}
     current = _current_progress_generation_identity(repo)
+    # A scan legitimately advances the run id and SQLite/domain revision after
+    # the marker is published. The durable database instance id is the
+    # promotion fence: it rotates only when a different SQLite database is
+    # installed (for example, after restore). Treating ordinary scan progress
+    # as marker drift makes every worker initialization republish the marker
+    # and leaves API Progress reads fail-closed at 503 indefinitely.
     marker_matches = bool(
         marker
-        and str(marker.get("run_id") or "") == current["run_id"]
-        and max(0, int(marker.get("sqlite_revision") or 0))
-        == current["sqlite_revision"]
         and str(marker.get("database_instance_id") or "")
         == current["database_instance_id"]
     )
@@ -2204,14 +2207,8 @@ def _observe_durable_security_progress_generation() -> None:
 
         repo = _security_repository()
         current = _current_progress_generation_identity(repo)
-        expected_run_id = str(marker.get("run_id") or "")
-        expected_revision = max(0, int(marker.get("sqlite_revision") or 0))
         expected_database = str(marker.get("database_instance_id") or "")
-        if (
-            current["run_id"] != expected_run_id
-            or current["sqlite_revision"] != expected_revision
-            or current["database_instance_id"] != expected_database
-        ):
+        if current["database_instance_id"] != expected_database:
             raise SecurityProgressGenerationUnavailable(
                 "Durable Security progress generation did not match promoted SQLite"
             )

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import json
 from pathlib import Path
 
 import pytest
@@ -49,7 +48,7 @@ def test_marker_inspection_distinguishes_absent_invalid_and_valid(tmp_path):
     assert not list(path.parent.glob("*.tmp"))
 
 
-def test_startup_repairs_stale_marker_without_bumping_domain_revision(monkeypatch):
+def test_startup_preserves_marker_when_progress_moves_without_bumping_domain_revision(monkeypatch):
     from api_fastapi.services import lite_security
     from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
 
@@ -85,15 +84,9 @@ def test_startup_repairs_stale_marker_without_bumping_domain_revision(monkeypatc
     )
 
     assert result["status"] == "passed"
-    assert result["repaired"] is True
-    marker = json.loads(
-        lite_security.lite_security_generation.marker_path().read_text(
-            encoding="utf-8"
-        )
-    )
-    assert marker["run_id"] == "security-current"
-    assert marker["sqlite_revision"] == revision_before
-    assert marker["database_instance_id"] == instance_id
+    assert result["repaired"] is False
+    assert result["database_instance_matched"] is True
+    assert lite_security._SQLITE_PROGRESS_GENERATION_TOKEN == "stale-generation"
     assert repo.get_domain_revision()["revision"] == revision_before
 
 

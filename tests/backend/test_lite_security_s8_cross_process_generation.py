@@ -68,6 +68,44 @@ def test_api_observer_fences_once_per_generation(monkeypatch):
     assert lite_security._SQLITE_PROGRESS_GENERATION_TOKEN == "generation-a"
 
 
+def test_api_observer_accepts_progress_revision_drift_with_same_database(monkeypatch):
+    from api_fastapi.services import lite_security
+
+    marker = {
+        "generation": "generation-a",
+        "run_id": "security-before-scan",
+        "sqlite_revision": 77,
+        "database_instance_id": "database-a",
+        "sanitized": True,
+    }
+    calls = []
+
+    monkeypatch.setattr(
+        lite_security.lite_security_generation,
+        "inspect_security_progress_generation",
+        lambda: {"status": "valid", "marker": dict(marker), "sanitized": True},
+    )
+    monkeypatch.setattr(
+        lite_security,
+        "_current_progress_generation_identity",
+        lambda _repo=None: calls.append("fenced") or {
+            "run_id": "security-after-scan",
+            "sqlite_revision": 99,
+            "database_instance_id": "database-a",
+        },
+    )
+    monkeypatch.setattr(lite_security, "_SQLITE_PROGRESS_GENERATION_TOKEN", "")
+    monkeypatch.setattr(lite_security, "_SQLITE_PROGRESS_GENERATION_CHECKED_AT", 0.0)
+    monkeypatch.setattr(
+        lite_security, "_SQLITE_PROGRESS_GENERATION_CHECK_INTERVAL_SECONDS", 0.0
+    )
+
+    lite_security._observe_durable_security_progress_generation()
+
+    assert calls == ["fenced"]
+    assert lite_security._SQLITE_PROGRESS_GENERATION_TOKEN == "generation-a"
+
+
 def test_api_observer_fails_closed_on_identity_mismatch(monkeypatch):
     from api_fastapi.services import lite_security
 
