@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: cb4ea37821c36785dd64ca784c0458876d67816ab1648bf47832f026eec5ddd7
+source_fingerprint: dff2a2f70d5661fdc6e655c550b99b3c73cea31431cb379d42fee923659277ec
 schema_revision: 1
 validation_status: generated
 ---
@@ -465,6 +465,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_LITE_SECURITY_STORE_MODE` | configuration | dual | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_store.py, scripts/dev/lib/long_gate_group2.py, scripts/dev/lib/long_gate_group4.py, scripts/dev/lib/long_gate_json.py |
 | `POCKETLAB_LITE_SECURITY_SUMMARY_FINDING_LIMIT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `POCKETLAB_LITE_SECURITY_SUMMARY_HISTORY_LIMIT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
+| `POCKETLAB_LITE_SECURITY_TRIVY_DB_UPDATE_TIMEOUT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py |
 | `POCKETLAB_LITE_SECURITY_TRIVY_SECRET_TIMEOUT` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py |
 | `POCKETLAB_LITE_SECURITY_TRIVY_TIMEOUT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py |
 | `POCKETLAB_LITE_SOURCE_COMMIT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
@@ -755,7 +756,11 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_SCHEMATHESIS_BIN` | configuration | $ROOT/.pocketlab-dev/tools/parity/bin/schemathesis | yes | component-dependent | scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
 | `POCKETLAB_SCHEMATHESIS_VERSION` | configuration | 4.23.0 | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |
 | `POCKETLAB_SECURE_ORIGIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
+| `POCKETLAB_SECURITY_BATTERY_PAUSE_PERCENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `POCKETLAB_SECURITY_FAILED_RETENTION_DAYS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
+| `POCKETLAB_SECURITY_MAX_ATOMIC_TARGETS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `POCKETLAB_SECURITY_MIN_FREE_STORAGE_MB` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `POCKETLAB_SECURITY_MIN_MEMORY_AVAILABLE_PERCENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `POCKETLAB_SECURITY_PROCESS_MAX_CONCURRENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py |
 | `POCKETLAB_SECURITY_PROGRESS_MAX_ROWS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py, scripts/dev/check-lite-security-s6-backend-gate-server-phone.sh |
 | `POCKETLAB_SECURITY_PROGRESS_MIN_PER_ACTIVE_RUN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py, scripts/dev/check-lite-security-s6-backend-gate-server-phone.sh |
@@ -771,6 +776,9 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_SECURITY_RETENTION_BATCH_SIZE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
 | `POCKETLAB_SECURITY_RETENTION_MAX_RUNS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
 | `POCKETLAB_SECURITY_RETENTION_MIN_PER_PROFILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
+| `POCKETLAB_SECURITY_THERMAL_PAUSE_C` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `POCKETLAB_SECURITY_TRIVY_DB_MANAGED` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
+| `POCKETLAB_SECURITY_TRIVY_DB_MAX_STALE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `POCKETLAB_SERVER_NODE_ID` | configuration | pocket-lab-lite-server | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py, pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
 | `POCKETLAB_SERVICE_CATEGORY` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py |
 | `POCKETLAB_SKIP_WEB_SERVER` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts |

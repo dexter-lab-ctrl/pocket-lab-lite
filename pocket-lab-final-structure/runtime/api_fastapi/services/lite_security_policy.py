@@ -31,6 +31,7 @@ TIMEOUTS = {
     "trivy_vuln_misconfig": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_TIMEOUT", "420")),
     "trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_SECRET_TIMEOUT", "240")),
     "trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_SBOM_TIMEOUT", "240")),
+    "trivy_db_update": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_DB_UPDATE_TIMEOUT", "300")),
     "overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_OVERALL_TIMEOUT", "900")),
     "full_lynis": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_LYNIS_TIMEOUT", "900")),
     "full_trivy_vuln_misconfig": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_TRIVY_TIMEOUT", "1200")),
@@ -424,6 +425,23 @@ def scan_excludes_for_profile(profile: Any = None) -> dict[str, Any]:
     return quick_scan_excludes()
 
 
+def source_scan_excludes() -> dict[str, Any]:
+    """Canonical source coverage shared by exact Quick/Full source reuse.
+
+    Quick's established exclusions are the less restrictive source contract.
+    Full uses this same contract for the repository root so a successful result
+    can move across profiles without weakening either profile's coverage.
+    """
+
+    return quick_scan_excludes()
+
+
+def app_target_scan_excludes() -> dict[str, Any]:
+    """Canonical selected-App coverage shared by App and Full."""
+
+    return app_scan_excludes()
+
+
 def trivy_skip_args(root: Path, excludes: dict[str, Any] | None = None) -> list[str]:
     _ = root  # kept for future profile-specific absolute allowlist support
     plan = excludes or quick_scan_excludes()
@@ -437,6 +455,14 @@ def trivy_skip_args(root: Path, excludes: dict[str, Any] | None = None) -> list[
 
 def trivy_skip_args_for_profile(root: Path, profile: Any = None) -> list[str]:
     return trivy_skip_args(root, scan_excludes_for_profile(profile))
+
+
+def source_trivy_skip_args(root: Path) -> list[str]:
+    return trivy_skip_args(root, source_scan_excludes())
+
+
+def app_target_trivy_skip_args(root: Path) -> list[str]:
+    return trivy_skip_args(root, app_target_scan_excludes())
 
 
 def build_quick_scan_plan(root: Path | None = None) -> dict[str, Any]:
@@ -728,6 +754,9 @@ SAFE_SCANNER_METADATA_KEYS = {
     "secret_returncode",
     "lynis_returncode",
     "secrets_hidden",
+    # This is a boolean scanner contract, not secret material. Keeping the
+    # mode visible is required for exact cache/checkpoint compatibility.
+    "secret_mode",
 }
 
 

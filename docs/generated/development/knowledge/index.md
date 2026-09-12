@@ -26,14 +26,14 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | glossary | 16 |
 | journey | 24 |
 | limitation | 18 |
-| reason-code | 182 |
+| reason-code | 190 |
 | release | 3 |
 | requirement | 10 |
 | runbook | 5 |
 | runtime-topology | 9 |
 | subject | 207 |
 | table | 73 |
-| test | 220 |
+| test | 221 |
 | threat-boundary | 9 |
 | threat-model | 9 |
 | troubleshooting | 27 |

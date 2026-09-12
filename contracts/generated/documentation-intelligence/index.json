@@ -2083,6 +2083,18 @@
         "user_message": "Sign in before making this change."
       },
       {
+        "code": "battery_policy_threshold",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "A reliable battery reading was at or below the explicitly configured device threshold while discharging.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets were deferred by the configured battery policy."
+      },
+      {
         "code": "claim_verified",
         "domain": "identity",
         "http_status": 403,
@@ -2119,6 +2131,18 @@
         "user_message": "The target agent cannot currently receive the command."
       },
       {
+        "code": "configured_target_budget",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "The configured atomic-target budget was reached after durable checkpoint work.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets can resume in a later Full check."
+      },
+      {
         "code": "csrf_required",
         "domain": "identity",
         "http_status": 403,
@@ -2129,6 +2153,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Refresh the page and try again."
+      },
+      {
+        "code": "deferred_resource_pressure",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "This safety target can resume in a later Full check."
       },
       {
         "code": "diagnostics_not_active",
@@ -2165,6 +2201,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "A matching device or invite already exists."
+      },
+      {
+        "code": "elapsed_budget_exhausted",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "The backend-owned overall scan time budget was exhausted.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The safety check stopped at a durable boundary and can be run again."
       },
       {
         "code": "enterprise_connect_links_retired",
@@ -2741,6 +2789,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Reconnect or rediscover the backup location before continuing."
+      },
+      {
+        "code": "memory_pressure",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "Available memory was below the configured device-specific scan threshold.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets were deferred because memory is constrained."
       },
       {
         "code": "metadata_only",
@@ -3575,6 +3635,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "scanner_intelligence_hard_expired",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Scanner intelligence needs a successful refresh before this target can be checked."
+      },
+      {
         "code": "service_unavailable",
         "domain": "system",
         "http_status": 503,
@@ -3621,6 +3693,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
+      },
+      {
+        "code": "storage_pressure",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "Private free storage was below the backend scan threshold.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets were deferred because private storage is constrained."
       },
       {
         "code": "storage_unavailable",
@@ -3681,6 +3765,18 @@
         "severity": "info",
         "terminal": true,
         "user_message": "Test-only policy bypass."
+      },
+      {
+        "code": "thermal_policy_threshold",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "Reliable device temperature telemetry reached the explicitly configured device threshold.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets were deferred by the configured thermal policy."
       },
       {
         "code": "trusted_local_admin",
@@ -6634,5 +6730,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "0b05dc7d7c5d2c0a8ab8ce9f5a71f6fd0cabcd51535d4afdde50335b020fb1fc"
+  "source_fingerprint": "0b29b61f322f6bb103dd9a975f9942f623a7f16c00536e2b43f255ed6ce7587f"
 }

@@ -26,6 +26,7 @@ _SCHEDULER_ISOLATED_MODULES = {
     "test_lite_idle_efficiency_runtime.py",
     "test_lite_phase3a_apps_recovery_semantic_revisions.py",
     "test_lite_revision_sync_n4_n5.py",
+    "test_lite_security_advanced_optimization.py",
 }
 
 _RELEASE_ISOLATED_MODULES = {

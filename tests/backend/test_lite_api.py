@@ -7256,7 +7256,7 @@ def test_lite_security_app_check_profile_source_contract():
     assert "target-photoprism-route-posture.json" in security
     assert "target-photoprism-trivy.json" in security
     assert "target-{target_id}-sbom.cdx.json" in security
-    assert '"photoprism", "PhotoPrism", policy.SCAN_PROFILE_APP' in security
+    assert '"photoprism_app_files", "PhotoPrism", policy.SCAN_PROFILE_APP' in security
     assert "target-photoprism-config-secret.json" in security
     assert "target-photoprism-backup-metadata.json" in security
     assert "target-photoprism-action-state.json" in security

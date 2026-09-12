@@ -33,13 +33,17 @@ generator_version: 3
 | `authenticated_app_install_exception_scoped` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `authenticated_confirmed_device_removal` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `authentication_required` | identity | A protected write requires an authenticated human session or configured service credential. | warning | yes | no | Sign in before making this change. |
+| `battery_policy_threshold` | security | A reliable battery reading was at or below the explicitly configured device threshold while discharging. | warning | yes | no | The remaining safety targets were deferred by the configured battery policy. |
 | `claim_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `cold_start_validation` | validation | Cold-start validation is in progress. | warning | yes | no | Cold-start validation is in progress. |
 | `command_undeliverable` | devices | The target agent cannot currently receive the command. | warning | yes | no | The target agent cannot currently receive the command. |
+| `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | warning | yes | no | The remaining safety targets can resume in a later Full check. |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | warning | yes | no | Refresh the page and try again. |
+| `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | warning | yes | no | This safety target can resume in a later Full check. |
 | `diagnostics_not_active` | validation | Diagnostics are not active. | warning | yes | no | Diagnostics are not active. |
 | `disabled` | system | The requested capability is disabled. | warning | yes | no | The requested capability is disabled. |
 | `duplicate_device` | devices | A matching device or invite already exists. | warning | yes | no | A matching device or invite already exists. |
+| `elapsed_budget_exhausted` | security | The backend-owned overall scan time budget was exhausted. | warning | yes | no | The safety check stopped at a durable boundary and can be run again. |
 | `enterprise_connect_links_retired` | identity | Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser. | info | no | yes | Ask an Owner or Admin to use Set up passkey for this person. |
 | `enterprise_final_owner_protected` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `enterprise_member_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
@@ -88,6 +92,7 @@ generator_version: 3
 | `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | info | no | no | Pocket Lab is using a compatible device telemetry value. |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `location_not_registered` | recovery | A restore point refers to a backup location that is not currently registered on the protected Server Phone. | warning | yes | no | Reconnect or rediscover the backup location before continuing. |
+| `memory_pressure` | security | Available memory was below the configured device-specific scan threshold. | warning | yes | no | The remaining safety targets were deferred because memory is constrained. |
 | `metadata_only` | validation | Only metadata was evaluated. | warning | yes | no | Only metadata was evaluated. |
 | `no_active_generation` | projections | There is no active generation. | warning | yes | no | There is no active generation. |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | warning | yes | no | The record is not present in the restored snapshot. |
@@ -157,15 +162,18 @@ generator_version: 3
 | `remote_access_not_ready` | devices | Private remote access is not ready. | warning | yes | no | Private remote access is not ready. |
 | `rollback_pointer_failed` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `rollback_unproved` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
+| `scanner_intelligence_hard_expired` | security | Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision. | warning | yes | no | Scanner intelligence needs a successful refresh before this target can be checked. |
 | `service_unavailable` | system | A required backend service is unavailable. | warning | yes | no | A required backend service is unavailable. |
 | `session_not_found` | identity | The requested human session is absent, expired, revoked, or no longer active. | warning | no | yes | That session is no longer active. |
 | `shutdown` | system | The process is shutting down. | warning | yes | no | The process is shutting down. |
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | warning | yes | no | Shutdown occurred while the bounded mailbox was under pressure. |
+| `storage_pressure` | security | Private free storage was below the backend scan threshold. | warning | yes | no | The remaining safety targets were deferred because private storage is constrained. |
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | warning | yes | no | Reconnect this storage or choose another backup location before continuing. |
 | `submit_failed` | system | The work request could not be admitted. | warning | yes | no | The work request could not be admitted. |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | warning | no | yes | The requested target is outside the approved scope. |
 | `target_not_source_checkout` | security | A Security target is not the verified source checkout, so source-checkout result reuse is disabled. | warning | yes | no | This target cannot safely reuse a source-checkout Security result. |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | info | no | yes | Test-only policy bypass. |
+| `thermal_policy_threshold` | security | Reliable device temperature telemetry reached the explicitly configured device threshold. | warning | yes | no | The remaining safety targets were deferred by the configured thermal policy. |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `unregistered_domain` | projections | The requested domain is not registered. | warning | yes | no | The requested domain is not registered. |
 | `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | info | yes | no | This device has not reported that software version yet. |

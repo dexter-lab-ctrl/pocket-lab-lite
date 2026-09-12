@@ -13128,6 +13128,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A reliable battery reading was at or below the explicitly configured device threshold while discharging.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:battery_policy_threshold",
+      "name": "battery_policy_threshold",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred by the configured battery policy."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -13188,6 +13208,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The configured atomic-target budget was reached after durable checkpoint work.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:configured_target_budget",
+      "name": "configured_target_budget",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets can resume in a later Full check."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A human-session write was rejected because its CSRF proof was missing or invalid.",
       "domain": "identity",
       "event_mapping": [],
@@ -13205,6 +13245,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Refresh the page and try again."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:deferred_resource_pressure",
+      "name": "deferred_resource_pressure",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "This safety target can resume in a later Full check."
     },
     {
       "confidence": "source-derived",
@@ -13265,6 +13325,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "A matching device or invite already exists."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The backend-owned overall scan time budget was exhausted.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:elapsed_budget_exhausted",
+      "name": "elapsed_budget_exhausted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The safety check stopped at a durable boundary and can be run again."
     },
     {
       "confidence": "source-derived",
@@ -14231,6 +14311,26 @@
         "Location unavailable"
       ],
       "user_interpretation": "Reconnect or rediscover the backup location before continuing."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Available memory was below the configured device-specific scan threshold.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:memory_pressure",
+      "name": "memory_pressure",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred because memory is constrained."
     },
     {
       "confidence": "source-derived",
@@ -15614,6 +15714,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:scanner_intelligence_hard_expired",
+      "name": "scanner_intelligence_hard_expired",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Scanner intelligence needs a successful refresh before this target can be checked."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A required backend service is unavailable.",
       "domain": "system",
       "event_mapping": [],
@@ -15691,6 +15811,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Shutdown occurred while the bounded mailbox was under pressure."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Private free storage was below the backend scan threshold.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:storage_pressure",
+      "name": "storage_pressure",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred because private storage is constrained."
     },
     {
       "confidence": "source-derived",
@@ -15797,6 +15937,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Test-only policy bypass."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Reliable device temperature telemetry reached the explicitly configured device threshold.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:thermal_policy_threshold",
+      "name": "thermal_policy_threshold",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred by the configured thermal policy."
     },
     {
       "confidence": "source-derived",
@@ -25151,6 +25311,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_advanced_optimization.py",
+      "name": "tests/backend/test_lite_security_advanced_optimization.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_f11_events_contract.py",
       "name": "tests/backend/test_lite_security_f11_events_contract.py",
       "source_refs": [
@@ -29165,8 +29335,16 @@
         "journey:security-scan",
         "limitation:security:accepted-1",
         "limitation:security:gap-1",
+        "reason:battery_policy_threshold",
+        "reason:configured_target_budget",
+        "reason:deferred_resource_pressure",
+        "reason:elapsed_budget_exhausted",
         "reason:identity_unavailable",
+        "reason:memory_pressure",
+        "reason:scanner_intelligence_hard_expired",
+        "reason:storage_pressure",
         "reason:target_not_source_checkout",
+        "reason:thermal_policy_threshold",
         "reason:worker_failed",
         "reason:worker_start_timeout",
         "runbook:rotate_secret_with_audit",
@@ -29325,6 +29503,7 @@
         "test:tests/backend/test_lite_recovery_r3_api_split.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
         "test:tests/backend/test_lite_security.py",
+        "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -29954,13 +30133,17 @@
         "reason:authenticated_app_install_exception_scoped",
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
+        "reason:battery_policy_threshold",
         "reason:claim_verified",
         "reason:cold_start_validation",
         "reason:command_undeliverable",
+        "reason:configured_target_budget",
         "reason:csrf_required",
+        "reason:deferred_resource_pressure",
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
+        "reason:elapsed_budget_exhausted",
         "reason:enterprise_connect_links_retired",
         "reason:enterprise_final_owner_protected",
         "reason:enterprise_member_invalid",
@@ -30009,6 +30192,7 @@
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
         "reason:location_not_registered",
+        "reason:memory_pressure",
         "reason:metadata_only",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
@@ -30078,15 +30262,18 @@
         "reason:remote_access_not_ready",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
+        "reason:scanner_intelligence_hard_expired",
         "reason:service_unavailable",
         "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
+        "reason:storage_pressure",
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
         "reason:target_not_source_checkout",
         "reason:test_bypass_explicit",
+        "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:version_not_reported",
@@ -30534,6 +30721,7 @@
         "test:tests/backend/test_lite_recovery_r3_api_split.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
         "test:tests/backend/test_lite_security.py",
+        "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -34119,6 +34307,12 @@
           "type": "owns"
         }
       ],
+      "reason:battery_policy_threshold": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:claim_verified": [
         {
           "source": "domain:identity",
@@ -34137,9 +34331,21 @@
           "type": "owns"
         }
       ],
+      "reason:configured_target_budget": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:csrf_required": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:deferred_resource_pressure": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -34158,6 +34364,12 @@
       "reason:duplicate_device": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:elapsed_budget_exhausted": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -34446,6 +34658,12 @@
       "reason:location_not_registered": [
         {
           "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
+      "reason:memory_pressure": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -34863,6 +35081,12 @@
           "type": "owns"
         }
       ],
+      "reason:scanner_intelligence_hard_expired": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:service_unavailable": [
         {
           "source": "domain:system",
@@ -34884,6 +35108,12 @@
       "reason:shutdown_during_mailbox_backpressure": [
         {
           "source": "domain:projections",
+          "type": "owns"
+        }
+      ],
+      "reason:storage_pressure": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -34914,6 +35144,12 @@
       "reason:test_bypass_explicit": [
         {
           "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:thermal_policy_threshold": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -38283,6 +38519,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -38295,7 +38535,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:configured_target_budget",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
           "type": "verified_by"
         },
         {
@@ -38308,6 +38556,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:elapsed_budget_exhausted",
           "type": "verified_by"
         },
         {
@@ -38500,6 +38752,10 @@
         },
         {
           "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:memory_pressure",
           "type": "verified_by"
         },
         {
@@ -38779,6 +39035,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:scanner_intelligence_hard_expired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:service_unavailable",
           "type": "verified_by"
         },
@@ -38792,6 +39052,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -38812,6 +39076,10 @@
         },
         {
           "source": "reason:test_bypass_explicit",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:thermal_policy_threshold",
           "type": "verified_by"
         },
         {
@@ -39873,6 +40141,10 @@
         {
           "source": "reason:read_degraded",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_device_lifecycle_idempotency.py": [
@@ -40485,6 +40757,10 @@
         {
           "source": "journey:change-password",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py": [
@@ -40502,6 +40778,10 @@
         },
         {
           "source": "reason:read_degraded",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -40707,6 +40987,10 @@
         {
           "source": "reason:read_degraded",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_revision_sync_n4_n5.py": [
@@ -40722,6 +41006,28 @@
         },
         {
           "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_security_advanced_optimization.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -41141,6 +41447,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_system_health_semantic_revision.py": [
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_termux_runtime_documentation.py": [
         {
           "source": "component:agent-command-executor",
@@ -41544,6 +41856,10 @@
         }
       ],
       "test:tests/backend/test_workflow_projection_process_isolation.py": [
+        {
+          "source": "reason:memory_pressure",
+          "type": "verified_by"
+        },
         {
           "source": "reason:queue_full",
           "type": "verified_by"
@@ -42683,6 +42999,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -42695,7 +43015,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:configured_target_budget",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
           "type": "verified_by"
         },
         {
@@ -42708,6 +43036,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:elapsed_budget_exhausted",
           "type": "verified_by"
         },
         {
@@ -42900,6 +43232,10 @@
         },
         {
           "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:memory_pressure",
           "type": "verified_by"
         },
         {
@@ -43179,6 +43515,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:scanner_intelligence_hard_expired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:service_unavailable",
           "type": "verified_by"
         },
@@ -43192,6 +43532,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -43212,6 +43556,10 @@
         },
         {
           "source": "reason:test_bypass_explicit",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:thermal_policy_threshold",
           "type": "verified_by"
         },
         {
@@ -43493,6 +43841,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -43505,7 +43857,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:configured_target_budget",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
           "type": "verified_by"
         },
         {
@@ -43518,6 +43878,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:elapsed_budget_exhausted",
           "type": "verified_by"
         },
         {
@@ -43710,6 +44074,10 @@
         },
         {
           "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:memory_pressure",
           "type": "verified_by"
         },
         {
@@ -43989,6 +44357,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:scanner_intelligence_hard_expired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:service_unavailable",
           "type": "verified_by"
         },
@@ -44002,6 +44374,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -44022,6 +44398,10 @@
         },
         {
           "source": "reason:test_bypass_explicit",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:thermal_policy_threshold",
           "type": "verified_by"
         },
         {
@@ -50451,6 +50831,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
           "type": "verified_by"
         },
@@ -54813,11 +55197,43 @@
           "type": "owns"
         },
         {
+          "target": "reason:battery_policy_threshold",
+          "type": "owns"
+        },
+        {
+          "target": "reason:configured_target_budget",
+          "type": "owns"
+        },
+        {
+          "target": "reason:deferred_resource_pressure",
+          "type": "owns"
+        },
+        {
+          "target": "reason:elapsed_budget_exhausted",
+          "type": "owns"
+        },
+        {
           "target": "reason:identity_unavailable",
           "type": "owns"
         },
         {
+          "target": "reason:memory_pressure",
+          "type": "owns"
+        },
+        {
+          "target": "reason:scanner_intelligence_hard_expired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:storage_pressure",
+          "type": "owns"
+        },
+        {
           "target": "reason:target_not_source_checkout",
+          "type": "owns"
+        },
+        {
+          "target": "reason:thermal_policy_threshold",
           "type": "owns"
         },
         {
@@ -56807,6 +57223,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:battery_policy_threshold": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:claim_verified": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -56849,6 +57283,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:configured_target_budget": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:csrf_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -56860,6 +57308,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:deferred_resource_pressure": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
           "type": "verified_by"
         },
         {
@@ -56976,6 +57442,20 @@
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
         },
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:elapsed_budget_exhausted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -57415,6 +57895,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s8_cross_process_generation.py",
           "type": "verified_by"
         },
@@ -57615,6 +58099,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s8_recovery.py",
           "type": "verified_by"
         },
@@ -57766,6 +58254,24 @@
       "reason:location_not_registered": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:memory_pressure": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_workflow_projection_process_isolation.py",
           "type": "verified_by"
         },
         {
@@ -58991,6 +59497,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:scanner_intelligence_hard_expired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:service_unavailable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -59091,6 +59611,40 @@
           "type": "verified_by"
         }
       ],
+      "reason:storage_pressure": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_device_health_d4.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health_semantic_revision.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:storage_unavailable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -59152,6 +59706,20 @@
         }
       ],
       "reason:test_bypass_explicit": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:thermal_policy_threshold": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -60101,6 +60669,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:0098379194de87ce",
+      "source": "domain:security",
+      "target": "reason:battery_policy_threshold",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:00b4821f7a8715ee",
@@ -60341,6 +60918,15 @@
       "source": "reason:cold_start_validation",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:01ea5080d150fe8a",
+      "source": "domain:security",
+      "target": "reason:thermal_policy_threshold",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -60843,6 +61429,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:06746952adc36396",
+      "source": "reason:battery_policy_threshold",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:067e179c10723876",
@@ -60875,6 +61470,15 @@
       "id": "rel:0694b8c529b5bcf2",
       "source": "api:post:/api/lite/recovery/maintenance/retention",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:069639fcac9a5b6f",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {
@@ -61264,6 +61868,15 @@
       "source": "domain:devices",
       "target": "api:post:/api/lite/fleet/agent/bootstrap.env",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0abed9cc0fd71fa1",
+      "source": "reason:elapsed_budget_exhausted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -61669,6 +62282,15 @@
       "source": "component:security-coordinator",
       "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:0dd86739739bfe81",
+      "source": "domain:security",
+      "target": "reason:configured_target_budget",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -63775,6 +64397,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1e85d575f918856a",
+      "source": "reason:thermal_policy_threshold",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:1e96cd9ac776ddd0",
@@ -63969,6 +64600,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:203eb9d954dfabfd",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_policy_source_reconciliation.py"
       ],
       "id": "rel:209e1296c3d8abc2",
@@ -64000,6 +64640,15 @@
       ],
       "id": "rel:21401b3dfe734f7f",
       "source": "domain:validation",
+      "target": "test:tests/backend/test_lite_recovery.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_recovery.py"
+      ],
+      "id": "rel:2140c0037b7f895d",
+      "source": "reason:storage_pressure",
       "target": "test:tests/backend/test_lite_recovery.py",
       "type": "verified_by"
     },
@@ -64257,6 +64906,15 @@
       "id": "rel:23bfd1b60d8add78",
       "source": "reason:owner_claim_authority_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:23c30174e69e6fd8",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {
@@ -65086,6 +65744,15 @@
       "id": "rel:29b9309ce727d318",
       "source": "component:photoprism",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_device_health_d4.py"
+      ],
+      "id": "rel:29bb253193ba6fb6",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/backend/test_lite_device_health_d4.py",
       "type": "verified_by"
     },
     {
@@ -68912,6 +69579,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:48861d61c3bb4dc2",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:489cc631a8deb0dc",
@@ -69263,6 +69939,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:4b7323764320175c",
+      "source": "reason:configured_target_budget",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:4b78d400adf4fcf3",
@@ -69476,6 +70161,15 @@
       "source": "reason:invalid_domain",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4d42ac5e13eb6dcf",
+      "source": "domain:security",
+      "target": "reason:deferred_resource_pressure",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -70032,6 +70726,15 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "table:device_recovery_history",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_workflow_projection_process_isolation.py"
+      ],
+      "id": "rel:522feba8b16fb680",
+      "source": "reason:memory_pressure",
+      "target": "test:tests/backend/test_workflow_projection_process_isolation.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -70607,6 +71310,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:57d72a9b2da03c19",
+      "source": "reason:elapsed_budget_exhausted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:57e2f0e9062361ec",
@@ -71012,6 +71724,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:5ac3dc28df431591",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_app_catalog_runtime_truth.py"
       ],
       "id": "rel:5ac8cf4b11615aaa",
@@ -71280,6 +72001,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:5d2e96a9f9bc69f2",
+      "source": "reason:configured_target_budget",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:5d31b86ca528f46e",
@@ -71348,6 +72078,15 @@
       "id": "rel:5dbb693d29961e5c",
       "source": "reason:owner_approval_policy_inconsistent",
       "target": "test:tests/backend/test_lite_policy_approvals_p3_1.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_phase3c_system_aggregates.py"
+      ],
+      "id": "rel:5dd2eea96cbc86e4",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
       "type": "verified_by"
     },
     {
@@ -71586,6 +72325,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:60540dcf4bd20512",
+      "source": "reason:thermal_policy_threshold",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:607a2b761cf562ce",
@@ -71600,6 +72348,15 @@
       "id": "rel:608831b926b1afab",
       "source": "reason:passkey_step_up_satisfied",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:608fa4a767ce6654",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {
@@ -71682,6 +72439,15 @@
       "source": "domain:rules",
       "target": "reason:policy_source_validation_unavailable",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:61ab8a1823ffce48",
+      "source": "reason:scanner_intelligence_hard_expired",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -73237,6 +74003,15 @@
       "source": "component:app-workflow-state",
       "target": "component:sqlite",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_system_health_semantic_revision.py"
+      ],
+      "id": "rel:6eddce2de38ac735",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/backend/test_lite_system_health_semantic_revision.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -75396,6 +76171,15 @@
       "id": "rel:80f7b1680a06c613",
       "source": "reason:protected_server_host",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:80fc3af95b5d1dab",
+      "source": "reason:deferred_resource_pressure",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -79028,6 +79812,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a1603d1ca75cdc85",
+      "source": "domain:security",
+      "target": "reason:storage_pressure",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_device_removal_invite_reconciliation.py"
       ],
       "id": "rel:a160f37508a377b2",
@@ -80664,6 +81457,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:aee3342456ec9efc",
+      "source": "reason:scanner_intelligence_hard_expired",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:aee6442a2d9ca690",
@@ -81175,6 +81977,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:b3958d4bbbfc417b",
+      "source": "reason:battery_policy_threshold",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_system_profile.py"
       ],
       "id": "rel:b39602547b90add2",
@@ -81416,6 +82227,15 @@
       "id": "rel:b61401cbfc70d664",
       "source": "reason:policy_unavailable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:b61dec2f01629f2a",
+      "source": "reason:memory_pressure",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -82225,6 +83045,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:bd94515fb407c9d0",
+      "source": "reason:deferred_resource_pressure",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:bddfb555e872d277",
@@ -82728,6 +83557,15 @@
       "source": "domain:recovery",
       "target": "api:get:/api/lite/recovery/restore/checkpoints/{checkpoint_id}",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:c256499a3de55d72",
+      "source": "reason:memory_pressure",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -83318,6 +84156,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:c8e2eaf13af9fa04",
+      "source": "reason:deferred_resource_pressure",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:548"
       ],
       "id": "rel:c8e69e4d0d5a086d",
@@ -83444,6 +84291,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:c97086629db66a4b",
+      "source": "reason:elapsed_budget_exhausted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:c99a3940174d7943",
@@ -83522,6 +84378,15 @@
       "source": "journey:remove-old-device",
       "target": "api:post:/api/lite/fleet/remove-device",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ca4313a5befdff71",
+      "source": "domain:security",
+      "target": "reason:scanner_intelligence_hard_expired",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -83986,11 +84851,29 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:cd960a56329cddce",
+      "source": "reason:thermal_policy_threshold",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_control_plane_sqlite_p3.py"
       ],
       "id": "rel:cda621829730ff9f",
       "source": "component:lite-api",
       "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:cdb2172bf41a15da",
+      "source": "reason:battery_policy_threshold",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -84755,6 +85638,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:d40e9d3a1bf14c76",
+      "source": "reason:configured_target_budget",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:d4101e352c14fb1c",
@@ -85377,6 +86269,15 @@
       "source": "journey:security-review",
       "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:d8db2b18f77f8d54",
+      "source": "domain:security",
+      "target": "reason:elapsed_budget_exhausted",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -86108,6 +87009,15 @@
       "source": "component:invite-state",
       "target": "component:sqlite",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:de7b422d47e95f11",
+      "source": "reason:deferred_resource_pressure",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -86965,6 +87875,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e651434900050718",
+      "source": "reason:memory_pressure",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:e65aa20134a5d343",
@@ -87554,6 +88473,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:eb07d5f1b6a8af8a",
+      "source": "reason:battery_policy_threshold",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:eb3f7e84ca5e70e7",
@@ -87786,6 +88714,15 @@
       "source": "component:proot-ubuntu",
       "target": "threat-model:application-container",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ed06799938f49fb9",
+      "source": "domain:security",
+      "target": "reason:memory_pressure",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -88707,6 +89644,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f4b4521058f6b761",
+      "source": "reason:scanner_intelligence_hard_expired",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:f4bc2eaf4ddb3741",
@@ -89286,6 +90232,15 @@
       "id": "rel:f9164b2b8c199264",
       "source": "api:get:/ready",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
+      ],
+      "id": "rel:f919b4a3d18bbf7f",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
       "type": "verified_by"
     },
     {
@@ -89938,9 +90893,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "25a4185f3ac167ef3d995146f6e34c4f97d72cb0ac835b0b78054e6e7c59062c",
+  "source_fingerprint": "0496d1cda7d641a3cbdbbe4c4e208672711544bc0458b69cd82f70df66906b44",
   "statistics": {
-    "entity_count": 1177,
+    "entity_count": 1186,
     "entity_type_counts": {
       "adr": 6,
       "api": 199,
@@ -89950,21 +90905,21 @@
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 182,
+      "reason-code": 190,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 207,
       "table": 73,
-      "test": 220,
+      "test": 221,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3291,
-    "source_count": 257
+    "relation_count": 3334,
+    "source_count": 258
   }
 }

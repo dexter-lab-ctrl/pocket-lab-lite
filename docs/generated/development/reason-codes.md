@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 60550c0e7e6cfb2f4a05dd18d7d22243bd8d2f96eade3371cc7ef9ff2e868b25
+source_fingerprint: f26ce6adf232a5050f62550d940d042da05bed85b7de51d3944895816b982ed4
 schema_revision: 1
 validation_status: generated
 ---
@@ -41,13 +41,17 @@ validation_status: generated
 | `authenticated_app_install_exception_scoped` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `authenticated_confirmed_device_removal` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `authentication_required` | identity | A protected write requires an authenticated human session or configured service credential. | yes | no | 401 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `battery_policy_threshold` | security | A reliable battery reading was at or below the explicitly configured device threshold while discharging. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `claim_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `cold_start_validation` | validation | Cold-start validation is in progress. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `command_undeliverable` | devices | The target agent cannot currently receive the command. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | yes | no | 403 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `diagnostics_not_active` | validation | Diagnostics are not active. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `disabled` | system | The requested capability is disabled. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `duplicate_device` | devices | A matching device or invite already exists. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `elapsed_budget_exhausted` | security | The backend-owned overall scan time budget was exhausted. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `enterprise_connect_links_retired` | identity | Legacy Enterprise person connect-link enrollment is retired. Pocket Lab uses authorized managed WebAuthn enrollment and does not expose a person enrollment token to the browser. | no | yes | 410 | info | pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py |
 | `enterprise_final_owner_protected` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_member_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
@@ -96,6 +100,7 @@ validation_status: generated
 | `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | no | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `location_not_registered` | recovery | A restore point refers to a backup location that is not currently registered on the protected Server Phone. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `memory_pressure` | security | Available memory was below the configured device-specific scan threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `metadata_only` | validation | Only metadata was evaluated. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `no_active_generation` | projections | There is no active generation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -165,15 +170,18 @@ validation_status: generated
 | `remote_access_not_ready` | devices | Private remote access is not ready. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `rollback_pointer_failed` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `rollback_unproved` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `scanner_intelligence_hard_expired` | security | Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `service_unavailable` | system | A required backend service is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `session_not_found` | identity | The requested human session is absent, expired, revoked, or no longer active. | no | yes | 404 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `shutdown` | system | The process is shutting down. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `storage_pressure` | security | Private free storage was below the backend scan threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `submit_failed` | system | The work request could not be admitted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | no | yes | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `target_not_source_checkout` | security | A Security target is not the verified source checkout, so source-checkout result reuse is disabled. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | no | yes | 200 | info | structured reason/failure fields in Lite backend or contracts metadata |
+| `thermal_policy_threshold` | security | Reliable device temperature telemetry reached the explicitly configured device threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | yes | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
