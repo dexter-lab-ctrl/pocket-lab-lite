@@ -3355,6 +3355,18 @@
           "type": "owns"
         }
       ],
+      "reason:battery_policy_threshold": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:checkpoint_ineligible": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:claim_verified": [
         {
           "source": "domain:identity",
@@ -3373,9 +3385,21 @@
           "type": "owns"
         }
       ],
+      "reason:configured_target_budget": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:csrf_required": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:deferred_resource_pressure": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -3394,6 +3418,12 @@
       "reason:duplicate_device": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:elapsed_budget_exhausted": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -3682,6 +3712,12 @@
       "reason:location_not_registered": [
         {
           "source": "domain:recovery",
+          "type": "owns"
+        }
+      ],
+      "reason:memory_pressure": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -4099,6 +4135,12 @@
           "type": "owns"
         }
       ],
+      "reason:scanner_intelligence_hard_expired": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:service_unavailable": [
         {
           "source": "domain:system",
@@ -4120,6 +4162,12 @@
       "reason:shutdown_during_mailbox_backpressure": [
         {
           "source": "domain:projections",
+          "type": "owns"
+        }
+      ],
+      "reason:storage_pressure": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -4147,9 +4195,27 @@
           "type": "owns"
         }
       ],
+      "reason:telemetry_age_unknown": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:telemetry_stale": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:test_bypass_explicit": [
         {
           "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:thermal_policy_threshold": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -7519,6 +7585,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:checkpoint_ineligible",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -7531,7 +7605,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:configured_target_budget",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
           "type": "verified_by"
         },
         {
@@ -7544,6 +7626,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:elapsed_budget_exhausted",
           "type": "verified_by"
         },
         {
@@ -7736,6 +7822,10 @@
         },
         {
           "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:memory_pressure",
           "type": "verified_by"
         },
         {
@@ -8015,6 +8105,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:scanner_intelligence_hard_expired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:service_unavailable",
           "type": "verified_by"
         },
@@ -8028,6 +8122,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -8047,7 +8145,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:test_bypass_explicit",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:thermal_policy_threshold",
           "type": "verified_by"
         },
         {
@@ -9109,6 +9219,10 @@
         {
           "source": "reason:read_degraded",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_device_lifecycle_idempotency.py": [
@@ -9721,6 +9835,10 @@
         {
           "source": "journey:change-password",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py": [
@@ -9738,6 +9856,10 @@
         },
         {
           "source": "reason:read_degraded",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -9943,6 +10065,10 @@
         {
           "source": "reason:read_degraded",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_revision_sync_n4_n5.py": [
@@ -9958,6 +10084,36 @@
         },
         {
           "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_security_advanced_optimization.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
           "type": "verified_by"
         }
       ],
@@ -10377,6 +10533,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_system_health_semantic_revision.py": [
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_termux_runtime_documentation.py": [
         {
           "source": "component:agent-command-executor",
@@ -10780,6 +10942,10 @@
         }
       ],
       "test:tests/backend/test_workflow_projection_process_isolation.py": [
+        {
+          "source": "reason:memory_pressure",
+          "type": "verified_by"
+        },
         {
           "source": "reason:queue_full",
           "type": "verified_by"
@@ -11919,6 +12085,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:checkpoint_ineligible",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -11931,7 +12105,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:configured_target_budget",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
           "type": "verified_by"
         },
         {
@@ -11944,6 +12126,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:elapsed_budget_exhausted",
           "type": "verified_by"
         },
         {
@@ -12136,6 +12322,10 @@
         },
         {
           "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:memory_pressure",
           "type": "verified_by"
         },
         {
@@ -12415,6 +12605,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:scanner_intelligence_hard_expired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:service_unavailable",
           "type": "verified_by"
         },
@@ -12428,6 +12622,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -12447,7 +12645,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:test_bypass_explicit",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:thermal_policy_threshold",
           "type": "verified_by"
         },
         {
@@ -12729,6 +12939,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:checkpoint_ineligible",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -12741,7 +12959,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:configured_target_budget",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:deferred_resource_pressure",
           "type": "verified_by"
         },
         {
@@ -12754,6 +12980,10 @@
         },
         {
           "source": "reason:duplicate_device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:elapsed_budget_exhausted",
           "type": "verified_by"
         },
         {
@@ -12946,6 +13176,10 @@
         },
         {
           "source": "reason:location_not_registered",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:memory_pressure",
           "type": "verified_by"
         },
         {
@@ -13225,6 +13459,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:scanner_intelligence_hard_expired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:service_unavailable",
           "type": "verified_by"
         },
@@ -13238,6 +13476,10 @@
         },
         {
           "source": "reason:shutdown_during_mailbox_backpressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
           "type": "verified_by"
         },
         {
@@ -13257,7 +13499,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:test_bypass_explicit",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:thermal_policy_threshold",
           "type": "verified_by"
         },
         {
@@ -19687,6 +19941,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
           "type": "verified_by"
         },
@@ -24049,11 +24307,55 @@
           "type": "owns"
         },
         {
+          "target": "reason:battery_policy_threshold",
+          "type": "owns"
+        },
+        {
+          "target": "reason:checkpoint_ineligible",
+          "type": "owns"
+        },
+        {
+          "target": "reason:configured_target_budget",
+          "type": "owns"
+        },
+        {
+          "target": "reason:deferred_resource_pressure",
+          "type": "owns"
+        },
+        {
+          "target": "reason:elapsed_budget_exhausted",
+          "type": "owns"
+        },
+        {
           "target": "reason:identity_unavailable",
           "type": "owns"
         },
         {
+          "target": "reason:memory_pressure",
+          "type": "owns"
+        },
+        {
+          "target": "reason:scanner_intelligence_hard_expired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:storage_pressure",
+          "type": "owns"
+        },
+        {
           "target": "reason:target_not_source_checkout",
+          "type": "owns"
+        },
+        {
+          "target": "reason:telemetry_age_unknown",
+          "type": "owns"
+        },
+        {
+          "target": "reason:telemetry_stale",
+          "type": "owns"
+        },
+        {
+          "target": "reason:thermal_policy_threshold",
           "type": "owns"
         },
         {
@@ -26043,6 +26345,38 @@
           "type": "verified_by"
         }
       ],
+      "reason:battery_policy_threshold": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:checkpoint_ineligible": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:claim_verified": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -26085,6 +26419,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:configured_target_budget": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:csrf_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -26096,6 +26444,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:deferred_resource_pressure": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
           "type": "verified_by"
         },
         {
@@ -26212,6 +26578,20 @@
           "target": "test:tests/backend/test_lite_api.py",
           "type": "verified_by"
         },
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:elapsed_budget_exhausted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -26651,6 +27031,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s8_cross_process_generation.py",
           "type": "verified_by"
         },
@@ -26851,6 +27235,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s8_recovery.py",
           "type": "verified_by"
         },
@@ -27002,6 +27390,24 @@
       "reason:location_not_registered": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:memory_pressure": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_workflow_projection_process_isolation.py",
           "type": "verified_by"
         },
         {
@@ -28227,6 +28633,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:scanner_intelligence_hard_expired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:service_unavailable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28327,6 +28747,40 @@
           "type": "verified_by"
         }
       ],
+      "reason:storage_pressure": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_device_health_d4.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health_semantic_revision.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:storage_unavailable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28387,7 +28841,57 @@
           "type": "verified_by"
         }
       ],
+      "reason:telemetry_age_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:telemetry_stale": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:test_bypass_explicit": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:thermal_policy_threshold": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -29281,6 +29785,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "25a4185f3ac167ef3d995146f6e34c4f97d72cb0ac835b0b78054e6e7c59062c"
+    "source_fingerprint": "39fc1a068ddf558002bd1f875ec870244f35e6250f7919baa25fd7e4b8be5992"
   }
 }

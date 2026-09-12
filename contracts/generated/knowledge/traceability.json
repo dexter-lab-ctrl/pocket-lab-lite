@@ -2710,6 +2710,7 @@
         "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
         "test:tests/backend/test_lite_security.py",
+        "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
@@ -4065,6 +4066,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "25a4185f3ac167ef3d995146f6e34c4f97d72cb0ac835b0b78054e6e7c59062c"
+    "source_fingerprint": "39fc1a068ddf558002bd1f875ec870244f35e6250f7919baa25fd7e4b8be5992"
   }
 }

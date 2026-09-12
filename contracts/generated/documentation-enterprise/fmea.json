@@ -45,14 +45,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -132,14 +132,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -166,14 +166,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -332,14 +332,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -474,14 +474,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -601,14 +601,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -738,14 +738,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -798,13 +798,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "policy_unavailable",
+        "battery_policy_threshold",
         "generic_policy_toggle_retired",
         "identity_unavailable",
         "owner_approval_policy_inconsistent",
         "policy_action_not_registered",
         "policy_activation_in_progress",
-        "policy_activation_not_uncertain",
-        "policy_activation_pending"
+        "policy_activation_not_uncertain"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -831,14 +831,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
         "generic_policy_toggle_retired",
         "human_session_required",
         "identity_unavailable",
         "owner_approval_policy_inconsistent",
         "policy_action_not_registered",
         "policy_activation_in_progress",
-        "policy_activation_not_uncertain",
-        "policy_activation_pending"
+        "policy_activation_not_uncertain"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -924,14 +924,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "battery_policy_threshold",
+        "checkpoint_ineligible",
+        "configured_target_budget",
+        "deferred_resource_pressure",
+        "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required",
-        "harness_transport_rejected",
-        "identity_unavailable",
-        "legacy_telemetry_value",
-        "owner_approval_policy_inconsistent"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -1035,7 +1035,9 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "scanner_intelligence_hard_expired"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
       "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",

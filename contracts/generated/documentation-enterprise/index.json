@@ -14663,7 +14663,8 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
-          "tests/backend/test_lite_security.py"
+          "tests/backend/test_lite_security.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -15679,6 +15680,29 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_LITE_SECURITY_TRIVY_DB_UPDATE_TIMEOUT",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -22741,6 +22765,31 @@
       },
       {
         "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_BATTERY_PAUSE_PERCENT",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI"
         ],
         "affects_release": true,
@@ -22759,6 +22808,79 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_MAX_ATOMIC_TARGETS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_MIN_FREE_STORAGE_MB",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_MIN_MEMORY_AVAILABLE_PERCENT",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -23128,6 +23250,106 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py",
           "tests/backend/test_lite_security_s8_recovery.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_THERMAL_PAUSE_C",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_TRIVY_DB_MANAGED",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_TRIVY_DB_MAX_STALE_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -35094,14 +35316,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35181,14 +35403,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35215,14 +35437,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35381,14 +35603,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35523,14 +35745,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35650,14 +35872,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35787,14 +36009,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35847,13 +36069,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "policy_unavailable",
+          "battery_policy_threshold",
           "generic_policy_toggle_retired",
           "identity_unavailable",
           "owner_approval_policy_inconsistent",
           "policy_action_not_registered",
           "policy_activation_in_progress",
-          "policy_activation_not_uncertain",
-          "policy_activation_pending"
+          "policy_activation_not_uncertain"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35880,14 +36102,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
           "generic_policy_toggle_retired",
           "human_session_required",
           "identity_unavailable",
           "owner_approval_policy_inconsistent",
           "policy_action_not_registered",
           "policy_activation_in_progress",
-          "policy_activation_not_uncertain",
-          "policy_activation_pending"
+          "policy_activation_not_uncertain"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35973,14 +36195,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "battery_policy_threshold",
+          "checkpoint_ineligible",
+          "configured_target_budget",
+          "deferred_resource_pressure",
+          "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required",
-          "harness_transport_rejected",
-          "identity_unavailable",
-          "legacy_telemetry_value",
-          "owner_approval_policy_inconsistent"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -36084,7 +36306,9 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "scanner_intelligence_hard_expired"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
         "severity_definition": "a bounded capability can degrade while core control-plane safety remains intact",
@@ -40335,9 +40559,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "95c8279ba76c6547389503b6bba8387755ab1ce3eb313949054dc937d1f76afd",
-        "documentation": "c5cb6c3c266d02810987ec9f0f08b2e085ce2427fc4fa9ca5b7352a69f631ef3",
+        "documentation": "a84b7464780655e57279071a4a05661475ba1115f1b9a99a6f28bcda342bec86",
         "openapi": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-        "operational_health": "1849be162e0721d25e137005311c1711ca9a66ff2b387b33e7b1d6e440a37195"
+        "operational_health": "f628c977473d9470baaaed571d8d477393c6a45f05a1f09b3965e226f7c7a638"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -107332,5 +107556,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "0e1bfbfe9fc2debdd0a3427243fbce9a6b5cf8083ea1e62a4df7120f5650ff13"
+  "source_fingerprint": "be5a94eeb3f75115544195616b8ace46e015292b69fde96df7d6eef0b340b831"
 }

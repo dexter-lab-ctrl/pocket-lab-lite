@@ -31,6 +31,7 @@ from .workload_admission import WORKLOADS, WORKLOAD_ADMISSION
 from . import lite_security_policy as policy
 from .process_runtime import PROCESS_RUNTIME
 from . import lite_security_generation
+from . import lite_security_optimization as optimization
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -2129,11 +2130,14 @@ def recover_security_progress_generation_at_startup(
     marker_status = str(inspected.get("status") or "invalid")
     marker = inspected.get("marker") if isinstance(inspected.get("marker"), dict) else {}
     current = _current_progress_generation_identity(repo)
+    # A scan legitimately advances the run id and SQLite/domain revision after
+    # the marker is published. The durable database instance id is the
+    # promotion fence: it rotates only when a different SQLite database is
+    # installed (for example, after restore). Treating ordinary scan progress
+    # as marker drift makes every worker initialization republish the marker
+    # and leaves API Progress reads fail-closed at 503 indefinitely.
     marker_matches = bool(
         marker
-        and str(marker.get("run_id") or "") == current["run_id"]
-        and max(0, int(marker.get("sqlite_revision") or 0))
-        == current["sqlite_revision"]
         and str(marker.get("database_instance_id") or "")
         == current["database_instance_id"]
     )
@@ -2203,14 +2207,8 @@ def _observe_durable_security_progress_generation() -> None:
 
         repo = _security_repository()
         current = _current_progress_generation_identity(repo)
-        expected_run_id = str(marker.get("run_id") or "")
-        expected_revision = max(0, int(marker.get("sqlite_revision") or 0))
         expected_database = str(marker.get("database_instance_id") or "")
-        if (
-            current["run_id"] != expected_run_id
-            or current["sqlite_revision"] != expected_revision
-            or current["database_instance_id"] != expected_database
-        ):
+        if current["database_instance_id"] != expected_database:
             raise SecurityProgressGenerationUnavailable(
                 "Durable Security progress generation did not match promoted SQLite"
             )
@@ -4990,9 +4988,9 @@ def execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[dict[s
     posture_status = str((tool_results.get("config_posture") or {}).get("status") or "").lower()
 
     def tool_state(status: str) -> str:
-        if status in {"completed", "reused"}:
+        if status in {"completed", "reused", "resumed"}:
             return "completed"
-        if status in {"timed_out", "missing_tool", "partial", "skipped", "skipped_overall_budget"}:
+        if status in {"timed_out", "missing_tool", "partial", "skipped", "skipped_overall_budget", "deferred_resource_pressure"}:
             return "review"
         if status in {"failed", "error"}:
             return "failed"
@@ -5269,7 +5267,7 @@ def _trivy_base_args(root: Path) -> list[str]:
     return args
 
 
-_SECURITY_TARGET_CACHE_SCHEMA = 1
+_SECURITY_TARGET_CACHE_SCHEMA = 2
 _SECURITY_TARGET_CACHE_MAX_FINDINGS = 250
 
 
@@ -5497,6 +5495,55 @@ def _trivy_version_identity(trivy: str, root: Path) -> str | None:
     return None
 
 
+def _trivy_executable_identity(trivy: str) -> str | None:
+    """Hash the scanner artifact, including Lite's managed exec wrapper target."""
+
+    def file_digest(candidate: Path) -> str | None:
+        try:
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_file() or resolved.stat().st_size > 512 * 1024 * 1024:
+                return None
+            hasher = hashlib.sha256()
+            hasher.update(
+                f"{resolved.stat().st_mode & 0o7777}:{resolved.stat().st_size}\n".encode(
+                    "ascii"
+                )
+            )
+            with resolved.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    hasher.update(chunk)
+            return "sha256:" + hasher.hexdigest()
+        except OSError:
+            return None
+
+    try:
+        wrapper = Path(trivy).expanduser().resolve(strict=True)
+        wrapper_revision = file_digest(wrapper)
+        if not wrapper_revision:
+            return None
+        material: dict[str, Any] = {"command": wrapper_revision}
+        if wrapper.stat().st_size <= 32 * 1024:
+            prefix = wrapper.read_bytes()
+            if prefix.startswith(b"#!"):
+                text = prefix.decode("utf-8", errors="replace")
+                match = re.search(
+                    r"^\s*exec\s+['\"]([^'\"]+)['\"]\s+['\"]?\$@",
+                    text,
+                    flags=re.MULTILINE,
+                )
+                if match:
+                    managed = Path(match.group(1)).expanduser()
+                    if not managed.is_absolute():
+                        return None
+                    managed_revision = file_digest(managed)
+                    if not managed_revision:
+                        return None
+                    material["managed_exec"] = managed_revision
+        return _security_cache_digest(material)
+    except (OSError, ValueError):
+        return None
+
+
 def _trivy_database_candidates() -> list[Path]:
     candidates: list[Path] = []
     configured = os.environ.get("TRIVY_CACHE_DIR", "").strip()
@@ -5523,8 +5570,8 @@ def _trivy_database_candidates() -> list[Path]:
     return unique
 
 
-def _trivy_database_identity() -> dict[str, Any] | None:
-    """Return a valid DB identity; expired or incomplete metadata is a miss."""
+def _trivy_database_status() -> dict[str, Any]:
+    """Inspect scanner intelligence without treating stale data as reusable."""
     now = datetime.now(timezone.utc)
     for candidate in _trivy_database_candidates():
         try:
@@ -5536,7 +5583,7 @@ def _trivy_database_identity() -> dict[str, Any] | None:
             version = str(payload.get("Version") or payload.get("version") or "").strip()
             updated_at = _parse_iso_timestamp(payload.get("UpdatedAt") or payload.get("updated_at"))
             next_update = _parse_iso_timestamp(payload.get("NextUpdate") or payload.get("next_update"))
-            if not version or not updated_at or not next_update or next_update <= now:
+            if not version or not updated_at or not next_update:
                 continue
             material = {
                 "version": version,
@@ -5544,15 +5591,139 @@ def _trivy_database_identity() -> dict[str, Any] | None:
                 "next_update": next_update.isoformat(),
                 "downloaded_at": str(payload.get("DownloadedAt") or payload.get("downloaded_at") or ""),
             }
-            return {
+            return policy.redact_value({
+                "status": "fresh" if next_update > now else "stale",
                 "revision": _security_cache_digest(material),
                 "version": version[:40],
                 "updated_at": updated_at.isoformat(),
                 "valid_until": next_update.isoformat(),
-            }
+                "stale_by_seconds": max(0, int((now - next_update).total_seconds())),
+                "refresh_due": next_update <= now,
+                "metadata_source": "trivy_db_metadata",
+            })
         except (OSError, TypeError, ValueError):
             continue
-    return None
+    return {
+        "status": "unavailable",
+        "revision": None,
+        "version": None,
+        "updated_at": None,
+        "valid_until": None,
+        "stale_by_seconds": None,
+        "refresh_due": True,
+        "metadata_source": "unavailable",
+        "sanitized": True,
+    }
+
+
+def _trivy_database_identity() -> dict[str, Any] | None:
+    """Return only fresh intelligence identity for result reuse."""
+    status = _trivy_database_status()
+    return status if status.get("status") == "fresh" and status.get("revision") else None
+
+
+def _trivy_managed_lifecycle_enabled() -> bool:
+    configured = os.environ.get("POCKETLAB_SECURITY_TRIVY_DB_MANAGED")
+    if configured is not None:
+        return configured.strip().lower() in {"1", "true", "yes", "on"}
+    return "com.termux" in os.environ.get("PREFIX", "")
+
+
+def _trivy_database_max_stale_seconds() -> int:
+    try:
+        configured = int(
+            os.environ.get(
+                "POCKETLAB_SECURITY_TRIVY_DB_MAX_STALE_SECONDS", "259200"
+            )
+        )
+    except (TypeError, ValueError):
+        configured = 259200
+    return max(0, min(configured, 7 * 24 * 60 * 60))
+
+
+def _prepare_trivy_intelligence(trivy: str | None, root: Path) -> dict[str, Any]:
+    """Refresh stale Termux intelligence once before scanner target execution."""
+    scanner_artifact_revision = _trivy_executable_identity(trivy) if trivy else None
+    before_identity = _trivy_database_identity()
+    if before_identity:
+        return policy.redact_value({
+            **before_identity,
+            "scanner_artifact_revision": scanner_artifact_revision,
+            "status": "fresh",
+            "refresh_attempted": False,
+            "scan_db_mode": "skip_update_known_revision",
+            "sanitized": True,
+        })
+    before = _trivy_database_status()
+    maximum_stale_seconds = _trivy_database_max_stale_seconds()
+    managed_lifecycle = _trivy_managed_lifecycle_enabled()
+    stale_by_seconds = before.get("stale_by_seconds")
+    if (
+        managed_lifecycle
+        and before.get("status") == "stale"
+        and stale_by_seconds is not None
+        and int(stale_by_seconds) <= maximum_stale_seconds
+    ):
+        return policy.redact_value({
+            **before,
+            "status": "stale_within_grace",
+            "maximum_stale_seconds": maximum_stale_seconds,
+            "hard_expired": False,
+            "reuse_eligible": True,
+            "refresh_attempted": False,
+            "scan_db_mode": "skip_update_bounded_stale",
+            "scanner_artifact_revision": scanner_artifact_revision,
+            "sanitized": True,
+        })
+    if not trivy or not managed_lifecycle:
+        return policy.redact_value({
+            **before,
+            "maximum_stale_seconds": maximum_stale_seconds,
+            "hard_expired": bool(trivy and managed_lifecycle and before.get("status") == "stale"),
+            "reuse_eligible": False,
+            "scanner_artifact_revision": scanner_artifact_revision,
+            "refresh_attempted": False,
+            "scan_db_mode": "scanner_managed",
+            "sanitized": True,
+        })
+    result = _run_command(
+        [trivy, "image", "--download-db-only"],
+        cwd=root,
+        timeout=_command_timeout("trivy_db_update"),
+    )
+    after = _trivy_database_status()
+    refreshed = bool(result.get("ok") and after.get("status") == "fresh")
+    return policy.redact_value({
+        **after,
+        "scanner_artifact_revision": scanner_artifact_revision,
+        "status": "refreshed" if refreshed else str(after.get("status") or "unavailable"),
+        "maximum_stale_seconds": maximum_stale_seconds,
+        "hard_expired": not refreshed,
+        "reuse_eligible": refreshed,
+        "refresh_attempted": True,
+        "refresh_succeeded": refreshed,
+        "refresh_returncode": result.get("returncode"),
+        "refresh_timed_out": bool(result.get("timed_out")),
+        "scan_db_mode": "skip_update_known_revision" if refreshed else "blocked_stale_intelligence",
+        "sanitized": True,
+    })
+
+
+def _trivy_intelligence_args(intelligence: Mapping[str, Any] | None) -> list[str]:
+    if isinstance(intelligence, Mapping) and intelligence.get("scan_db_mode") in {
+        "skip_update_known_revision",
+        "skip_update_bounded_stale",
+        "blocked_stale_intelligence",
+    }:
+        return ["--skip-db-update"]
+    return []
+
+
+def _trivy_intelligence_blocks_scan(intelligence: Mapping[str, Any] | None) -> bool:
+    return bool(
+        isinstance(intelligence, Mapping)
+        and intelligence.get("scan_db_mode") == "blocked_stale_intelligence"
+    )
 
 
 def _trivy_target_cache_identity(
@@ -5563,25 +5734,79 @@ def _trivy_target_cache_identity(
     scanners: str,
     secret_mode: bool,
     profile: str,
+    target_path: Path | None = None,
+    database_identity: Mapping[str, Any] | None = None,
 ) -> dict[str, Any] | None:
-    """Build a fail-closed identity for a source checkout Trivy target."""
+    """Build a profile-independent identity for an exact reusable target."""
     normalized_profile = policy.normalize_scan_profile(profile)
-    source = _security_git_target_identity(root, profile=normalized_profile)
-    if not source:
+    candidate = (target_path or root).resolve(strict=False)
+    try:
+        is_source_target = candidate == root.resolve()
+    except OSError:
+        return None
+    if is_source_target:
+        contract_id = "pocketlab-source-trivy-v2"
+        compatible_profiles = [policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL]
+        exclusions = policy.source_scan_excludes()
+        skip_args = policy.source_trivy_skip_args(root)
+        target_identity = _security_git_target_identity(
+            root, profile=policy.SCAN_PROFILE_QUICK
+        )
+    elif target_id in {
+        "photoprism_app_files",
+        "photoprism_app_binary",
+        "photoprism_settings",
+    }:
+        contract_id = f"{target_id}-trivy-v2"
+        compatible_profiles = [policy.SCAN_PROFILE_APP, policy.SCAN_PROFILE_FULL]
+        exclusions = policy.app_target_scan_excludes()
+        skip_args = policy.app_target_trivy_skip_args(candidate)
+        target_identity = optimization.path_target_identity(
+            candidate,
+            identity_label=target_id,
+            excluded_patterns=[
+                *(exclusions.get("skip_dirs") or []),
+                *(exclusions.get("skip_files") or []),
+            ],
+        )
+    else:
+        contract_id = f"{target_id}-trivy-full-v2"
+        compatible_profiles = [normalized_profile]
+        exclusions = policy.scan_excludes_for_profile(normalized_profile)
+        skip_args = policy.trivy_skip_args_for_profile(candidate, normalized_profile)
+        target_identity = optimization.path_target_identity(
+            candidate,
+            identity_label=target_id,
+            excluded_patterns=[
+                *(exclusions.get("skip_dirs") or []),
+                *(exclusions.get("skip_files") or []),
+            ],
+        )
+    if not target_identity or normalized_profile not in compatible_profiles:
         return None
     scanner_version = _trivy_version_identity(trivy, root)
     if not scanner_version:
         return None
-    database = _trivy_database_identity()
-    if not database:
+    database = dict(database_identity or _trivy_database_identity() or {})
+    if not database.get("revision") or database.get("status") not in {
+        None,
+        "fresh",
+        "refreshed",
+        "stale_within_grace",
+    }:
         return None
-    exclusions = policy.scan_excludes_for_profile(normalized_profile)
-    skip_args = policy.trivy_skip_args_for_profile(root, normalized_profile)
+    scanner_artifact_revision = str(
+        database.get("scanner_artifact_revision")
+        or _trivy_executable_identity(trivy)
+        or ""
+    )
+    if not scanner_artifact_revision:
+        return None
     policy_revision = _security_cache_digest(
         {
-            "profile": normalized_profile,
+            "contract_id": contract_id,
             "exclusions": exclusions,
-            "normalizer_schema": 1,
+            "normalizer_schema": 2,
         }
     )
     scanner_configuration_revision = _security_cache_digest(
@@ -5592,49 +5817,30 @@ def _trivy_target_cache_identity(
             "scanners": scanners,
             "secret_mode": bool(secret_mode),
             "skip_args": skip_args,
-            "timeouts": {
-                "trivy": _command_timeout(
-                    "full_trivy_vuln_misconfig"
-                    if normalized_profile == policy.SCAN_PROFILE_FULL
-                    else "app_trivy_vuln_misconfig"
-                    if normalized_profile == policy.SCAN_PROFILE_APP
-                    else "trivy_vuln_misconfig"
-                ),
-                "secret": _command_timeout(
-                    "full_trivy_secret"
-                    if normalized_profile == policy.SCAN_PROFILE_FULL
-                    else "app_trivy_secret"
-                    if normalized_profile == policy.SCAN_PROFILE_APP
-                    else "trivy_secret"
-                ),
-                "sbom": _command_timeout(
-                    "full_trivy_sbom"
-                    if normalized_profile == policy.SCAN_PROFILE_FULL
-                    else "app_trivy_sbom"
-                    if normalized_profile == policy.SCAN_PROFILE_APP
-                    else "trivy_sbom"
-                ),
-            },
         }
     )
-    source_commit = str(source.get("commit") or "")
+    source_commit = str(target_identity.get("commit") or "")
     return policy.redact_value(
         {
             "schema": _SECURITY_TARGET_CACHE_SCHEMA,
-            "profile": normalized_profile,
+            "contract_id": contract_id,
+            "compatible_profiles": compatible_profiles,
             "target_id": target_id,
-            "target_fingerprint": _security_cache_digest(source),
-            "source_commit": source_commit,
+            "target_fingerprint": _security_cache_digest(target_identity),
+            **({"source_commit": source_commit} if source_commit else {}),
             "scanner": "trivy",
             "scanner_version": scanner_version,
+            "scanner_artifact_revision": scanner_artifact_revision,
             "scanner_db_revision": database["revision"],
-            "scanner_db_valid_until": database["valid_until"],
+            "scanner_db_valid_until": database.get("valid_until"),
             "policy_revision": policy_revision,
             "exclusion_revision": _security_cache_digest(exclusions),
             "scanner_configuration_revision": scanner_configuration_revision,
             "scanners": scanners,
             "secret_mode": bool(secret_mode),
             "sbom_format": "cyclonedx",
+            "sbom_generator": "trivy",
+            "sbom_schema": 1,
         }
     )
 
@@ -5646,6 +5852,7 @@ def _quick_trivy_cache_identity(
     target_id: str,
     scanners: str,
     secret_mode: bool,
+    database_identity: Mapping[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     return _trivy_target_cache_identity(
         root=root,
@@ -5654,6 +5861,7 @@ def _quick_trivy_cache_identity(
         scanners=scanners,
         secret_mode=secret_mode,
         profile=policy.SCAN_PROFILE_QUICK,
+        database_identity=database_identity,
     )
 
 
@@ -5677,9 +5885,25 @@ def _read_security_target_cache(identity: dict[str, Any]) -> dict[str, Any] | No
             return None
         if payload.get("identity") != identity:
             return None
+        cached_identity = payload.get("identity")
+        if not isinstance(cached_identity, dict):
+            return None
+        if not optimization.cache_identity_is_complete(cached_identity):
+            return None
+        if str(cached_identity.get("scanner_db_revision") or "").lower() in {
+            "unknown",
+            "none",
+            "null",
+        }:
+            return None
         target = payload.get("target")
         findings = payload.get("findings")
-        if not isinstance(target, dict) or target.get("status") != "checked":
+        if (
+            not isinstance(target, dict)
+            or target.get("status") != "checked"
+            or target.get("target_id") != cached_identity.get("target_id")
+            or target.get("tool") != "trivy"
+        ):
             return None
         if not isinstance(findings, list) or len(findings) > _SECURITY_TARGET_CACHE_MAX_FINDINGS:
             return None
@@ -5688,9 +5912,42 @@ def _read_security_target_cache(identity: dict[str, Any]) -> dict[str, Any] | No
         sbom = payload.get("sbom")
         if sbom is not None and not isinstance(sbom, dict):
             return None
+        checkpoint = payload.get("checkpoint")
+        if not isinstance(checkpoint, dict):
+            return None
+        source_run_id = str(checkpoint.get("source_run_id") or "")
+        if (
+            not source_run_id
+            or evidence.safe_run_id(source_run_id) != source_run_id
+            or checkpoint.get("source_profile")
+            not in {
+                policy.SCAN_PROFILE_QUICK,
+                policy.SCAN_PROFILE_FULL,
+                policy.SCAN_PROFILE_APP,
+            }
+            or checkpoint.get("compatibility_digest") != payload.get("identity_digest")
+            or checkpoint.get("resume_eligible") is not True
+            or not isinstance(checkpoint.get("completed_at"), str)
+            or not checkpoint.get("completed_at").strip()
+            or not optimization.durable_evidence_reference(target.get("evidence_ref"))
+        ):
+            return None
         return payload
     except (OSError, TypeError, ValueError):
         return None
+
+
+def _security_cache_provenance(
+    entry: Mapping[str, Any], *, current_profile: str
+) -> dict[str, Any] | None:
+    checkpoint = entry.get("checkpoint") if isinstance(entry.get("checkpoint"), Mapping) else {}
+    source_run_id = str(checkpoint.get("source_run_id") or "")
+    source_run = read_run(source_run_id) if source_run_id else None
+    return optimization.cache_provenance(
+        entry,
+        current_profile=policy.normalize_scan_profile(current_profile),
+        source_run=source_run,
+    )
 
 
 def _cache_safe_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -5712,9 +5969,24 @@ def _write_security_target_cache(
     scanners: str,
     findings: list[dict[str, Any]],
     sbom: dict[str, Any] | None,
+    evidence_ref: str | None = None,
+    run_id: str = "",
+    profile: str = policy.SCAN_PROFILE_QUICK,
 ) -> bool:
     try:
+        if (
+            not str(run_id or "").strip()
+            or not optimization.cache_identity_is_complete(identity)
+            or identity.get("target_id") != target_id
+            or identity.get("scanners") != scanners
+            or not optimization.durable_evidence_ref(run_id, evidence_ref)
+            or not str(identity.get("scanner_db_revision") or "").strip()
+            or str(identity.get("scanner_db_revision") or "").lower()
+            in {"unknown", "none", "null"}
+        ):
+            return False
         path = _security_target_cache_path(identity)
+        safe_findings = _cache_safe_findings(findings)
         evidence.write_json(
             path,
             {
@@ -5727,15 +5999,51 @@ def _write_security_target_cache(
                     "tool": "trivy",
                     "scanners": scanners,
                     "status": "checked",
-                    "finding_count": len(findings),
+                    "finding_count": len(safe_findings),
+                    "evidence_ref": evidence_ref,
                 },
-                "findings": _cache_safe_findings(findings),
+                "findings": safe_findings,
                 "sbom": policy.redact_value(sbom) if isinstance(sbom, dict) else None,
+                "checkpoint": {
+                    "source_run_id": evidence.safe_run_id(run_id) if run_id else None,
+                    "source_profile": policy.normalize_scan_profile(profile),
+                    "completed_at": deps.now_utc_iso(),
+                    "compatibility_digest": _security_cache_digest(identity),
+                    "resume_eligible": True,
+                },
             },
         )
         return True
     except (OSError, TypeError, ValueError):
         _LOGGER.warning("Security target cache write was unavailable")
+        return False
+
+
+def _promote_security_target_cache_checkpoint(
+    *,
+    identity: dict[str, Any],
+    entry: Mapping[str, Any],
+    run_id: str,
+    profile: str,
+) -> bool:
+    """Make a completed run the immediate provenance owner of a cache entry."""
+
+    try:
+        current = _read_security_target_cache(identity)
+        if not current or current.get("identity_digest") != entry.get("identity_digest"):
+            return False
+        promoted = dict(current)
+        promoted["checkpoint"] = {
+            "source_run_id": evidence.safe_run_id(run_id),
+            "source_profile": policy.normalize_scan_profile(profile),
+            "completed_at": deps.now_utc_iso(),
+            "compatibility_digest": _security_cache_digest(identity),
+            "resume_eligible": True,
+        }
+        evidence.write_json(_security_target_cache_path(identity), promoted)
+        return True
+    except (OSError, TypeError, ValueError):
+        _LOGGER.warning("Security target cache checkpoint promotion was unavailable")
         return False
 
 
@@ -5747,9 +6055,18 @@ def _cached_trivy_findings(
     target_label: str,
     scanners: str,
     evidence_name: str,
-) -> tuple[list[dict[str, Any]], str]:
+    current_profile: str,
+    provenance: Mapping[str, Any] | None = None,
+) -> tuple[list[dict[str, Any]], str, dict[str, Any]]:
     cached = entry.get("findings") if isinstance(entry.get("findings"), list) else []
     findings = [policy.redact_value(dict(item)) for item in cached if isinstance(item, dict)]
+    resolved_provenance = (
+        dict(provenance)
+        if isinstance(provenance, Mapping)
+        else _security_cache_provenance(entry, current_profile=current_profile)
+    )
+    if not resolved_provenance:
+        raise ValueError("Security target cache provenance is not eligible")
     ref = _write_target_json(
         run_id,
         evidence_name,
@@ -5758,8 +6075,9 @@ def _cached_trivy_findings(
             "target_label": target_label,
             "tool": "trivy",
             "scanners": scanners,
-            "status": "reused",
+            "status": resolved_provenance["kind"],
             "cache_hit": True,
+            "provenance": resolved_provenance,
             "cache_identity": {
                 "target_fingerprint": entry.get("identity", {}).get("target_fingerprint"),
                 "scanner_version": entry.get("identity", {}).get("scanner_version"),
@@ -5772,7 +6090,7 @@ def _cached_trivy_findings(
     )
     for finding in findings:
         finding["evidence_ref"] = ref
-    return findings, ref
+    return findings, ref, resolved_provenance
 
 
 def _write_cached_sbom(run_id: str, entry: dict[str, Any]) -> str | None:
@@ -5792,10 +6110,14 @@ def _write_cached_target_sbom(
     entry: dict[str, Any],
     target_id: str,
     target_label: str,
+    current_profile: str = policy.SCAN_PROFILE_FULL,
 ) -> dict[str, Any] | None:
     """Materialize a validated cached SBOM under the target's evidence name."""
     sbom = entry.get("sbom")
     if not isinstance(sbom, dict) or not sbom.get("bomFormat"):
+        return None
+    provenance = _security_cache_provenance(entry, current_profile=current_profile)
+    if not provenance:
         return None
     filename = f"target-{target_id}-sbom.cdx.json"
     out = evidence.evidence_dir(run_id) / filename
@@ -5803,21 +6125,30 @@ def _write_cached_target_sbom(
         evidence.write_json(out, policy.redact_value(sbom))
     except (OSError, TypeError, ValueError):
         return None
-    return _full_target_status(
+    result = _full_target_status(
         target_id,
         target_label,
         "sbom",
-        "reused",
+        provenance["kind"],
         elapsed_seconds=0,
         evidence_ref=f"security/evidence/{run_id}/{filename}",
-        summary=f"{target_label} SBOM was safely reused by revision.",
+        summary=f"{target_label} SBOM was safely {provenance['kind']} by exact revision.",
     )
+    result["provenance"] = provenance["kind"]
+    result["cache"] = {"status": "hit", "provenance": provenance}
+    return result
 
 
-def _write_sbom(run_id: str, trivy: str, root: Path) -> str | None:
+def _write_sbom(
+    run_id: str,
+    trivy: str,
+    root: Path,
+    intelligence: Mapping[str, Any] | None = None,
+) -> str | None:
     out = evidence.evidence_dir(run_id) / "sbom.cdx.json"
     args = [trivy, "fs", "--format", "cyclonedx", "--output", str(out)]
-    args.extend(policy.trivy_skip_args(root))
+    args.extend(_trivy_intelligence_args(intelligence))
+    args.extend(policy.source_trivy_skip_args(root))
     args.append(str(root))
     result = _run_command(args, cwd=root, timeout=_command_timeout("trivy_sbom"))
     if result.get("ok") and out.exists():
@@ -5834,9 +6165,10 @@ def _run_quick_trivy_target_job(
     root: Path,
     scanners: str,
     secret_mode: bool,
+    intelligence: Mapping[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any] | None]:
     """Run or safely reuse Quick's combined repository Trivy target."""
-    target_id = "pocketlab_source_quick"
+    target_id = "pocketlab_source"
     target_label = "Pocket Lab Lite"
     evidence_name = "target-pocketlab-quick-trivy.json"
     cache_identity = _quick_trivy_cache_identity(
@@ -5845,42 +6177,77 @@ def _run_quick_trivy_target_job(
         target_id=target_id,
         scanners=scanners,
         secret_mode=secret_mode,
+        database_identity=intelligence,
     )
     cache_entry = _read_security_target_cache(cache_identity) if cache_identity else None
+    cache_rejection_reason: str | None = None
     if cache_entry:
-        findings, ref = _cached_trivy_findings(
-            entry=cache_entry,
-            run_id=run_id,
-            target_id=target_id,
-            target_label=target_label,
-            scanners=scanners,
-            evidence_name=evidence_name,
+        provenance = _security_cache_provenance(
+            cache_entry, current_profile=policy.SCAN_PROFILE_QUICK
         )
-        return findings, {
-            "status": "reused",
+        if provenance:
+            findings, ref, provenance = _cached_trivy_findings(
+                entry=cache_entry,
+                run_id=run_id,
+                target_id=target_id,
+                target_label=target_label,
+                scanners=scanners,
+                evidence_name=evidence_name,
+                current_profile=policy.SCAN_PROFILE_QUICK,
+                provenance=provenance,
+            )
+            return findings, {
+                "status": provenance["kind"],
+                "available": True,
+                "scanners": scanners,
+                "finding_count": len(findings),
+                "sbom_saved": False,
+                "cache": {
+                    "status": "hit",
+                    "target_id": target_id,
+                    "target_fingerprint": cache_identity.get("target_fingerprint"),
+                    "scanner_version": cache_identity.get("scanner_version"),
+                    "scanner_db_revision": cache_identity.get("scanner_db_revision"),
+                    "policy_revision": cache_identity.get("policy_revision"),
+                    "evidence_ref": ref,
+                    "provenance": provenance,
+                },
+            }, {
+                "identity": cache_identity,
+                "entry": cache_entry,
+                "cache_hit": True,
+                "cacheable": True,
+            }
+        cache_entry = None
+        cache_rejection_reason = "checkpoint_ineligible"
+
+    if _trivy_intelligence_blocks_scan(intelligence):
+        ref = _write_target_json(
+            run_id,
+            evidence_name,
+            {
+                "target_id": target_id,
+                "target_label": target_label,
+                "tool": "trivy",
+                "scanners": scanners,
+                "status": "partial",
+                "reason": "scanner_intelligence_hard_expired",
+            },
+        )
+        return [], {
+            "status": "partial",
             "available": True,
             "scanners": scanners,
-            "finding_count": len(findings),
-            "sbom_saved": False,
-            "cache": {
-                "status": "hit",
-                "target_id": target_id,
-                "target_fingerprint": cache_identity.get("target_fingerprint"),
-                "scanner_version": cache_identity.get("scanner_version"),
-                "scanner_db_revision": cache_identity.get("scanner_db_revision"),
-                "policy_revision": cache_identity.get("policy_revision"),
-                "evidence_ref": ref,
-            },
-        }, {
-            "identity": cache_identity,
-            "entry": cache_entry,
-            "cache_hit": True,
-            "cacheable": True,
-        }
+            "finding_count": 0,
+            "elapsed_seconds": 0,
+            "cache": {"status": "unavailable", "reason": "scanner_intelligence_hard_expired"},
+            "evidence_ref": ref,
+        }, None
 
     started = time.monotonic()
     args = [trivy, "fs", "--format", "json", "--scanners", scanners]
-    args.extend(policy.trivy_skip_args_for_profile(root, policy.SCAN_PROFILE_QUICK))
+    args.extend(_trivy_intelligence_args(intelligence))
+    args.extend(policy.source_trivy_skip_args(root))
     args.append(str(root))
     timeout = max(
         _command_timeout("trivy_vuln_misconfig"),
@@ -5915,7 +6282,7 @@ def _run_quick_trivy_target_job(
             "timed_out": bool(result.get("timed_out")),
             "cache": {
                 "status": "miss" if cache_identity else "unavailable",
-                "reason": "entry_not_found" if cache_identity else "identity_unavailable",
+                "reason": cache_rejection_reason or ("entry_not_found" if cache_identity else "identity_unavailable"),
             },
         },
     )
@@ -5937,7 +6304,7 @@ def _run_quick_trivy_target_job(
         "sbom_saved": False,
         "cache": {
             "status": "miss" if cache_identity else "unavailable",
-            "reason": "entry_not_found" if cache_identity else "identity_unavailable",
+            "reason": cache_rejection_reason or ("entry_not_found" if cache_identity else "identity_unavailable"),
             **(
                 {
                     "target_fingerprint": cache_identity.get("target_fingerprint"),
@@ -6129,9 +6496,9 @@ def build_coverage_summary(
         status = str(result.get("status") or "unknown")
         tool_status[str(tool)] = status
         label = str(result.get("label") or result.get("target_label") or tool)
-        if status in {"completed", "checked", "reused"}:
+        if status in {"completed", "checked", "reused", "resumed"}:
             checked_targets.append(label)
-        if status in {"partial", "missing_tool", "skipped_overall_budget", "review"}:
+        if status in {"partial", "missing_tool", "skipped_overall_budget", "review", "deferred_resource_pressure"}:
             partial_targets.append(label)
         if status in {"timed_out"}:
             timed_out_targets.append(label)
@@ -6153,9 +6520,9 @@ def build_coverage_summary(
             continue
         label = str(item.get("target_label") or item.get("label") or _target_label(item.get("target_id")))
         status = str(item.get("status") or "unknown")
-        if status in {"checked", "completed", "reused"}:
+        if status in {"checked", "completed", "reused", "resumed"}:
             checked_targets.append(label)
-        elif status in {"partial", "review"}:
+        elif status in {"partial", "review", "deferred_resource_pressure"}:
             partial_targets.append(label)
         elif status == "timed_out":
             timed_out_targets.append(label)
@@ -6172,6 +6539,8 @@ def build_coverage_summary(
             "finding_count": item.get("finding_count", 0),
             "evidence_ref": item.get("evidence_ref"),
             "summary": item.get("summary"),
+            "provenance": item.get("provenance"),
+            "cache": item.get("cache") if isinstance(item.get("cache"), dict) else None,
         }))
 
     for item in plan.get("selected_targets") or []:
@@ -6219,6 +6588,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run = mark_running(command)
     run_id = str(run["run_id"])
     started = time.monotonic()
+    resource_start = optimization.resource_snapshot()
     root = policy.allowed_scan_root(command.get("scope") or command.get("scan_root"))
     plan = policy.build_quick_scan_plan(root)
     findings: list[dict[str, Any]] = []
@@ -6263,12 +6633,15 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             tool_results["trivy"] = {"status": "missing_tool", "available": False}
         else:
             scanners = "vuln,misconfig,secret"
+            trivy_intelligence = _prepare_trivy_intelligence(trivy, root)
+            tool_results["scanner_intelligence"] = trivy_intelligence
             trivy_findings, trivy_result, cache_context = _run_quick_trivy_target_job(
                 trivy=trivy,
                 run_id=run_id,
                 root=root,
                 scanners=scanners,
                 secret_mode=True,
+                intelligence=trivy_intelligence,
             )
             findings.extend(trivy_findings)
             trivy_partial = trivy_result.get("status") == "partial"
@@ -6277,7 +6650,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             sbom_ref = _write_cached_sbom(run_id, cache_entry) if cache_entry else None
             sbom_cache_hit = bool(sbom_ref)
             if not sbom_ref:
-                sbom_ref = _write_sbom(run_id, trivy, root)
+                sbom_ref = _write_sbom(run_id, trivy, root, trivy_intelligence)
             if sbom_ref:
                 evidence_refs.append(sbom_ref)
             trivy_result["sbom_saved"] = bool(sbom_ref)
@@ -6294,11 +6667,14 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 )
                 stored = _write_security_target_cache(
                     identity=cache_context["identity"],
-                    target_id="pocketlab_source_quick",
+                    target_id="pocketlab_source",
                     target_label="Pocket Lab Lite",
                     scanners=scanners,
                     findings=trivy_findings,
                     sbom=sbom_payload if isinstance(sbom_payload, dict) and sbom_payload else None,
+                    evidence_ref=trivy_result.get("evidence_ref"),
+                    run_id=run_id,
+                    profile=policy.SCAN_PROFILE_QUICK,
                 )
                 if stored:
                     trivy_result.setdefault("cache", {})["stored"] = True
@@ -6316,6 +6692,14 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "status": posture.get("status") or "completed",
         "available": True,
         "finding_count": 0,
+    }
+    tool_results["resource_budget"] = {
+        "status": "completed",
+        "available": True,
+        "decision": "continue",
+        "start": resource_start,
+        "finish": optimization.resource_snapshot(),
+        "process_runtime": PROCESS_RUNTIME.snapshot(),
     }
     run["tool_results"] = tool_results
     run["coverage_summary"] = build_coverage_summary(
@@ -6402,11 +6786,19 @@ def _full_target_status(target_id: str, target_label: str, tool: str, status: st
 
 def _full_target_current_status(run: dict[str, Any], target_id: str, default: str = "pending") -> str:
     for item in run.get("target_statuses") or []:
-        if str((item or {}).get("target_id") or "") == target_id:
+        item_target = str((item or {}).get("target_id") or "")
+        if item_target == target_id or item_target.startswith(f"{target_id}_"):
             status = str((item or {}).get("status") or default)
-            if status in {"checked", "completed", "reused"}:
+            if status in {"checked", "completed", "reused", "resumed"}:
                 return "completed"
-            if status in {"partial", "missing", "timed_out", "review"}:
+            if status in {
+                "partial",
+                "missing",
+                "timed_out",
+                "review",
+                "deferred_resource_pressure",
+                "skipped_overall_budget",
+            }:
                 return "review"
             if status in {"failed", "error"}:
                 return "failed"
@@ -6577,6 +6969,18 @@ def _write_target_json(run_id: str, filename: str, payload: dict[str, Any]) -> s
     return evidence.write_evidence(run_id, filename, policy.redact_value(payload))
 
 
+def _trivy_target_skip_args(target_path: Path, target_id: str, profile: str) -> list[str]:
+    if target_id == "pocketlab_source":
+        return policy.source_trivy_skip_args(target_path)
+    if target_id in {
+        "photoprism_app_files",
+        "photoprism_app_binary",
+        "photoprism_settings",
+    }:
+        return policy.app_target_trivy_skip_args(target_path)
+    return policy.trivy_skip_args_for_profile(target_path, profile)
+
+
 def _run_trivy_target_job(
     *,
     trivy: str | None,
@@ -6590,6 +6994,7 @@ def _run_trivy_target_job(
     secret_mode: bool = False,
     evidence_name: str | None = None,
     use_cache: bool = False,
+    intelligence: Mapping[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any] | None]:
     evidence_name = evidence_name or f"target-{target_id}-trivy-{scanners.replace(',', '-')}.json"
     if not target_path.exists():
@@ -6617,70 +7022,101 @@ def _run_trivy_target_job(
     cache_entry: dict[str, Any] | None = None
     cache_metadata: dict[str, Any] | None = None
     if use_cache:
-        try:
-            is_source_target = target_path.resolve() == root.resolve()
-        except OSError:
-            is_source_target = False
-        if is_source_target:
-            cache_identity = _trivy_target_cache_identity(
-                root=root,
-                trivy=trivy,
-                target_id=target_id,
-                scanners=scanners,
-                secret_mode=secret_mode,
-                profile=profile,
-            )
-            if cache_identity:
-                cache_entry = _read_security_target_cache(cache_identity)
-                cache_metadata = {
-                    "status": "hit" if cache_entry else "miss",
-                    "reason": "entry_not_found" if not cache_entry else "",
-                    "target_fingerprint": cache_identity.get("target_fingerprint"),
-                    "scanner_version": cache_identity.get("scanner_version"),
-                    "scanner_db_revision": cache_identity.get("scanner_db_revision"),
-                    "policy_revision": cache_identity.get("policy_revision"),
-                }
-            else:
-                cache_metadata = {
-                    "status": "unavailable",
-                    "reason": "identity_unavailable",
-                }
+        cache_identity = _trivy_target_cache_identity(
+            root=root,
+            trivy=trivy,
+            target_id=target_id,
+            scanners=scanners,
+            secret_mode=secret_mode,
+            profile=profile,
+            target_path=target_path,
+            database_identity=intelligence,
+        )
+        if cache_identity:
+            cache_entry = _read_security_target_cache(cache_identity)
+            cache_metadata = {
+                "status": "hit" if cache_entry else "miss",
+                "reason": "entry_not_found" if not cache_entry else "",
+                "contract_id": cache_identity.get("contract_id"),
+                "target_fingerprint": cache_identity.get("target_fingerprint"),
+                "scanner_version": cache_identity.get("scanner_version"),
+                "scanner_db_revision": cache_identity.get("scanner_db_revision"),
+                "policy_revision": cache_identity.get("policy_revision"),
+            }
         else:
             cache_metadata = {
                 "status": "unavailable",
-                "reason": "target_not_source_checkout",
+                "reason": "identity_unavailable",
             }
 
     if cache_entry:
-        cached_findings, ref = _cached_trivy_findings(
-            entry=cache_entry,
-            run_id=run_id,
-            target_id=target_id,
-            target_label=target_label,
-            scanners=scanners,
-            evidence_name=evidence_name,
+        provenance = _security_cache_provenance(cache_entry, current_profile=profile)
+        if provenance:
+            cached_findings, ref, provenance = _cached_trivy_findings(
+                entry=cache_entry,
+                run_id=run_id,
+                target_id=target_id,
+                target_label=target_label,
+                scanners=scanners,
+                evidence_name=evidence_name,
+                current_profile=profile,
+                provenance=provenance,
+            )
+            status = _full_target_status(
+                target_id,
+                target_label,
+                "trivy",
+                provenance["kind"],
+                elapsed_seconds=0,
+                finding_count=len(cached_findings),
+                evidence_ref=ref,
+                summary=f"{target_label} Trivy findings were safely {provenance['kind']} by exact revision.",
+            )
+            status["provenance"] = provenance["kind"]
+            status["cache"] = {**(cache_metadata or {}), "cache_hit": True, "provenance": provenance}
+            return cached_findings, status, {
+                "identity": cache_identity,
+                "entry": cache_entry,
+                "cache_hit": True,
+                "cacheable": True,
+                "provenance": provenance,
+            }
+        cache_entry = None
+        if cache_metadata is not None:
+            cache_metadata.update({"status": "miss", "reason": "checkpoint_ineligible"})
+
+    if _trivy_intelligence_blocks_scan(intelligence):
+        ref = _write_target_json(
+            run_id,
+            evidence_name,
+            {
+                "target_id": target_id,
+                "target_label": target_label,
+                "tool": "trivy",
+                "scanners": scanners,
+                "status": "partial",
+                "reason": "scanner_intelligence_hard_expired",
+            },
         )
         status = _full_target_status(
             target_id,
             target_label,
             "trivy",
-            "reused",
+            "partial",
             elapsed_seconds=0,
-            finding_count=len(cached_findings),
             evidence_ref=ref,
-            summary=f"{target_label} Trivy findings were safely reused by revision.",
+            summary=f"{target_label} was not scanned because scanner intelligence exceeded its bounded freshness policy.",
         )
-        status["cache"] = {**(cache_metadata or {}), "cache_hit": True}
-        return cached_findings, status, {
-            "identity": cache_identity,
-            "entry": cache_entry,
-            "cache_hit": True,
-            "cacheable": True,
+        status["cache"] = {
+            "status": "unavailable",
+            "reason": "scanner_intelligence_hard_expired",
         }
+        return [], status, None
 
     started = time.monotonic()
     args = [trivy, "fs", "--format", "json", "--scanners", scanners]
-    args.extend(policy.trivy_skip_args_for_profile(target_path, profile))
+    args.extend(_trivy_intelligence_args(intelligence))
+    args.extend(_trivy_target_skip_args(target_path, target_id, profile))
     args.append(str(target_path))
     result = _run_command(args, cwd=root, timeout=_trivy_timeout_seconds(profile, scanners))
     payload, payload_valid = _load_json_object_text(result.get("stdout") or "")
@@ -6715,6 +7151,9 @@ def _run_trivy_target_job(
             scanners=scanners,
             findings=findings,
             sbom=None,
+            evidence_ref=ref,
+            run_id=run_id,
+            profile=profile,
         )
         if cache_metadata is not None:
             cache_metadata["stored"] = stored
@@ -6723,6 +7162,7 @@ def _run_trivy_target_job(
             "entry": None,
             "cache_hit": False,
             "cacheable": stored,
+            "evidence_ref": ref,
         }
     elif use_cache:
         cache_context = {
@@ -6736,7 +7176,16 @@ def _run_trivy_target_job(
     return findings, target_status, cache_context
 
 
-def _write_target_sbom(trivy: str | None, run_id: str, root: Path, target_path: Path, target_id: str, target_label: str, profile: str) -> dict[str, Any]:
+def _write_target_sbom(
+    trivy: str | None,
+    run_id: str,
+    root: Path,
+    target_path: Path,
+    target_id: str,
+    target_label: str,
+    profile: str,
+    intelligence: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     filename = f"target-{target_id}-sbom.cdx.json"
     if not target_path.exists():
         ref = _write_target_json(run_id, filename, {"target_id": target_id, "target_label": target_label, "tool": "trivy", "status": "missing"})
@@ -6746,7 +7195,8 @@ def _write_target_sbom(trivy: str | None, run_id: str, root: Path, target_path: 
         return _full_target_status(target_id, target_label, "sbom", "partial", evidence_ref=ref, summary="Trivy is not available for SBOM.")
     out = evidence.evidence_dir(run_id) / filename
     args = [trivy, "fs", "--format", "cyclonedx", "--output", str(out)]
-    args.extend(policy.trivy_skip_args_for_profile(target_path, profile))
+    args.extend(_trivy_intelligence_args(intelligence))
+    args.extend(_trivy_target_skip_args(target_path, target_id, profile))
     args.append(str(target_path))
     started = time.monotonic()
     result = _run_command(args, cwd=root, timeout=_command_timeout("full_trivy_sbom" if profile == policy.SCAN_PROFILE_FULL else "app_trivy_sbom" if profile == policy.SCAN_PROFILE_APP else "trivy_sbom"))
@@ -6769,14 +7219,14 @@ def _first_existing(paths: list[Path]) -> Path | None:
     return None
 
 
-def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool, str, str]]:
+def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool, str, str, str]]:
     if not rootfs:
         return []
     app_path = rootfs / "opt/photoprism"
     binary_path = rootfs / "usr/local/bin/photoprism"
-    targets = [(app_path, "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files")]
+    targets = [(app_path, "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files", "photoprism_app_files")]
     if binary_path.exists():
-        targets.append((binary_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary"))
+        targets.append((binary_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary", "photoprism_app_binary"))
     return targets
 
 
@@ -6804,15 +7254,28 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(run["run_id"])
     started = time.monotonic()
     root = policy.allowed_scan_root(command.get("scope") or command.get("scan_root"))
+    resource_start = optimization.resource_snapshot()
+    trivy = shutil.which("trivy")
+    trivy_intelligence = _prepare_trivy_intelligence(trivy, root)
+    source_identity = _security_git_target_identity(
+        root, profile=policy.SCAN_PROFILE_QUICK
+    ) or {}
+    checkpoint_ledger = optimization.FullCheckpointLedger(
+        run_id=run_id,
+        source_revision=str(source_identity.get("commit") or "unknown"),
+        scanner_intelligence=trivy_intelligence,
+    )
     plan = policy.build_full_scan_plan(root)
     findings: list[dict[str, Any]] = []
     tool_results: dict[str, Any] = {}
     target_statuses: list[dict[str, Any]] = []
     evidence_refs: list[str] = []
+    resumed_cache_contexts: list[dict[str, Any]] = []
     partial = False
     posture: dict[str, Any] | None = None
     run["scan_profile"] = policy.SCAN_PROFILE_FULL
     run["target_statuses"] = target_statuses
+    tool_results["scanner_intelligence"] = trivy_intelligence
     run["coverage_summary"] = build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)
 
     lynis = shutil.which("lynis")
@@ -6832,14 +7295,15 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         tool_results["lynis"] = {"status": "completed" if lynis_status == "checked" else "timed_out", "available": True, "returncode": result.get("returncode"), "finding_count": len(normalized), "label": "Termux host"}
         target_statuses.append(_full_target_status("termux_host", "Termux host", "lynis", lynis_status, elapsed_seconds=max(0, int(time.monotonic() - lynis_started)), finding_count=len(normalized), summary="Android/Termux host posture checked." if lynis_status == "checked" else "Android/Termux host posture partially checked."))
     evidence_refs.append(evidence.write_evidence(run_id, "lynis-normalized.json", {"tool": "lynis", "profile": policy.SCAN_PROFILE_FULL, "findings": [f for f in findings if f.get("source") == "lynis"]}))
+    checkpoint_ledger.record(target_statuses[-1], resume_eligible=False)
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "pocketlab_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    trivy = shutil.which("trivy")
     if _overall_budget_exhausted(started, policy.SCAN_PROFILE_FULL):
         partial = True
         target_statuses.append(_full_target_status("pocketlab_source", "Pocket Lab Lite", "trivy", "timed_out", summary="Full Local Check reached its overall budget before source scanning."))
+        checkpoint_ledger.record(target_statuses[-1], resume_eligible=False)
     else:
         scanners = "vuln,misconfig,secret"
         new_findings, status, source_cache_context = _run_trivy_target_job(
@@ -6854,6 +7318,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             secret_mode=True,
             evidence_name="target-pocketlab-source-trivy.json",
             use_cache=True,
+            intelligence=trivy_intelligence,
         )
         findings.extend(new_findings)
         target_statuses.append(status)
@@ -6861,6 +7326,8 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             evidence_refs.append(str(status["evidence_ref"]))
         partial = partial or str(status.get("status")) in {"partial", "timed_out"}
         cached_source_entry = source_cache_context.get("entry") if source_cache_context else None
+        if source_cache_context and source_cache_context.get("cache_hit"):
+            resumed_cache_contexts.append(source_cache_context)
         sbom_status = (
             _write_cached_target_sbom(
                 run_id,
@@ -6880,6 +7347,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 "pocketlab_source",
                 "Pocket Lab Lite",
                 policy.SCAN_PROFILE_FULL,
+                trivy_intelligence,
             )
         if (
             source_cache_context
@@ -6899,10 +7367,24 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                     scanners=scanners,
                     findings=new_findings,
                     sbom=sbom_payload,
+                    evidence_ref=(source_cache_context or {}).get("evidence_ref"),
+                    run_id=run_id,
+                    profile=policy.SCAN_PROFILE_FULL,
                 )
         target_statuses.append(sbom_status)
         if sbom_status.get("evidence_ref"):
             evidence_refs.append(str(sbom_status["evidence_ref"]))
+        source_cache_identity = (source_cache_context or {}).get("identity")
+        checkpoint_ledger.record(
+            status,
+            compatibility_identity=source_cache_identity,
+            resume_eligible=str(status.get("status")) in {"checked", "reused", "resumed"},
+        )
+        checkpoint_ledger.record(
+            sbom_status,
+            compatibility_identity=source_cache_identity,
+            resume_eligible=str(sbom_status.get("status")) in {"checked", "reused", "resumed"},
+        )
         tool_results["trivy_source"] = {
             "status": "completed" if status.get("status") == "checked" else str(status.get("status") or "partial"),
             "available": bool(trivy),
@@ -6910,7 +7392,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "scanners": scanners,
             "finding_count": len([item for item in findings if item.get("source") == "trivy"]),
             "cache": status.get("cache"),
-            "sbom_cache_hit": sbom_status.get("status") == "reused",
+            "sbom_cache_hit": sbom_status.get("status") in {"reused", "resumed"},
         }
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "runtime_running")
@@ -6919,63 +7401,179 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     posture = runtime_config_posture(root)
     tool_results["runtime_config"] = {"status": posture.get("status") or "completed", "available": True, "label": "Runtime config", "finding_count": 0}
     target_statuses.append(_full_target_status("runtime_config", "Runtime config", "custom", "checked" if posture.get("status") == "completed" else str(posture.get("status") or "partial"), finding_count=0, evidence_ref=_write_target_json(run_id, "target-runtime-config.json", posture), summary="Runtime metadata checked without dumping raw config."))
+    checkpoint_ledger.record(target_statuses[-1], resume_eligible=False)
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, posture, target_statuses, evidence_refs)})
     if target_statuses[-1].get("evidence_ref"):
         evidence_refs.append(str(target_statuses[-1]["evidence_ref"]))
+    budget_decision = optimization.scan_budget_decision(
+        profile=policy.SCAN_PROFILE_FULL,
+        started_monotonic=started,
+        completed_atomic_targets=optimization.completed_atomic_target_count(target_statuses),
+        telemetry=optimization.resource_snapshot(),
+    )
+    resource_deferred = budget_decision.get("outcome") != "continue"
+    tool_results["resource_budget"] = {
+        "status": "deferred" if resource_deferred else "completed",
+        "available": True,
+        "decision": budget_decision,
+        "start": resource_start,
+    }
+    budget_ref = _write_target_json(run_id, "resource-budget.json", budget_decision)
+    evidence_refs.append(budget_ref)
+    partial = partial or resource_deferred
     run["execution_timeline"] = execution_timeline_for_phase(run, "proot_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    rootfs = policy.discover_proot_ubuntu_rootfs(root)
+    rootfs = None if resource_deferred else policy.discover_proot_ubuntu_rootfs(root)
     if rootfs:
-        proot_candidates = [rootfs / "etc", rootfs / "usr/local", rootfs / "var/lib/dpkg"]
-        existing = [candidate for candidate in proot_candidates if candidate.exists()]
+        proot_nodes = optimization.normalize_target_dag(
+            [
+                {"target_id": "proot_ubuntu_etc", "path": str(rootfs / "etc"), "contract_id": "proot-vuln-misconfig-v2", "scanners": "vuln,misconfig"},
+                {"target_id": "proot_ubuntu_usr_local", "path": str(rootfs / "usr/local"), "contract_id": "proot-vuln-misconfig-v2", "scanners": "vuln,misconfig"},
+                {"target_id": "proot_ubuntu_dpkg", "path": str(rootfs / "var/lib/dpkg"), "contract_id": "proot-vuln-misconfig-v2", "scanners": "vuln,misconfig"},
+            ]
+        )
+        node_by_id = {
+            str(node.get("target_id") or ""): node for node in proot_nodes
+        }
+        existing = []
+        for node in proot_nodes:
+            candidate = Path(str(node["path"]))
+            try:
+                present = candidate.exists()
+            except OSError:
+                present = False
+            if not present:
+                continue
+            if node.get("state") == "reused":
+                dependency = node_by_id.get(str((node.get("depends_on") or [""])[0]))
+                try:
+                    dependency_present = bool(
+                        dependency and Path(str(dependency["path"])).exists()
+                    )
+                except (OSError, KeyError, TypeError, ValueError):
+                    dependency_present = False
+                if dependency_present:
+                    continue
+            existing.append(node)
         if existing:
             proot_findings_total = 0
             proot_partial = False
-            for index, candidate in enumerate(existing[:3]):
-                new_findings, status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=candidate, target_id="proot_ubuntu", target_label="PROot Ubuntu", scanners="vuln,misconfig", profile=policy.SCAN_PROFILE_FULL, evidence_name=f"target-proot-ubuntu-trivy-{index + 1}.json")
+            for index, node in enumerate(existing[:3]):
+                candidate = Path(str(node["path"]))
+                node_target_id = str(node["target_id"])
+                new_findings, status, cache_context = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=candidate, target_id=node_target_id, target_label="PROot Ubuntu", scanners="vuln,misconfig", profile=policy.SCAN_PROFILE_FULL, evidence_name=f"target-proot-ubuntu-trivy-{index + 1}.json", use_cache=True, intelligence=trivy_intelligence)
                 findings.extend(new_findings)
                 target_statuses.append(status)
+                if cache_context and cache_context.get("cache_hit"):
+                    resumed_cache_contexts.append(cache_context)
                 proot_findings_total += len(new_findings)
                 if status.get("evidence_ref"):
                     evidence_refs.append(str(status["evidence_ref"]))
+                checkpoint_ledger.record(
+                    status,
+                    compatibility_identity=(cache_context or {}).get("identity"),
+                    resume_eligible=bool((cache_context or {}).get("identity")) and str(status.get("status")) in {"checked", "reused", "resumed"},
+                )
                 proot_partial = proot_partial or str(status.get("status")) in {"partial", "timed_out"}
-            tool_results["proot_ubuntu"] = {"status": "partial" if proot_partial else "completed", "available": bool(trivy), "label": "PROot Ubuntu", "finding_count": proot_findings_total}
+            tool_results["proot_ubuntu"] = {"status": "partial" if proot_partial else "completed", "available": bool(trivy), "label": "PROot Ubuntu", "finding_count": proot_findings_total, "target_dag": [{key: node.get(key) for key in ("target_id", "state", "overlap", "depends_on")} for node in proot_nodes]}
             partial = partial or proot_partial
         else:
             target_statuses.append(_full_target_status("proot_ubuntu", "PROot Ubuntu", "custom", "missing", summary="Selected PROot Ubuntu metadata areas were not present."))
+    elif resource_deferred:
+        deferred = _full_target_status("proot_ubuntu", "PROot Ubuntu", "trivy", "deferred_resource_pressure", summary="PROot Ubuntu was deferred at a durable checkpoint by the backend scan budget.")
+        target_statuses.append(deferred)
+        checkpoint_ledger.record(deferred, resume_eligible=False)
+        tool_results["proot_ubuntu"] = {"status": "deferred_resource_pressure", "available": True, "label": "PROot Ubuntu", "finding_count": 0}
     else:
         target_statuses.append(_full_target_status("proot_ubuntu", "PROot Ubuntu", "custom", "missing", summary="PROot Ubuntu is optional and was not found."))
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, posture, target_statuses, evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "photoprism_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    photoprism_targets = _photoprism_proot_targets(rootfs)
+    photoprism_targets = [] if resource_deferred else _photoprism_proot_targets(rootfs)
     photoprism_config = policy.photoprism_config_dir()
-    photoprism_targets.append((photoprism_config, "secret", True, "target-photoprism-config-secret.json", "PhotoPrism settings"))
+    if not resource_deferred:
+        photoprism_targets.append((photoprism_config, "secret", True, "target-photoprism-config-secret.json", "PhotoPrism settings", "photoprism_settings"))
     photoprism_seen = False
     photoprism_partial = False
     photoprism_finding_count = 0
-    for target_path, scanners, secret_mode, evidence_name, photoprism_label in photoprism_targets:
+    full_app_file_cache_context: dict[str, Any] | None = None
+    full_app_file_findings: list[dict[str, Any]] = []
+    for target_path, scanners, secret_mode, evidence_name, photoprism_label, photoprism_target_id in photoprism_targets:
         if target_path.exists():
             photoprism_seen = True
-        new_findings, status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism", target_label=photoprism_label, scanners=scanners, profile=policy.SCAN_PROFILE_FULL, secret_mode=secret_mode, evidence_name=evidence_name)
+        new_findings, status, cache_context = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id=photoprism_target_id, target_label=photoprism_label, scanners=scanners, profile=policy.SCAN_PROFILE_FULL, secret_mode=secret_mode, evidence_name=evidence_name, use_cache=True, intelligence=trivy_intelligence)
+        if photoprism_target_id == "photoprism_app_files":
+            full_app_file_cache_context = cache_context
+            full_app_file_findings = new_findings
+        if cache_context and cache_context.get("cache_hit"):
+            resumed_cache_contexts.append(cache_context)
         findings.extend(new_findings)
         target_statuses.append(status)
         photoprism_finding_count += len(new_findings)
         if status.get("evidence_ref"):
             evidence_refs.append(str(status["evidence_ref"]))
+        checkpoint_ledger.record(
+            status,
+            compatibility_identity=(cache_context or {}).get("identity"),
+            resume_eligible=bool((cache_context or {}).get("identity")) and str(status.get("status")) in {"checked", "reused", "resumed"},
+        )
         photoprism_partial = photoprism_partial or str(status.get("status")) in {"partial", "timed_out"}
-    if not photoprism_seen:
+    if resource_deferred:
+        deferred = _full_target_status("photoprism", "PhotoPrism", "trivy", "deferred_resource_pressure", summary="PhotoPrism was deferred at a durable checkpoint by the backend scan budget.")
+        target_statuses.append(deferred)
+        checkpoint_ledger.record(deferred, resume_eligible=False)
+    elif not photoprism_seen:
         target_statuses.append(_full_target_status("photoprism", "PhotoPrism", "custom", "missing", summary="PhotoPrism app/config targets were not present."))
     else:
         sbom_target = _first_existing([rootfs / "opt/photoprism"] if rootfs else [])
         if sbom_target:
-            sbom_status = _write_target_sbom(trivy, run_id, root, sbom_target, "photoprism", "PhotoPrism", policy.SCAN_PROFILE_FULL)
+            cached_app_entry = (full_app_file_cache_context or {}).get("entry")
+            sbom_status = (
+                _write_cached_target_sbom(
+                    run_id,
+                    cached_app_entry,
+                    "photoprism_app_files",
+                    "PhotoPrism",
+                    policy.SCAN_PROFILE_FULL,
+                )
+                if cached_app_entry
+                else None
+            )
+            if sbom_status is None:
+                sbom_status = _write_target_sbom(trivy, run_id, root, sbom_target, "photoprism_app_files", "PhotoPrism", policy.SCAN_PROFILE_FULL, trivy_intelligence)
+            if (
+                full_app_file_cache_context
+                and full_app_file_cache_context.get("identity")
+                and not full_app_file_cache_context.get("cache_hit")
+                and sbom_status.get("status") == "checked"
+            ):
+                sbom_payload = evidence.read_json(
+                    evidence.evidence_dir(run_id) / "target-photoprism_app_files-sbom.cdx.json",
+                    {},
+                )
+                if isinstance(sbom_payload, dict) and sbom_payload:
+                    _write_security_target_cache(
+                        identity=full_app_file_cache_context["identity"],
+                        target_id="photoprism_app_files",
+                        target_label="PhotoPrism app files",
+                        scanners="vuln,misconfig",
+                        findings=full_app_file_findings,
+                        sbom=sbom_payload,
+                        evidence_ref=(full_app_file_cache_context or {}).get("evidence_ref"),
+                        run_id=run_id,
+                        profile=policy.SCAN_PROFILE_FULL,
+                    )
             target_statuses.append(sbom_status)
             if sbom_status.get("evidence_ref"):
                 evidence_refs.append(str(sbom_status["evidence_ref"]))
-    tool_results["photoprism"] = {"status": "partial" if photoprism_partial else "completed" if photoprism_seen else "missing", "available": photoprism_seen, "label": "PhotoPrism", "finding_count": photoprism_finding_count}
+            checkpoint_ledger.record(
+                sbom_status,
+                compatibility_identity=(full_app_file_cache_context or {}).get("identity"),
+                resume_eligible=bool((full_app_file_cache_context or {}).get("identity")) and str(sbom_status.get("status")) in {"checked", "reused", "resumed"},
+            )
+    tool_results["photoprism"] = {"status": "deferred_resource_pressure" if resource_deferred else "partial" if photoprism_partial else "completed" if photoprism_seen else "missing", "available": photoprism_seen or resource_deferred, "label": "PhotoPrism", "finding_count": photoprism_finding_count}
     partial = partial or photoprism_partial
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, posture, target_statuses, evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "backup_running")
@@ -6987,6 +7585,9 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     target_statuses.append(_full_target_status("backup_metadata", "Backup metadata", "custom", "checked" if backup_status == "checked" else "missing", evidence_ref=backup_ref, summary=str(backup_summary.get("summary") or "Backup metadata checked.")))
     evidence_refs.append(backup_ref)
     tool_results["backup_metadata"] = {"status": "completed" if backup_status == "checked" else "missing", "available": backup_status == "checked", "label": "Backup metadata", "finding_count": 0}
+    checkpoint_ledger.record(target_statuses[-1], resume_eligible=False)
+    tool_results["resource_budget"]["finish"] = optimization.resource_snapshot()
+    tool_results["resource_budget"]["process_runtime"] = PROCESS_RUNTIME.snapshot()
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, posture, target_statuses, evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "evidence_saving")
     _write_intermediate_running_state(run, findings, evidence_refs)
@@ -6998,7 +7599,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         evidence_refs.append(coverage_ref)
 
     counts = count_findings(findings)
-    target_review = any(str(item.get("status")) in {"partial", "timed_out", "failed", "review"} for item in target_statuses)
+    target_review = any(str(item.get("status")) in {"partial", "timed_out", "failed", "review", "deferred_resource_pressure"} for item in target_statuses)
     partial = partial or target_review
     final_status = "degraded" if partial else "succeeded"
     copy = _profile_copy(policy.SCAN_PROFILE_FULL)
@@ -7024,9 +7625,25 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
     state["evidence_refs"] = evidence_refs
-    return _finalize_security_scan_result(
+    result = _finalize_security_scan_result(
         run=run, state=state, findings=findings, evidence_refs=evidence_refs
     )
+    checkpoint_ledger.finish(
+        status="paused_at_checkpoint" if resource_deferred else final_status,
+        resume_available=bool(resource_deferred),
+    )
+    if final_status == "succeeded" and not resource_deferred:
+        for context in resumed_cache_contexts:
+            identity = context.get("identity")
+            entry = context.get("entry")
+            if isinstance(identity, dict) and isinstance(entry, Mapping):
+                _promote_security_target_cache_checkpoint(
+                    identity=identity,
+                    entry=entry,
+                    run_id=run_id,
+                    profile=policy.SCAN_PROFILE_FULL,
+                )
+    return result
 
 
 
@@ -7037,6 +7654,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(run["run_id"])
     started = time.monotonic()
     root = policy.allowed_scan_root(command.get("scope") or command.get("scan_root"))
+    resource_start = optimization.resource_snapshot()
     plan = policy.build_app_scan_plan(app_id, root)
     findings: list[dict[str, Any]] = []
     tool_results: dict[str, Any] = {}
@@ -7059,12 +7677,16 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     _write_intermediate_running_state(run, findings, evidence_refs)
 
     trivy = shutil.which("trivy")
+    trivy_intelligence = _prepare_trivy_intelligence(trivy, root)
+    tool_results["scanner_intelligence"] = trivy_intelligence
     rootfs = policy.discover_proot_ubuntu_rootfs(root)
     app_targets = _photoprism_proot_targets(rootfs)
     app_seen = False
     app_partial = False
     app_finding_count = 0
-    for target_path, scanners, secret_mode, evidence_name, label in app_targets:
+    app_file_cache_context: dict[str, Any] | None = None
+    app_file_findings: list[dict[str, Any]] = []
+    for target_path, scanners, secret_mode, evidence_name, label, app_target_id in app_targets:
         if _overall_budget_exhausted(started, policy.SCAN_PROFILE_APP):
             status = _full_target_status("photoprism_app_files", label, "trivy", "timed_out", summary="App Check reached its overall budget before this app-file target completed.")
             target_statuses.append(status)
@@ -7072,7 +7694,10 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             continue
         if target_path.exists():
             app_seen = True
-        new_findings, status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism_app_files", target_label=label, scanners=scanners, profile=policy.SCAN_PROFILE_APP, secret_mode=secret_mode, evidence_name=evidence_name)
+        new_findings, status, cache_context = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id=app_target_id, target_label=label, scanners=scanners, profile=policy.SCAN_PROFILE_APP, secret_mode=secret_mode, evidence_name=evidence_name, use_cache=True, intelligence=trivy_intelligence)
+        if app_target_id == "photoprism_app_files":
+            app_file_cache_context = cache_context
+            app_file_findings = new_findings
         findings.extend(new_findings)
         target_statuses.append(status)
         app_finding_count += len(new_findings)
@@ -7084,7 +7709,42 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     else:
         sbom_target = _first_existing([rootfs / "opt/photoprism"] if rootfs else [])
         if sbom_target:
-            sbom_status = _write_target_sbom(trivy, run_id, root, sbom_target, "photoprism", "PhotoPrism", policy.SCAN_PROFILE_APP)
+            cached_app_entry = (app_file_cache_context or {}).get("entry")
+            sbom_status = (
+                _write_cached_target_sbom(
+                    run_id,
+                    cached_app_entry,
+                    "photoprism_app_files",
+                    "PhotoPrism",
+                    policy.SCAN_PROFILE_APP,
+                )
+                if cached_app_entry
+                else None
+            )
+            if sbom_status is None:
+                sbom_status = _write_target_sbom(trivy, run_id, root, sbom_target, "photoprism_app_files", "PhotoPrism", policy.SCAN_PROFILE_APP, trivy_intelligence)
+            if (
+                app_file_cache_context
+                and app_file_cache_context.get("identity")
+                and not app_file_cache_context.get("cache_hit")
+                and sbom_status.get("status") == "checked"
+            ):
+                sbom_payload = evidence.read_json(
+                    evidence.evidence_dir(run_id) / "target-photoprism_app_files-sbom.cdx.json",
+                    {},
+                )
+                if isinstance(sbom_payload, dict) and sbom_payload:
+                    _write_security_target_cache(
+                        identity=app_file_cache_context["identity"],
+                        target_id="photoprism_app_files",
+                        target_label="PhotoPrism app files",
+                        scanners="vuln,misconfig",
+                        findings=app_file_findings,
+                        sbom=sbom_payload,
+                        evidence_ref=(app_file_cache_context or {}).get("evidence_ref"),
+                        run_id=run_id,
+                        profile=policy.SCAN_PROFILE_APP,
+                    )
             target_statuses.append(sbom_status)
             if sbom_status.get("evidence_ref"):
                 evidence_refs.append(str(sbom_status["evidence_ref"]))
@@ -7096,7 +7756,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     _write_intermediate_running_state(run, findings, evidence_refs)
 
     config_path = policy.photoprism_config_dir()
-    config_findings, config_status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=config_path, target_id="photoprism_settings", target_label="PhotoPrism settings", scanners="secret", profile=policy.SCAN_PROFILE_APP, secret_mode=True, evidence_name="target-photoprism-config-secret.json")
+    config_findings, config_status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=config_path, target_id="photoprism_settings", target_label="PhotoPrism settings", scanners="secret", profile=policy.SCAN_PROFILE_APP, secret_mode=True, evidence_name="target-photoprism-config-secret.json", use_cache=True, intelligence=trivy_intelligence)
     findings.extend(config_findings)
     target_statuses.append(config_status)
     if config_status.get("evidence_ref"):
@@ -7123,6 +7783,14 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     target_statuses.append(_full_target_status("photoprism_action_state", "PhotoPrism action state", "custom", "checked", evidence_ref=action_ref, summary="PhotoPrism safe action state was summarized."))
     evidence_refs.append(action_ref)
     tool_results["photoprism_action_state"] = {"status": "completed", "available": True, "label": "PhotoPrism action state", "finding_count": 0}
+    tool_results["resource_budget"] = {
+        "status": "completed",
+        "available": True,
+        "decision": "continue",
+        "start": resource_start,
+        "finish": optimization.resource_snapshot(),
+        "process_runtime": PROCESS_RUNTIME.snapshot(),
+    }
     run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
     run["execution_timeline"] = execution_timeline_for_phase(run, "evidence_saving")
     _write_intermediate_running_state(run, findings, evidence_refs)
