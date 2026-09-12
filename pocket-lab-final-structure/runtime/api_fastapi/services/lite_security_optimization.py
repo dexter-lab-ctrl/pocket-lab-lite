@@ -10,6 +10,7 @@ resource signal.
 
 import hashlib
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -28,6 +29,29 @@ TARGET_IDENTITY_SCHEMA = 2
 CHECKPOINT_SCHEMA = 1
 _MAX_IDENTITY_ENTRIES = 100_000
 _MAX_IDENTITY_BYTES = 512 * 1024 * 1024
+_COMPLETED_TARGET_STATUSES = frozenset({"checked", "completed", "reused", "resumed"})
+_CHECKPOINT_RESUMABLE_STATUSES = frozenset({"running", "paused_at_checkpoint"})
+_CHECKPOINT_REUSABLE_STATUSES = frozenset({"succeeded", "completed", "degraded"})
+_CACHE_IDENTITY_REQUIRED_FIELDS = (
+    "schema",
+    "contract_id",
+    "compatible_profiles",
+    "target_id",
+    "target_fingerprint",
+    "scanner",
+    "scanner_version",
+    "scanner_artifact_revision",
+    "scanner_db_revision",
+    "scanner_db_valid_until",
+    "policy_revision",
+    "exclusion_revision",
+    "scanner_configuration_revision",
+    "scanners",
+    "secret_mode",
+    "sbom_format",
+    "sbom_generator",
+    "sbom_schema",
+)
 
 
 def digest(value: Any) -> str:
@@ -40,6 +64,68 @@ def digest(value: Any) -> str:
         default=str,
     )
     return "sha256:" + hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+
+def cache_identity_is_complete(identity: Mapping[str, Any] | None) -> bool:
+    """Require every field that participates in target compatibility."""
+
+    if not isinstance(identity, Mapping):
+        return False
+    scalar_fields = tuple(
+        field
+        for field in _CACHE_IDENTITY_REQUIRED_FIELDS
+        if field not in {"schema", "compatible_profiles", "secret_mode", "sbom_schema"}
+    )
+    if any(
+        field not in identity
+        or not isinstance(identity.get(field), str)
+        or not str(identity.get(field) or "").strip()
+        for field in scalar_fields
+    ):
+        return False
+    profiles = identity.get("compatible_profiles")
+    if not isinstance(profiles, list) or not profiles or not all(
+        isinstance(item, str) and item in policy.VALID_SCAN_PROFILES for item in profiles
+    ):
+        return False
+    if not isinstance(identity.get("secret_mode"), bool):
+        return False
+    if isinstance(identity.get("sbom_schema"), bool) or not isinstance(
+        identity.get("sbom_schema"), int
+    ):
+        return False
+    return identity.get("schema") == TARGET_IDENTITY_SCHEMA
+
+
+def durable_evidence_ref(run_id: str, evidence_ref: Any) -> bool:
+    """Confirm a checkpoint reference names an existing run-local evidence file."""
+
+    safe_run = evidence.safe_run_id(run_id)
+    reference = str(evidence_ref or "")
+    prefix = f"security/evidence/{safe_run}/"
+    if not reference.startswith(prefix):
+        return False
+    filename = reference[len(prefix) :]
+    if not filename or filename in {".", ".."} or "/" in filename or "\\" in filename:
+        return False
+    path = evidence.security_root() / "evidence" / safe_run / filename
+    try:
+        return path.is_file()
+    except OSError:
+        return False
+
+
+def durable_evidence_reference(evidence_ref: Any) -> bool:
+    """Validate a sanitized run-local evidence reference without assuming its owner."""
+
+    reference = str(evidence_ref or "")
+    parts = reference.split("/")
+    if len(parts) != 4 or parts[:2] != ["security", "evidence"]:
+        return False
+    run_id = parts[2]
+    return bool(run_id) and evidence.safe_run_id(run_id) == run_id and durable_evidence_ref(
+        run_id, reference
+    )
 
 
 def _bounded_int(name: str, default: int, minimum: int, maximum: int) -> int:
@@ -148,50 +234,82 @@ def path_target_identity(
 
 
 def normalize_target_dag(nodes: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    """Return deterministic unique targets and annotate exact/nested overlap."""
+    """Return deterministic targets and annotate exact/nested overlap.
+
+    Target definitions are backend-owned. Dependencies are derived from the
+    resolved paths instead of being trusted from the input, which keeps an
+    arbitrary cyclic dependency list from becoming an executable graph.
+    """
 
     normalized: list[dict[str, Any]] = []
-    seen: dict[tuple[str, str, str], str] = {}
+    seen_target_ids: set[str] = set()
     for raw in nodes:
+        if not isinstance(raw, Mapping):
+            continue
         node = policy.redact_value(dict(raw))
         target_id = str(node.get("target_id") or "").strip()
         contract_id = str(node.get("contract_id") or "").strip()
         raw_path = str(node.get("path") or "").strip()
-        if not target_id or not contract_id or not raw_path:
+        if not target_id or target_id in seen_target_ids or not contract_id or not raw_path:
             continue
         try:
             resolved = str(Path(raw_path).expanduser().resolve(strict=False))
         except (OSError, ValueError):
             continue
-        key = (resolved, contract_id, str(node.get("scanners") or ""))
-        duplicate_of = seen.get(key)
-        if duplicate_of:
-            node.update({"state": "reused", "overlap": "exact", "depends_on": [duplicate_of]})
-        else:
-            node.setdefault("state", "pending")
-            node.setdefault("depends_on", [])
-            for prior in normalized:
-                if prior.get("state") == "reused":
-                    continue
-                if str(prior.get("contract_id") or "") != contract_id:
-                    continue
-                try:
-                    prior_path = Path(str(prior["path"])).resolve(strict=False)
-                    candidate_path = Path(resolved)
-                except (OSError, ValueError, KeyError):
-                    continue
-                if prior_path != candidate_path and prior_path in candidate_path.parents:
-                    node.update(
-                        {
-                            "state": "reused",
-                            "overlap": "nested",
-                            "depends_on": [str(prior.get("target_id") or "")],
-                        }
-                    )
-                    break
-            seen[key] = target_id
         node["path"] = resolved
+        # Dependencies are always recomputed below. Never execute an
+        # arbitrary caller-supplied dependency graph.
+        node["depends_on"] = []
         normalized.append(node)
+        seen_target_ids.add(target_id)
+
+    roots: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for index, node in enumerate(normalized):
+        contract_id = str(node.get("contract_id") or "")
+        scanners = str(node.get("scanners") or "")
+        candidate_path = Path(str(node["path"]))
+        key = (str(candidate_path), contract_id, scanners)
+        duplicate_of = roots.get(key)
+        if duplicate_of:
+            node.update(
+                {
+                    "state": "reused",
+                    "overlap": "exact",
+                    "depends_on": [str(duplicate_of.get("target_id") or "")],
+                }
+            )
+            continue
+
+        ancestors: list[tuple[int, dict[str, Any]]] = []
+        for prior_index, prior in enumerate(normalized):
+            if prior_index == index:
+                continue
+            if str(prior.get("contract_id") or "") != contract_id:
+                continue
+            if str(prior.get("scanners") or "") != scanners:
+                continue
+            try:
+                prior_path = Path(str(prior["path"]))
+            except (KeyError, TypeError, ValueError):
+                continue
+            if prior_path != candidate_path and prior_path in candidate_path.parents:
+                ancestors.append((prior_index, prior))
+        if ancestors:
+            _, ancestor = min(
+                ancestors,
+                key=lambda item: (len(Path(str(item[1]["path"])).parts), item[0]),
+            )
+            node.update(
+                {
+                    "state": "reused",
+                    "overlap": "nested",
+                    "depends_on": [str(ancestor.get("target_id") or "")],
+                }
+            )
+        else:
+            node["state"] = "pending"
+            node["overlap"] = None
+        roots[key] = node
     return normalized
 
 
@@ -308,7 +426,70 @@ def scan_budget_policy(profile: str) -> dict[str, Any]:
         "max_atomic_targets": _bounded_int(
             "POCKETLAB_SECURITY_MAX_ATOMIC_TARGETS", 10_000, 1, 10_000
         ),
+        "telemetry_max_age_seconds": _bounded_int(
+            "POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS", 30, 1, 900
+        ),
     }
+
+
+def completed_atomic_target_count(
+    target_statuses: Iterable[Mapping[str, Any]] | None,
+) -> int:
+    """Count distinct completed target/tool units in the current run."""
+
+    completed: set[tuple[str, str]] = set()
+    for item in target_statuses or ():
+        if not isinstance(item, Mapping):
+            continue
+        if str(item.get("status") or "") not in _COMPLETED_TARGET_STATUSES:
+            continue
+        target_id = str(item.get("target_id") or "").strip()
+        tool = str(item.get("tool") or "").strip()
+        if target_id and tool:
+            completed.add((target_id, tool))
+    return len(completed)
+
+
+def _telemetry_number(facts: Mapping[str, Any], key: str) -> float | None:
+    raw = facts.get(key)
+    if raw is None or isinstance(raw, bool):
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) else None
+
+
+def _telemetry_age_ms(facts: Mapping[str, Any]) -> int | None:
+    reported_age = _telemetry_number(facts, "telemetry_age_ms")
+    if reported_age is not None and reported_age < 0:
+        return None
+
+    timestamp_age: int | None = None
+    if "captured_at" in facts:
+        captured_at = facts.get("captured_at")
+        if not isinstance(captured_at, str) or not captured_at.strip():
+            return None
+        try:
+            timestamp_text = captured_at.strip()
+            if timestamp_text.endswith("Z"):
+                timestamp_text = timestamp_text[:-1] + "+00:00"
+            captured = datetime.fromisoformat(timestamp_text)
+            if captured.tzinfo is None:
+                captured = captured.replace(tzinfo=timezone.utc)
+            delta_ms = int((time.time() - captured.timestamp()) * 1000)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if delta_ms < 0:
+            return None
+        timestamp_age = delta_ms
+
+    if reported_age is None:
+        return timestamp_age
+    if timestamp_age is None and "captured_at" in facts:
+        return None
+    return max(int(reported_age), timestamp_age or 0)
 
 
 def scan_budget_decision(
@@ -321,23 +502,35 @@ def scan_budget_decision(
     facts = dict(telemetry or resource_snapshot())
     configured = scan_budget_policy(profile)
     elapsed = max(0.0, time.monotonic() - float(started_monotonic))
+    telemetry_age_ms = _telemetry_age_ms(facts)
+    telemetry_max_age_ms = int(configured["telemetry_max_age_seconds"]) * 1000
+    if telemetry_age_ms is None:
+        telemetry_freshness = "unknown"
+    elif telemetry_age_ms > telemetry_max_age_ms:
+        telemetry_freshness = "stale"
+    else:
+        telemetry_freshness = "fresh"
     reason = ""
     outcome = "continue"
     if elapsed >= int(configured["hard_elapsed_seconds"]):
         outcome, reason = "partial_budget_exhausted", "elapsed_budget_exhausted"
     elif completed_atomic_targets >= int(configured["max_atomic_targets"]):
         outcome, reason = "pause_at_checkpoint", "configured_target_budget"
+    elif telemetry_freshness == "unknown":
+        outcome, reason = "pause_at_checkpoint", "telemetry_age_unknown"
+    elif telemetry_freshness == "stale":
+        outcome, reason = "pause_at_checkpoint", "telemetry_stale"
     else:
         memory_threshold = configured.get("minimum_memory_available_percent")
-        memory_value = facts.get("available_memory_percent")
-        if memory_threshold is not None and memory_value is not None and float(memory_value) < float(memory_threshold):
+        memory_value = _telemetry_number(facts, "available_memory_percent")
+        if memory_threshold is not None and memory_value is not None and memory_value < float(memory_threshold):
             outcome, reason = "pause_at_checkpoint", "memory_pressure"
         storage_threshold = int(configured["minimum_free_storage_bytes"])
-        storage_value = facts.get("free_storage")
-        if outcome == "continue" and storage_value is not None and int(storage_value) < storage_threshold:
+        storage_value = _telemetry_number(facts, "free_storage")
+        if outcome == "continue" and storage_value is not None and storage_value < storage_threshold:
             outcome, reason = "pause_at_checkpoint", "storage_pressure"
         battery_threshold = configured.get("battery_pause_percent")
-        battery_value = facts.get("battery_percent")
+        battery_value = _telemetry_number(facts, "battery_percent")
         if (
             outcome == "continue"
             and battery_threshold is not None
@@ -347,8 +540,8 @@ def scan_budget_decision(
         ):
             outcome, reason = "pause_at_checkpoint", "battery_policy_threshold"
         thermal_threshold = configured.get("thermal_pause_c")
-        thermal_value = facts.get("temperature_c")
-        if outcome == "continue" and thermal_threshold is not None and thermal_value is not None and float(thermal_value) >= float(thermal_threshold):
+        thermal_value = _telemetry_number(facts, "temperature_c")
+        if outcome == "continue" and thermal_threshold is not None and thermal_value is not None and thermal_value >= float(thermal_threshold):
             outcome, reason = "pause_at_checkpoint", "thermal_policy_threshold"
     return policy.redact_value(
         {
@@ -359,6 +552,11 @@ def scan_budget_decision(
             "elapsed_seconds": round(elapsed, 3),
             "policy": configured,
             "telemetry": facts,
+            "telemetry_freshness": {
+                "status": telemetry_freshness,
+                "age_ms": telemetry_age_ms,
+                "max_age_ms": telemetry_max_age_ms,
+            },
             "sanitized": True,
         }
     )
@@ -375,6 +573,29 @@ class FullCheckpointLedger:
     def __post_init__(self) -> None:
         safe_run = evidence.safe_run_id(self.run_id)
         self._path = evidence.security_root() / "checkpoints" / "full" / f"{safe_run}.json"
+        existing = evidence.read_json(self._path, None)
+        if self._path.is_file():
+            if not isinstance(existing, dict):
+                raise RuntimeError("Full checkpoint is unreadable")
+            if (
+                existing.get("schema") != CHECKPOINT_SCHEMA
+                or existing.get("run_id") != safe_run
+                or existing.get("profile") != policy.SCAN_PROFILE_FULL
+                or not isinstance(existing.get("targets"), list)
+                or not all(isinstance(item, dict) for item in existing["targets"])
+            ):
+                raise RuntimeError("Full checkpoint is incompatible")
+            existing_status = str(existing.get("status") or "unknown")
+            if existing_status not in _CHECKPOINT_RESUMABLE_STATUSES:
+                raise RuntimeError("Full checkpoint is terminal and cannot be restarted")
+            # A worker restart must not erase target records already committed
+            # by the interrupted run. Keep the prior ledger metadata and only
+            # advance its observation timestamp.
+            self._payload = policy.redact_value(existing)
+            self._payload["updated_at"] = deps.now_utc_iso()
+            self._payload["sanitized"] = True
+            self._persist()
+            return
         self._payload: dict[str, Any] = {
             "schema": CHECKPOINT_SCHEMA,
             "run_id": safe_run,
@@ -413,11 +634,19 @@ class FullCheckpointLedger:
             "finding_count": max(0, int(status.get("finding_count") or 0)),
             "evidence_ref": str(status.get("evidence_ref") or "")[:500] or None,
             "completed_at": deps.now_utc_iso(),
-            "resume_eligible": bool(resume_eligible and compatibility_identity),
+            "resume_eligible": bool(
+                resume_eligible
+                and compatibility_identity
+                and cache_identity_is_complete(compatibility_identity)
+                and str(status.get("status") or "unknown")[:80]
+                in _COMPLETED_TARGET_STATUSES
+                and durable_evidence_ref(self.run_id, status.get("evidence_ref"))
+            ),
             "compatibility_digest": digest(compatibility_identity) if compatibility_identity else None,
             "compatibility": {
                 key: compatibility.get(key)
                 for key in (
+                    "schema",
                     "contract_id",
                     "target_fingerprint",
                     "scanner",
@@ -427,6 +656,8 @@ class FullCheckpointLedger:
                     "policy_revision",
                     "exclusion_revision",
                     "scanner_configuration_revision",
+                    "secret_mode",
+                    "sbom_format",
                     "sbom_generator",
                     "sbom_schema",
                 )
@@ -461,25 +692,122 @@ def checkpoint_run_state(run_id: str) -> dict[str, Any] | None:
     safe_run = evidence.safe_run_id(run_id)
     path = evidence.security_root() / "checkpoints" / "full" / f"{safe_run}.json"
     payload = evidence.read_json(path, None)
-    return payload if isinstance(payload, dict) and payload.get("schema") == CHECKPOINT_SCHEMA else None
+    if not isinstance(payload, dict):
+        return None
+    if (
+        payload.get("schema") != CHECKPOINT_SCHEMA
+        or payload.get("run_id") != safe_run
+        or payload.get("profile") != policy.SCAN_PROFILE_FULL
+        or not isinstance(payload.get("targets"), list)
+        or not all(isinstance(item, dict) for item in payload["targets"])
+    ):
+        return None
+    return payload
 
 
-def cache_provenance(entry: Mapping[str, Any], *, current_profile: str) -> dict[str, Any]:
+def cache_provenance(
+    entry: Mapping[str, Any],
+    *,
+    current_profile: str,
+    source_run: Mapping[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    identity = entry.get("identity") if isinstance(entry.get("identity"), Mapping) else {}
     checkpoint = entry.get("checkpoint") if isinstance(entry.get("checkpoint"), Mapping) else {}
+    identity_digest = str(entry.get("identity_digest") or "")
+    target_payload = entry.get("target") if isinstance(entry.get("target"), Mapping) else {}
+    target_id = str(identity.get("target_id") or "")
+    scanner_db_revision = str(identity.get("scanner_db_revision") or "")
+    if (
+        not identity
+        or not identity_digest
+        or identity_digest != digest(identity)
+        or identity.get("schema") != TARGET_IDENTITY_SCHEMA
+        or not target_id
+        or target_payload.get("target_id") != target_id
+        or target_payload.get("tool") != "trivy"
+        or not scanner_db_revision
+        or scanner_db_revision.lower() in {"unknown", "none", "null"}
+        or checkpoint.get("compatibility_digest") != identity_digest
+        or checkpoint.get("resume_eligible") is not True
+    ):
+        return None
+    source_profile_value = checkpoint.get("source_profile")
+    if not isinstance(source_profile_value, str) or not source_profile_value.strip():
+        return None
+    try:
+        normalized_current = policy.normalize_scan_profile(current_profile)
+        normalized_producer = policy.normalize_scan_profile(source_profile_value)
+    except ValueError:
+        return None
+    compatible_profiles = identity.get("compatible_profiles")
+    if not isinstance(compatible_profiles, list) or normalized_current not in compatible_profiles:
+        return None
     producer_run_id = str(checkpoint.get("source_run_id") or "")
-    producer_profile = str(checkpoint.get("source_profile") or "")
+    if (
+        not producer_run_id
+        or evidence.safe_run_id(producer_run_id) != producer_run_id
+        or not isinstance(checkpoint.get("completed_at"), str)
+        or not checkpoint.get("completed_at").strip()
+        or not cache_identity_is_complete(identity)
+        or not durable_evidence_reference(target_payload.get("evidence_ref"))
+    ):
+        return None
+    producer_profile = normalized_producer
+    checkpoint_path = evidence.security_root() / "checkpoints" / "full" / f"{producer_run_id}.json"
     ledger = checkpoint_run_state(producer_run_id) if producer_run_id else None
-    resumable_source = bool(
-        ledger
-        and (
-            bool(ledger.get("resume_available"))
-            or str(ledger.get("status") or "") not in {"succeeded", "completed"}
-        )
-    )
+    if checkpoint_path.is_file() and ledger is None:
+        return None
+    if ledger:
+        if (
+            ledger.get("profile") != policy.SCAN_PROFILE_FULL
+            or producer_profile != policy.SCAN_PROFILE_FULL
+        ):
+            return None
+        target_tool = str(target_payload.get("tool") or "")
+        matching = [
+            item
+            for item in ledger.get("targets", [])
+            if item.get("target_id") == target_id and item.get("tool") == target_tool
+        ]
+        if len(matching) != 1:
+            return None
+        target = matching[0]
+        if (
+            target.get("status") not in _COMPLETED_TARGET_STATUSES
+            or target.get("resume_eligible") is not True
+            or target.get("compatibility_digest") != identity_digest
+            or not target.get("evidence_ref")
+            or not durable_evidence_ref(producer_run_id, target.get("evidence_ref"))
+        ):
+            return None
+        ledger_status = str(ledger.get("status") or "unknown")
+        if ledger_status in _CHECKPOINT_RESUMABLE_STATUSES:
+            kind = "resumed"
+        elif ledger_status in _CHECKPOINT_REUSABLE_STATUSES:
+            kind = "reused"
+        else:
+            return None
+    else:
+        if producer_profile == policy.SCAN_PROFILE_FULL:
+            return None
+        if not isinstance(source_run, Mapping):
+            return None
+        source_status = str(source_run.get("status") or "unknown")
+        if source_status not in _CHECKPOINT_REUSABLE_STATUSES:
+            return None
+        source_profile = source_run.get("scan_profile") or source_run.get("profile")
+        if not source_profile:
+            return None
+        try:
+            if policy.normalize_scan_profile(source_profile) != producer_profile:
+                return None
+        except ValueError:
+            return None
+        kind = "reused"
     return {
-        "kind": "resumed" if resumable_source else "reused",
+        "kind": kind,
         "source_run_id": producer_run_id or None,
         "source_profile": producer_profile or None,
-        "cross_profile": bool(producer_profile and producer_profile != current_profile),
-        "checkpoint_compatible": bool(checkpoint.get("resume_eligible")),
+        "cross_profile": bool(producer_profile and producer_profile != normalized_current),
+        "checkpoint_compatible": True,
     }

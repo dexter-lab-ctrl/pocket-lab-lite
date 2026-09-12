@@ -23261,6 +23261,31 @@
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Security scan/profile configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+          "tests/backend/test_lite_security_advanced_optimization.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_SECURITY_THERMAL_PAUSE_C",
         "owner": "FastAPI/runtime",
         "purpose": "Security scan/profile configuration",
@@ -35292,13 +35317,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35379,13 +35404,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -35413,13 +35438,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35579,13 +35604,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35721,13 +35746,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35848,13 +35873,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -35985,13 +36010,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -36171,13 +36196,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "battery_policy_threshold",
+          "checkpoint_ineligible",
           "configured_target_budget",
           "deferred_resource_pressure",
           "elapsed_budget_exhausted",
           "enterprise_connect_links_retired",
           "enterprise_mode_disabled",
-          "enterprise_owner_authority_required",
-          "enterprise_people_role_required"
+          "enterprise_owner_authority_required"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -40534,9 +40559,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "95c8279ba76c6547389503b6bba8387755ab1ce3eb313949054dc937d1f76afd",
-        "documentation": "992f5c35dd0980ba4694b658484b695761badfdd3ed886519acb82f33d24ee36",
+        "documentation": "e783a7fe02dc601dffb837104c1b640b1dd3d148ac01aad1cdfcec56fab73aff",
         "openapi": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-        "operational_health": "2d18629d7231ee25024fe97893f1173ad8cf5b2bfd96c7eb0ff3d82ad04cf1cf"
+        "operational_health": "06b84dce0e78a4810356d79a09eae3d259b817a02b6919f09dcfe3b2efa80df0"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -107531,5 +107556,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "338f32c292dc26547933c4f785c15b207291033daad69b3f41e9232d8fe3b157"
+  "source_fingerprint": "911f58ded00677761238f9cc3a46a5b957dd1a851caf340646cd0c975b6f9aa4"
 }

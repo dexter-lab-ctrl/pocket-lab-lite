@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: dff2a2f70d5661fdc6e655c550b99b3c73cea31431cb379d42fee923659277ec
+source_fingerprint: 9c7a885094011bd1c2141bd37f03fe8417dd67a6975acee9db985972bb45ae22
 schema_revision: 1
 validation_status: generated
 ---
@@ -776,6 +776,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_SECURITY_RETENTION_BATCH_SIZE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
 | `POCKETLAB_SECURITY_RETENTION_MAX_RUNS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
 | `POCKETLAB_SECURITY_RETENTION_MIN_PER_PROFILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
+| `POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `POCKETLAB_SECURITY_THERMAL_PAUSE_C` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `POCKETLAB_SECURITY_TRIVY_DB_MANAGED` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `POCKETLAB_SECURITY_TRIVY_DB_MAX_STALE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |

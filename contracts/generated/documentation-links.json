@@ -1781,6 +1781,10 @@
         "title": "battery_policy_threshold",
         "url": "../../docs/generated/development/reason-codes.md#battery-policy-threshold"
       },
+      "reason:checkpoint_ineligible": {
+        "title": "checkpoint_ineligible",
+        "url": "../../docs/generated/development/reason-codes.md#checkpoint-ineligible"
+      },
       "reason:claim_verified": {
         "title": "claim_verified",
         "url": "../../docs/generated/development/reason-codes.md#claim-verified"
@@ -2333,6 +2337,14 @@
         "title": "target_not_source_checkout",
         "url": "../../docs/generated/development/reason-codes.md#target-not-source-checkout"
       },
+      "reason:telemetry_age_unknown": {
+        "title": "telemetry_age_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#telemetry-age-unknown"
+      },
+      "reason:telemetry_stale": {
+        "title": "telemetry_stale",
+        "url": "../../docs/generated/development/reason-codes.md#telemetry-stale"
+      },
       "reason:test_bypass_explicit": {
         "title": "test_bypass_explicit",
         "url": "../../docs/generated/development/reason-codes.md#test-bypass-explicit"
@@ -2857,7 +2869,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "6a258b8dafc66c7315fdd9494264c21ca20e5878eb327cdfc49135f2d038dad4",
+    "aggregate_fingerprint": "85fe5f03d8c86910eb1001cde127419fa3fad686ca50a23649afafcbede0ff2a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2868,7 +2880,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-      "contracts/metadata/documentation-platform.json": "c543ce9dc502ee1a2190fce949c0e49004c4a28b5c0d0ab47011ae91ab4d921b",
+      "contracts/metadata/documentation-platform.json": "7ab5313f8b29380f3223d5e9ea121051937dd6790a8f8e8b36e3d010548bab69",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

@@ -13148,6 +13148,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:checkpoint_ineligible",
+      "name": "checkpoint_ineligible",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The cached target could not be reused safely, so the backend will check it again."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -15917,6 +15937,46 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "This target cannot safely reuse a source-checkout Security result."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The resource telemetry sample did not include a trustworthy age, so the backend did not use its numeric values for a resource decision.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:telemetry_age_unknown",
+      "name": "telemetry_age_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred because current resource telemetry could not be verified."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The resource telemetry sample exceeded the bounded maximum age for a resource decision.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:telemetry_stale",
+      "name": "telemetry_stale",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred because resource telemetry is stale."
     },
     {
       "confidence": "source-derived",
@@ -29336,6 +29396,7 @@
         "limitation:security:accepted-1",
         "limitation:security:gap-1",
         "reason:battery_policy_threshold",
+        "reason:checkpoint_ineligible",
         "reason:configured_target_budget",
         "reason:deferred_resource_pressure",
         "reason:elapsed_budget_exhausted",
@@ -29344,6 +29405,8 @@
         "reason:scanner_intelligence_hard_expired",
         "reason:storage_pressure",
         "reason:target_not_source_checkout",
+        "reason:telemetry_age_unknown",
+        "reason:telemetry_stale",
         "reason:thermal_policy_threshold",
         "reason:worker_failed",
         "reason:worker_start_timeout",
@@ -30134,6 +30197,7 @@
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
         "reason:battery_policy_threshold",
+        "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
         "reason:command_undeliverable",
@@ -30272,6 +30336,8 @@
         "reason:submit_failed",
         "reason:target_not_allowed",
         "reason:target_not_source_checkout",
+        "reason:telemetry_age_unknown",
+        "reason:telemetry_stale",
         "reason:test_bypass_explicit",
         "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
@@ -34313,6 +34379,12 @@
           "type": "owns"
         }
       ],
+      "reason:checkpoint_ineligible": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:claim_verified": [
         {
           "source": "domain:identity",
@@ -35136,6 +35208,18 @@
         }
       ],
       "reason:target_not_source_checkout": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:telemetry_age_unknown": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:telemetry_stale": [
         {
           "source": "domain:security",
           "type": "owns"
@@ -38523,6 +38607,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:checkpoint_ineligible",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -39072,6 +39160,14 @@
         },
         {
           "source": "reason:target_not_source_checkout",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
           "type": "verified_by"
         },
         {
@@ -41028,6 +41124,14 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
           "type": "verified_by"
         }
       ],
@@ -43003,6 +43107,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:checkpoint_ineligible",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -43552,6 +43660,14 @@
         },
         {
           "source": "reason:target_not_source_checkout",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
           "type": "verified_by"
         },
         {
@@ -43845,6 +43961,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:checkpoint_ineligible",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:claim_verified",
           "type": "verified_by"
         },
@@ -44394,6 +44514,14 @@
         },
         {
           "source": "reason:target_not_source_checkout",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_age_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:telemetry_stale",
           "type": "verified_by"
         },
         {
@@ -55201,6 +55329,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:checkpoint_ineligible",
+          "type": "owns"
+        },
+        {
           "target": "reason:configured_target_budget",
           "type": "owns"
         },
@@ -55230,6 +55362,14 @@
         },
         {
           "target": "reason:target_not_source_checkout",
+          "type": "owns"
+        },
+        {
+          "target": "reason:telemetry_age_unknown",
+          "type": "owns"
+        },
+        {
+          "target": "reason:telemetry_stale",
           "type": "owns"
         },
         {
@@ -57230,6 +57370,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:checkpoint_ineligible": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -59694,6 +59848,42 @@
       "reason:target_not_source_checkout": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:telemetry_age_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:telemetry_stale": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
           "type": "verified_by"
         },
         {
@@ -62813,6 +63003,15 @@
       "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
+      "id": "rel:11ce3e4a32bd829f",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
       "id": "rel:11daf983ffba30b8",
       "source": "reason:owner_claim_installation_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
@@ -63113,6 +63312,15 @@
       "id": "rel:141277cd50c7cdee",
       "source": "journey:device-enrollment",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:141c133d1e560927",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {
@@ -68585,6 +68793,15 @@
       "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
+      "id": "rel:408f0f717fe76bbd",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
       "id": "rel:40a32ea01f69bb69",
       "source": "reason:enterprise_membership_status_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -71026,6 +71243,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5572937e9b19fd61",
+      "source": "domain:security",
+      "target": "reason:checkpoint_ineligible",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:557a49d33ddf8bda",
@@ -71253,6 +71479,15 @@
       "source": "domain:identity",
       "target": "reason:enterprise_people_role_required",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:572cb948dcfbcc1b",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77692,6 +77927,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:8e62d198a39267e9",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteSecurity.jsx"
       ],
       "id": "rel:8e8dba46519f3042",
@@ -77770,6 +78014,15 @@
       "source": "component:post-switch-health",
       "target": "troubleshooting:release-failure",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:8f198438dfd3b28e",
+      "source": "reason:checkpoint_ineligible",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77877,6 +78130,15 @@
       "id": "rel:8fe423c0b348e0aa",
       "source": "requirement:architecture-08",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9053a58ab92faa20",
+      "source": "reason:checkpoint_ineligible",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -78512,6 +78774,15 @@
       "id": "rel:95c65c0ab5631bd7",
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.app.backup.failed",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:95ca5474385820f5",
+      "source": "domain:security",
+      "target": "reason:telemetry_age_unknown",
       "type": "owns"
     },
     {
@@ -79494,6 +79765,15 @@
       "source": "component:device-state",
       "target": "threat-model:durable-state",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:9e25c499bedbc3bd",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -81273,6 +81553,15 @@
       "id": "rel:ad8226c8e92534e3",
       "source": "reason:webauthn_user_verification_required",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ad87506ddceb3bf0",
+      "source": "reason:checkpoint_ineligible",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -84869,6 +85158,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:cda81f96ff24342d",
+      "source": "domain:security",
+      "target": "reason:telemetry_stale",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:cdb2172bf41a15da",
@@ -87275,6 +87573,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e11b9ea631a3dd9b",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:e12eb7ec240eb6e3",
@@ -88586,6 +88893,15 @@
       "id": "rel:ebcc028d38f1663a",
       "source": "journey:security-scan",
       "target": "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:ebd25a4a3bfe1d4a",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {
@@ -90893,9 +91209,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "0496d1cda7d641a3cbdbbe4c4e208672711544bc0458b69cd82f70df66906b44",
+  "source_fingerprint": "e8cff5be56b5bc3199923d36ed8a1cdabb65630585ecad8c67800c66fdc42df9",
   "statistics": {
-    "entity_count": 1186,
+    "entity_count": 1189,
     "entity_type_counts": {
       "adr": 6,
       "api": 199,
@@ -90905,7 +91221,7 @@
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 190,
+      "reason-code": 193,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
@@ -90919,7 +91235,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3334,
+    "relation_count": 3348,
     "source_count": 258
   }
 }

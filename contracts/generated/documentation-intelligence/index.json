@@ -2095,6 +2095,18 @@
         "user_message": "The remaining safety targets were deferred by the configured battery policy."
       },
       {
+        "code": "checkpoint_ineligible",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The cached target could not be reused safely, so the backend will check it again."
+      },
+      {
         "code": "claim_verified",
         "domain": "identity",
         "http_status": 403,
@@ -3753,6 +3765,30 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "This target cannot safely reuse a source-checkout Security result."
+      },
+      {
+        "code": "telemetry_age_unknown",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "The resource telemetry sample did not include a trustworthy age, so the backend did not use its numeric values for a resource decision.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets were deferred because current resource telemetry could not be verified."
+      },
+      {
+        "code": "telemetry_stale",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "The resource telemetry sample exceeded the bounded maximum age for a resource decision.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The remaining safety targets were deferred because resource telemetry is stale."
       },
       {
         "code": "test_bypass_explicit",
@@ -6730,5 +6766,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "0b29b61f322f6bb103dd9a975f9942f623a7f16c00536e2b43f255ed6ce7587f"
+  "source_fingerprint": "2d3450d27c87972c44a8e8f2f753cb8a9272a329daeb16fdee32505fd7b89447"
 }

@@ -4641,6 +4641,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
+      "domain": "security",
+      "id": "reason:checkpoint_ineligible",
+      "name": "checkpoint_ineligible",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "id": "reason:claim_verified",
@@ -6289,6 +6301,30 @@
       "domain": "security",
       "id": "reason:target_not_source_checkout",
       "name": "target_not_source_checkout",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The resource telemetry sample did not include a trustworthy age, so the backend did not use its numeric values for a resource decision.",
+      "domain": "security",
+      "id": "reason:telemetry_age_unknown",
+      "name": "telemetry_age_unknown",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The resource telemetry sample exceeded the bounded maximum age for a resource decision.",
+      "domain": "security",
+      "id": "reason:telemetry_stale",
+      "name": "telemetry_stale",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -17319,6 +17355,20 @@
       "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
+      "id": "rel:11ce3e4a32bd829f",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
       "id": "rel:11daf983ffba30b8",
       "source": "reason:owner_claim_installation_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
@@ -17784,6 +17834,20 @@
       "id": "rel:141277cd50c7cdee",
       "source": "journey:device-enrollment",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:141c133d1e560927",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {
@@ -26266,6 +26330,20 @@
       "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
+      "id": "rel:408f0f717fe76bbd",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
       "id": "rel:40a32ea01f69bb69",
       "source": "reason:enterprise_membership_status_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -30052,6 +30130,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5572937e9b19fd61",
+      "source": "domain:security",
+      "target": "reason:checkpoint_ineligible",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:557a49d33ddf8bda",
@@ -30399,6 +30491,20 @@
       "source": "domain:identity",
       "target": "reason:enterprise_people_role_required",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:572cb948dcfbcc1b",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -40393,6 +40499,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:8e62d198a39267e9",
+      "source": "reason:telemetry_stale",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteSecurity.jsx"
       ],
       "id": "rel:8e8dba46519f3042",
@@ -40511,6 +40631,20 @@
       "source": "component:post-switch-health",
       "target": "troubleshooting:release-failure",
       "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:8f198438dfd3b28e",
+      "source": "reason:checkpoint_ineligible",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -40678,6 +40812,20 @@
       "id": "rel:8fe423c0b348e0aa",
       "source": "requirement:architecture-08",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9053a58ab92faa20",
+      "source": "reason:checkpoint_ineligible",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -41658,6 +41806,20 @@
       "id": "rel:95c65c0ab5631bd7",
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.app.backup.failed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:95ca5474385820f5",
+      "source": "domain:security",
+      "target": "reason:telemetry_age_unknown",
       "type": "owns"
     },
     {
@@ -43180,6 +43342,20 @@
       "source": "component:device-state",
       "target": "threat-model:durable-state",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:9e25c499bedbc3bd",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -45939,6 +46115,20 @@
       "id": "rel:ad8226c8e92534e3",
       "source": "reason:webauthn_user_verification_required",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ad87506ddceb3bf0",
+      "source": "reason:checkpoint_ineligible",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -51520,6 +51710,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:cda81f96ff24342d",
+      "source": "domain:security",
+      "target": "reason:telemetry_stale",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:cdb2172bf41a15da",
@@ -55251,6 +55455,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e11b9ea631a3dd9b",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:e12eb7ec240eb6e3",
@@ -57277,6 +57495,20 @@
       "id": "rel:ebcc028d38f1663a",
       "source": "journey:security-scan",
       "target": "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "id": "rel:ebd25a4a3bfe1d4a",
+      "source": "reason:telemetry_age_unknown",
+      "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
       "type": "verified_by"
     },
     {

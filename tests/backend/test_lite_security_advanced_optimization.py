@@ -25,6 +25,7 @@ def isolate_security_optimization_state(tmp_path, monkeypatch):
         "POCKETLAB_SECURITY_THERMAL_PAUSE_C",
         "POCKETLAB_SECURITY_MIN_MEMORY_AVAILABLE_PERCENT",
         "POCKETLAB_SECURITY_MAX_ATOMIC_TARGETS",
+        "POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS",
         "POCKETLAB_SECURITY_TRIVY_DB_MANAGED",
         "POCKETLAB_SECURITY_TRIVY_DB_MAX_STALE_SECONDS",
     ):
@@ -143,6 +144,56 @@ def test_target_dag_normalizes_exact_and_nested_overlap(tmp_path):
     assert [item["state"] for item in nodes] == ["pending", "reused", "reused"]
     assert nodes[1]["overlap"] == "exact"
     assert nodes[2]["overlap"] == "nested"
+
+
+def test_target_dag_derives_dependencies_without_trusting_order_or_cycles(tmp_path):
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    parent = tmp_path / "app"
+    child = parent / "bin"
+    child.mkdir(parents=True)
+    nodes = optimization.normalize_target_dag(
+        [
+            {
+                "target_id": "app-bin",
+                "path": str(child),
+                "contract_id": "same",
+                "scanners": "vuln",
+                "depends_on": ["app"],
+            },
+            {
+                "target_id": "app",
+                "path": str(parent),
+                "contract_id": "same",
+                "scanners": "vuln",
+                "depends_on": ["app-bin"],
+            },
+        ]
+    )
+
+    assert [item["state"] for item in nodes] == ["reused", "pending"]
+    assert nodes[0]["depends_on"] == ["app"]
+    assert nodes[1]["depends_on"] == []
+
+
+def test_target_dag_discards_malformed_and_duplicate_definitions(tmp_path):
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    root = tmp_path / "app"
+    root.mkdir()
+    nodes = optimization.normalize_target_dag(
+        [
+            None,
+            {"target_id": "", "path": str(root), "contract_id": "same"},
+            {"target_id": "app", "path": str(root), "contract_id": "same"},
+            {"target_id": "app", "path": str(tmp_path / "other"), "contract_id": "same"},
+            {"target_id": "missing-path", "contract_id": "same"},
+        ]
+    )
+
+    assert [item["target_id"] for item in nodes] == ["app"]
+    assert nodes[0]["state"] == "pending"
+    assert nodes[0]["depends_on"] == []
 
 
 def test_source_contract_is_identical_across_quick_and_full(tmp_path, monkeypatch):
@@ -269,6 +320,7 @@ def test_trivy_database_revision_change_invalidates_target_identity(tmp_path, mo
 
 def test_target_cache_identity_mismatch_invalidates_reuse(tmp_path):
     from api_fastapi.services import lite_security
+    from api_fastapi.services import lite_security_evidence as evidence
 
     identity = {
         "schema": 2,
@@ -290,6 +342,9 @@ def test_target_cache_identity_mismatch_invalidates_reuse(tmp_path):
         "sbom_generator": "trivy",
         "sbom_schema": 1,
     }
+    evidence_ref = evidence.write_evidence(
+        "security-cache-source", "target.json", {"status": "checked"}
+    )
     assert lite_security._write_security_target_cache(
         identity=identity,
         target_id="target",
@@ -297,6 +352,7 @@ def test_target_cache_identity_mismatch_invalidates_reuse(tmp_path):
         scanners="vuln",
         findings=[],
         sbom=None,
+        evidence_ref=evidence_ref,
         run_id="security-cache-source",
         profile="full",
     )
@@ -304,6 +360,190 @@ def test_target_cache_identity_mismatch_invalidates_reuse(tmp_path):
 
     incompatible = {**identity, "scanner_db_revision": "sha256:db-two"}
     assert lite_security._read_security_target_cache(incompatible) is None
+
+
+def test_target_cache_rejects_ineligible_checkpoint_provenance(tmp_path):
+    from api_fastapi.services import lite_security
+    from api_fastapi.services import lite_security_evidence as evidence
+
+    identity = {
+        "schema": 2,
+        "contract_id": "target-trivy-v2",
+        "compatible_profiles": ["quick", "full"],
+        "target_id": "target",
+        "target_fingerprint": "sha256:target-one",
+        "scanner": "trivy",
+        "scanner_version": "1.2.3",
+        "scanner_artifact_revision": "sha256:scanner",
+        "scanner_db_revision": "sha256:db-one",
+        "scanner_db_valid_until": "2099-01-01T00:00:00+00:00",
+        "policy_revision": "sha256:policy",
+        "exclusion_revision": "sha256:exclusions",
+        "scanner_configuration_revision": "sha256:config",
+        "scanners": "vuln",
+        "secret_mode": False,
+        "sbom_format": "cyclonedx",
+        "sbom_generator": "trivy",
+        "sbom_schema": 1,
+    }
+    evidence_ref = evidence.write_evidence(
+        "security-cache-ineligible", "target.json", {"status": "checked"}
+    )
+    assert lite_security._write_security_target_cache(
+        identity=identity,
+        target_id="target",
+        target_label="Target",
+        scanners="vuln",
+        findings=[],
+        sbom=None,
+        evidence_ref=evidence_ref,
+        run_id="security-cache-ineligible",
+        profile="quick",
+    )
+    path = lite_security._security_target_cache_path(identity)
+    payload = lite_security.evidence.read_json(path, {})
+    payload["checkpoint"]["resume_eligible"] = False
+    lite_security.evidence.write_json(path, payload)
+
+    assert lite_security._read_security_target_cache(identity) is None
+
+
+def test_cache_provenance_rejects_missing_compatibility_identity_field():
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    identity = {
+        "schema": 2,
+        "contract_id": "target-trivy-v2",
+        "compatible_profiles": ["quick", "full"],
+        "target_id": "target",
+        "target_fingerprint": "sha256:target-one",
+        "scanner": "trivy",
+        "scanner_version": "1.2.3",
+        "scanner_artifact_revision": "sha256:scanner",
+        "scanner_db_revision": "sha256:db-one",
+        "scanner_db_valid_until": "2099-01-01T00:00:00+00:00",
+        "policy_revision": "sha256:policy",
+        "exclusion_revision": "sha256:exclusions",
+        "scanner_configuration_revision": "sha256:config",
+        "scanners": "vuln",
+        "secret_mode": False,
+        "sbom_format": "cyclonedx",
+        "sbom_generator": "trivy",
+        "sbom_schema": 1,
+    }
+    identity.pop("scanner_version")
+    identity_digest = optimization.digest(identity)
+    entry = {
+        "identity": identity,
+        "identity_digest": identity_digest,
+        "target": {
+            "target_id": "target",
+            "tool": "trivy",
+            "evidence_ref": "security/evidence/security-cache/source.json",
+        },
+        "checkpoint": {
+            "source_run_id": "security-cache",
+            "source_profile": "quick",
+            "completed_at": "2099-01-01T00:00:00+00:00",
+            "compatibility_digest": identity_digest,
+            "resume_eligible": True,
+        },
+    }
+
+    assert (
+        optimization.cache_provenance(
+            entry,
+            current_profile="quick",
+            source_run={"status": "succeeded", "scan_profile": "quick"},
+        )
+        is None
+    )
+
+
+def test_cache_provenance_rejects_malformed_full_checkpoint_fallback(tmp_path):
+    from api_fastapi.services import lite_security_evidence as evidence
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    identity = {
+        "schema": 2,
+        "contract_id": "target-trivy-v2",
+        "compatible_profiles": ["full"],
+        "target_id": "target",
+        "target_fingerprint": "sha256:target-one",
+        "scanner": "trivy",
+        "scanner_version": "1.2.3",
+        "scanner_artifact_revision": "sha256:scanner",
+        "scanner_db_revision": "sha256:db-one",
+        "scanner_db_valid_until": "2099-01-01T00:00:00+00:00",
+        "policy_revision": "sha256:policy",
+        "exclusion_revision": "sha256:exclusions",
+        "scanner_configuration_revision": "sha256:config",
+        "scanners": "vuln",
+        "secret_mode": False,
+        "sbom_format": "cyclonedx",
+        "sbom_generator": "trivy",
+        "sbom_schema": 1,
+    }
+    identity_digest = optimization.digest(identity)
+    evidence_ref = evidence.write_evidence(
+        "security-full-corrupt", "target.json", {"status": "checked"}
+    )
+    checkpoint_path = (
+        evidence.security_root()
+        / "checkpoints"
+        / "full"
+        / "security-full-corrupt.json"
+    )
+    evidence.write_json(checkpoint_path, {"schema": 999, "status": "succeeded"})
+
+    entry = {
+        "identity": identity,
+        "identity_digest": identity_digest,
+        "target": {
+            "target_id": "target",
+            "tool": "trivy",
+            "evidence_ref": evidence_ref,
+        },
+        "checkpoint": {
+            "source_run_id": "security-full-corrupt",
+            "source_profile": "full",
+            "completed_at": "2099-01-01T00:00:00+00:00",
+            "compatibility_digest": identity_digest,
+            "resume_eligible": True,
+        },
+    }
+
+    assert (
+        optimization.cache_provenance(
+            entry,
+            current_profile="full",
+            source_run={"status": "succeeded", "scan_profile": "full"},
+        )
+        is None
+    )
+
+
+def test_failed_quick_producer_cannot_supply_cache_reuse(tmp_path, monkeypatch):
+    lite_security, call_log = _prepare_scan_tools(tmp_path, monkeypatch)
+
+    lite_security.run_security_scan(
+        {"command_id": "security-cache-producer", "run_id": "security-cache-producer", "profile": "quick"}
+    )
+    producer_path = lite_security.evidence.runs_dir() / "security-cache-producer.json"
+    producer = lite_security.evidence.read_json(producer_path, {})
+    producer["status"] = "failed"
+    lite_security.evidence.write_json(producer_path, producer)
+
+    lite_security.run_security_scan(
+        {"command_id": "security-cache-consumer", "run_id": "security-cache-consumer", "profile": "quick"}
+    )
+
+    assert call_log.read_text(encoding="utf-8").splitlines() == [
+        "vuln,misconfig,secret",
+        "cyclonedx",
+        "vuln,misconfig,secret",
+        "cyclonedx",
+    ]
 
 
 def test_trivy_database_lifecycle_refreshes_stale_metadata(tmp_path, monkeypatch):
@@ -449,6 +689,7 @@ def test_budget_uses_configured_battery_policy_and_never_invents_one(monkeypatch
         "temperature_c": 35,
         "available_memory_percent": 40,
         "free_storage": 8 * 1024 * 1024 * 1024,
+        "telemetry_age_ms": 0,
     }
     default = optimization.scan_budget_decision(
         profile="full",
@@ -483,11 +724,94 @@ def test_budget_keeps_unknown_charging_telemetry_unknown(monkeypatch):
             "charging": None,
             "available_memory_percent": 40,
             "free_storage": 8 * 1024 * 1024 * 1024,
+            "telemetry_age_ms": 0,
         },
     )
 
     assert decision["outcome"] == "continue"
     assert decision["telemetry"]["charging"] is None
+
+
+def test_budget_defers_stale_telemetry_before_resource_thresholds(monkeypatch):
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    monkeypatch.setenv("POCKETLAB_SECURITY_BATTERY_PAUSE_PERCENT", "20")
+    monkeypatch.setenv("POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS", "30")
+    decision = optimization.scan_budget_decision(
+        profile="full",
+        started_monotonic=time.monotonic(),
+        completed_atomic_targets=0,
+        telemetry={
+            "battery_percent": 5,
+            "charging": False,
+            "temperature_c": 35,
+            "available_memory_percent": 40,
+            "free_storage": 8 * 1024 * 1024 * 1024,
+            "telemetry_age_ms": 30_001,
+        },
+    )
+
+    assert decision["outcome"] == "pause_at_checkpoint"
+    assert decision["reason"] == "telemetry_stale"
+    assert decision["telemetry_freshness"] == {
+        "status": "stale",
+        "age_ms": 30_001,
+        "max_age_ms": 30_000,
+    }
+
+
+def test_budget_does_not_allow_zero_reported_age_to_mask_stale_capture(monkeypatch):
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    monkeypatch.setenv("POCKETLAB_SECURITY_BATTERY_PAUSE_PERCENT", "20")
+    monkeypatch.setenv("POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS", "30")
+    captured_at = (datetime.now(timezone.utc) - timedelta(seconds=31)).isoformat().replace(
+        "+00:00", "Z"
+    )
+    decision = optimization.scan_budget_decision(
+        profile="full",
+        started_monotonic=time.monotonic(),
+        completed_atomic_targets=0,
+        telemetry={
+            "battery_percent": 5,
+            "charging": False,
+            "telemetry_age_ms": 0,
+            "captured_at": captured_at,
+        },
+    )
+
+    assert decision["outcome"] == "pause_at_checkpoint"
+    assert decision["reason"] == "telemetry_stale"
+    assert decision["telemetry_freshness"]["status"] == "stale"
+    assert decision["telemetry_freshness"]["age_ms"] >= 30_000
+
+
+def test_budget_defers_when_telemetry_age_is_unknown():
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    decision = optimization.scan_budget_decision(
+        profile="full",
+        started_monotonic=time.monotonic(),
+        completed_atomic_targets=0,
+        telemetry={"free_storage": 8 * 1024 * 1024 * 1024},
+    )
+
+    assert decision["outcome"] == "pause_at_checkpoint"
+    assert decision["reason"] == "telemetry_age_unknown"
+    assert decision["telemetry_freshness"]["status"] == "unknown"
+
+
+def test_completed_atomic_target_count_is_distinct_and_status_bound():
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    assert optimization.completed_atomic_target_count(
+        [
+            {"target_id": "source", "tool": "trivy", "status": "checked"},
+            {"target_id": "source", "tool": "trivy", "status": "reused"},
+            {"target_id": "source", "tool": "sbom", "status": "resumed"},
+            {"target_id": "pending", "tool": "trivy", "status": "partial"},
+        ]
+    ) == 2
 
 
 def test_resource_snapshot_marks_unavailable_battery_signals_unknown(tmp_path, monkeypatch):
@@ -501,6 +825,112 @@ def test_resource_snapshot_marks_unavailable_battery_signals_unknown(tmp_path, m
     assert snapshot["temperature_c"] is None
     assert snapshot["telemetry_source"] == "unavailable"
     assert snapshot["sanitized"] is True
+
+
+def test_full_checkpoint_reinitialization_preserves_committed_targets():
+    from api_fastapi.services import lite_security_optimization as optimization
+    from api_fastapi.services import lite_security_evidence as evidence
+
+    identity = {
+        "schema": 2,
+        "contract_id": "target-trivy-v2",
+        "compatible_profiles": ["full"],
+        "target_id": "source",
+        "target_fingerprint": "sha256:target",
+        "scanner": "trivy",
+        "scanner_version": "1.2.3",
+        "scanner_artifact_revision": "sha256:scanner",
+        "scanner_db_revision": "sha256:db",
+        "scanner_db_valid_until": "2099-01-01T00:00:00+00:00",
+        "policy_revision": "sha256:policy",
+        "exclusion_revision": "sha256:exclusions",
+        "scanner_configuration_revision": "sha256:config",
+        "scanners": "vuln",
+        "secret_mode": False,
+        "sbom_format": "cyclonedx",
+        "sbom_generator": "trivy",
+        "sbom_schema": 1,
+    }
+    evidence_ref = evidence.write_evidence(
+        "security-checkpoint-restart", "source.json", {"status": "checked"}
+    )
+    first = optimization.FullCheckpointLedger(
+        run_id="security-checkpoint-restart",
+        source_revision="a" * 40,
+        scanner_intelligence={"revision": "sha256:db"},
+    )
+    first.record(
+        {
+            "target_id": "source",
+            "tool": "trivy",
+            "status": "checked",
+            "evidence_ref": evidence_ref,
+        },
+        compatibility_identity=identity,
+        resume_eligible=True,
+    )
+
+    optimization.FullCheckpointLedger(
+        run_id="security-checkpoint-restart",
+        source_revision="b" * 40,
+        scanner_intelligence={"revision": "sha256:new-db"},
+    )
+    checkpoint = optimization.checkpoint_run_state("security-checkpoint-restart")
+
+    assert checkpoint is not None
+    assert checkpoint["status"] == "running"
+    assert checkpoint["targets"][0]["target_id"] == "source"
+    assert checkpoint["targets"][0]["resume_eligible"] is True
+    assert checkpoint["targets"][0]["compatibility_digest"] == optimization.digest(identity)
+
+
+def test_full_checkpoint_requires_durable_target_evidence():
+    from api_fastapi.services import lite_security_evidence as evidence
+    from api_fastapi.services import lite_security_optimization as optimization
+
+    identity = {
+        "schema": 2,
+        "contract_id": "target-trivy-v2",
+        "compatible_profiles": ["full"],
+        "target_id": "target",
+        "target_fingerprint": "sha256:target-one",
+        "scanner": "trivy",
+        "scanner_version": "1.2.3",
+        "scanner_artifact_revision": "sha256:scanner",
+        "scanner_db_revision": "sha256:db-one",
+        "scanner_db_valid_until": "2099-01-01T00:00:00+00:00",
+        "policy_revision": "sha256:policy",
+        "exclusion_revision": "sha256:exclusions",
+        "scanner_configuration_revision": "sha256:config",
+        "scanners": "vuln",
+        "secret_mode": False,
+        "sbom_format": "cyclonedx",
+        "sbom_generator": "trivy",
+        "sbom_schema": 1,
+    }
+    ledger = optimization.FullCheckpointLedger(
+        run_id="security-durable-checkpoint",
+        source_revision="a" * 40,
+        scanner_intelligence={"revision": "sha256:db-one"},
+    )
+    status = {
+        "target_id": "target",
+        "tool": "trivy",
+        "status": "checked",
+        "evidence_ref": "security/evidence/security-durable-checkpoint/missing.json",
+    }
+    ledger.record(status, compatibility_identity=identity, resume_eligible=True)
+    first = optimization.checkpoint_run_state("security-durable-checkpoint")
+    assert first is not None
+    assert first["targets"][0]["resume_eligible"] is False
+
+    status["evidence_ref"] = evidence.write_evidence(
+        "security-durable-checkpoint", "target.json", {"status": "checked"}
+    )
+    ledger.record(status, compatibility_identity=identity, resume_eligible=True)
+    second = optimization.checkpoint_run_state("security-durable-checkpoint")
+    assert second is not None
+    assert second["targets"][0]["resume_eligible"] is True
 
 
 def test_coverage_preserves_resume_and_resource_deferral_provenance():
@@ -655,6 +1085,24 @@ def test_full_process_failure_leaves_compatible_checkpoint_for_next_run(tmp_path
         "vuln,misconfig,secret",
         "cyclonedx",
     ]
+
+
+def test_full_checkpoint_records_unknown_source_identity_as_ineligible(tmp_path, monkeypatch):
+    lite_security, _ = _prepare_scan_tools(tmp_path, monkeypatch)
+    monkeypatch.setattr(lite_security, "_security_git_target_identity", lambda root, **kwargs: None)
+
+    lite_security.run_security_scan(
+        {"command_id": "security-unknown-source", "run_id": "security-unknown-source", "profile": "full"}
+    )
+    checkpoint = lite_security.optimization.checkpoint_run_state("security-unknown-source")
+
+    assert checkpoint is not None
+    source_records = [
+        item for item in checkpoint["targets"] if item["target_id"] == "pocketlab_source"
+    ]
+    assert {item["tool"] for item in source_records} == {"trivy", "sbom"}
+    assert all(item["resume_eligible"] is False for item in source_records)
+    assert all(item["compatibility_digest"] is None for item in source_records)
 
 
 def test_quick_source_result_is_reused_by_full_exact_contract(tmp_path, monkeypatch):

@@ -34,6 +34,7 @@ generator_version: 3
 | `authenticated_confirmed_device_removal` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `authentication_required` | identity | A protected write requires an authenticated human session or configured service credential. | warning | yes | no | Sign in before making this change. |
 | `battery_policy_threshold` | security | A reliable battery reading was at or below the explicitly configured device threshold while discharging. | warning | yes | no | The remaining safety targets were deferred by the configured battery policy. |
+| `checkpoint_ineligible` | security | An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible. | warning | yes | no | The cached target could not be reused safely, so the backend will check it again. |
 | `claim_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `cold_start_validation` | validation | Cold-start validation is in progress. | warning | yes | no | Cold-start validation is in progress. |
 | `command_undeliverable` | devices | The target agent cannot currently receive the command. | warning | yes | no | The target agent cannot currently receive the command. |
@@ -172,6 +173,8 @@ generator_version: 3
 | `submit_failed` | system | The work request could not be admitted. | warning | yes | no | The work request could not be admitted. |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | warning | no | yes | The requested target is outside the approved scope. |
 | `target_not_source_checkout` | security | A Security target is not the verified source checkout, so source-checkout result reuse is disabled. | warning | yes | no | This target cannot safely reuse a source-checkout Security result. |
+| `telemetry_age_unknown` | security | The resource telemetry sample did not include a trustworthy age, so the backend did not use its numeric values for a resource decision. | warning | yes | no | The remaining safety targets were deferred because current resource telemetry could not be verified. |
+| `telemetry_stale` | security | The resource telemetry sample exceeded the bounded maximum age for a resource decision. | warning | yes | no | The remaining safety targets were deferred because resource telemetry is stale. |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | info | no | yes | Test-only policy bypass. |
 | `thermal_policy_threshold` | security | Reliable device temperature telemetry reached the explicitly configured device threshold. | warning | yes | no | The remaining safety targets were deferred by the configured thermal policy. |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |

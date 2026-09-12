@@ -21136,6 +21136,31 @@
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SECURITY_TELEMETRY_MAX_AGE_SECONDS",
+      "owner": "FastAPI/runtime",
+      "purpose": "Security scan/profile configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py",
+        "tests/backend/test_lite_security_advanced_optimization.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "POCKETLAB_SECURITY_THERMAL_PAUSE_C",
       "owner": "FastAPI/runtime",
       "purpose": "Security scan/profile configuration",

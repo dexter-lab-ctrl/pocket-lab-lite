@@ -402,6 +402,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:checkpoint_ineligible",
+      "name": "checkpoint_ineligible",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The cached target could not be reused safely, so the backend will check it again."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -3174,6 +3194,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The resource telemetry sample did not include a trustworthy age, so the backend did not use its numeric values for a resource decision.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:telemetry_age_unknown",
+      "name": "telemetry_age_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred because current resource telemetry could not be verified."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The resource telemetry sample exceeded the bounded maximum age for a resource decision.",
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:telemetry_stale",
+      "name": "telemetry_stale",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The remaining safety targets were deferred because resource telemetry is stale."
+    },
+    {
+      "confidence": "source-derived",
       "description": "An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production.",
       "domain": "rules",
       "event_mapping": [],
@@ -3819,6 +3879,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0496d1cda7d641a3cbdbbe4c4e208672711544bc0458b69cd82f70df66906b44"
+    "source_fingerprint": "e8cff5be56b5bc3199923d36ed8a1cdabb65630585ecad8c67800c66fdc42df9"
   }
 }

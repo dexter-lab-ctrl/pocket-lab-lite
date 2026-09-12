@@ -46,13 +46,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -133,13 +133,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -167,13 +167,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -333,13 +333,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -475,13 +475,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -602,13 +602,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -739,13 +739,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -925,13 +925,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "battery_policy_threshold",
+        "checkpoint_ineligible",
         "configured_target_budget",
         "deferred_resource_pressure",
         "elapsed_budget_exhausted",
         "enterprise_connect_links_retired",
         "enterprise_mode_disabled",
-        "enterprise_owner_authority_required",
-        "enterprise_people_role_required"
+        "enterprise_owner_authority_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

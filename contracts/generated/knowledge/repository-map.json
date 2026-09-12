@@ -762,6 +762,7 @@
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
         "reason:battery_policy_threshold",
+        "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
         "reason:command_undeliverable",
@@ -900,6 +901,8 @@
         "reason:submit_failed",
         "reason:target_not_allowed",
         "reason:target_not_source_checkout",
+        "reason:telemetry_age_unknown",
+        "reason:telemetry_stale",
         "reason:test_bypass_explicit",
         "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
@@ -1036,6 +1039,7 @@
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
         "reason:battery_policy_threshold",
+        "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
         "reason:command_undeliverable",
@@ -1174,6 +1178,8 @@
         "reason:submit_failed",
         "reason:target_not_allowed",
         "reason:target_not_source_checkout",
+        "reason:telemetry_age_unknown",
+        "reason:telemetry_stale",
         "reason:test_bypass_explicit",
         "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
@@ -3855,6 +3861,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0496d1cda7d641a3cbdbbe4c4e208672711544bc0458b69cd82f70df66906b44"
+    "source_fingerprint": "e8cff5be56b5bc3199923d36ed8a1cdabb65630585ecad8c67800c66fdc42df9"
   }
 }
