@@ -2575,6 +2575,18 @@
         "user_message": "Owner claim creation is not enabled on this server."
       },
       {
+        "code": "identity_unavailable",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "A Security result cannot be safely reused because the target, scanner, or policy identity could not be established.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Security result reuse is unavailable; the target will be scanned normally."
+      },
+      {
         "code": "identity_username_invalid",
         "domain": "identity",
         "http_status": 403,
@@ -3645,6 +3657,18 @@
         "severity": "warning",
         "terminal": true,
         "user_message": "The requested target is outside the approved scope."
+      },
+      {
+        "code": "target_not_source_checkout",
+        "domain": "security",
+        "http_status": 200,
+        "meaning": "A Security target is not the verified source checkout, so source-checkout result reuse is disabled.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "This target cannot safely reuse a source-checkout Security result."
       },
       {
         "code": "test_bypass_explicit",
@@ -6610,5 +6634,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "67ff5f34e5d5bc56cd5715ec9c86dbf5225d840e746ef46c0a805377e0fed892"
+  "source_fingerprint": "0b05dc7d7c5d2c0a8ab8ce9f5a71f6fd0cabcd51535d4afdde50335b020fb1fc"
 }

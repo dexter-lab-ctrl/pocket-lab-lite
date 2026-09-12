@@ -3601,6 +3601,12 @@
           "type": "owns"
         }
       ],
+      "reason:identity_unavailable": [
+        {
+          "source": "domain:security",
+          "type": "owns"
+        }
+      ],
       "reason:identity_username_invalid": [
         {
           "source": "domain:identity",
@@ -4132,6 +4138,12 @@
       "reason:target_not_allowed": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:target_not_source_checkout": [
+        {
+          "source": "domain:security",
           "type": "owns"
         }
       ],
@@ -7671,6 +7683,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:identity_username_invalid",
           "type": "verified_by"
         },
@@ -8024,6 +8040,10 @@
         },
         {
           "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:target_not_source_checkout",
           "type": "verified_by"
         },
         {
@@ -9928,6 +9948,16 @@
       "test:tests/backend/test_lite_revision_sync_n4_n5.py": [
         {
           "source": "component:frontend-state",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_security.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_unavailable",
           "type": "verified_by"
         }
       ],
@@ -12053,6 +12083,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:identity_username_invalid",
           "type": "verified_by"
         },
@@ -12406,6 +12440,10 @@
         },
         {
           "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:target_not_source_checkout",
           "type": "verified_by"
         },
         {
@@ -12855,6 +12893,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:identity_username_invalid",
           "type": "verified_by"
         },
@@ -13208,6 +13250,10 @@
         },
         {
           "source": "reason:target_not_allowed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:target_not_source_checkout",
           "type": "verified_by"
         },
         {
@@ -19637,6 +19683,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
           "type": "verified_by"
         },
@@ -23999,6 +24049,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:identity_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:target_not_source_checkout",
+          "type": "owns"
+        },
+        {
           "target": "reason:worker_failed",
           "type": "owns"
         },
@@ -26715,6 +26773,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:identity_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:identity_username_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28297,6 +28373,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:target_not_source_checkout": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:test_bypass_explicit": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -29191,6 +29281,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f030b2ac5e41f961c57794b8e0526a91977d123555fcf3e1742d4ebec0acbda2"
+    "source_fingerprint": "25a4185f3ac167ef3d995146f6e34c4f97d72cb0ac835b0b78054e6e7c59062c"
   }
 }

@@ -74,6 +74,7 @@ generator_version: 3
 | `identity_setup_rejected` | identity | Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid. | warning | yes | no | Owner claim creation could not be verified. |
 | `identity_setup_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `identity_setup_unavailable` | identity | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | error | yes | no | Owner claim creation is not enabled on this server. |
+| `identity_unavailable` | security | A Security result cannot be safely reused because the target, scanner, or policy identity could not be established. | warning | yes | no | Security result reuse is unavailable; the target will be scanned normally. |
 | `identity_username_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `independent_approval_satisfied` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | warning | yes | no | There is not enough safe storage for the operation. |
@@ -163,6 +164,7 @@ generator_version: 3
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | warning | yes | no | Reconnect this storage or choose another backup location before continuing. |
 | `submit_failed` | system | The work request could not be admitted. | warning | yes | no | The work request could not be admitted. |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | warning | no | yes | The requested target is outside the approved scope. |
+| `target_not_source_checkout` | security | A Security target is not the verified source checkout, so source-checkout result reuse is disabled. | warning | yes | no | This target cannot safely reuse a source-checkout Security result. |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | info | no | yes | Test-only policy bypass. |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `unregistered_domain` | projections | The requested domain is not registered. | warning | yes | no | The requested domain is not registered. |

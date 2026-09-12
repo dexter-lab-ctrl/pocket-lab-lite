@@ -250,6 +250,7 @@
         "POCKETLAB_HEALTH_SAMPLE_SECONDS",
         "POCKETLAB_IS_CONTROL_PLANE",
         "POCKETLAB_LITE",
+        "POCKETLAB_LITE_API_READY_TIMEOUT_SECONDS",
         "POCKETLAB_LITE_APP_ROUTES",
         "POCKETLAB_LITE_DB_PATH",
         "POCKETLAB_LITE_DB_PROGRESS_READ_TIMEOUT_MS",
@@ -445,7 +446,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "d942b56399156b27bce29d686090d5111583fae806629f933c36a0453c168d1c",
+    "aggregate_fingerprint": "e3d9111b0e313a5eb6b27fef6fcff9810063cf84198ced565ab0f3c4d8436076",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -466,7 +467,7 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "46c23f9497e9e268ab06b16bb1dd49bcb1e148de5611f4546c83857cf2e35af4",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh": "1905104bdba9ea90b6828be3e3b518bae8aabb2b57c08d6f880b4788984834ed",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "ccb0edb3a71afb5be693f06c0041810cdb9116239e97438e5f1d4ffa8389f2ec",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "fad9c6ae9f0e90478cb4ea71bad048c5ee9e48fabd678546bfc13ad864989afe",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "7b08b45a78b5a22ed485a6804641e165764cddb01756b7bc9e59b2683db3bbd5",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "129b2a066ceb0c10c67a29938cc9b06b901f6b31923415db1684782a2460d805",
       "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
     },

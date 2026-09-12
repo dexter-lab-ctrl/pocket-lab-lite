@@ -7093,6 +7093,8 @@ def test_lite_security_quick_safety_profile_defaults_and_exclusions_source():
     assert "pwa_dist.previous.*" in plan["skip_dirs"]
     assert ".pocket_lab/trivy-cache" in plan["skip_dirs"]
     assert ".pocket_lab/lynis-tmp" in plan["skip_dirs"]
+    assert "state" in plan["skip_dirs"]
+    assert "api" in plan["skip_dirs"]
     assert "*.pyc" in plan["skip_files"]
 
     skip_args = policy.trivy_skip_args(Path.cwd())
@@ -7214,7 +7216,7 @@ def test_lite_security_full_local_check_profile_source_contract():
     assert policy.normalize_scan_profile("full") == "full"
     assert policy.build_scan_plan("full", Path.cwd())["profile"] == "full"
     assert "def _run_full_security_scan" in security
-    assert "target-pocketlab-source-trivy-vuln.json" in security
+    assert "target-pocketlab-source-trivy.json" in security
     assert "target-proot-ubuntu-trivy" in security
     assert "target-photoprism-config-secret.json" in security
     assert "target-backup-metadata.json" in security
@@ -7412,7 +7414,8 @@ def test_lite_security_enterprise_scanner_profile_history_contract():
     assert "_pm2_process_cmdline(\"pocket-nats\")" in security
     assert "target-aware" not in security.lower()
     assert "_photoprism_proot_targets" in security
-    assert "PhotoPrism app binary metadata" in security
+    assert "binary_path.exists()" in security
+    assert "PhotoPrism app binary" in security
     assert "POCKETLAB_LITE_BACKUP_ROOT" in policy_source
     assert "pocket-lab-lite-backups" in policy_source
     assert "scanner_quality" in security

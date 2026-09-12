@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: d82ea8c61d5982454c2053bfe893550633badcbc49684a44da59fa9fbdbd43da
+source_fingerprint: 60550c0e7e6cfb2f4a05dd18d7d22243bd8d2f96eade3371cc7ef9ff2e868b25
 schema_revision: 1
 validation_status: generated
 ---
@@ -82,6 +82,7 @@ validation_status: generated
 | `identity_setup_rejected` | identity | Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid. | yes | no | 401 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `identity_setup_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `identity_setup_unavailable` | identity | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | yes | no | 503 | error | structured reason/failure fields in Lite backend or contracts metadata |
+| `identity_unavailable` | security | A Security result cannot be safely reused because the target, scanner, or policy identity could not be established. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `identity_username_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `independent_approval_satisfied` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -171,6 +172,7 @@ validation_status: generated
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `submit_failed` | system | The work request could not be admitted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | no | yes | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `target_not_source_checkout` | security | A Security target is not the verified source checkout, so source-checkout result reuse is disabled. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | no | yes | 200 | info | structured reason/failure fields in Lite backend or contracts metadata |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |

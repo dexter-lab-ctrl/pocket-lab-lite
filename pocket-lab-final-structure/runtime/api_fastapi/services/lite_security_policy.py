@@ -70,7 +70,22 @@ EXCLUDED_DIRS = [
     "state/runs",
     "state/operations",
     "state/runner_events",
+    # The source scan covers canonical repository inputs.  The runtime state
+    # tree is generated operational data and is checked through the bounded
+    # posture/evidence readers instead of being traversed as source.
+    "state",
+    "state/security",
     "state/security/evidence",
+    "state/security/recovery",
+    "state/.pocketlab-dev",
+    "state/opa",
+    # Tab-sync collection bundles are generated diagnostic artifacts, not
+    # canonical source inputs.  They can contain served-asset snapshots that
+    # Trivy's secret analyzer cannot reliably classify on Termux.
+    "pocketlab-tab-sync-report-*",
+    # The root api/ directory contains generated health/telemetry snapshots;
+    # authoritative service posture is read through the bounded API readers.
+    "api",
     "vault/data",
     "gitea/data",
     "gitea/log",
@@ -102,6 +117,8 @@ EXCLUDED_FILES = [
     "*.sqlite3-wal",
     "index.db",
     "photoprism/index.db",
+    "operation_runs.json*",
+    "*.rollback.tmp*",
 ]
 
 QUICK_EXCLUDED_GROUPS = [
@@ -171,7 +188,6 @@ FULL_EXTRA_EXCLUDED_DIRS = [
     "var/log",
     "var/tmp",
     "home/*/.cache",
-    ".pocket_lab/lite/apps/photoprism/storage/index.db",
     ".pocket_lab/lite/apps/photoprism/storage/sidecar",
     ".pocket_lab/lite/apps/photoprism/storage/cache",
     ".pocket_lab/lite/apps/photoprism/storage/cache/media",

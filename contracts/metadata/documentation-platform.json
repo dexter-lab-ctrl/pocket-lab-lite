@@ -1055,6 +1055,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "identity_unavailable",
+      "deprecated_aliases": [],
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "A Security result cannot be safely reused because the target, scanner, or policy identity could not be established.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Security result reuse is unavailable; the target will be scanned normally."
+    },
+    {
+      "audit_severity": "warning",
       "code": "insufficient_storage",
       "deprecated_aliases": [],
       "domain": "system",
@@ -1457,6 +1472,21 @@
       "terminal": true,
       "ui_mapping": [],
       "user_message": "The requested target is outside the approved scope."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "target_not_source_checkout",
+      "deprecated_aliases": [],
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "A Security target is not the verified source checkout, so source-checkout result reuse is disabled.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "This target cannot safely reuse a source-checkout Security result."
     },
     {
       "audit_severity": "info",

@@ -802,6 +802,7 @@
         "reason:identity_setup_rejected",
         "reason:identity_setup_required",
         "reason:identity_setup_unavailable",
+        "reason:identity_unavailable",
         "reason:identity_username_invalid",
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
@@ -891,6 +892,7 @@
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
+        "reason:target_not_source_checkout",
         "reason:test_bypass_explicit",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
@@ -1066,6 +1068,7 @@
         "reason:identity_setup_rejected",
         "reason:identity_setup_required",
         "reason:identity_setup_unavailable",
+        "reason:identity_unavailable",
         "reason:identity_username_invalid",
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
@@ -1155,6 +1158,7 @@
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
+        "reason:target_not_source_checkout",
         "reason:test_bypass_explicit",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
@@ -3829,6 +3833,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f030b2ac5e41f961c57794b8e0526a91977d123555fcf3e1742d4ebec0acbda2"
+    "source_fingerprint": "25a4185f3ac167ef3d995146f6e34c4f97d72cb0ac835b0b78054e6e7c59062c"
   }
 }

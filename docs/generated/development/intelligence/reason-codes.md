@@ -79,6 +79,7 @@ confidence: generated
 | identity_setup_rejected | identity | warning | yes | Trusted owner-claim creation was rejected because the supplied setup proof was missing or invalid. | Correct the prerequisite and retry through the owning backend workflow. |
 | identity_setup_required | identity | warning | yes | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | Correct the prerequisite and retry through the owning backend workflow. |
 | identity_setup_unavailable | identity | error | yes | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | Correct the prerequisite and retry through the owning backend workflow. |
+| identity_unavailable | security | warning | yes | A Security result cannot be safely reused because the target, scanner, or policy identity could not be established. | Correct the prerequisite and retry through the owning backend workflow. |
 | identity_username_invalid | identity | warning | yes | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | Correct the prerequisite and retry through the owning backend workflow. |
 | independent_approval_satisfied | rules | warning | yes | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | Correct the prerequisite and retry through the owning backend workflow. |
 | insufficient_storage | system | warning | yes | There is not enough safe storage for the operation. | Correct the prerequisite and retry through the owning backend workflow. |
@@ -168,6 +169,7 @@ confidence: generated
 | storage_unavailable | recovery | warning | yes | A registered backup location cannot currently be reached or inspected safely. | Correct the prerequisite and retry through the owning backend workflow. |
 | submit_failed | system | warning | yes | The work request could not be admitted. | Correct the prerequisite and retry through the owning backend workflow. |
 | target_not_allowed | validation | warning | no | The requested target is outside the approved scope. | Review the owning evidence and operator guidance before another action. |
+| target_not_source_checkout | security | warning | yes | A Security target is not the verified source checkout, so source-checkout result reuse is disabled. | Correct the prerequisite and retry through the owning backend workflow. |
 | test_bypass_explicit | rules | info | no | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | Review the owning evidence and operator guidance before another action. |
 | trusted_local_admin | identity | warning | yes | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | Correct the prerequisite and retry through the owning backend workflow. |
 | unregistered_domain | projections | warning | yes | The requested domain is not registered. | Correct the prerequisite and retry through the owning backend workflow. |

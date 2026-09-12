@@ -295,6 +295,50 @@ def _security_compact_response(request: Request, payload: dict[str, Any]) -> Res
     return JSONResponse(content=payload, headers=headers)
 
 
+def _enforce_security_harness_capability(
+    auth_context: dict[str, Any], *, action_id: str, target_id: str
+) -> None:
+    """Apply the qualification-only Security capability boundary.
+
+    Security does not use the general OPA action catalog because its scan
+    lifecycle is already governed by the worker-owned command flow. The
+    harness capability check still belongs at this backend edge so a
+    synthetic session cannot reach Security routes through authentication
+    alone.
+    """
+    try:
+        from ..services import lite_harness
+
+        lite_harness.enforce_capability(
+            auth_context,
+            action_id=action_id,
+            target_type="security",
+            target_id=target_id,
+        )
+    except lite_harness.HarnessError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            headers={"Cache-Control": "no-store"},
+            detail={
+                "status": "blocked",
+                "accepted": False,
+                "reason_code": exc.reason_code,
+                "message": exc.message,
+                "sanitized": True,
+            },
+        ) from exc
+
+
+def _require_security_access(
+    request: Request, *, action_id: str, target_id: str, write: bool = False
+) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=write)
+    _enforce_security_harness_capability(
+        auth_context, action_id=action_id, target_id=target_id
+    )
+    return auth_context
+
+
 def _recovery_compact_response(request: Request, payload: dict[str, Any]) -> Response:
     headers = {
         "ETag": lite_security.compact_response_etag(payload),
@@ -2197,13 +2241,13 @@ def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Request) -
 
 @router.get("/security/summary")
 def get_lite_security_summary(request: Request) -> Response:
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="summary")
     return _security_compact_response(request, lite_security.summary_state())
 
 
 @router.get("/security/freshness")
 def get_lite_security_freshness(request: Request) -> Response:
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="freshness")
     return _security_compact_response(request, lite_security.split_freshness_state())
 
 
@@ -2211,7 +2255,9 @@ def get_lite_security_freshness(request: Request) -> Response:
 async def get_lite_security_profile(
     profile: str, request: Request, app_id: str | None = None
 ) -> Response:
-    deps.require_auth(request)
+    _require_security_access(
+        request, action_id="security.read", target_id=f"profile:{profile}"
+    )
     normalized_profile = str(profile or "").strip().lower()
     if normalized_profile == "app" and not str(app_id or "").strip():
         raise HTTPException(status_code=400, detail="app_id is required for App Check snapshots.")
@@ -2233,7 +2279,7 @@ async def get_lite_security_profile(
 async def get_lite_security_history(
     request: Request, limit: int = 20, cursor: str | None = None
 ) -> Response:
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="history")
     try:
         payload = await lite_security.run_api_maintenance(
             lite_security.split_history_state,
@@ -2250,7 +2296,9 @@ async def get_lite_security_history(
 
 @router.get("/security/details/{run_id}")
 async def get_lite_security_details(run_id: str, request: Request) -> Response:
-    deps.require_auth(request)
+    _require_security_access(
+        request, action_id="security.evidence.read", target_id=f"details:{run_id}"
+    )
     try:
         payload = await lite_security.run_api_maintenance(
             lite_security.split_run_details_state,
@@ -2266,7 +2314,11 @@ async def get_lite_security_details(run_id: str, request: Request) -> Response:
 
 @router.get("/security/evidence/{run_id}/summary")
 async def get_lite_security_evidence_summary(run_id: str, request: Request) -> Response:
-    deps.require_auth(request)
+    _require_security_access(
+        request,
+        action_id="security.evidence.read",
+        target_id=f"evidence-summary:{run_id}",
+    )
     try:
         payload = await lite_security.run_api_maintenance(
             lite_security.split_evidence_summary_state,
@@ -2287,7 +2339,7 @@ async def get_lite_security_evidence_summary(run_id: str, request: Request) -> R
     responses={200: {"description": "Security progress Server-Sent Events stream.", "content": {"text/event-stream": {"schema": {"type": "string"}}}}},
 )
 def get_lite_security_events(request: Request) -> Response:
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="events")
     return StreamingResponse(
         _security_events_generator(request),
         media_type="text/event-stream",
@@ -2306,7 +2358,7 @@ async def get_lite_security_progress(request: Request) -> Response:
     middleware_entry = float(
         getattr(request.state, "pocketlab_middleware_entry", route_entry)
     )
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="progress")
     auth_complete = time.perf_counter()
     if lite_security.prepared_security_progress_enabled():
         try:
@@ -2454,7 +2506,7 @@ def record_frontend_lifecycle_diagnostics(
 
 @router.get("/security")
 async def get_lite_security(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="current")
 
     def build_details_payload() -> dict[str, Any]:
         state = lite_security.current_state()
@@ -2481,7 +2533,7 @@ async def check_lite_security(
     payload: LiteSecurityScanRequest | None = Body(default=None),
 ) -> dict[str, Any]:
     request_started = time.perf_counter()
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     auth_done = time.perf_counter()
     payload = payload or LiteSecurityScanRequest()
     try:
@@ -2499,6 +2551,11 @@ async def check_lite_security(
             app_id = lite_security.policy.normalize_app_id(payload.app_id)
         except ValueError:
             raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
+    _enforce_security_harness_capability(
+        auth_context,
+        action_id=f"security.scan.{profile}",
+        target_id=app_id or profile,
+    )
     storage_readiness = lite_storage_guard.storage_readiness(request)
     if not storage_readiness.get("ready"):
         return JSONResponse(
@@ -2669,7 +2726,9 @@ async def scan_lite_security(
 
 @router.get("/security/runs/{run_id}")
 async def get_lite_security_run(run_id: str, request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
+    _require_security_access(
+        request, action_id="security.evidence.read", target_id=f"run:{run_id}"
+    )
     try:
         run = await lite_security.run_api_maintenance(
             lite_security.read_run,
@@ -2685,7 +2744,9 @@ async def get_lite_security_run(run_id: str, request: Request) -> dict[str, Any]
 
 @router.get("/security/evidence/{run_id}")
 async def get_lite_security_evidence(run_id: str, request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
+    _require_security_access(
+        request, action_id="security.evidence.read", target_id=f"evidence:{run_id}"
+    )
     try:
         payload = await lite_security.run_api_maintenance(
             lite_security.read_evidence,
@@ -2701,13 +2762,15 @@ async def get_lite_security_evidence(run_id: str, request: Request) -> dict[str,
 
 @router.get("/security/apps")
 def get_lite_security_apps(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
+    _require_security_access(request, action_id="security.read", target_id="apps")
     return lite_app_profiles.app_security_profiles()
 
 
 @router.get("/security/apps/{app_id}")
 def get_lite_security_app(app_id: str, request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
+    _require_security_access(
+        request, action_id="security.read", target_id=f"app:{app_id}"
+    )
     return lite_app_profiles.app_security_profile(app_id)
 
 
