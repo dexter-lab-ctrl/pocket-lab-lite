@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 6404e9604fa0760d76e68e60eca7897380c86f111d11022818bc0b4c6c95466c
+source_fingerprint: a7d1fe4961056eae7610b3421a162a09a0e99371c5f9b3684695969edd2ba9a1
 schema_revision: 1
 validation_status: generated
 ---
@@ -30,8 +30,9 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `app_action_lifecycle` | table | 10 | 0 | 4 | apps | App Catalog lifecycle and action services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql |
 | `app_current_state` | table | 20 | 0 | 3 | apps | App Catalog lifecycle and action services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0007_app_current_subprojections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0008_app_current_hot_subprojections.sql |
+| `assurance_execution_checkpoints` | table | 12 | 1 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql |
 | `assurance_findings` | table | 29 | 1 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
-| `assurance_runs` | table | 21 | 2 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
+| `assurance_runs` | table | 31 | 2 | 5 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql |
 | `assurance_scenarios` | table | 15 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
 | `assurance_tool_results` | table | 13 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
 | `audit_evidence_index` | table | 10 | 0 | 4 | audit | audit evidence indexing services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql |
@@ -152,6 +153,26 @@ Source-derived apps persistence object; detailed ownership is conservatively inf
 | `security_profile_json` | TEXT | no | '{}' | 0 |
 | `backup_targets_json` | TEXT | no | '{}' | 0 |
 
+<a id="assurance-execution-checkpoints"></a>
+## `assurance_execution_checkpoints`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `checkpoint_id` | INTEGER | yes | — | 1 |
+| `run_id` | TEXT | no | — | 0 |
+| `unit_kind` | TEXT | no | — | 0 |
+| `unit_id` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `attempt` | INTEGER | no | 0 | 0 |
+| `retry_safe` | INTEGER | no | 0 | 0 |
+| `resume_supported` | INTEGER | no | 0 | 0 |
+| `started_at` | TEXT | yes | — | 0 |
+| `completed_at` | TEXT | yes | — | 0 |
+| `heartbeat_at` | TEXT | yes | — | 0 |
+| `result_json` | TEXT | no | '{}' | 0 |
+
 <a id="assurance-findings"></a>
 ## `assurance_findings`
 
@@ -217,6 +238,16 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `started_at` | TEXT | yes | — | 0 |
 | `completed_at` | TEXT | yes | — | 0 |
 | `updated_at` | TEXT | no | — | 0 |
+| `admission_key` | TEXT | yes | — | 0 |
+| `admitted_at` | TEXT | yes | — | 0 |
+| `run_deadline` | TEXT | yes | — | 0 |
+| `heartbeat_at` | TEXT | yes | — | 0 |
+| `worker_instance_id` | TEXT | yes | — | 0 |
+| `worker_operation_id` | TEXT | yes | — | 0 |
+| `current_scenario` | TEXT | yes | — | 0 |
+| `current_tool` | TEXT | yes | — | 0 |
+| `checkpoint_generation` | INTEGER | no | 0 | 0 |
+| `last_event_sequence` | INTEGER | no | 0 | 0 |
 
 <a id="assurance-scenarios"></a>
 ## `assurance_scenarios`

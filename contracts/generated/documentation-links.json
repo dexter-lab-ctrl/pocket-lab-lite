@@ -297,6 +297,10 @@
         "title": "GET /api/lite/harness/security-assurance/runs/{run_id}",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs-run-id"
       },
+      "endpoint:GET:/api/lite/harness/security-assurance/runs/{run_id}/events": {
+        "title": "GET /api/lite/harness/security-assurance/runs/{run_id}/events",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs-run-id-events"
+      },
       "endpoint:GET:/api/lite/harness/security-assurance/runs/{run_id}/findings": {
         "title": "GET /api/lite/harness/security-assurance/runs/{run_id}/findings",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs-run-id-findings"
@@ -677,9 +681,25 @@
         "title": "POST /api/lite/fleet/remove-device",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-remove-device"
       },
+      "endpoint:POST:/api/lite/harness/bootstrap/challenge": {
+        "title": "POST /api/lite/harness/bootstrap/challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-bootstrap-challenge"
+      },
+      "endpoint:POST:/api/lite/harness/bootstrap/complete": {
+        "title": "POST /api/lite/harness/bootstrap/complete",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-bootstrap-complete"
+      },
+      "endpoint:POST:/api/lite/harness/bootstrap/grants": {
+        "title": "POST /api/lite/harness/bootstrap/grants",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-bootstrap-grants"
+      },
       "endpoint:POST:/api/lite/harness/challenge": {
         "title": "POST /api/lite/harness/challenge",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-challenge"
+      },
+      "endpoint:POST:/api/lite/harness/principal/revoke": {
+        "title": "POST /api/lite/harness/principal/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principal-revoke"
       },
       "endpoint:POST:/api/lite/harness/principals": {
         "title": "POST /api/lite/harness/principals",
@@ -696,6 +716,10 @@
       "endpoint:POST:/api/lite/harness/security-assurance/runs/{run_id}/cancel": {
         "title": "POST /api/lite/harness/security-assurance/runs/{run_id}/cancel",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-runs-run-id-cancel"
+      },
+      "endpoint:POST:/api/lite/harness/security-assurance/runs/{run_id}/resume": {
+        "title": "POST /api/lite/harness/security-assurance/runs/{run_id}/resume",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-runs-run-id-resume"
       },
       "endpoint:POST:/api/lite/harness/session": {
         "title": "POST /api/lite/harness/session",
@@ -1833,6 +1857,10 @@
         "title": "battery_policy_threshold",
         "url": "../../docs/generated/development/reason-codes.md#battery-policy-threshold"
       },
+      "reason:bootstrap_transport_rejected": {
+        "title": "bootstrap_transport_rejected",
+        "url": "../../docs/generated/development/reason-codes.md#bootstrap-transport-rejected"
+      },
       "reason:checkpoint_ineligible": {
         "title": "checkpoint_ineligible",
         "url": "../../docs/generated/development/reason-codes.md#checkpoint-ineligible"
@@ -2647,6 +2675,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/app_current_state.html",
         "title": "app_current_state"
       },
+      "table:assurance_execution_checkpoints": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#assurance-execution-checkpoints",
+        "schema_url": "../../docs/generated/schemaspy/tables/assurance_execution_checkpoints.html",
+        "title": "assurance_execution_checkpoints"
+      },
       "table:assurance_findings": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#assurance-findings",
         "schema_url": "../../docs/generated/schemaspy/tables/assurance_findings.html",
@@ -3025,7 +3058,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "238f3256c7e15c0fc80cfdb0b8d2a262dca0dd84e4e24773af32a3cee98fe72a",
+    "aggregate_fingerprint": "00ad7787c31ef1e5818381a11c5d13376813c8f264a23050faef003300765100",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3035,8 +3068,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
-      "contracts/metadata/documentation-platform.json": "f2b9650aab9e6b0ada0fa86c8de6af7fa59967b88f07ef60bf683fa9b5a65bd5",
+      "contracts/generated/lite-openapi.json": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
+      "contracts/metadata/documentation-platform.json": "1a2814f6afd6543c0d09cf7eafdbfee4b02c2a5fe6824fd5fbe8725771a8ffc7",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3073,6 +3106,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"

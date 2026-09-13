@@ -44,6 +44,21 @@ Source-derived apps persistence object; detailed ownership is conservatively inf
 | Indexes | idx_app_current_updated, idx_app_current_order, sqlite_autoindex_app_current_state_1 |
 | Confidence | inferred |
 
+## `assurance_execution_checkpoints`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_assurance_checkpoints_run_status, sqlite_autoindex_assurance_execution_checkpoints_1 |
+| Confidence | inferred |
+
 ## `assurance_findings`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -71,7 +86,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Readers | — |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | internal operational metadata |
-| Indexes | idx_assurance_runs_history, idx_assurance_one_active, sqlite_autoindex_assurance_runs_1 |
+| Indexes | idx_assurance_runs_active_admission, idx_assurance_runs_lease, idx_assurance_runs_history, idx_assurance_one_active, sqlite_autoindex_assurance_runs_1 |
 | Confidence | inferred |
 
 ## `assurance_scenarios`

@@ -76,6 +76,7 @@ generator_version: 3
 | GET /api/lite/harness/security-assurance/preflight | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/runs | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/runs/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/harness/security-assurance/runs/{run_id}/events | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/runs/{run_id}/findings | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/runs/{run_id}/report | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/suites | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -171,11 +172,16 @@ generator_version: 3
 | POST /api/lite/fleet/devices/{node_id}/restart-agent | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/fleet/invites/{invite_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/fleet/remove-device | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/bootstrap/challenge | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/bootstrap/complete | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/bootstrap/grants | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/challenge | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/principal/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/principals | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/principals/{principal_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/runs | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/runs/{run_id}/cancel | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/security-assurance/runs/{run_id}/resume | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/session | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/identity/login | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/identity/logout | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |

@@ -81,6 +81,37 @@
             <column ascending="true" name="app_id"/>
          </index>
       </table>
+      <table name="assurance_execution_checkpoints" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="checkpoint_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="unit_kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="unit_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="attempt" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="retry_safe" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="resume_supported" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="heartbeat_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="11" name="result_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="checkpoint_id" sequenceNumberInPK="1"/>
+         <index name="assurance_execution_checkpoints_s_pk" unique="true">
+            <column ascending="true" name="checkpoint_id"/>
+         </index>
+         <index name="idx_assurance_checkpoints_run_status" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="unit_kind"/>
+            <column ascending="true" name="unit_id"/>
+         </index>
+         <index name="sqlite_autoindex_assurance_execution_checkpoints_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="unit_kind"/>
+            <column ascending="true" name="unit_id"/>
+         </index>
+      </table>
       <table name="assurance_findings" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="finding_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
@@ -137,6 +168,7 @@
       </table>
       <table name="assurance_runs" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="run_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_execution_checkpoints"/>
             <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_findings"/>
             <child column="baseline_run_id" foreignKey="" implied="false" onDeleteCascade="false" table="assurance_runs"/>
             <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_scenarios"/>
@@ -166,6 +198,16 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="admission_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="admitted_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="run_deadline" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="heartbeat_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="worker_instance_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="worker_operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="current_scenario" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="current_tool" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="29" name="checkpoint_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="30" name="last_event_sequence" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <primaryKey column="run_id" sequenceNumberInPK="1"/>
          <index name="assurance_runs_s_pk" unique="true">
             <column ascending="true" name="run_id"/>
@@ -173,10 +215,18 @@
          <index name="idx_assurance_one_active" unique="true">
             <column ascending="true" name="status"/>
          </index>
+         <index name="idx_assurance_runs_active_admission" unique="true">
+            <column ascending="true" name="admission_key"/>
+         </index>
          <index name="idx_assurance_runs_history" unique="false">
             <column ascending="true" name="suite_id"/>
             <column ascending="true" name="status"/>
             <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="idx_assurance_runs_lease" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="run_deadline"/>
+            <column ascending="true" name="heartbeat_at"/>
          </index>
          <index name="sqlite_autoindex_assurance_runs_1" unique="true">
             <column ascending="true" name="run_id"/>

@@ -1820,6 +1820,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Events",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/runs/{run_id}/events",
+      "operation_id": "events_api_lite_harness_security_assurance_runs__run_id__events_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs/{run_id}/events",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Findings",
       "domain": "harness",
       "id": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
@@ -4571,6 +4594,75 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Bootstrap Challenge",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/bootstrap/challenge",
+      "method": "POST",
+      "name": "POST /api/lite/harness/bootstrap/challenge",
+      "operation_id": "bootstrap_challenge_api_lite_harness_bootstrap_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/bootstrap/challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Bootstrap Complete",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/bootstrap/complete",
+      "method": "POST",
+      "name": "POST /api/lite/harness/bootstrap/complete",
+      "operation_id": "bootstrap_complete_api_lite_harness_bootstrap_complete_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/bootstrap/complete",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Bootstrap Grant",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/bootstrap/grants",
+      "method": "POST",
+      "name": "POST /api/lite/harness/bootstrap/grants",
+      "operation_id": "bootstrap_grant_api_lite_harness_bootstrap_grants_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/bootstrap/grants",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Challenge",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/challenge",
@@ -4584,6 +4676,28 @@
         "503"
       ],
       "route": "/api/lite/harness/challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Authenticated Principal",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/principal/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/harness/principal/revoke",
+      "operation_id": "revoke_authenticated_principal_api_lite_harness_principal_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/harness/principal/revoke",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -4676,6 +4790,29 @@
         "503"
       ],
       "route": "/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Resume",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
+      "method": "POST",
+      "name": "POST /api/lite/harness/security-assurance/runs/{run_id}/resume",
+      "operation_id": "resume_api_lite_harness_security_assurance_runs__run_id__resume_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs/{run_id}/resume",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -6305,6 +6442,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
+    "source_fingerprint": "fa183089ec0951bc07a8014359e0492dabfe2d6d0327b2bc69ab659a8502de3f"
   }
 }

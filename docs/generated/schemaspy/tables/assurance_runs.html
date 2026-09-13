@@ -118,6 +118,11 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="assurance_execution_checkpoints.run_id references assurance_runs.run_id via "><a href='assurance_execution_checkpoints.html'>assurance_execution_checkpoints</a><span class='relatedKey'>.run_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="assurance_findings.run_id references assurance_runs.run_id via "><a href='assurance_findings.html'>assurance_findings</a><span class='relatedKey'>.run_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -495,6 +500,176 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="admission_key">admission_key</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="admitted_at">admitted_at</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="run_deadline">run_deadline</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="heartbeat_at">heartbeat_at</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="worker_instance_id">worker_instance_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="worker_operation_id">worker_operation_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="current_scenario">current_scenario</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="current_tool">current_tool</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="checkpoint_generation">checkpoint_generation</span></td>
+                                    <td>INTEGER</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>0</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="last_event_sequence">last_event_sequence</span></td>
+                                    <td>INTEGER</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>0</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -538,10 +713,22 @@
                                     <td>status</td>
                                 </tr>
                                 <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> idx_assurance_runs_active_admission</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>admission_key</td>
+                                </tr>
+                                <tr>
                                     <td title='Indexed'>idx_assurance_runs_history</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>suite_id + status + updated_at</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>idx_assurance_runs_lease</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>status + run_deadline + heartbeat_at</td>
                                 </tr>
                                 <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> sqlite_autoindex_assurance_runs_1</td>
@@ -574,49 +761,53 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="757,5,1020,334">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,378,700,1068">
-<area shape="rect" id="node3" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,528,269,769">
-<area shape="rect" id="node4" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="754,352,1023,563">
-<area shape="rect" id="node5" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="744,581,1032,793">
+<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="779,5,1167,246">
+<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,464,735,1446">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,613,269,854">
+<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="842,264,1104,593">
+<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="838,611,1107,822">
+<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="829,840,1117,1051">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/assurance_runs.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="757,5,1020,334">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,378,700,1068">
-<area shape="rect" id="node3" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,1139,269,1379">
-<area shape="rect" id="node4" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="754,352,1023,563">
-<area shape="rect" id="node5" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="744,581,1032,793">
-<area shape="rect" id="node6" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="368,1085,646,1179">
-<area shape="rect" id="node7" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="377,1197,636,1291">
-<area shape="rect" id="node8" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="387,1309,626,1403">
+<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="779,5,1167,246">
+<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,464,735,1446">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,1517,269,1758">
+<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="842,264,1104,593">
+<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="838,611,1107,822">
+<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="829,840,1117,1051">
+<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="385,1464,663,1558">
+<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="394,1576,654,1670">
+<area shape="rect" id="node9" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="404,1688,644,1782">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/assurance_runs.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="757,5,1020,334">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,378,700,1068">
-<area shape="rect" id="node3" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,528,269,769">
-<area shape="rect" id="node4" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="754,352,1023,563">
-<area shape="rect" id="node5" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="744,581,1032,793">
+<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="779,5,1167,246">
+<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,464,735,1446">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,613,269,854">
+<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="842,264,1104,593">
+<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="838,611,1107,822">
+<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="829,840,1117,1051">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/assurance_runs.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="783,5,1046,334">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,378,700,1068">
-<area shape="rect" id="node3" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,1251,269,1491">
-<area shape="rect" id="node4" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="780,352,1049,563">
-<area shape="rect" id="node5" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="770,581,1058,793">
-<area shape="rect" id="node6" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="368,1085,646,1179">
-<area shape="rect" id="node7" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="377,1197,636,1291">
-<area shape="rect" id="node8" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="387,1309,626,1403">
-<area shape="rect" id="node9" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="744,1456,1084,1550">
-<area shape="rect" id="node10" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="394,1456,620,1550">
+<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="779,5,1167,246">
+<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,464,735,1446">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,1629,269,1870">
+<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="842,264,1104,593">
+<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="838,611,1107,822">
+<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="829,840,1117,1051">
+<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="385,1464,663,1558">
+<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="394,1576,654,1670">
+<area shape="rect" id="node9" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="404,1688,644,1782">
+<area shape="rect" id="node10" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="803,1835,1143,1929">
+<area shape="rect" id="node11" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="411,1835,637,1929">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/assurance_runs.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

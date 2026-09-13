@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: ff2aa8130074258e7f97b45599ec7556fdf401c00c1319caf0d2ef935cb5d8cf
+source_fingerprint: 32aeb591f9e115bd0f14715ab33defa64f1444051ec03f91327711b745fdc62f
 schema_revision: 1
 validation_status: generated
 ---
@@ -137,6 +137,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:evidence:runtime:promote`
 - `lite:har:inspect`
 - `lite:har:sanitize`
+- `lite:harness:bootstrap`
+- `lite:harness:keygen`
 - `lite:harness:principal:create`
 - `lite:harness:profiles`
 - `lite:harness:session:start`
@@ -162,6 +164,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:performance:wsl`
 - `lite:playwright:preflight`
 - `lite:qualification:start`
+- `lite:qualification:start:key-bound`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
 - `lite:runtime:ssh:check`
@@ -177,6 +180,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:security:assurance:compare`
 - `lite:security:assurance:deep`
 - `lite:security:assurance:preflight`
+- `lite:security:assurance:qualify`
 - `lite:security:assurance:report`
 - `lite:security:assurance:scenario`
 - `lite:security:assurance:smoke`

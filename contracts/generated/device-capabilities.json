@@ -104,7 +104,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "0cf4bfb04f998837d76f16c88eb8aed667af3467868f7a61f56f46d6a1b3f37f",
+    "aggregate_fingerprint": "a477b8a02292af7ff4cb86646f95b26305ce329ca00a4c4452e3d823b8cc47c2",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -114,7 +114,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "f2b9650aab9e6b0ada0fa86c8de6af7fa59967b88f07ef60bf683fa9b5a65bd5",
+      "contracts/metadata/documentation-platform.json": "1a2814f6afd6543c0d09cf7eafdbfee4b02c2a5fe6824fd5fbe8725771a8ffc7",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py": "fc7e7986e493bb50be088dac214d6d317dad5014544f2886c19e013cd13a78ee",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"

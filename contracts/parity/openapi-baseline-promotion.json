@@ -1,11 +1,12 @@
 {
   "approved_change_classes": [
-    "add the loopback-only Runtime Security Assurance Harness OpenAPI surface under /api/lite/harness/security-assurance/*, including fixed capability/suite/preflight/run/findings/report/cancel operations; these endpoints remain fail-closed behind harness enablement, loopback-only transport, Ed25519 proof, short-lived qualification session, least-privilege capability, fixed target-scope, resource, and worker-owned execution gates"
+    "add the loopback-only Runtime Security Assurance Harness OpenAPI surface under /api/lite/harness/security-assurance/*, including fixed capability/suite/preflight/run/findings/report/cancel operations; these endpoints remain fail-closed behind harness enablement, loopback-only transport, Ed25519 proof, short-lived qualification session, least-privilege capability, fixed target-scope, resource, and worker-owned execution gates",
+    "add the qualification-only key-bound bootstrap challenge/complete operations and durable assurance events/resume operations; bootstrap remains direct-loopback, operator-approved, fixed-profile, one-use, short-lived, and unavailable through Caddy or production"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-  "promoted_sha256": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
+  "previous_sha256": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
+  "promoted_sha256": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -16,5 +17,5 @@
   },
   "source_revision": "feat/runtime-security-assurance-harness",
   "status": "promoted",
-  "validation_status": "dev-pc-qualified-runtime-security-assurance-harness-contract"
+  "validation_status": "dev-pc-validated-runtime-security-assurance-harness-contract"
 }

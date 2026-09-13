@@ -76,6 +76,95 @@
         "title": "AssuranceRunRequest",
         "type": "object"
       },
+      "BootstrapChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "grant_id": {
+            "maxLength": 40,
+            "minLength": 36,
+            "pattern": "^hbg-[0-9a-f]{32}$",
+            "title": "Grant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "grant_id"
+        ],
+        "title": "BootstrapChallengeRequest",
+        "type": "object"
+      },
+      "BootstrapCompleteRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "maxLength": 40,
+            "minLength": 36,
+            "pattern": "^hbc-[0-9a-f]{32}$",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "grant_id": {
+            "maxLength": 40,
+            "minLength": 36,
+            "pattern": "^hbg-[0-9a-f]{32}$",
+            "title": "Grant Id",
+            "type": "string"
+          },
+          "principal_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9._-]{2,79}$",
+            "title": "Principal Id",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 64,
+            "minLength": 40,
+            "title": "Public Key",
+            "type": "string"
+          },
+          "signature": {
+            "maxLength": 100,
+            "minLength": 80,
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "grant_id",
+          "principal_id",
+          "public_key",
+          "signature"
+        ],
+        "title": "BootstrapCompleteRequest",
+        "type": "object"
+      },
+      "BootstrapGrantRequest": {
+        "additionalProperties": false,
+        "description": "Public inputs for the operator-approved assurance bootstrap.",
+        "properties": {
+          "principal_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9._-]{2,79}$",
+            "title": "Principal Id",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 64,
+            "minLength": 40,
+            "title": "Public Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "principal_id",
+          "public_key"
+        ],
+        "title": "BootstrapGrantRequest",
+        "type": "object"
+      },
       "ChallengeRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8259,6 +8348,226 @@
         ]
       }
     },
+    "/api/lite/harness/bootstrap/challenge": {
+      "post": {
+        "operationId": "bootstrap_challenge_api_lite_harness_bootstrap_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BootstrapChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Bootstrap Challenge Api Lite Harness Bootstrap Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Bootstrap Challenge",
+        "tags": [
+          "lite-harness"
+        ]
+      }
+    },
+    "/api/lite/harness/bootstrap/complete": {
+      "post": {
+        "operationId": "bootstrap_complete_api_lite_harness_bootstrap_complete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BootstrapCompleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Bootstrap Complete Api Lite Harness Bootstrap Complete Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Bootstrap Complete",
+        "tags": [
+          "lite-harness"
+        ]
+      }
+    },
+    "/api/lite/harness/bootstrap/grants": {
+      "post": {
+        "description": "Create a process-ephemeral, key-bound grant after operator startup approval.",
+        "operationId": "bootstrap_grant_api_lite_harness_bootstrap_grants_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BootstrapGrantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Bootstrap Grant Api Lite Harness Bootstrap Grants Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Bootstrap Grant",
+        "tags": [
+          "lite-harness"
+        ]
+      }
+    },
     "/api/lite/harness/capabilities": {
       "get": {
         "operationId": "capabilities_api_lite_harness_capabilities_get",
@@ -8370,6 +8679,60 @@
           }
         },
         "summary": "Challenge",
+        "tags": [
+          "lite-harness"
+        ]
+      }
+    },
+    "/api/lite/harness/principal/revoke": {
+      "post": {
+        "description": "Allow a bootstrap-created assurance principal to revoke itself.\n\nThis is intentionally narrower than provisioning-token revocation: the\nsigned session must be direct-loopback, bound to the assurance profile, and\nhold the server-owned cleanup capability.",
+        "operationId": "revoke_authenticated_principal_api_lite_harness_principal_revoke_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Revoke Authenticated Principal Api Lite Harness Principal Revoke Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Authenticated Principal",
         "tags": [
           "lite-harness"
         ]
@@ -8993,6 +9356,92 @@
         ]
       }
     },
+    "/api/lite/harness/security-assurance/runs/{run_id}/events": {
+      "get": {
+        "operationId": "events_api_lite_harness_security_assurance_runs__run_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 10000000,
+              "minimum": 0,
+              "title": "After",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Events Api Lite Harness Security Assurance Runs  Run Id  Events Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Events",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
     "/api/lite/harness/security-assurance/runs/{run_id}/findings": {
       "get": {
         "operationId": "findings_api_lite_harness_security_assurance_runs__run_id__findings_get",
@@ -9136,6 +9585,80 @@
           }
         },
         "summary": "Report",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/runs/{run_id}/resume": {
+      "post": {
+        "operationId": "resume_api_lite_harness_security_assurance_runs__run_id__resume_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Resume Api Lite Harness Security Assurance Runs  Run Id  Resume Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resume",
         "tags": [
           "lite-security-assurance"
         ]

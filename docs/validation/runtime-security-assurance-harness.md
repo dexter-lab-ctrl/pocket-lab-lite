@@ -79,10 +79,50 @@ The assurance profile has these capabilities:
 `security.assurance.run`, `read`, `cancel`, `passive`, `sast`, `sca`, `api`,
 `runtime`, `threat_scenario`, `report`, and `baseline`.
 
-It has no destructive capability and no generic equivalent of shell/process,
+The profile also has the narrowly scoped `security.assurance.cleanup`
+capability. It may revoke only its own bootstrap-created principal; it cannot
+revoke another principal or use the provisioning path. It has no destructive
+capability and no generic equivalent of shell/process,
 arbitrary filesystem, arbitrary network, arbitrary NATS, host mutation, or
 Owner authority. Unknown capabilities, profiles, purposes, targets, scenarios,
 and suites fail closed.
+
+## Key-bound operator bootstrap
+
+For automated qualification, the preferred path is an operator-approved
+key-bound bootstrap. The operator starts qualification with the public-key file
+and the fixed `security-assurance-runner` profile:
+
+```text
+operator starts qualification
+    -> server records principal id + public-key fingerprint in process state
+    -> server issues one ephemeral five-minute bootstrap grant
+    -> client requests a challenge and signs the exact canonical payload
+    -> FastAPI verifies key, runtime, revision, profile, purpose, target, and gates
+    -> one synthetic assurance principal and one normal session are created atomically
+```
+
+The grant is process-ephemeral, one-use, revision/runtime/key bound, and is not
+a bearer provisioning secret. API restart invalidates unconsumed grants. The
+legacy `POCKETLAB_HARNESS_PROVISIONING_TOKEN` registration path remains for
+explicit manual compatibility, but it is not required by the key-bound
+qualification client and is never printed or placed in evidence.
+
+The four lifetimes are intentionally independent:
+
+| Object | Default / bound | Expiry or revocation behavior |
+| --- | --- | --- |
+| Bootstrap grant | 5 minutes, exactly one use | Ephemeral; consumed or expired grants cannot be reused |
+| Synthetic principal | 12 hours, bounded to 1–24 hours | Natural expiry blocks new sessions/runs; explicit revocation cancels active assurance work |
+| Authentication session | 20 minutes, bounded to 1–60 minutes | Expiry immediately removes request authority; it does not terminate an admitted run |
+| Assurance run | Suite registry maximum: Smoke 600s, Standard 1800s, Deep 7200s, Adversarial 600s | Durable run lease is independent of the authenticating session |
+
+The client renews by issuing a new signed challenge/session before the current
+session expires. It never extends or persists a raw token. A local continuity
+record at `~/.pocketlab-qualification/runtime-security-assurance.json` contains
+only the principal/fingerprint, key-file path, run ID, suite/scenario,
+runtime/revision identity, and last event sequence. The raw session token is
+held only in process memory.
 
 ## Server-owned registries
 
@@ -182,6 +222,18 @@ registered runner. Redelivered terminal commands are acknowledged without
 re-execution. A worker, NATS, API, timeout, or resource interruption cannot be
 silently converted to `PASS`.
 
+Each admitted run has a durable admission key, deadline, worker identity,
+heartbeat, progress sequence, and checkpoint generation. Repeated admission of
+the same principal/suite/scenario/runtime/revision returns the existing active
+run ID without publishing a duplicate scanner command. Completed successful
+scenario checkpoints are reused. A stale heartbeat or interrupted unit is
+reconciled to `PARTIAL` and can be resumed only from a registered retry-safe,
+resume-supported checkpoint. A non-retry-safe unit remains for manual review.
+Client disconnect, session expiry, and reauthentication do not create a new
+run. Explicit principal revocation marks active runs for cancellation; the
+worker then terminates its owned process group and records a truthful terminal
+result.
+
 ## Reports and findings
 
 Reports are written under the runtime state directory, never into the Git
@@ -204,8 +256,10 @@ security/assurance/<run-id>/
   summary.md
 ```
 
-The durable SQLite schema is migration `0035_security_assurance.sql` and
-stores run, scenario, tool-result, and normalized finding rows. A finding has
+The durable SQLite schema uses migration `0035_security_assurance.sql` for the
+assurance domain and migration `0036_assurance_execution_lifecycle.sql` for
+the durable run lease/checkpoint state. It stores run, scenario, tool-result,
+checkpoint, and normalized finding rows. A finding has
 a stable key and includes severity, confidence, component, asset, trust
 boundary, STRIDE categories, OWASP 2021 IDs where applicable, attack paths,
 controls, CWE/CVE identifiers when safely available, remediation, bounded
@@ -266,6 +320,8 @@ POST /api/lite/harness/security-assurance/runs
 GET  /api/lite/harness/security-assurance/runs
 GET  /api/lite/harness/security-assurance/runs/{run_id}
 GET  /api/lite/harness/security-assurance/runs/{run_id}/findings
+GET  /api/lite/harness/security-assurance/runs/{run_id}/events?after=0
+POST /api/lite/harness/security-assurance/runs/{run_id}/resume
 GET  /api/lite/harness/security-assurance/runs/{run_id}/report
 POST /api/lite/harness/security-assurance/runs/{run_id}/cancel
 ```
@@ -273,8 +329,11 @@ POST /api/lite/harness/security-assurance/runs/{run_id}/cancel
 The request body accepts only a registered `suite_id`, optional registered
 `scenario_id`, and an optional same-principal baseline run ID. The CLI and
 Taskfile expose `check`, `preflight`, `smoke`, `standard`, `deep`,
-`adversarial`, `scenario`, `report`, and `compare`. There is no `COMMAND=` or
-arbitrary command fallback.
+`adversarial`, `scenario`, `report`, `compare`, and the bounded `qualify`
+workflow. The harness client also exposes `keygen` and `bootstrap`; their
+output recursively removes session tokens, signatures, challenge payloads,
+nonces, and other secret-shaped fields. There is no `COMMAND=` or arbitrary
+command fallback.
 
 ## Caddy boundary
 
@@ -301,13 +360,16 @@ fetches and consumes an already-published revision for qualification.
 3. Fetch and consume only the published feature commit using the established
    Lite deployment procedure. Do not edit source or create development Git
    state on the phone.
-4. Start the explicit qualification profile with the existing
-   `scripts/dev/lite/start-qualification.sh` contract. Keep test bypass,
-   destructive, and qualification-owner flags off.
-5. Create the private Ed25519 key on the approved client in a `0600` file
-   outside Git. Register only the public principal through the supported
-   provisioning path and request a short-lived assurance session.
-6. Run Smoke, inspect the sanitized report, and run Standard only when the
+4. Create the private Ed25519 key on the approved client in a `0600` file
+   outside Git. Copy or otherwise provide only its public key to the operator.
+5. Start the explicit qualification profile with
+   `--bootstrap-principal-id`, `--bootstrap-public-key-file`, and the fixed
+   `--bootstrap-profile security-assurance-runner`. Keep test bypass,
+   destructive, and qualification-owner flags off. The server-side launcher
+   records only the fingerprint and does not accept a private key.
+6. Run the bounded `security_assurance.py qualify` workflow. It performs the
+   key proof, authenticated preflight, Smoke, automatic renewal/reattachment,
+   and cleanup. Inspect the sanitized report, and run Standard only when the
    resource guard and operator review allow it. Deep and Adversarial require
    explicit qualification intent.
 7. If a source defect is found, preserve sanitized evidence, return to the
@@ -327,9 +389,13 @@ MCP response is not evidence of live Android/Termux behavior.
 FastAPI, worker, NATS, scanner, timeout, and resource interruptions remain
 visible in the durable lifecycle. NATS/JetStream redelivery uses the existing
 worker path; a terminal assurance row is not re-executed. An incomplete report
-or failed atomic evidence write prevents a clean `PASS`. The existing Security
-service remains responsible for scanner checkpoint/resume and its own
-reconciliation.
+or failed atomic evidence write prevents a clean `PASS`. API startup and worker
+startup reconcile stale run leases; a fresh heartbeat means execution may
+continue, while a stale heartbeat becomes `PARTIAL` and never `PASS`. The
+client can reauthenticate and reattach to the same run ID after a disconnect.
+Authentication session expiry does not terminate an already admitted Security
+Assurance run. Explicit principal revocation is stronger: it marks active runs
+for safe cancellation and prevents new sessions/runs.
 
 The current safe increment intentionally does not automatically execute
 Recovery replacement/restore mutation, OPA outage injection, worker-kill

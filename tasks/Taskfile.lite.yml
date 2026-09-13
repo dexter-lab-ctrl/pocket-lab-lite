@@ -86,6 +86,20 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/harness.py verify-off'
 
+  lite:harness:keygen:
+    desc: Create disposable 0600 Ed25519 qualification key material outside the repository
+    requires:
+      vars: [KEY_FILE]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py keygen --key-file "{{.KEY_FILE}}"'
+
+  lite:harness:bootstrap:
+    desc: Complete the one-use key-bound assurance bootstrap without printing the session token
+    requires:
+      vars: [PRINCIPAL_ID, KEY_FILE]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py bootstrap --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}"'
+
   lite:harness:principal:create:
     desc: Register public Ed25519 material with a server-owned profile
     requires:
@@ -114,6 +128,17 @@ tasks:
     desc: Explicitly start the qualification profile; requires a provisioning token and remains separate from normal Lite startup
     cmds:
       - bash scripts/dev/lite/start-qualification.sh
+
+  lite:qualification:start:key-bound:
+    desc: Explicitly start qualification with operator-approved security-assurance public-key bootstrap
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
+    cmds:
+      - >-
+        bash scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile security-assurance-runner
 
   lite:security:assurance:check:
     desc: Show the server-owned Runtime Security Assurance registry without starting a run
@@ -167,6 +192,17 @@ tasks:
       vars: [RUN_ID]
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/security_assurance.py compare "{{.RUN_ID}}"'
+
+  lite:security:assurance:qualify:
+    desc: Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup
+    vars:
+      PRINCIPAL_ID: '{{default "codex-security-assurance" .PRINCIPAL_ID}}'
+      KEY_FILE: '{{default "~/.pocketlab-qualification/codex-security-assurance.key" .KEY_FILE}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/security_assurance.py qualify
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --key-file "{{.KEY_FILE}}"
 
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'

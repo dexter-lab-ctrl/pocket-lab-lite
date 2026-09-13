@@ -78,6 +78,7 @@ generator_version: 3
 | `GET /api/lite/harness/security-assurance/preflight` | harness | — | preflight_api_lite_harness_security_assurance_preflight_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/runs` | harness | — | runs_api_lite_harness_security_assurance_runs_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/runs/{run_id}` | harness | — | run_status_api_lite_harness_security_assurance_runs__run_id__get | contract-derived |
+| `GET /api/lite/harness/security-assurance/runs/{run_id}/events` | harness | — | events_api_lite_harness_security_assurance_runs__run_id__events_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/runs/{run_id}/findings` | harness | — | findings_api_lite_harness_security_assurance_runs__run_id__findings_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/runs/{run_id}/report` | harness | — | report_api_lite_harness_security_assurance_runs__run_id__report_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/suites` | harness | — | suites_api_lite_harness_security_assurance_suites_get | contract-derived |
@@ -173,11 +174,16 @@ generator_version: 3
 | `POST /api/lite/fleet/devices/{node_id}/restart-agent` | devices | LiteDevices | restart_lite_fleet_agent_api_lite_fleet_devices__node_id__restart_agent_post | contract-derived |
 | `POST /api/lite/fleet/invites/{invite_id}/revoke` | devices | — | revoke_lite_fleet_invite_api_lite_fleet_invites__invite_id__revoke_post | contract-derived |
 | `POST /api/lite/fleet/remove-device` | devices | LiteDevices | remove_lite_device_api_lite_fleet_remove_device_post | contract-derived |
+| `POST /api/lite/harness/bootstrap/challenge` | harness | — | bootstrap_challenge_api_lite_harness_bootstrap_challenge_post | contract-derived |
+| `POST /api/lite/harness/bootstrap/complete` | harness | — | bootstrap_complete_api_lite_harness_bootstrap_complete_post | contract-derived |
+| `POST /api/lite/harness/bootstrap/grants` | harness | — | bootstrap_grant_api_lite_harness_bootstrap_grants_post | contract-derived |
 | `POST /api/lite/harness/challenge` | harness | — | challenge_api_lite_harness_challenge_post | contract-derived |
+| `POST /api/lite/harness/principal/revoke` | harness | — | revoke_authenticated_principal_api_lite_harness_principal_revoke_post | contract-derived |
 | `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
 | `POST /api/lite/harness/principals/{principal_id}/revoke` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__revoke_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/runs` | harness | — | create_run_api_lite_harness_security_assurance_runs_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/runs/{run_id}/cancel` | harness | — | cancel_api_lite_harness_security_assurance_runs__run_id__cancel_post | contract-derived |
+| `POST /api/lite/harness/security-assurance/runs/{run_id}/resume` | harness | — | resume_api_lite_harness_security_assurance_runs__run_id__resume_post | contract-derived |
 | `POST /api/lite/harness/session` | harness | — | session_api_lite_harness_session_post | contract-derived |
 | `POST /api/lite/identity/login` | identity | LiteIdentity | login_lite_identity_api_lite_identity_login_post | contract-derived |
 | `POST /api/lite/identity/logout` | identity | LiteIdentity | logout_lite_identity_api_lite_identity_logout_post | contract-derived |

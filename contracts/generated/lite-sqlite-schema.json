@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 35,
+    "migration_count": 36,
     "objects": [
       {
         "checks": [],
@@ -345,6 +345,152 @@
       },
       {
         "checks": [
+          "unit_kind IN ('suite', 'scenario', 'tool'",
+          "status IN ('PENDING', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED', 'SKIPPED'",
+          "attempt >= 0",
+          "retry_safe IN (0, 1",
+          "resume_supported IN (0, 1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "checkpoint_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "run_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "unit_kind",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "unit_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "attempt",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "retry_safe",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "resume_supported",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "started_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "heartbeat_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "result_json",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "run_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "assurance_runs",
+            "sequence": 0,
+            "to": "run_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "run_id",
+              "status",
+              "unit_kind",
+              "unit_id"
+            ],
+            "name": "idx_assurance_checkpoints_run_status",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "run_id",
+              "unit_kind",
+              "unit_id"
+            ],
+            "name": "sqlite_autoindex_assurance_execution_checkpoints_1",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
+        ],
+        "name": "assurance_execution_checkpoints",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE assurance_execution_checkpoints (\n    checkpoint_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    run_id TEXT NOT NULL,\n    unit_kind TEXT NOT NULL CHECK (unit_kind IN ('suite', 'scenario', 'tool')),\n    unit_id TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('PENDING', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED', 'SKIPPED')),\n    attempt INTEGER NOT NULL DEFAULT 0 CHECK (attempt >= 0),\n    retry_safe INTEGER NOT NULL DEFAULT 0 CHECK (retry_safe IN (0, 1)),\n    resume_supported INTEGER NOT NULL DEFAULT 0 CHECK (resume_supported IN (0, 1)),\n    started_at TEXT,\n    completed_at TEXT,\n    heartbeat_at TEXT,\n    result_json TEXT NOT NULL DEFAULT '{}',\n    FOREIGN KEY (run_id) REFERENCES assurance_runs(run_id) ON DELETE CASCADE,\n    UNIQUE (run_id, unit_kind, unit_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
           "severity IN ('critical', 'high', 'medium', 'low', 'info'",
           "confidence IN ('high', 'medium', 'low', 'unknown'",
           "baseline_state IN ('NEW', 'EXISTING', 'RESOLVED', 'REGRESSED', 'UNCHANGED'",
@@ -636,7 +782,9 @@
           "purpose = 'security.assurance'",
           "target_scope = 'local_server_host_only'",
           "status IN ('QUEUED', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED'",
-          "cancel_requested IN (0, 1"
+          "cancel_requested IN (0, 1",
+          "checkpoint_generation >= 0",
+          "last_event_sequence >= 0"
         ],
         "classification": "internal operational metadata",
         "columns": [
@@ -786,6 +934,76 @@
             "name": "updated_at",
             "nullable": false,
             "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "admission_key",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "admitted_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "run_deadline",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "heartbeat_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "worker_instance_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "worker_operation_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "current_scenario",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "current_tool",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "checkpoint_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "last_event_sequence",
+            "nullable": false,
+            "primary_key_position": 0
           }
         ],
         "domain": "control_plane",
@@ -810,6 +1028,26 @@
           }
         ],
         "indexes": [
+          {
+            "columns": [
+              "admission_key"
+            ],
+            "name": "idx_assurance_runs_active_admission",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "status",
+              "run_deadline",
+              "heartbeat_at"
+            ],
+            "name": "idx_assurance_runs_lease",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
           {
             "columns": [
               "suite_id",
@@ -841,7 +1079,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
         ],
         "name": "assurance_runs",
         "projection_owner": "not a prepared projection",
@@ -850,7 +1089,7 @@
         "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
         "semantic_status": "inferred",
         "sensitive_fields": [],
-        "sql": "CREATE TABLE assurance_runs (\n    run_id TEXT PRIMARY KEY CHECK (run_id GLOB 'assurance-*'),\n    suite_id TEXT NOT NULL CHECK (suite_id IN ('smoke', 'standard', 'deep', 'adversarial')),\n    profile TEXT NOT NULL CHECK (profile = 'security-assurance-runner'),\n    scenario_id TEXT,\n    baseline_run_id TEXT,\n    principal_id TEXT NOT NULL,\n    harness_session_id TEXT NOT NULL,\n    purpose TEXT NOT NULL CHECK (purpose = 'security.assurance'),\n    target_scope TEXT NOT NULL CHECK (target_scope = 'local_server_host_only'),\n    runtime_id TEXT NOT NULL,\n    revision_sha TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('QUEUED', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED')),\n    cancel_requested INTEGER NOT NULL DEFAULT 0 CHECK (cancel_requested IN (0, 1)),\n    preflight_json TEXT NOT NULL DEFAULT '{}',\n    summary_json TEXT NOT NULL DEFAULT '{}',\n    report_json TEXT NOT NULL DEFAULT '{}',\n    failure_code TEXT,\n    requested_at TEXT NOT NULL,\n    started_at TEXT,\n    completed_at TEXT,\n    updated_at TEXT NOT NULL,\n    FOREIGN KEY (baseline_run_id) REFERENCES assurance_runs(run_id) ON DELETE SET NULL,\n    FOREIGN KEY (principal_id) REFERENCES synthetic_principals(principal_id) ON DELETE RESTRICT\n)",
+        "sql": "CREATE TABLE assurance_runs (\n    run_id TEXT PRIMARY KEY CHECK (run_id GLOB 'assurance-*'),\n    suite_id TEXT NOT NULL CHECK (suite_id IN ('smoke', 'standard', 'deep', 'adversarial')),\n    profile TEXT NOT NULL CHECK (profile = 'security-assurance-runner'),\n    scenario_id TEXT,\n    baseline_run_id TEXT,\n    principal_id TEXT NOT NULL,\n    harness_session_id TEXT NOT NULL,\n    purpose TEXT NOT NULL CHECK (purpose = 'security.assurance'),\n    target_scope TEXT NOT NULL CHECK (target_scope = 'local_server_host_only'),\n    runtime_id TEXT NOT NULL,\n    revision_sha TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('QUEUED', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED')),\n    cancel_requested INTEGER NOT NULL DEFAULT 0 CHECK (cancel_requested IN (0, 1)),\n    preflight_json TEXT NOT NULL DEFAULT '{}',\n    summary_json TEXT NOT NULL DEFAULT '{}',\n    report_json TEXT NOT NULL DEFAULT '{}',\n    failure_code TEXT,\n    requested_at TEXT NOT NULL,\n    started_at TEXT,\n    completed_at TEXT,\n    updated_at TEXT NOT NULL, admission_key TEXT, admitted_at TEXT, run_deadline TEXT, heartbeat_at TEXT, worker_instance_id TEXT, worker_operation_id TEXT, current_scenario TEXT, current_tool TEXT, checkpoint_generation INTEGER NOT NULL DEFAULT 0 CHECK (checkpoint_generation >= 0), last_event_sequence INTEGER NOT NULL DEFAULT 0 CHECK (last_event_sequence >= 0),\n    FOREIGN KEY (baseline_run_id) REFERENCES assurance_runs(run_id) ON DELETE SET NULL,\n    FOREIGN KEY (principal_id) REFERENCES synthetic_principals(principal_id) ON DELETE RESTRICT\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -12450,7 +12689,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "02bc13b8336e84c1caaaf07ba122305bcdff6d6591b4cfd635e031455df9f055",
+    "aggregate_fingerprint": "8cc128f21972b54d138b16b932d17b0a6da3c9333a6c7e67d33127c425a72022",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -12460,7 +12699,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "f2b9650aab9e6b0ada0fa86c8de6af7fa59967b88f07ef60bf683fa9b5a65bd5",
+      "contracts/metadata/documentation-platform.json": "1a2814f6afd6543c0d09cf7eafdbfee4b02c2a5fe6824fd5fbe8725771a8ffc7",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -12497,6 +12736,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"

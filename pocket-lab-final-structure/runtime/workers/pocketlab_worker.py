@@ -367,6 +367,11 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
         execute_domain_command as run_domain_command,
     )  # type: ignore
 
+    if subject == "pocketlab.commands.lite.security.assurance":
+        # The worker, not the caller, owns the execution lease identity.  A
+        # copied envelope prevents a submitted field from impersonating a
+        # worker instance while preserving the canonical command envelope.
+        command = {**command, "_worker_instance_id": WORKER_NAME}
     trace_id = str(command.get("trace_id") or command.get("command_id") or "") or None
     command_id = str(command.get("command_id") or trace_id or "")
     await publish(
@@ -630,7 +635,16 @@ async def command_callback(msg: Any) -> None:
                 trace_id=command_id or None,
             )
         heartbeat_task = None
-        if callable(getattr(msg, "in_progress", None)):
+        # Runtime assurance can legitimately outlive the JetStream ack wait
+        # while the existing bounded Security scanner is running.  Keep the
+        # delivery owned for that entire worker callback as well as for the
+        # generic lifecycle commands.  Without this, a healthy long scan could
+        # be redelivered and execute a second scanner before the first result
+        # was committed.
+        if callable(getattr(msg, "in_progress", None)) and (
+            generic_lifecycle
+            or subject == "pocketlab.commands.lite.security.assurance"
+        ):
             heartbeat_task = asyncio.create_task(_command_ack_heartbeat(msg))
         try:
             if subject == "pocketlab.commands.runbook.execute":

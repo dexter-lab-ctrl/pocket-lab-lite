@@ -422,6 +422,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:bootstrap_transport_rejected",
+      "name": "bootstrap_transport_rejected",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
       "domain": "security",
       "event_mapping": [],
@@ -4319,6 +4339,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
+    "source_fingerprint": "fa183089ec0951bc07a8014359e0492dabfe2d6d0327b2bc69ab659a8502de3f"
   }
 }

@@ -226,6 +226,37 @@ session TTL is 20 minutes, bounded to 60–3600 seconds. A challenge is consumed
 once. Five failed signatures consume it. Replay, altered context, stale
 runtime, and expired proofs fail closed.
 
+### Key-bound assurance bootstrap
+
+The preferred automated qualification path does not give the client a
+`POCKETLAB_HARNESS_PROVISIONING_TOKEN`. The operator explicitly starts the
+qualification runtime with a public Ed25519 key file, a disposable principal
+ID, and the allow-listed `security-assurance-runner` profile. The server keeps
+only the fingerprint in process configuration and issues a five-minute,
+one-use, runtime/revision/key-bound bootstrap grant.
+
+```text
+operator approval
+  -> ephemeral bootstrap grant
+  -> signed grant challenge
+  -> atomic synthetic principal + normal session creation
+  -> bounded assurance run
+```
+
+The bootstrap flow rejects production, forwarded/Caddy transport, destructive
+or Owner gates, test bypass, profile/target/purpose overrides, mismatched
+revision/runtime, wrong public keys, replay, and a second use. The grant and
+challenge are ephemeral; an API restart invalidates unconsumed state. Bounded
+audit events record grant creation/consumption/rejection and bootstrap
+principal creation/revocation without proof bytes, nonce payloads, or tokens.
+
+The four lifetimes remain separate: bootstrap grant (five minutes, one use),
+synthetic principal (12 hours by default, bounded to 1–24 hours), authentication
+session (20 minutes by default, bounded to 1–60 minutes), and assurance run
+(suite registry deadline). The principle is **short authentication leases;
+long durable execution leases**. Session expiry immediately removes request
+authority but does not terminate an already admitted assurance run.
+
 ## Registering a machine
 
 Create key material on the client machine. Use a private directory outside the
@@ -257,12 +288,12 @@ creates a human row.
 ## Using Codex
 
 Use the established MCP first for bounded repository facts, diagnostics, and
-validation. If a supported API qualification step genuinely requires a
-synthetic session, use the CLI or a future bounded client to complete the
-challenge/signature flow. The intended sequence is:
+validation. For Runtime Security Assurance, use the bounded client after the
+operator has started key-bound qualification. The intended sequence is:
 
 ```text
 pocketlab_dev discovery/diagnostics
+  → operator-approved key-bound bootstrap
   → direct loopback harness session, if required
   → existing supported FastAPI operation
   → bounded sanitized evidence by stable correlation ID
@@ -443,9 +474,13 @@ the operation's transaction and worker recovery guards remain authoritative.
 ## Revocation
 
 `DELETE /api/lite/harness/session/{id}` revokes one active session. The
-provisioning-only principal revoke endpoint disables the principal and revokes
-all active sessions. Revocation applies immediately to new challenge/session
-and operation admission. Revocation is durable and auditable.
+provisioning-only principal revoke endpoint disables any selected principal;
+`POST /api/lite/harness/principal/revoke` is narrower and lets only the
+currently authenticated assurance principal revoke itself during cleanup.
+Explicit principal revocation disables the principal, revokes all active
+sessions, marks active assurance runs for cancellation, and is durable and
+auditable. Natural principal expiry blocks new sessions/runs but does not
+cancel an already admitted run within its own deadline.
 
 ## Key rotation
 

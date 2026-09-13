@@ -24,6 +24,20 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 DEFAULT_API_URL = "http://127.0.0.1:8080"
 SESSION_ENV = "POCKETLAB_HARNESS_SESSION"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+SECRET_OUTPUT_KEYS = frozenset({
+    "authorization",
+    "cookie",
+    "csrf_token",
+    "nonce",
+    "private_key",
+    "private_key_bytes",
+    "provisioning_token",
+    "session_token",
+    "signature",
+    "signing_payload",
+    "token",
+})
 
 
 def _b64u(raw: bytes) -> str:
@@ -76,21 +90,39 @@ def _request(method: str, path: str, payload: dict | None = None, headers: dict[
 
 
 def _private_key(path: str) -> Ed25519PrivateKey:
-    raw = Path(path).expanduser().read_bytes()
+    key_path = Path(path).expanduser()
+    _ensure_key_path_outside_repo(key_path)
+    mode = stat.S_IMODE(key_path.stat().st_mode)
+    if mode != 0o600:
+        raise ValueError("private key file must have mode 0600")
+    raw = key_path.read_bytes()
     if len(raw) != 32:
         raise ValueError("key file must contain exactly 32 raw Ed25519 private-key bytes")
     return Ed25519PrivateKey.from_private_bytes(raw)
 
 
+def _ensure_key_path_outside_repo(path: Path) -> Path:
+    resolved = path.expanduser().resolve()
+    try:
+        resolved.relative_to(REPO_ROOT)
+    except ValueError:
+        return resolved
+    raise ValueError("qualification key material must be outside the repository")
+
+
 def _write_private_key(path: Path, raw: bytes, *, force: bool) -> None:
-    path = path.expanduser()
+    path = _ensure_key_path_outside_repo(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     flags = os.O_WRONLY | os.O_CREAT | (os.O_TRUNC if force else os.O_EXCL)
+    flags |= getattr(os, "O_NOFOLLOW", 0)
     old_umask = os.umask(0o177)
     try:
         fd = os.open(path, flags, 0o600)
         try:
-            os.write(fd, raw)
+            written = os.write(fd, raw)
+            if written != len(raw):
+                raise OSError("private key write was incomplete")
+            os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR)
         finally:
             os.close(fd)
     finally:
@@ -98,16 +130,43 @@ def _write_private_key(path: Path, raw: bytes, *, force: bool) -> None:
     os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
 
 
+def _write_public_key(path: Path, public: bytes, *, force: bool) -> None:
+    path = _ensure_key_path_outside_repo(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | (os.O_TRUNC if force else os.O_EXCL)
+    flags |= getattr(os, "O_NOFOLLOW", 0)
+    fd = os.open(path, flags, 0o644)
+    try:
+        encoded = (_b64u(public) + "\n").encode("ascii")
+        written = os.write(fd, encoded)
+        if written != len(encoded):
+            raise OSError("public key write was incomplete")
+        os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+    finally:
+        os.close(fd)
+    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+
+
 def cmd_keygen(args: argparse.Namespace) -> dict:
-    path = Path(args.key_file).expanduser()
+    path = _ensure_key_path_outside_repo(Path(args.key_file))
+    public_path = _ensure_key_path_outside_repo(
+        Path(args.public_key_file).expanduser() if args.public_key_file else Path(str(path) + ".pub")
+    )
+    if public_path == path:
+        raise ValueError("public key file must differ from private key file")
+    if not args.force and (path.exists() or public_path.exists()):
+        raise FileExistsError("qualification key output already exists; use --force only for deliberate replacement")
     key = Ed25519PrivateKey.generate()
     raw_private = key.private_bytes(serialization.Encoding.Raw, serialization.PrivateFormat.Raw, serialization.NoEncryption())
     _write_private_key(path, raw_private, force=args.force)
     public = key.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    _write_public_key(public_path, public, force=args.force)
     return {
         "status": "created",
         "private_key_path": str(path),
         "private_key_mode": oct(stat.S_IMODE(path.stat().st_mode)),
+        "public_key_path": str(public_path),
+        "public_key_mode": oct(stat.S_IMODE(public_path.stat().st_mode)),
         "algorithm": "ed25519",
         "public_key": _b64u(public),
         "public_key_fingerprint": "sha256:" + hashlib.sha256(public).hexdigest(),
@@ -150,18 +209,26 @@ def cmd_principal_revoke(args: argparse.Namespace) -> dict:
     return _request("POST", f"/api/lite/harness/principals/{args.principal_id}/revoke", headers=_provisioning_headers())
 
 
-def cmd_session_start(args: argparse.Namespace) -> dict:
+def start_session(
+    *,
+    principal_id: str,
+    profile: str,
+    purpose: str,
+    key_file: str,
+    ttl_seconds: int | None = None,
+) -> dict:
     challenge = _request(
         "POST",
         "/api/lite/harness/challenge",
         {
-            "principal_id": args.principal_id,
-            "purpose": args.purpose,
-            "profile": args.profile,
+            "principal_id": principal_id,
+            "purpose": purpose,
+            "profile": profile,
             "target_scope": "local_server_host_only",
+            **({"ttl_seconds": ttl_seconds} if ttl_seconds is not None else {}),
         },
     )
-    key = _private_key(args.key_file)
+    key = _private_key(key_file)
     signature = _b64u(key.sign(str(challenge["signing_payload"]).encode("utf-8")))
     return _request(
         "POST",
@@ -170,10 +237,69 @@ def cmd_session_start(args: argparse.Namespace) -> dict:
             "challenge_id": challenge["challenge_id"],
             "signing_payload": challenge["signing_payload"],
             "signature": signature,
-            "principal_id": args.principal_id,
-            "profile": args.profile,
+            "principal_id": principal_id,
+            "profile": profile,
         },
     )
+
+
+def cmd_session_start(args: argparse.Namespace) -> dict:
+    return start_session(
+        principal_id=args.principal_id,
+        profile=args.profile,
+        purpose=args.purpose,
+        key_file=args.key_file,
+        ttl_seconds=args.ttl_seconds,
+    )
+
+
+def bootstrap_session(*, principal_id: str, key_file: str) -> dict:
+    """Complete the key-bound bootstrap entirely in process memory.
+
+    The returned session token is intentionally available only to the caller's
+    process.  Command-line output removes it recursively before printing.
+    """
+    key = _private_key(key_file)
+    public = key.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    encoded_public = _b64u(public)
+    grant = _request(
+        "POST",
+        "/api/lite/harness/bootstrap/grants",
+        {"principal_id": principal_id, "public_key": encoded_public},
+    )
+    challenge = _request(
+        "POST",
+        "/api/lite/harness/bootstrap/challenge",
+        {"grant_id": grant["grant_id"]},
+    )
+    signature = _b64u(key.sign(str(challenge["signing_payload"]).encode("utf-8")))
+    return _request(
+        "POST",
+        "/api/lite/harness/bootstrap/complete",
+        {
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": encoded_public,
+            "signature": signature,
+        },
+    )
+
+
+def cmd_bootstrap(args: argparse.Namespace) -> dict:
+    return bootstrap_session(principal_id=args.principal_id, key_file=args.key_file)
+
+
+def _sanitize_output(value: object) -> object:
+    if isinstance(value, dict):
+        return {
+            str(key): _sanitize_output(item)
+            for key, item in value.items()
+            if str(key).casefold() not in SECRET_OUTPUT_KEYS
+        }
+    if isinstance(value, list):
+        return [_sanitize_output(item) for item in value]
+    return value
 
 
 def _session_headers(args: argparse.Namespace) -> dict[str, str]:
@@ -211,6 +337,7 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     keygen = commands.add_parser("keygen", help="create 0600 raw Ed25519 key material")
     keygen.add_argument("--key-file", required=True)
+    keygen.add_argument("--public-key-file")
     keygen.add_argument("--force", action="store_true")
     keygen.set_defaults(handler=cmd_keygen)
     principal = commands.add_parser("principal-create", help="register a public key and server-owned profile")
@@ -228,7 +355,12 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--profile", required=True)
     start.add_argument("--purpose", required=True)
     start.add_argument("--key-file", required=True)
+    start.add_argument("--ttl-seconds", type=int, choices=range(60, 3601))
     start.set_defaults(handler=cmd_session_start)
+    bootstrap = commands.add_parser("bootstrap", help="complete the operator-approved assurance bootstrap")
+    bootstrap.add_argument("--principal-id", required=True)
+    bootstrap.add_argument("--key-file", required=True)
+    bootstrap.set_defaults(handler=cmd_bootstrap)
     for name, handler in (("session-status", cmd_session_status), ("session-stop", cmd_session_stop)):
         command = commands.add_parser(name)
         command.add_argument("--session-id", required=True)
@@ -251,7 +383,7 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"ERROR {str(exc)[:320]}", file=sys.stderr)
         return 2
-    print(json.dumps(result, ensure_ascii=True, sort_keys=True, indent=2))
+    print(json.dumps(_sanitize_output(result), ensure_ascii=True, sort_keys=True, indent=2))
     return 0
 
 

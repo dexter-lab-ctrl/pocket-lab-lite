@@ -50,6 +50,7 @@ device_awareness_state
 assurance_tool_results
 assurance_scenarios
 assurance_findings
+assurance_execution_checkpoints
 app_action_lifecycle
 policy_activation_operations
 device_lifecycle_events

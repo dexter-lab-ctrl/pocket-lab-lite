@@ -25,11 +25,12 @@ import socket
 import sqlite3
 import subprocess
 import tempfile
+import threading
 import time
 import urllib.error
 import urllib.request
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -63,6 +64,8 @@ SAFETY_CLASSES = frozenset(
 OUTCOMES = frozenset({"PASS", "FAIL", "PARTIAL", "BLOCKED"})
 BASELINE_STATES = frozenset({"NEW", "EXISTING", "RESOLVED", "REGRESSED", "UNCHANGED"})
 RECONCILIATION_GRACE_SECONDS = 300
+HEARTBEAT_INTERVAL_SECONDS = 5.0
+CHECKPOINT_STATUSES = frozenset({"PENDING", "RUNNING", "PASS", "FAIL", "PARTIAL", "BLOCKED", "SKIPPED"})
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 ASSURANCE_REGISTRY_ROOT = REPOSITORY_ROOT / "security" / "assurance"
@@ -357,6 +360,11 @@ def validate_registries() -> dict[str, Any]:
             or not str(item.get("allowed_mode") or "").strip()
             or not str(item.get("resource_class") or "").strip()
             or not isinstance(item.get("suite_membership"), list)
+            or not isinstance(item.get("retry_safe", False), bool)
+            or not isinstance(item.get("resume_supported", False), bool)
+            or not isinstance(item.get("checkpoint_supported", False), bool)
+            or not isinstance(item.get("max_attempts", 1), int)
+            or int(item.get("max_attempts", 1)) not in range(1, 4)
         ):
             raise AssuranceRegistryError("assurance_registry_invalid", "A registered assurance tool is missing bounded metadata.", status_code=503)
         tool_map[identifier] = item
@@ -441,6 +449,15 @@ def validate_registries() -> dict[str, Any]:
             "suites": _registry_hash(SUITES_REGISTRY_PATH),
             "scenarios": _registry_hash(SCENARIOS_REGISTRY_PATH),
             "threat_model": _registry_hash(THREAT_MODEL_PATH),
+        },
+        "retry_policy": {
+            str(identifier): {
+                "retry_safe": bool(item.get("retry_safe")),
+                "resume_supported": bool(item.get("resume_supported")),
+                "checkpoint_supported": bool(item.get("checkpoint_supported")),
+                "max_attempts": int(item.get("max_attempts") or 1),
+            }
+            for identifier, item in sorted(tool_map.items())
         },
         "sanitized": True,
     })
@@ -1298,6 +1315,37 @@ def _session_posture(principal_id: str, session_id: str) -> dict[str, Any]:
     return _redact({"ok": all(checks.values()), "checks": checks, "profile": str(row["capability_profile"]), "purpose": str(row["purpose"]), "target_scope": str(row["target_scope"]), "runtime_bound": checks["runtime_id"]})
 
 
+def _timestamp_after(value: str, seconds: int) -> str:
+    parsed = _parse_timestamp(value)
+    if parsed is None:
+        parsed = datetime.now(timezone.utc)
+    return datetime.fromtimestamp(
+        parsed.timestamp() + max(0, int(seconds)), timezone.utc
+    ).isoformat().replace("+00:00", "Z")
+
+
+def _admission_key(
+    *,
+    principal_id: str,
+    suite_id: str,
+    scenario_id: str | None,
+    runtime_id: str,
+    revision_sha: str,
+    baseline_run_id: str | None,
+) -> str:
+    """Return a server-derived idempotency identity, never caller supplied."""
+    return _sha256_bytes(
+        _canonical({
+            "principal_id": str(principal_id)[:80],
+            "suite_id": str(suite_id)[:80],
+            "scenario_id": str(scenario_id or "")[:80],
+            "runtime_id": str(runtime_id)[:64],
+            "revision_sha": str(revision_sha)[:40],
+            "baseline_run_id": str(baseline_run_id or "")[:42],
+        }).encode("utf-8")
+    )
+
+
 def create_run(
     *,
     suite_id: str,
@@ -1340,41 +1388,89 @@ def create_run(
                 "The requested assurance baseline is not a compatible terminal run.",
                 status_code=400,
             )
-    # A previous worker/API process may have died after admission.  Reconcile
-    # only rows beyond their fixed suite deadline plus grace; an active run is
+    # A previous worker/API process may have died after admission. Reconcile
+    # only rows beyond their durable deadline/heartbeat grace; an active run is
     # never silently replaced while it could still be making progress.
     reconcile_stale_runs()
     run_id = "assurance-" + uuid.uuid4().hex
     now = _now()
+    runtime_id = lite_harness._runtime_id()
+    maximum_seconds = max(60, min(int(suite.get("maximum_seconds") or 600), 24 * 60 * 60))
+    run_deadline = _timestamp_after(now, maximum_seconds)
+    admission_key = _admission_key(
+        principal_id=str(principal_id or ""),
+        suite_id=str(suite["id"]),
+        scenario_id=canonical_scenario_id,
+        runtime_id=runtime_id,
+        revision_sha=revision_sha,
+        baseline_run_id=safe_baseline,
+    )
     completed = now if safe_status in TERMINAL_STATUSES else None
     summary = {
         "status": safe_status,
         "suite_id": suite["id"],
         "message": "Assurance run blocked before execution." if safe_status == "BLOCKED" else "Assurance run queued for worker execution.",
+        "run_deadline": run_deadline,
+        "execution_lease_independent_of_session": True,
     }
     apply_migrations()
+    existing_result: dict[str, Any] | None = None
     try:
         with connection() as conn, begin_immediate(conn) as tx:
-            tx.execute(
-                """INSERT INTO assurance_runs(
-                    run_id,suite_id,profile,scenario_id,baseline_run_id,principal_id,
-                    harness_session_id,purpose,target_scope,runtime_id,revision_sha,status,
-                    preflight_json,summary_json,report_json,failure_code,requested_at,
-                    completed_at,updated_at
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (
-                    run_id, suite["id"], ASSURANCE_PROFILE, canonical_scenario_id, safe_baseline,
-                    principal_id, session_id, ASSURANCE_PURPOSE, ASSURANCE_TARGET_SCOPE,
-                    lite_harness._runtime_id(), revision_sha, safe_status,
-                    _canonical(_redact(dict(preflight_result))), _canonical(_redact(summary)),
-                    _canonical({}), failure_code, now, completed, now,
-                ),
-            )
-            row = tx.execute("SELECT * FROM assurance_runs WHERE run_id=?", (run_id,)).fetchone()
+            active = tx.execute(
+                """SELECT * FROM assurance_runs
+                     WHERE admission_key=? AND status IN ('QUEUED','RUNNING')
+                     ORDER BY requested_at DESC LIMIT 1""",
+                (admission_key,),
+            ).fetchone()
+            if active:
+                existing_result = _row_payload(active) or {}
+                existing_result["idempotent_reuse"] = True
+                row = active
+            else:
+                tx.execute(
+                    """INSERT INTO assurance_runs(
+                        run_id,suite_id,profile,scenario_id,baseline_run_id,principal_id,
+                        harness_session_id,purpose,target_scope,runtime_id,revision_sha,status,
+                        preflight_json,summary_json,report_json,failure_code,requested_at,
+                        completed_at,updated_at,admission_key,admitted_at,run_deadline,
+                        worker_operation_id,checkpoint_generation,last_event_sequence
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    (
+                        run_id, suite["id"], ASSURANCE_PROFILE, canonical_scenario_id, safe_baseline,
+                        principal_id, session_id, ASSURANCE_PURPOSE, ASSURANCE_TARGET_SCOPE,
+                        runtime_id, revision_sha, safe_status,
+                        _canonical(_redact(dict(preflight_result))), _canonical(_redact(summary)),
+                        _canonical({}), failure_code, now, completed, now, admission_key, now,
+                        run_deadline, run_id, 0, 0,
+                    ),
+                )
+                row = tx.execute("SELECT * FROM assurance_runs WHERE run_id=?", (run_id,)).fetchone()
     except sqlite3.IntegrityError as exc:
+        if "idx_assurance_runs_active_admission" in str(exc):
+            with read_connection() as conn:
+                active = conn.execute(
+                    "SELECT * FROM assurance_runs WHERE admission_key=? AND status IN ('QUEUED','RUNNING') LIMIT 1",
+                    (admission_key,),
+                ).fetchone()
+            if active:
+                result = _row_payload(active) or {}
+                result["idempotent_reuse"] = True
+                return result
         if "idx_assurance_one_active" in str(exc) or "UNIQUE constraint failed: assurance_runs.status" in str(exc):
             raise AssuranceConflict("assurance_run_active", "Another runtime assurance run is already active.", status_code=409) from exc
         raise AssuranceError("assurance_storage_rejected", "The assurance run could not be stored.", status_code=503) from exc
+    if existing_result is not None:
+        _assurance_audit(
+            event_type="assurance_run_reused",
+            reason_code="idempotent_active_run",
+            principal_id=principal_id,
+            session_id=session_id,
+            operation_id=str(existing_result.get("run_id") or ""),
+            result="accepted",
+            summary="An equivalent active assurance run was returned without launching duplicate work.",
+        )
+        return existing_result
     _assurance_audit(
         event_type="assurance_run_admitted" if safe_status == "QUEUED" else "assurance_run_blocked",
         reason_code="run_queued" if safe_status == "QUEUED" else str(failure_code or "preflight_blocked"),
@@ -1411,7 +1507,12 @@ def is_terminal(run_id: str) -> bool:
     return bool(row and str(row.get("status") or "") in TERMINAL_STATUSES)
 
 
-def mark_running(run_id: str) -> dict[str, Any]:
+def mark_running(
+    run_id: str,
+    *,
+    worker_instance_id: str | None = None,
+    worker_operation_id: str | None = None,
+) -> dict[str, Any]:
     safe = _safe_run_id(run_id)
     now = _now()
     apply_migrations()
@@ -1421,7 +1522,20 @@ def mark_running(run_id: str) -> dict[str, Any]:
             raise AssuranceError("run_not_found", "The assurance run was not found.", status_code=404)
         if str(current["status"]) in TERMINAL_STATUSES:
             return _row_payload(current) or {}
-        tx.execute("UPDATE assurance_runs SET status='RUNNING',started_at=COALESCE(started_at,?),updated_at=? WHERE run_id=?", (now, now, safe))
+        tx.execute(
+            """UPDATE assurance_runs SET status='RUNNING',started_at=COALESCE(started_at,?),
+                    heartbeat_at=?,worker_instance_id=COALESCE(?,worker_instance_id),
+                    worker_operation_id=COALESCE(?,worker_operation_id),updated_at=?
+                WHERE run_id=?""",
+            (
+                now,
+                now,
+                str(worker_instance_id or "")[:120] or None,
+                str(worker_operation_id or safe)[:120] or safe,
+                now,
+                safe,
+            ),
+        )
         row = tx.execute("SELECT * FROM assurance_runs WHERE run_id=?", (safe,)).fetchone()
     return _row_payload(row) or {}
 
@@ -1434,8 +1548,8 @@ def request_cancel(run_id: str, *, principal_id: str, session_id: str) -> dict[s
         current = tx.execute("SELECT * FROM assurance_runs WHERE run_id=?", (safe,)).fetchone()
         if not current:
             raise AssuranceError("run_not_found", "The assurance run was not found.", status_code=404)
-        if str(current["principal_id"]) != str(principal_id) or str(current["harness_session_id"]) != str(session_id):
-            raise AssuranceError("run_principal_mismatch", "Only the admitting assurance session may cancel this run.", status_code=403)
+        if str(current["principal_id"]) != str(principal_id):
+            raise AssuranceError("run_principal_mismatch", "Only the admitting assurance principal may cancel this run.", status_code=403)
         if str(current["status"]) in TERMINAL_STATUSES:
             return _row_payload(current) or {}
         tx.execute("UPDATE assurance_runs SET cancel_requested=1,updated_at=? WHERE run_id=?", (now, safe))
@@ -1444,19 +1558,193 @@ def request_cancel(run_id: str, *, principal_id: str, session_id: str) -> dict[s
     return _row_payload(row) or {}
 
 
-def _touch_run(run_id: str) -> None:
-    """Refresh the durable liveness marker between bounded scenarios."""
+def _touch_run(
+    run_id: str,
+    *,
+    worker_instance_id: str | None = None,
+    current_scenario: str | None = None,
+    current_tool: str | None = None,
+    increment_event: bool = True,
+) -> None:
+    """Refresh the durable execution lease and bounded progress marker."""
     safe = _safe_run_id(run_id)
     now = _now()
     with connection() as conn, begin_immediate(conn) as tx:
         tx.execute(
-            "UPDATE assurance_runs SET updated_at=? WHERE run_id=? AND status IN ('QUEUED','RUNNING')",
-            (now, safe),
+            """UPDATE assurance_runs SET updated_at=?,heartbeat_at=?,
+                    worker_instance_id=COALESCE(?,worker_instance_id),
+                    current_scenario=COALESCE(?,current_scenario),
+                    current_tool=CASE
+                        WHEN ? IS NOT NULL THEN ?
+                        WHEN ? IS NOT NULL THEN NULL
+                        ELSE current_tool
+                    END,
+                    last_event_sequence=last_event_sequence+?
+                WHERE run_id=? AND status IN ('QUEUED','RUNNING')""",
+            (
+                now,
+                now,
+                str(worker_instance_id or "")[:120] or None,
+                str(current_scenario or "")[:80] or None,
+                str(current_tool or "")[:80] or None,
+                str(current_tool or "")[:80] or None,
+                str(current_scenario or "")[:80] or None,
+                1 if increment_event else 0,
+                safe,
+            ),
         )
 
 
+def _checkpoint(
+    run_id: str,
+    *,
+    unit_kind: str,
+    unit_id: str,
+    status: str,
+    retry_safe: bool,
+    resume_supported: bool,
+    result: Mapping[str, Any] | None = None,
+    worker_instance_id: str | None = None,
+    attempt: int | None = None,
+) -> dict[str, Any]:
+    """Persist one normalized suite/scenario/tool checkpoint transactionally."""
+    safe = _safe_run_id(run_id)
+    kind = str(unit_kind or "").strip().casefold()
+    if kind not in {"suite", "scenario", "tool"}:
+        raise AssuranceError("checkpoint_kind_invalid", "The assurance checkpoint kind is invalid.", status_code=503)
+    checkpoint_status = str(status or "PARTIAL").upper()
+    if checkpoint_status not in CHECKPOINT_STATUSES:
+        raise AssuranceError("checkpoint_status_invalid", "The assurance checkpoint status is invalid.", status_code=503)
+    identifier = str(unit_id or "").strip()[:120]
+    if not identifier:
+        raise AssuranceError("checkpoint_id_invalid", "The assurance checkpoint identifier is invalid.", status_code=503)
+    now = _now()
+    completed = now if checkpoint_status in TERMINAL_STATUSES | {"SKIPPED"} else None
+    clean_result = _redact(dict(result or {}))
+    apply_migrations()
+    with connection() as conn, begin_immediate(conn) as tx:
+        current = tx.execute("SELECT * FROM assurance_runs WHERE run_id=?", (safe,)).fetchone()
+        if not current:
+            raise AssuranceError("run_not_found", "The assurance run was not found.", status_code=404)
+        previous = tx.execute(
+            "SELECT * FROM assurance_execution_checkpoints WHERE run_id=? AND unit_kind=? AND unit_id=?",
+            (safe, kind, identifier),
+        ).fetchone()
+        prior_attempt = int(previous["attempt"] or 0) if previous else 0
+        checkpoint_attempt = max(
+            1 if checkpoint_status == "RUNNING" else 0,
+            int(attempt) if attempt is not None else prior_attempt + (1 if checkpoint_status == "RUNNING" else 0),
+        )
+        tx.execute(
+            """INSERT INTO assurance_execution_checkpoints(
+                   run_id,unit_kind,unit_id,status,attempt,retry_safe,resume_supported,
+                   started_at,completed_at,heartbeat_at,result_json
+               ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(run_id,unit_kind,unit_id) DO UPDATE SET
+                   status=excluded.status,attempt=excluded.attempt,
+                   retry_safe=excluded.retry_safe,resume_supported=excluded.resume_supported,
+                   started_at=COALESCE(assurance_execution_checkpoints.started_at,excluded.started_at),
+                   completed_at=excluded.completed_at,heartbeat_at=excluded.heartbeat_at,
+                   result_json=excluded.result_json""",
+            (
+                safe,
+                kind,
+                identifier,
+                checkpoint_status,
+                checkpoint_attempt,
+                int(bool(retry_safe)),
+                int(bool(resume_supported)),
+                now if checkpoint_status == "RUNNING" and not previous else (previous["started_at"] if previous else now),
+                completed,
+                now,
+                _canonical(clean_result),
+            ),
+        )
+        tx.execute(
+            """UPDATE assurance_runs SET heartbeat_at=?,updated_at=?,
+                    worker_instance_id=COALESCE(?,worker_instance_id),
+                    current_scenario=CASE WHEN ?='scenario' THEN ? ELSE current_scenario END,
+                    current_tool=CASE
+                        WHEN ?='tool' THEN ?
+                        WHEN ?='scenario' THEN NULL
+                        ELSE current_tool
+                    END,
+                    checkpoint_generation=checkpoint_generation+1,
+                    last_event_sequence=last_event_sequence+1
+                WHERE run_id=? AND status IN ('QUEUED','RUNNING')""",
+            (
+                now,
+                now,
+                str(worker_instance_id or "")[:120] or None,
+                kind,
+                identifier if kind == "scenario" else None,
+                kind,
+                identifier if kind == "tool" else None,
+                kind,
+                safe,
+            ),
+        )
+        stored = tx.execute(
+            "SELECT * FROM assurance_execution_checkpoints WHERE run_id=? AND unit_kind=? AND unit_id=?",
+            (safe, kind, identifier),
+        ).fetchone()
+    return _checkpoint_payload(stored)
+
+
+def _checkpoint_payload(row: sqlite3.Row | Mapping[str, Any] | None) -> dict[str, Any]:
+    if row is None:
+        return {}
+    item = dict(row)
+    item["retry_safe"] = bool(item.get("retry_safe"))
+    item["resume_supported"] = bool(item.get("resume_supported"))
+    item["result"] = _safe_json(item.pop("result_json", None), {})
+    return _redact(item)
+
+
+def list_checkpoints(run_id: str) -> list[dict[str, Any]]:
+    safe = _safe_run_id(run_id)
+    apply_migrations()
+    with read_connection() as conn:
+        rows = conn.execute(
+            """SELECT * FROM assurance_execution_checkpoints
+                WHERE run_id=? ORDER BY checkpoint_id""",
+            (safe,),
+        ).fetchall()
+    return [_checkpoint_payload(row) for row in rows]
+
+
+def _completed_checkpoint(run_id: str, unit_kind: str, unit_id: str) -> dict[str, Any] | None:
+    with read_connection() as conn:
+        row = conn.execute(
+            """SELECT * FROM assurance_execution_checkpoints
+                WHERE run_id=? AND unit_kind=? AND unit_id=? LIMIT 1""",
+            (_safe_run_id(run_id), str(unit_kind), str(unit_id)),
+        ).fetchone()
+    payload = _checkpoint_payload(row)
+    # Only successful units are safe to skip. A PARTIAL checkpoint is the
+    # durable resume cursor; FAIL/BLOCKED remain visible and are not silently
+    # retried as if they had completed successfully.
+    return payload if payload and str(payload.get("status") or "") in {"PASS", "SKIPPED"} else None
+
+
+def _run_deadline_expired(run_id: str) -> bool:
+    """Return whether the durable suite execution lease has elapsed."""
+    with read_connection() as conn:
+        row = conn.execute(
+            "SELECT run_deadline,status FROM assurance_runs WHERE run_id=? LIMIT 1",
+            (_safe_run_id(run_id),),
+        ).fetchone()
+    deadline = _parse_timestamp(row["run_deadline"]) if row else None
+    return bool(
+        row
+        and str(row["status"] or "").upper() in ACTIVE_STATUSES
+        and deadline is not None
+        and datetime.now(timezone.utc) >= deadline
+    )
+
+
 def reconcile_stale_runs() -> dict[str, Any]:
-    """Release interrupted assurance runs as PARTIAL after a fixed deadline."""
+    """Reconcile dead execution leases without ever inferring PASS."""
     apply_migrations()
     with read_connection() as conn:
         rows = conn.execute(
@@ -1466,13 +1754,30 @@ def reconcile_stale_runs() -> dict[str, Any]:
     reconciled: list[dict[str, Any]] = []
     for raw in rows:
         updated = _parse_timestamp(raw["updated_at"])
+        heartbeat = _parse_timestamp(raw["heartbeat_at"])
         try:
             suite = suite_def(raw["suite_id"])
             deadline = max(60, min(int(suite.get("maximum_seconds") or 600), 24 * 60 * 60))
         except Exception:
             suite = {"id": str(raw["suite_id"] or "unknown")}
             deadline = 600
-        stale = updated is None or (now - updated).total_seconds() > deadline + RECONCILIATION_GRACE_SECONDS
+        persisted_deadline = _parse_timestamp(raw["run_deadline"])
+        deadline_at = persisted_deadline or (
+            updated + timedelta(seconds=deadline)
+            if updated is not None
+            else None
+        )
+        # Both fields are updated by the worker heartbeat.  Considering the
+        # older value preserves fail-closed behavior for partially written
+        # leases and for databases created before migration 0036.
+        progress_times = [value for value in (updated, heartbeat) if value is not None]
+        last_progress = min(progress_times) if progress_times else None
+        stale_heartbeat = (
+            last_progress is None
+            or (now - last_progress).total_seconds() > RECONCILIATION_GRACE_SECONDS
+        )
+        deadline_expired = deadline_at is not None and now >= deadline_at
+        stale = deadline_expired or stale_heartbeat
         if not stale:
             continue
         row = _row_payload(raw) or {}
@@ -1499,6 +1804,37 @@ def reconcile_stale_runs() -> dict[str, Any]:
             )
         except Exception:
             pass
+        current_tool = str(row.get("current_tool") or "")
+        current_scenario = str(row.get("current_scenario") or "")
+        if current_tool:
+            try:
+                tool_policy = _tool_retry_policy(current_tool)
+                _checkpoint(
+                    str(row.get("run_id") or ""),
+                    unit_kind="tool",
+                    unit_id=current_tool,
+                    status="PENDING",
+                    retry_safe=bool(tool_policy["retry_safe"]),
+                    resume_supported=bool(tool_policy["resume_supported"]),
+                    result={"reconciled": True, "reason": failure_code},
+                    worker_instance_id=str(row.get("worker_instance_id") or "") or None,
+                )
+            except Exception:
+                pass
+        elif current_scenario:
+            try:
+                _checkpoint(
+                    str(row.get("run_id") or ""),
+                    unit_kind="scenario",
+                    unit_id=current_scenario,
+                    status="PENDING",
+                    retry_safe=True,
+                    resume_supported=True,
+                    result={"reconciled": True, "reason": failure_code},
+                    worker_instance_id=str(row.get("worker_instance_id") or "") or None,
+                )
+            except Exception:
+                pass
         result = _set_terminal(
             str(row.get("run_id") or ""),
             status="PARTIAL",
@@ -1531,11 +1867,217 @@ def reconcile_stale_runs() -> dict[str, Any]:
     return _redact({"reconciled": reconciled, "count": len(reconciled), "sanitized": True})
 
 
+def _resume_checkpoint(run_id: str) -> dict[str, Any] | None:
+    """Return the oldest incomplete unit that can be safely retried."""
+    safe = _safe_run_id(run_id)
+    with read_connection() as conn:
+        run = conn.execute(
+            "SELECT current_scenario,current_tool FROM assurance_runs WHERE run_id=? LIMIT 1",
+            (safe,),
+        ).fetchone()
+        current_scenario = str(run["current_scenario"] or "") if run else ""
+        current_tool = str(run["current_tool"] or "") if run else ""
+        rows = conn.execute(
+            """SELECT * FROM assurance_execution_checkpoints
+                WHERE run_id=? AND status IN ('RUNNING','PENDING','PARTIAL')
+                ORDER BY
+                  CASE
+                    WHEN unit_kind='tool' AND unit_id=? THEN 0
+                    WHEN unit_kind='scenario' AND unit_id=? THEN 1
+                    ELSE 2
+                  END,
+                  checkpoint_id""",
+            (safe, current_tool, current_scenario),
+        ).fetchall()
+    for row in rows:
+        item = _checkpoint_payload(row)
+        if item.get("retry_safe") and item.get("resume_supported"):
+            return item
+        return item
+    return None
+
+
+def _resume_summary(run: Mapping[str, Any]) -> dict[str, Any]:
+    checkpoint = _resume_checkpoint(str(run.get("run_id") or ""))
+    return _redact({
+        "run_id": run.get("run_id"),
+        "status": str(run.get("status") or "").upper(),
+        "run_deadline": run.get("run_deadline"),
+        "heartbeat_at": run.get("heartbeat_at"),
+        "worker_instance_id": run.get("worker_instance_id"),
+        "worker_operation_id": run.get("worker_operation_id"),
+        "current_scenario": run.get("current_scenario"),
+        "current_tool": run.get("current_tool"),
+        "checkpoint_generation": int(run.get("checkpoint_generation") or 0),
+        "last_event_sequence": int(run.get("last_event_sequence") or 0),
+        "resume_checkpoint": checkpoint,
+        "execution_lease_independent_of_session": True,
+        "sanitized": True,
+    })
+
+
+def run_events(run_id: str, *, after_sequence: int = 0) -> dict[str, Any]:
+    """Return bounded durable progress for client reattachment."""
+    safe = _safe_run_id(run_id)
+    bounded_after = max(0, min(int(after_sequence), 10_000_000))
+    run = get_run(safe)
+    if not run:
+        raise AssuranceError("run_not_found", "The assurance run was not found.", status_code=404)
+    sequence = int(run.get("last_event_sequence") or 0)
+    checkpoints = list_checkpoints(safe) if bounded_after < sequence else []
+    return _redact({
+        "run_id": safe,
+        "event_sequence": sequence,
+        "after_sequence": bounded_after,
+        "run": run,
+        "checkpoints": checkpoints,
+        "resume": _resume_summary(run),
+        "sanitized": True,
+    })
+
+
+def resume_run(run_id: str) -> dict[str, Any]:
+    """Requeue only an interrupted retry-safe unit for the same durable run."""
+    safe = _safe_run_id(run_id)
+    apply_migrations()
+    current_run = get_run(safe)
+    if not current_run:
+        raise AssuranceError("run_not_found", "The assurance run was not found.", status_code=404)
+    current_status = str(current_run.get("status") or "").upper()
+    if current_status in ACTIVE_STATUSES:
+        return _redact({**current_run, "resume_action": "already_running", "sanitized": True})
+    if current_status != "PARTIAL":
+        return _redact({**current_run, "resume_action": "not_resumable", "sanitized": True})
+    deadline = _parse_timestamp(current_run.get("run_deadline"))
+    if deadline is None:
+        raise AssuranceError("run_resume_lease_missing", "The interrupted run has no durable execution deadline.", status_code=409)
+    now = datetime.now(timezone.utc)
+    if deadline <= now:
+        return _redact({**current_run, "resume_action": "deadline_expired", "sanitized": True})
+    with read_connection() as conn:
+        principal = conn.execute(
+            "SELECT enabled,revoked_at,expires_at FROM synthetic_principals WHERE principal_id=? LIMIT 1",
+            (str(current_run.get("principal_id") or ""),),
+        ).fetchone()
+        active = conn.execute(
+            "SELECT run_id FROM assurance_runs WHERE status IN ('QUEUED','RUNNING') AND run_id<>? LIMIT 1",
+            (safe,),
+        ).fetchone()
+    if active:
+        raise AssuranceConflict("assurance_run_active", "Another runtime assurance run is already active.", status_code=409)
+    principal_expires = _parse_timestamp(principal["expires_at"]) if principal else None
+    if not principal or not principal["enabled"] or principal["revoked_at"]:
+        return _redact({**current_run, "resume_action": "principal_revoked", "sanitized": True})
+    if principal_expires is None or principal_expires <= now:
+        return _redact({**current_run, "resume_action": "principal_expired", "sanitized": True})
+    current_revision = _fixed_git_revision().get("revision")
+    if str(current_revision or "") != str(current_run.get("revision_sha") or ""):
+        return _redact({**current_run, "resume_action": "revision_mismatch", "sanitized": True})
+    checkpoint = _resume_checkpoint(safe)
+    if not checkpoint:
+        return _redact({**current_run, "resume_action": "checkpoint_missing", "sanitized": True})
+    if not checkpoint.get("retry_safe") or not checkpoint.get("resume_supported"):
+        return _redact({
+            **current_run,
+            "resume_action": "manual_review_required",
+            "resume_checkpoint": checkpoint,
+            "sanitized": True,
+        })
+    if str(checkpoint.get("unit_kind") or "") == "tool":
+        tool_policy = _tool_retry_policy(str(checkpoint.get("unit_id") or ""))
+        if int(checkpoint.get("attempt") or 0) >= int(tool_policy.get("max_attempts") or 1):
+            return _redact({
+                **current_run,
+                "resume_action": "retry_limit_reached",
+                "resume_checkpoint": checkpoint,
+                "sanitized": True,
+            })
+    summary = _safe_json(current_run.get("summary"), {})
+    if not isinstance(summary, dict):
+        summary = {}
+    summary.update({
+        "status": "QUEUED",
+        "resumed_at": _now(),
+        "resume_from": {
+            "unit_kind": checkpoint.get("unit_kind"),
+            "unit_id": checkpoint.get("unit_id"),
+            "attempt": int(checkpoint.get("attempt") or 0) + 1,
+        },
+        "execution_lease_independent_of_session": True,
+        "sanitized": True,
+    })
+    now_iso = _now()
+    with connection() as conn, begin_immediate(conn) as tx:
+        tx.execute(
+            """UPDATE assurance_runs SET status='QUEUED',completed_at=NULL,
+                    failure_code=NULL,cancel_requested=0,summary_json=?,updated_at=?,
+                    heartbeat_at=?,worker_instance_id=NULL,current_tool=NULL
+                WHERE run_id=? AND status='PARTIAL'""",
+            (_canonical(_redact(summary)), now_iso, now_iso, safe),
+        )
+        row = tx.execute("SELECT * FROM assurance_runs WHERE run_id=?", (safe,)).fetchone()
+    result = _row_payload(row) or {}
+    result["resume_action"] = "requeued"
+    _assurance_audit(
+        event_type="assurance_run_resumed",
+        reason_code="retry_safe_checkpoint",
+        principal_id=str(result.get("principal_id") or ""),
+        session_id=None,
+        operation_id=safe,
+        result="accepted",
+        summary="An interrupted assurance run was requeued from its retry-safe checkpoint.",
+    )
+    return _redact(result)
+
+
 def _cancel_requested(run_id: str) -> bool:
     safe = _safe_run_id(run_id)
     with read_connection() as conn:
         row = conn.execute("SELECT cancel_requested FROM assurance_runs WHERE run_id=?", (safe,)).fetchone()
     return bool(row and row["cancel_requested"])
+
+
+def _principal_revoked(principal_id: str) -> bool:
+    apply_migrations()
+    with read_connection() as conn:
+        row = conn.execute(
+            "SELECT enabled,revoked_at FROM synthetic_principals WHERE principal_id=? LIMIT 1",
+            (str(principal_id or "")[:80],),
+        ).fetchone()
+    return bool(not row or not row["enabled"] or row["revoked_at"])
+
+
+def _run_active(run_id: str) -> bool:
+    try:
+        with read_connection() as conn:
+            row = conn.execute(
+                "SELECT status FROM assurance_runs WHERE run_id=? LIMIT 1",
+                (_safe_run_id(run_id),),
+            ).fetchone()
+        return bool(row and str(row["status"] or "").upper() in ACTIVE_STATUSES)
+    except Exception:
+        return False
+
+
+def _heartbeat_worker(
+    run_id: str,
+    *,
+    worker_instance_id: str | None,
+    stop_event: threading.Event,
+) -> None:
+    """Keep the durable lease live while a synchronous scanner is running."""
+    while not stop_event.is_set() and _run_active(run_id):
+        if stop_event.wait(HEARTBEAT_INTERVAL_SECONDS):
+            return
+        if not _run_active(run_id):
+            return
+        try:
+            _touch_run(run_id, worker_instance_id=worker_instance_id, increment_event=False)
+        except Exception:
+            # A later reconciliation must treat the run as interrupted if the
+            # database cannot accept a heartbeat.  Never turn a heartbeat
+            # write failure into a false terminal success or crash loop.
+            continue
 
 
 def _latest_baseline(run_id: str, suite_id: str) -> str | None:
@@ -1702,8 +2244,9 @@ def _set_terminal(
             return _row_payload(current) or {}
         tx.execute(
             """UPDATE assurance_runs SET status=?,summary_json=?,report_json=?,failure_code=?,
-                    completed_at=COALESCE(completed_at,?),updated_at=? WHERE run_id=?""",
-            (outcome, _canonical(clean_summary), _canonical(clean_report), str(failure_code or "")[:120] or None, now, now, safe),
+                    completed_at=COALESCE(completed_at,?),updated_at=?,heartbeat_at=?
+                WHERE run_id=?""",
+            (outcome, _canonical(clean_summary), _canonical(clean_report), str(failure_code or "")[:120] or None, now, now, now, safe),
         )
         _insert_scenarios_and_tools(tx, safe, scenario_items, tool_items)
         _insert_findings(tx, safe, finding_items)
@@ -1783,8 +2326,42 @@ def _configuration_posture() -> dict[str, Any]:
     })
 
 
-def _harness_auth_posture(principal_id: str, session_id: str) -> dict[str, Any]:
-    posture = _session_posture(principal_id, session_id)
+def _harness_auth_posture(
+    principal_id: str,
+    session_id: str,
+    *,
+    admitted_run: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    # FastAPI already authenticated and authorized the durable run before it
+    # was published. Rechecking the original session as a live credential here
+    # would incorrectly fail an admitted run after normal session expiry.
+    if admitted_run is not None:
+        runtime_bound = str(admitted_run.get("runtime_id") or "") == lite_harness._runtime_id()
+        posture = {
+            "ok": bool(
+                str(admitted_run.get("principal_id") or "") == str(principal_id or "")
+                and str(admitted_run.get("harness_session_id") or "") == str(session_id or "")
+                and str(admitted_run.get("profile") or "") == ASSURANCE_PROFILE
+                and str(admitted_run.get("purpose") or "") == ASSURANCE_PURPOSE
+                and str(admitted_run.get("target_scope") or "") == ASSURANCE_TARGET_SCOPE
+                and runtime_bound
+            ),
+            "checks": {
+                "session_admitted": str(admitted_run.get("harness_session_id") or "") == str(session_id or ""),
+                "profile": str(admitted_run.get("profile") or "") == ASSURANCE_PROFILE,
+                "purpose": str(admitted_run.get("purpose") or "") == ASSURANCE_PURPOSE,
+                "target_scope": str(admitted_run.get("target_scope") or "") == ASSURANCE_TARGET_SCOPE,
+                "runtime_id": runtime_bound,
+                "execution_lease_independent_of_session": True,
+            },
+            "profile": str(admitted_run.get("profile") or ""),
+            "purpose": str(admitted_run.get("purpose") or ""),
+            "target_scope": str(admitted_run.get("target_scope") or ""),
+            "runtime_bound": runtime_bound,
+            "session_lifecycle": "admitted_run_is_independent_of_session_expiry",
+        }
+    else:
+        posture = _session_posture(principal_id, session_id)
     profile = lite_harness.PROFILE_DATA[ASSURANCE_PROFILE]
     checks = {
         "session": bool(posture.get("ok")),
@@ -2148,6 +2725,19 @@ def _inventory_tools(
             "failure_code": "registered_tool_result_missing",
         }))
     return results
+
+
+def _tool_retry_policy(tool_id: str) -> dict[str, Any]:
+    """Read retry/resume policy only from the fixed server-owned registry."""
+    for item in _read_yaml(TOOLS_REGISTRY_PATH).get("toolchain") or []:
+        if isinstance(item, Mapping) and str(item.get("id") or "") == str(tool_id):
+            return {
+                "retry_safe": bool(item.get("retry_safe")),
+                "resume_supported": bool(item.get("resume_supported")),
+                "checkpoint_supported": bool(item.get("checkpoint_supported")),
+                "max_attempts": int(item.get("max_attempts") or 1),
+            }
+    return {"retry_safe": False, "resume_supported": False, "checkpoint_supported": False, "max_attempts": 1}
 
 
 def _run_existing_security_scan(suite_id: str) -> dict[str, Any]:
@@ -2716,7 +3306,11 @@ def fail_run_exception(run_id: str, exc: Exception | None = None) -> dict[str, A
     return result
 
 
-def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
+def execute_run(
+    command: Mapping[str, Any],
+    *,
+    worker_instance_id: str | None = None,
+) -> dict[str, Any]:
     """Execute one admitted command from the fixed assurance subject."""
     run_id = _safe_run_id(command.get("run_id") or command.get("command_id"))
     row = get_run(run_id)
@@ -2742,12 +3336,6 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
         return fail_run_exception(run_id)
     suite = suite_def(row.get("suite_id"))
     selected = _scenario_items_for_suite(suite, str(row.get("scenario_id") or "") or None)
-    posture = _session_posture(
-        str(row.get("principal_id") or ""),
-        str(row.get("harness_session_id") or ""),
-    )
-    if not posture.get("ok"):
-        return fail_run_exception(run_id)
     try:
         preflight_result = preflight(
             str(suite["id"]),
@@ -2772,7 +3360,25 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
             failure_code=str(preflight_result.get("failure_code") or "preflight_blocked")[:120],
             preflight_result=preflight_result,
         )
-    mark_running(run_id)
+    worker_id = str(worker_instance_id or "pocket-worker")[:120]
+    mark_running(run_id, worker_instance_id=worker_id, worker_operation_id=run_id)
+    heartbeat_stop = threading.Event()
+    heartbeat = threading.Thread(
+        target=_heartbeat_worker,
+        kwargs={"run_id": run_id, "worker_instance_id": worker_id, "stop_event": heartbeat_stop},
+        name=f"assurance-heartbeat-{run_id[-12:]}",
+        daemon=True,
+    )
+    heartbeat.start()
+    _checkpoint(
+        run_id,
+        unit_kind="suite",
+        unit_id=str(suite["id"]),
+        status="RUNNING",
+        retry_safe=True,
+        resume_supported=True,
+        worker_instance_id=worker_id,
+    )
     started = time.monotonic()
     resource_start = optimization.resource_snapshot()
     scenario_results: list[dict[str, Any]] = []
@@ -2780,36 +3386,79 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
     scanner_records: dict[str, Mapping[str, Any]] = {}
     scanner_summary: Mapping[str, Any] | None = None
     cancelled = False
+    deadline_expired = False
     for definition in selected:
         scenario_started = _now()
         scenario_id = str(definition.get("id") or "")
-        _touch_run(run_id)
+        if _run_deadline_expired(run_id):
+            deadline_expired = True
+            deadline_result = _scenario_result(
+                definition,
+                status="PARTIAL",
+                observed="The durable assurance lease expired before this scenario completed.",
+                failure_code="run_deadline_exceeded",
+                started_at=scenario_started,
+            )
+            scenario_results.append(deadline_result)
+            _checkpoint(
+                run_id,
+                unit_kind="scenario",
+                unit_id=scenario_id,
+                status="PARTIAL",
+                retry_safe=True,
+                resume_supported=True,
+                result={"scenario_result": deadline_result, "findings": []},
+                worker_instance_id=worker_id,
+            )
+            break
+        _touch_run(run_id, worker_instance_id=worker_id, current_scenario=scenario_id)
+        completed_checkpoint = _completed_checkpoint(run_id, "scenario", scenario_id)
+        completed_payload = completed_checkpoint.get("result") if completed_checkpoint else None
+        if isinstance(completed_payload, Mapping) and isinstance(completed_payload.get("scenario_result"), Mapping):
+            scenario_results.append(_redact(dict(completed_payload["scenario_result"])))
+            saved_findings = completed_payload.get("findings")
+            if isinstance(saved_findings, list):
+                findings.extend(item for item in saved_findings if isinstance(item, Mapping))
+            saved_tools = completed_payload.get("tool_records")
+            if isinstance(saved_tools, Mapping):
+                scanner_records.update(
+                    {
+                        str(key): value
+                        for key, value in saved_tools.items()
+                        if isinstance(value, Mapping)
+                    }
+                )
+            continue
+        scenario_findings_start = len(findings)
+        _checkpoint(
+            run_id,
+            unit_kind="scenario",
+            unit_id=scenario_id,
+            status="RUNNING",
+            retry_safe=True,
+            resume_supported=True,
+            worker_instance_id=worker_id,
+        )
         if _cancel_requested(run_id):
             cancelled = True
-            scenario_results.append(
-                _scenario_result(
-                    definition,
-                    status="PARTIAL",
-                    observed="Cancellation was requested before this scenario ran.",
-                    failure_code="cancel_requested",
-                    started_at=scenario_started,
-                )
+            cancelled_result = _scenario_result(
+                definition,
+                status="PARTIAL",
+                observed="Cancellation was requested before this scenario ran.",
+                failure_code="cancel_requested",
+                started_at=scenario_started,
             )
-            continue
-        if not _session_posture(
-            str(row.get("principal_id") or ""),
-            str(row.get("harness_session_id") or ""),
-        ).get("ok"):
-            scenario_results.append(
-                _scenario_result(
-                    definition,
-                    status="BLOCKED",
-                    observed="The admitting harness session was no longer valid.",
-                    failure_code="harness_session_invalid",
-                    started_at=scenario_started,
-                )
+            scenario_results.append(cancelled_result)
+            _checkpoint(
+                run_id,
+                unit_kind="scenario",
+                unit_id=scenario_id,
+                status="PARTIAL",
+                retry_safe=True,
+                resume_supported=True,
+                result={"scenario_result": cancelled_result, "findings": []},
+                worker_instance_id=worker_id,
             )
-            cancelled = True
             continue
         try:
             if scenario_id == "harness-default-off":
@@ -2827,6 +3476,7 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
                 auth_result = _harness_auth_posture(
                     str(row.get("principal_id") or ""),
                     str(row.get("harness_session_id") or ""),
+                    admitted_run=row,
                 )
                 scenario_results.append(
                     _scenario_result(
@@ -2882,6 +3532,17 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
                     )
                 )
             elif scenario_id == "security-projection":
+                for tool_id in ACTIVE_TOOLS_BY_SUITE.get(str(suite["id"]), ()):
+                    tool_policy = _tool_retry_policy(tool_id)
+                    _checkpoint(
+                        run_id,
+                        unit_kind="tool",
+                        unit_id=tool_id,
+                        status="RUNNING",
+                        retry_safe=bool(tool_policy["retry_safe"]),
+                        resume_supported=bool(tool_policy["resume_supported"]),
+                        worker_instance_id=worker_id,
+                    )
                 scanner_summary = _run_existing_security_scan(str(suite["id"]))
                 raw_records = scanner_summary.get("tool_records") if isinstance(scanner_summary.get("tool_records"), Mapping) else {}
                 scanner_records = {
@@ -2890,6 +3551,9 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
                     if isinstance(value, Mapping)
                 }
                 scanner_result_status = str(scanner_summary.get("status") or "PARTIAL")
+                if _run_deadline_expired(run_id):
+                    deadline_expired = True
+                    scanner_result_status = "PARTIAL"
                 raw_findings = scanner_summary.get("findings") if isinstance(scanner_summary.get("findings"), list) else []
                 findings.extend(
                     _normalize_security_finding(
@@ -2910,11 +3574,28 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
                             "scanner_status": scanner_result_status,
                             "evidence_ref_count": len(scanner_summary.get("evidence_refs") or []),
                             "finding_count": len(raw_findings),
+                            "run_deadline_exceeded": deadline_expired,
                         },
+                        failure_code="run_deadline_exceeded" if deadline_expired else None,
                         evidence_refs=scanner_summary.get("evidence_refs") or [],
                         started_at=scenario_started,
                     )
                 )
+                for tool_id, tool_result in scanner_records.items():
+                    tool_policy = _tool_retry_policy(tool_id)
+                    tool_status = str(tool_result.get("status") or "PARTIAL").upper()
+                    if tool_status not in CHECKPOINT_STATUSES:
+                        tool_status = "PARTIAL"
+                    _checkpoint(
+                        run_id,
+                        unit_kind="tool",
+                        unit_id=tool_id,
+                        status=tool_status,
+                        retry_safe=bool(tool_policy["retry_safe"]),
+                        resume_supported=bool(tool_policy["resume_supported"]),
+                        result={"tool_result": tool_result},
+                        worker_instance_id=worker_id,
+                    )
             elif scenario_id == "policy-readiness":
                 policy_result = _policy_readiness()
                 scenario_results.append(
@@ -2996,20 +3677,53 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
                         started_at=scenario_started,
                     )
                 )
-        except Exception as exc:
-            scenario_results.append(
-                _scenario_result(
-                    definition,
-                    status="PARTIAL",
-                    observed="The registered scenario did not produce a complete result.",
-                    failure_code="scenario_execution_failed",
-                    details={"error_type": type(exc).__name__},
-                    started_at=scenario_started,
-                )
+            completed_result = scenario_results[-1]
+            _checkpoint(
+                run_id,
+                unit_kind="scenario",
+                unit_id=scenario_id,
+                status=str(completed_result.get("status") or "PARTIAL").upper(),
+                retry_safe=True,
+                resume_supported=True,
+                result={
+                    "scenario_result": completed_result,
+                    "findings": findings[scenario_findings_start:],
+                    "tool_records": scanner_records if scenario_id == "security-projection" else {},
+                },
+                worker_instance_id=worker_id,
+                attempt=1,
             )
+        except Exception as exc:
+            failed_result = _scenario_result(
+                definition,
+                status="PARTIAL",
+                observed="The registered scenario did not produce a complete result.",
+                failure_code="scenario_execution_failed",
+                details={"error_type": type(exc).__name__},
+                started_at=scenario_started,
+            )
+            scenario_results.append(failed_result)
+            try:
+                _checkpoint(
+                    run_id,
+                    unit_kind="scenario",
+                    unit_id=scenario_id,
+                    status="PARTIAL",
+                    retry_safe=True,
+                    resume_supported=True,
+                    result={
+                        "scenario_result": failed_result,
+                        "findings": findings[scenario_findings_start:],
+                        "tool_records": scanner_records if scenario_id == "security-projection" else {},
+                    },
+                    worker_instance_id=worker_id,
+                )
+            except Exception:
+                pass
     # Cancellation is intentionally checked again after the last scenario so
     # a request racing the final probe cannot be reported as PASS.
     cancelled = cancelled or _cancel_requested(run_id)
+    deadline_expired = deadline_expired or _run_deadline_expired(run_id)
     tool_records = _inventory_tools(
         str(suite["id"]),
         scanner_records=scanner_records,
@@ -3042,6 +3756,7 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
         outcome = "FAIL"
     elif (
         cancelled
+        or deadline_expired
         or "BLOCKED" in scenario_statuses
         or "PARTIAL" in scenario_statuses
         or "PARTIAL" in active_tool_statuses
@@ -3071,6 +3786,30 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
         report = {"available": False, "failure_code": report_failure, "sanitized": True}
         if outcome == "PASS":
             outcome = "PARTIAL"
+    try:
+        _checkpoint(
+            run_id,
+            unit_kind="suite",
+            unit_id=str(suite["id"]),
+            status=outcome,
+            retry_safe=True,
+            resume_supported=True,
+            result={
+                "status": outcome,
+                "scenario_count": len(scenario_results),
+                "tool_count": len(tool_records),
+                "finding_count": len(findings),
+            },
+            worker_instance_id=worker_id,
+        )
+    except Exception:
+        # Terminal run storage below remains authoritative.  A missing
+        # checkpoint makes later resume conservative; it can never create a
+        # false PASS.
+        if outcome == "PASS":
+            outcome = "PARTIAL"
+    heartbeat_stop.set()
+    heartbeat.join(timeout=2.0)
     final = _set_terminal(
         run_id,
         status=outcome,
@@ -3093,6 +3832,7 @@ def execute_run(command: Mapping[str, Any]) -> dict[str, Any]:
                 and item.get("status") == "open"
             ),
             "cancelled": cancelled,
+            "run_deadline_exceeded": deadline_expired,
             "report_available": bool(report.get("available")),
             "failure_code": report_failure,
             "sanitized": True,

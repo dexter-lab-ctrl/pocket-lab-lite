@@ -66,6 +66,31 @@
       "writer": "App Catalog lifecycle and action services"
     },
     {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:assurance_execution_checkpoints",
+      "indexes": [
+        "idx_assurance_checkpoints_run_status",
+        "sqlite_autoindex_assurance_execution_checkpoints_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
+      ],
+      "name": "assurance_execution_checkpoints",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -102,12 +127,15 @@
       "domain": "control_plane",
       "id": "table:assurance_runs",
       "indexes": [
+        "idx_assurance_runs_active_admission",
+        "idx_assurance_runs_lease",
         "idx_assurance_runs_history",
         "idx_assurance_one_active",
         "sqlite_autoindex_assurance_runs_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
       ],
       "name": "assurance_runs",
       "owner": "not a prepared projection",
@@ -116,7 +144,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2292,6 +2321,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
+    "source_fingerprint": "fa183089ec0951bc07a8014359e0492dabfe2d6d0327b2bc69ab659a8502de3f"
   }
 }

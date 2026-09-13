@@ -134,6 +134,46 @@ def _owned_run(run_id: str, auth: dict[str, Any]) -> dict[str, Any]:
     return run
 
 
+async def _publish_run(run: dict[str, Any], *, suite_id: str, scenario_id: str | None = None) -> dict[str, Any]:
+    """Publish only the server-constructed assurance envelope."""
+    command = {
+        "run_id": run["run_id"],
+        "command_id": run["run_id"],
+        "trace_id": run["run_id"],
+        "suite_id": suite_id,
+        "scenario_id": scenario_id if scenario_id is not None else run.get("scenario_id"),
+        "baseline_run_id": run.get("baseline_run_id"),
+        "profile": assurance.ASSURANCE_PROFILE,
+        "purpose": assurance.ASSURANCE_PURPOSE,
+        "target_scope": assurance.ASSURANCE_TARGET_SCOPE,
+        "runtime_id": run.get("runtime_id"),
+        "revision_sha": run.get("revision_sha"),
+        "principal_id": run.get("principal_id"),
+        "session_id": run.get("harness_session_id"),
+    }
+    try:
+        queued = await submit_domain_command(
+            assurance.ASSURANCE_SUBJECT,
+            "security.assurance.requested",
+            command,
+            trace_id=str(run["run_id"]),
+        )
+    except Exception:
+        return assurance.record_blocked_run(
+            str(run["run_id"]),
+            failure_code="command_publish_failed",
+            preflight_result=run.get("preflight") if isinstance(run.get("preflight"), dict) else {},
+        )
+    return {
+        **run,
+        "status": "QUEUED",
+        "command_id": queued.get("command_id") or run["run_id"],
+        "command_subject": assurance.ASSURANCE_SUBJECT,
+        "execution_mode": "worker",
+        "sanitized": True,
+    }
+
+
 @router.get("/capabilities")
 def capabilities(request: Request, response: Response) -> dict[str, Any]:
     _direct(request)
@@ -232,49 +272,25 @@ async def create_run(
             revision_sha=revision,
             preflight_result=preflight_result,
         )
+        if run.get("idempotent_reuse"):
+            return {
+                **run,
+                "command_subject": assurance.ASSURANCE_SUBJECT,
+                "execution_mode": "worker",
+                "sanitized": True,
+            }
         if preflight_result.get("status") != "ready":
             return assurance.record_blocked_run(
                 str(run["run_id"]),
                 failure_code="preflight_blocked",
                 preflight_result=preflight_result,
             )
-        command = {
-            "run_id": run["run_id"],
-            "command_id": run["run_id"],
-            "trace_id": run["run_id"],
-            "suite_id": str(suite["id"]),
-            "scenario_id": canonical_scenario_id,
-            "baseline_run_id": baseline_id,
-            "profile": assurance.ASSURANCE_PROFILE,
-            "purpose": assurance.ASSURANCE_PURPOSE,
-            "target_scope": assurance.ASSURANCE_TARGET_SCOPE,
-            "runtime_id": run.get("runtime_id"),
-            "revision_sha": revision,
-            "principal_id": harness.get("principal_id"),
-            "session_id": harness.get("session_id"),
-        }
-        try:
-            queued = await submit_domain_command(
-                assurance.ASSURANCE_SUBJECT,
-                "security.assurance.requested",
-                command,
-                trace_id=str(run["run_id"]),
-            )
-        except Exception:
-            return assurance.record_blocked_run(
-                str(run["run_id"]),
-                failure_code="command_publish_failed",
-                preflight_result=preflight_result,
-            )
-        return {
-            **run,
-            "status": "QUEUED",
-            "command_id": queued.get("command_id") or run["run_id"],
-            "command_subject": assurance.ASSURANCE_SUBJECT,
-            "execution_mode": "worker",
-            "preflight": preflight_result,
-            "sanitized": True,
-        }
+        published = await _publish_run(
+            run,
+            suite_id=str(suite["id"]),
+            scenario_id=canonical_scenario_id,
+        )
+        return {**published, "preflight": preflight_result, "sanitized": True}
     except assurance.AssuranceError as exc:
         _raise(exc)
     raise AssertionError("unreachable")
@@ -293,6 +309,40 @@ def findings(run_id: str, request: Request, response: Response) -> dict[str, Any
     _no_store(response)
     _owned_run(run_id, auth)
     return {"run_id": run_id, "findings": assurance.list_findings(run_id), "sanitized": True}
+
+
+@router.get("/runs/{run_id}/events")
+def events(
+    run_id: str,
+    request: Request,
+    response: Response,
+    after: int = Query(default=0, ge=0, le=10_000_000),
+) -> dict[str, Any]:
+    auth = _assurance_auth(request, "security.assurance.read", write=False)
+    _no_store(response)
+    _owned_run(run_id, auth)
+    try:
+        return assurance.run_events(run_id, after_sequence=after)
+    except assurance.AssuranceError as exc:
+        _raise(exc)
+    raise AssertionError("unreachable")
+
+
+@router.post("/runs/{run_id}/resume")
+async def resume(run_id: str, request: Request, response: Response) -> dict[str, Any]:
+    auth = _assurance_auth(request, "security.assurance.run", write=True)
+    _no_store(response)
+    _owned_run(run_id, auth)
+    try:
+        resumed = assurance.resume_run(run_id)
+        if resumed.get("resume_action") != "requeued":
+            return {**resumed, "execution_mode": "worker", "sanitized": True}
+        suite_id = str(resumed.get("suite_id") or "")
+        scenario_id = str(resumed.get("scenario_id") or "") or None
+        return await _publish_run(resumed, suite_id=suite_id, scenario_id=scenario_id)
+    except assurance.AssuranceError as exc:
+        _raise(exc)
+    raise AssertionError("unreachable")
 
 
 @router.get("/runs/{run_id}/report")

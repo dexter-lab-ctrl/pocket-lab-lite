@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 16fa382533e03b515a4c00ab9df3dd7a8fe6b3270ce4b1c93b1c16c4c1aa3842
+source_fingerprint: 7f3df53530fa1bc8dbe164b498e269bf1102efdd111ddf227e000ea6f3165fbe
 schema_revision: 1
 validation_status: generated
 ---
@@ -303,8 +303,12 @@ validation_status: generated
 - `/api/lite/fleet/health-summary`
 - `/api/lite/fleet/invites/latest`
 - `/api/lite/fleet/invites/{invite_id}/revoke`
+- `/api/lite/harness/bootstrap/challenge`
+- `/api/lite/harness/bootstrap/complete`
+- `/api/lite/harness/bootstrap/grants`
 - `/api/lite/harness/capabilities`
 - `/api/lite/harness/challenge`
+- `/api/lite/harness/principal/revoke`
 - `/api/lite/harness/principals`
 - `/api/lite/harness/principals/{principal_id}`
 - `/api/lite/harness/principals/{principal_id}/revoke`
@@ -313,8 +317,10 @@ validation_status: generated
 - `/api/lite/harness/security-assurance/runs`
 - `/api/lite/harness/security-assurance/runs/{run_id}`
 - `/api/lite/harness/security-assurance/runs/{run_id}/cancel`
+- `/api/lite/harness/security-assurance/runs/{run_id}/events`
 - `/api/lite/harness/security-assurance/runs/{run_id}/findings`
 - `/api/lite/harness/security-assurance/runs/{run_id}/report`
+- `/api/lite/harness/security-assurance/runs/{run_id}/resume`
 - `/api/lite/harness/security-assurance/suites`
 - `/api/lite/harness/session`
 - `/api/lite/harness/session/{session_id}`

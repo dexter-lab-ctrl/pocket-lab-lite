@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -399,13 +400,19 @@ def test_migration_and_blocked_run_report_are_durable_and_sanitized(assurance_ru
     from api_fastapi.db.migrations import current_schema_version
     from api_fastapi.services import lite_security_assurance as assurance
 
-    assert current_schema_version() == 35
+    assert current_schema_version() == 36
     with read_connection() as conn:
         tables = {
             row[0]
             for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
         }
-        assert {"assurance_runs", "assurance_scenarios", "assurance_tool_results", "assurance_findings"}.issubset(tables)
+        assert {
+            "assurance_runs",
+            "assurance_scenarios",
+            "assurance_tool_results",
+            "assurance_findings",
+            "assurance_execution_checkpoints",
+        }.issubset(tables)
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
 
     _insert_synthetic_session()
@@ -470,6 +477,237 @@ def test_cancel_is_bound_to_the_admitting_session(assurance_runtime):
         session_id="assurance-test-session",
     )
     assert cancelled["cancel_requested"] == 1
+
+
+def test_idempotent_admission_returns_the_existing_active_run(assurance_runtime):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    _insert_synthetic_session()
+    kwargs = {
+        "suite_id": "smoke",
+        "scenario_id": "evidence-redaction",
+        "baseline_run_id": None,
+        "principal_id": "assurance-test-principal",
+        "session_id": "assurance-test-session",
+        "revision_sha": "1" * 40,
+        "preflight_result": {"status": "ready", "sanitized": True},
+    }
+    first = assurance.create_run(**kwargs)
+    second = assurance.create_run(**kwargs)
+    assert second["run_id"] == first["run_id"]
+    assert second["idempotent_reuse"] is True
+    assert second["status"] == "QUEUED"
+
+
+def test_assurance_router_publishes_one_fixed_command_for_duplicate_admission(assurance_runtime, monkeypatch):
+    from api_fastapi.routers import security_assurance as router
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    helper_path = Path("tests/backend/test_lite_harness.py").resolve()
+    helper_spec = importlib.util.spec_from_file_location("lite_harness_test_helpers", helper_path)
+    assert helper_spec and helper_spec.loader
+    helpers = importlib.util.module_from_spec(helper_spec)
+    helper_spec.loader.exec_module(helpers)
+    monkeypatch.setenv("POCKETLAB_HARNESS_PROVISIONING_TOKEN", helpers.PROVISIONING_TOKEN)
+
+    client = helpers._client()
+    private, public = helpers._key()
+    helpers._register(
+        client,
+        private,
+        public,
+        principal_id="assurance-router-runner",
+        profiles=("security-assurance-runner",),
+    )
+    session, _ = helpers._start_session(
+        client,
+        private,
+        principal_id="assurance-router-runner",
+        profile="security-assurance-runner",
+        purpose="security.assurance",
+    )
+    monkeypatch.setattr(
+        assurance,
+        "preflight",
+        lambda *_args, **_kwargs: {
+            "status": "ready",
+            "revision": "a" * 40,
+            "runtime_id": "assurance-test-runtime",
+            "sanitized": True,
+        },
+    )
+    published: list[dict] = []
+
+    async def fake_publish(subject, event_type, command, *, trace_id=None):
+        published.append({"subject": subject, "event_type": event_type, "command": command, "trace_id": trace_id})
+        return {"command_id": command["run_id"]}
+
+    monkeypatch.setattr(router, "submit_domain_command", fake_publish)
+    headers = {"X-Pocket-Lab-Harness-Session": session["session_token"]}
+    first = client.post("/api/lite/harness/security-assurance/runs", headers=headers, json={"suite_id": "smoke", "scenario_id": "evidence-redaction"})
+    assert first.status_code == 202, first.text
+    second = client.post("/api/lite/harness/security-assurance/runs", headers=headers, json={"suite_id": "smoke", "scenario_id": "evidence-redaction"})
+    assert second.status_code == 202, second.text
+    assert first.json()["run_id"] == second.json()["run_id"]
+    assert second.json()["idempotent_reuse"] is True
+    assert len(published) == 1
+    assert published[0]["subject"] == assurance.ASSURANCE_SUBJECT
+    assert "argv" not in published[0]["command"]
+    assert "nats_subject" not in published[0]["command"]
+
+
+def test_run_lease_checkpoint_and_resume_keep_one_run_id(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    _insert_synthetic_session()
+    revision = "2" * 40
+    run = assurance.create_run(
+        suite_id="smoke",
+        scenario_id="evidence-redaction",
+        baseline_run_id=None,
+        principal_id="assurance-test-principal",
+        session_id="assurance-test-session",
+        revision_sha=revision,
+        preflight_result={"status": "ready", "sanitized": True},
+    )
+    assurance.mark_running(run["run_id"], worker_instance_id="pocket-worker-test", worker_operation_id=run["run_id"])
+    checkpoint = assurance._checkpoint(
+        run["run_id"],
+        unit_kind="scenario",
+        unit_id="evidence-redaction",
+        status="RUNNING",
+        retry_safe=True,
+        resume_supported=True,
+        worker_instance_id="pocket-worker-test",
+    )
+    assert checkpoint["status"] == "RUNNING"
+    assert checkpoint["retry_safe"] is True
+    assert checkpoint["resume_supported"] is True
+    assurance._set_terminal(
+        run["run_id"],
+        status="PARTIAL",
+        summary={"status": "PARTIAL", "sanitized": True},
+        report={"available": False, "sanitized": True},
+        scenarios=[],
+        tools=[],
+        findings=[],
+        failure_code="worker_interrupted",
+    )
+    monkeypatch.setattr(assurance, "_fixed_git_revision", lambda: {"revision": revision})
+    resumed = assurance.resume_run(run["run_id"])
+    assert resumed["run_id"] == run["run_id"]
+    assert resumed["status"] == "QUEUED"
+    assert resumed["resume_action"] == "requeued"
+    already = assurance.resume_run(run["run_id"])
+    assert already["resume_action"] == "already_running"
+    events = assurance.run_events(run["run_id"], after_sequence=0)
+    assert events["run"]["worker_operation_id"] == run["run_id"]
+    assert events["checkpoints"]
+
+
+def test_admitted_run_does_not_depend_on_expired_session(assurance_runtime, monkeypatch):
+    from api_fastapi.db.connection import connection
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    _insert_synthetic_session()
+    revision = "3" * 40
+    run = assurance.create_run(
+        suite_id="smoke",
+        scenario_id="evidence-redaction",
+        baseline_run_id=None,
+        principal_id="assurance-test-principal",
+        session_id="assurance-test-session",
+        revision_sha=revision,
+        preflight_result={"status": "ready", "sanitized": True},
+    )
+    with connection() as conn:
+        conn.execute(
+            "UPDATE harness_sessions SET expires_at=? WHERE harness_session_id=?",
+            ("2000-01-01T00:00:00Z", "assurance-test-session"),
+        )
+    monkeypatch.setattr(assurance, "preflight", lambda *_args, **_kwargs: {"status": "ready", "sanitized": True})
+    monkeypatch.setattr(assurance, "_inventory_tools", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(assurance.optimization, "resource_snapshot", lambda: {})
+    result = assurance.execute_run({
+        "run_id": run["run_id"],
+        "command_id": run["run_id"],
+        "trace_id": run["run_id"],
+        "suite_id": "smoke",
+        "scenario_id": "evidence-redaction",
+        "baseline_run_id": "",
+        "profile": assurance.ASSURANCE_PROFILE,
+        "purpose": assurance.ASSURANCE_PURPOSE,
+        "target_scope": assurance.ASSURANCE_TARGET_SCOPE,
+        "runtime_id": run["runtime_id"],
+        "revision_sha": revision,
+        "principal_id": "assurance-test-principal",
+        "session_id": "assurance-test-session",
+    })
+    assert result["status"] == "PASS"
+    assert result["run_id"] == run["run_id"]
+
+
+def test_expired_execution_lease_is_partial_and_never_passes(assurance_runtime, monkeypatch):
+    from api_fastapi.db.connection import connection
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    _insert_synthetic_session()
+    revision = "4" * 40
+    run = assurance.create_run(
+        suite_id="smoke",
+        scenario_id="evidence-redaction",
+        baseline_run_id=None,
+        principal_id="assurance-test-principal",
+        session_id="assurance-test-session",
+        revision_sha=revision,
+        preflight_result={"status": "ready", "sanitized": True},
+    )
+    with connection() as conn:
+        conn.execute(
+            "UPDATE assurance_runs SET run_deadline=?,updated_at=?,heartbeat_at=? WHERE run_id=?",
+            ("2000-01-01T00:00:00Z", "2000-01-01T00:00:00Z", "2000-01-01T00:00:00Z", run["run_id"]),
+        )
+    monkeypatch.setattr(assurance, "preflight", lambda *_args, **_kwargs: {"status": "ready", "sanitized": True})
+    monkeypatch.setattr(assurance, "_inventory_tools", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(assurance.optimization, "resource_snapshot", lambda: {})
+    result = assurance.execute_run({
+        "run_id": run["run_id"],
+        "command_id": run["run_id"],
+        "trace_id": run["run_id"],
+        "suite_id": "smoke",
+        "scenario_id": "evidence-redaction",
+        "baseline_run_id": "",
+        "profile": assurance.ASSURANCE_PROFILE,
+        "purpose": assurance.ASSURANCE_PURPOSE,
+        "target_scope": assurance.ASSURANCE_TARGET_SCOPE,
+        "runtime_id": run["runtime_id"],
+        "revision_sha": revision,
+        "principal_id": "assurance-test-principal",
+        "session_id": "assurance-test-session",
+    })
+    assert result["status"] == "PARTIAL"
+    assert result["summary"]["run_deadline_exceeded"] is True
+    scenarios = assurance.list_scenarios(run["run_id"])
+    assert scenarios[0]["failure_code"] == "run_deadline_exceeded"
+
+
+def test_principal_revocation_marks_active_assurance_run_for_cancellation(assurance_runtime):
+    from api_fastapi.services import lite_harness
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    _insert_synthetic_session()
+    run = assurance.create_run(
+        suite_id="smoke",
+        scenario_id="evidence-redaction",
+        baseline_run_id=None,
+        principal_id="assurance-test-principal",
+        session_id="assurance-test-session",
+        revision_sha="5" * 40,
+        preflight_result={"status": "ready", "sanitized": True},
+    )
+    revoked = lite_harness.revoke_principal("assurance-test-principal", reason_code="qualification_cleanup")
+    assert revoked["active_assurance_runs_cancelled"] == 1
+    assert assurance.get_run(run["run_id"])["cancel_requested"] is True
 
 
 def test_stale_run_reconciliation_is_truthful_and_terminal(assurance_runtime):

@@ -1279,7 +1279,11 @@ async def handle_lite_security_assurance(command: Dict[str, Any]) -> Dict[str, A
     from . import lite_security_assurance
 
     try:
-        result = await asyncio.to_thread(lite_security_assurance.execute_run, command)
+        result = await asyncio.to_thread(
+            lite_security_assurance.execute_run,
+            command,
+            worker_instance_id=str(command.get("_worker_instance_id") or "pocket-worker"),
+        )
     except Exception as exc:
         result = await asyncio.to_thread(lite_security_assurance.fail_run_exception, run_id, exc)
     summary = result.get("summary") if isinstance(result.get("summary"), dict) else {}

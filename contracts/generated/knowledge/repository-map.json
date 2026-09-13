@@ -427,6 +427,7 @@
         "api:get:/api/lite/harness/security-assurance/preflight",
         "api:get:/api/lite/harness/security-assurance/runs",
         "api:get:/api/lite/harness/security-assurance/runs/{run_id}",
+        "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
         "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
         "api:get:/api/lite/harness/security-assurance/runs/{run_id}/report",
         "api:get:/api/lite/harness/security-assurance/suites",
@@ -522,11 +523,16 @@
         "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
         "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
         "api:post:/api/lite/fleet/remove-device",
+        "api:post:/api/lite/harness/bootstrap/challenge",
+        "api:post:/api/lite/harness/bootstrap/complete",
+        "api:post:/api/lite/harness/bootstrap/grants",
         "api:post:/api/lite/harness/challenge",
+        "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
         "api:post:/api/lite/harness/security-assurance/runs",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+        "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
         "api:post:/api/lite/harness/session",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
@@ -655,6 +661,7 @@
         "domain:workflow",
         "table:app_action_lifecycle",
         "table:app_current_state",
+        "table:assurance_execution_checkpoints",
         "table:assurance_findings",
         "table:assurance_runs",
         "table:assurance_scenarios",
@@ -779,6 +786,7 @@
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
         "reason:battery_policy_threshold",
+        "reason:bootstrap_transport_rejected",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
@@ -1078,6 +1086,7 @@
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
         "reason:battery_policy_threshold",
+        "reason:bootstrap_transport_rejected",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
@@ -1796,6 +1805,13 @@
         "table:synthetic_principals"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+    },
+    {
+      "entities": [
+        "table:assurance_execution_checkpoints",
+        "table:assurance_runs"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql"
     },
     {
       "entities": [
@@ -3948,6 +3964,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
+    "source_fingerprint": "fa183089ec0951bc07a8014359e0492dabfe2d6d0327b2bc69ab659a8502de3f"
   }
 }

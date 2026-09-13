@@ -683,6 +683,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
+      "name": "GET /api/lite/harness/security-assurance/runs/{run_id}/events",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
       "name": "GET /api/lite/harness/security-assurance/runs/{run_id}/findings",
       "note": "A test link does not by itself prove runtime verification.",
@@ -1730,8 +1741,52 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/harness/bootstrap/challenge",
+      "name": "POST /api/lite/harness/bootstrap/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/bootstrap/complete",
+      "name": "POST /api/lite/harness/bootstrap/complete",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/bootstrap/grants",
+      "name": "POST /api/lite/harness/bootstrap/grants",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/harness/challenge",
       "name": "POST /api/lite/harness/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/principal/revoke",
+      "name": "POST /api/lite/harness/principal/revoke",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -1776,6 +1831,17 @@
     {
       "entity": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
       "name": "POST /api/lite/harness/security-assurance/runs/{run_id}/cancel",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
+      "name": "POST /api/lite/harness/security-assurance/runs/{run_id}/resume",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -4168,6 +4234,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
+    "source_fingerprint": "fa183089ec0951bc07a8014359e0492dabfe2d6d0327b2bc69ab659a8502de3f"
   }
 }

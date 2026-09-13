@@ -565,6 +565,12 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings": [
         {
           "source": "domain:harness",
@@ -1367,7 +1373,31 @@
           "type": "uses"
         }
       ],
+      "api:post:/api/lite/harness/bootstrap/challenge": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/bootstrap/complete": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/bootstrap/grants": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/harness/challenge": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/principal/revoke": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -1392,6 +1422,12 @@
         }
       ],
       "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -3418,6 +3454,12 @@
       "reason:battery_policy_threshold": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:bootstrap_transport_rejected": [
+        {
+          "source": "domain:validation",
           "type": "owns"
         }
       ],
@@ -6539,6 +6581,12 @@
           "type": "reads"
         }
       ],
+      "table:assurance_execution_checkpoints": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:assurance_findings": [
         {
           "source": "domain:control_plane",
@@ -7829,6 +7877,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:bootstrap_transport_rejected",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -8927,6 +8979,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
           "type": "verified_by"
         },
@@ -9307,7 +9363,23 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/bootstrap/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/bootstrap/complete",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/bootstrap/grants",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/principal/revoke",
           "type": "verified_by"
         },
         {
@@ -9324,6 +9396,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
           "type": "verified_by"
         },
         {
@@ -9838,6 +9914,10 @@
         },
         {
           "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:run_not_found",
           "type": "verified_by"
         }
       ],
@@ -10488,6 +10568,10 @@
         },
         {
           "source": "domain:validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -12467,6 +12551,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:bootstrap_transport_rejected",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -13406,6 +13494,10 @@
         },
         {
           "source": "reason:battery_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:bootstrap_transport_rejected",
           "type": "verified_by"
         },
         {
@@ -14623,6 +14715,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
           "type": "verified_by"
         },
@@ -15003,7 +15099,23 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/bootstrap/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/bootstrap/complete",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/bootstrap/grants",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/principal/revoke",
           "type": "verified_by"
         },
         {
@@ -15020,6 +15132,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
           "type": "verified_by"
         },
         {
@@ -16661,6 +16777,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -17771,7 +17897,47 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/harness/bootstrap/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/bootstrap/complete": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/bootstrap/grants": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/harness/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/principal/revoke": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -17812,6 +17978,16 @@
         }
       ],
       "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -22337,6 +22513,10 @@
       ],
       "domain:control_plane": [
         {
+          "target": "table:assurance_execution_checkpoints",
+          "type": "owns"
+        },
+        {
           "target": "table:assurance_findings",
           "type": "owns"
         },
@@ -23117,6 +23297,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
           "type": "owns"
         },
@@ -23137,7 +23321,23 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/harness/bootstrap/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/bootstrap/complete",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/bootstrap/grants",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/harness/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/principal/revoke",
           "type": "owns"
         },
         {
@@ -23154,6 +23354,10 @@
         },
         {
           "target": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
           "type": "owns"
         },
         {
@@ -25559,6 +25763,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:bootstrap_transport_rejected",
+          "type": "owns"
+        },
+        {
           "target": "reason:cold_start_validation",
           "type": "owns"
         },
@@ -27225,6 +27433,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:bootstrap_transport_rejected": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:checkpoint_ineligible": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28168,6 +28390,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
           "type": "verified_by"
         },
         {
@@ -29725,6 +29951,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_harness.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -30941,6 +31171,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
+    "source_fingerprint": "fa183089ec0951bc07a8014359e0492dabfe2d6d0327b2bc69ab659a8502de3f"
   }
 }

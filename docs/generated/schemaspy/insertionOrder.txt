@@ -23,6 +23,7 @@ webauthn_credentials
 device_lifecycle_events
 policy_activation_operations
 app_action_lifecycle
+assurance_execution_checkpoints
 assurance_findings
 assurance_scenarios
 assurance_tool_results

@@ -15,8 +15,14 @@ import json
 import os
 import re
 import secrets
+import shutil
+import sqlite3
+import subprocess
+import threading
 import uuid
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Mapping
 
@@ -32,6 +38,18 @@ HARNESS_RUNTIME_ENVIRONMENT = "qualification"
 HARNESS_AUTH_METHOD = "harness_session"
 HARNESS_PROVISIONING_HEADER = "x-pocket-lab-harness-provisioning"
 HARNESS_PROVISIONING_TOKEN_HEADER = "x-pocket-lab-harness-provisioning-token"
+HARNESS_BOOTSTRAP_APPROVAL_ENV = "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED"
+HARNESS_BOOTSTRAP_PRINCIPAL_ENV = "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID"
+HARNESS_BOOTSTRAP_FINGERPRINT_ENV = "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT"
+HARNESS_BOOTSTRAP_PROFILE_ENV = "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE"
+HARNESS_BOOTSTRAP_PROFILE = "security-assurance-runner"
+HARNESS_BOOTSTRAP_PURPOSE = "security.assurance"
+HARNESS_BOOTSTRAP_TTL_SECONDS = 5 * 60
+HARNESS_PRINCIPAL_TTL_SECONDS = 12 * 60 * 60
+HARNESS_PRINCIPAL_TTL_MIN_SECONDS = 60 * 60
+HARNESS_PRINCIPAL_TTL_MAX_SECONDS = 24 * 60 * 60
+HARNESS_BOOTSTRAP_STATE_RETENTION_SECONDS = 10 * 60
+HARNESS_BOOTSTRAP_MAX_PROOF_ATTEMPTS = 5
 
 _PRINCIPAL_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 _PURPOSE_RE = re.compile(r"^[a-z][a-z0-9._:-]{0,79}$")
@@ -59,6 +77,46 @@ class HarnessError(RuntimeError):
 
 class HarnessConfigurationError(HarnessError):
     """Fatal startup configuration error."""
+
+
+@dataclass
+class _BootstrapGrant:
+    """Process-local, key-bound operator approval.
+
+    This object is intentionally not durable.  A FastAPI restart invalidates
+    unconsumed grants, while the normal synthetic principal/session records
+    retain their existing hash-only lifecycle after a successful completion.
+    """
+
+    grant_id: str
+    principal_id: str
+    public_key: str
+    public_key_fingerprint: str
+    profile: str
+    purpose: str
+    target_scope: str
+    runtime_id: str
+    revision_sha: str
+    issued_at: str
+    expires_at: str
+    max_uses: int = 1
+    consumed_at: str | None = None
+
+
+@dataclass
+class _BootstrapChallenge:
+    challenge_id: str
+    grant_id: str
+    signing_payload: str
+    issued_at: str
+    expires_at: str
+    consumed_at: str | None = None
+    failed_attempts: int = 0
+
+
+_BOOTSTRAP_LOCK = threading.RLock()
+_BOOTSTRAP_GRANTS: dict[str, _BootstrapGrant] = {}
+_BOOTSTRAP_CHALLENGES: dict[str, _BootstrapChallenge] = {}
 
 
 _PROFILE_DATA: dict[str, dict[str, Any]] = {
@@ -100,7 +158,7 @@ _PROFILE_DATA: dict[str, dict[str, Any]] = {
             "security.assurance.sast", "security.assurance.sca",
             "security.assurance.api", "security.assurance.runtime",
             "security.assurance.threat_scenario", "security.assurance.report",
-            "security.assurance.baseline",
+            "security.assurance.baseline", "security.assurance.cleanup",
         ),
         "destructive_capabilities": (),
     },
@@ -171,6 +229,7 @@ _ACTION_CAPABILITY: Mapping[str, str] = MappingProxyType({
     "security.assurance.cancel": "security.assurance.cancel",
     "security.assurance.baseline": "security.assurance.baseline",
     "security.assurance.threat_scenario": "security.assurance.threat_scenario",
+    "security.assurance.cleanup": "security.assurance.cleanup",
     "backup.create": "backup.create",
     "backup.verify": "backup.verify",
     "backup.location.manage": "backup.location.manage",
@@ -256,7 +315,23 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
     destructive = destructive_enabled()
     owner = qualification_owner_enabled()
     test_bypass = _flag("POCKETLAB_TEST_AUTH_BYPASS")
-    unsafe_flags = harness or destructive or owner or test_bypass
+    bootstrap_approval = _flag(HARNESS_BOOTSTRAP_APPROVAL_ENV)
+    bootstrap_principal = os.environ.get(HARNESS_BOOTSTRAP_PRINCIPAL_ENV, "").strip()
+    bootstrap_fingerprint = os.environ.get(HARNESS_BOOTSTRAP_FINGERPRINT_ENV, "").strip().casefold()
+    bootstrap_profile = os.environ.get(HARNESS_BOOTSTRAP_PROFILE_ENV, "").strip().casefold()
+    bootstrap_metadata_present = bool(
+        bootstrap_approval
+        or bootstrap_principal
+        or bootstrap_fingerprint
+        or bootstrap_profile
+    )
+    bootstrap_metadata_valid = bool(
+        bootstrap_approval
+        and _PRINCIPAL_ID_RE.fullmatch(bootstrap_principal)
+        and re.fullmatch(r"sha256:[0-9a-f]{64}", bootstrap_fingerprint)
+        and bootstrap_profile == HARNESS_BOOTSTRAP_PROFILE
+    )
+    unsafe_flags = harness or destructive or owner or test_bypass or bootstrap_metadata_present
     if env in _PRODUCTION_ENVIRONMENTS and unsafe_flags:
         raise HarnessConfigurationError(
             "harness_forbidden_in_production",
@@ -281,6 +356,19 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
             "Qualification Owner authority requires the explicit qualification environment.",
             status_code=503,
         )
+    if bootstrap_metadata_present and (
+        env != HARNESS_RUNTIME_ENVIRONMENT
+        or not harness
+        or not bootstrap_metadata_valid
+        or destructive
+        or owner
+        or test_bypass
+    ):
+        raise HarnessConfigurationError(
+            "harness_bootstrap_invalid",
+            "Key-bound assurance bootstrap requires an explicit safe qualification configuration.",
+            status_code=503,
+        )
     return {
         "valid": True,
         "environment": env,
@@ -288,6 +376,7 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
         "destructive": destructive and harness and env == HARNESS_RUNTIME_ENVIRONMENT,
         "qualification_owner": owner and env == HARNESS_RUNTIME_ENVIRONMENT,
         "test_bypass": test_bypass and env not in _PRODUCTION_ENVIRONMENTS,
+        "bootstrap_approved": bootstrap_metadata_valid,
     }
 
 
@@ -325,6 +414,597 @@ def provisioning_allowed(request: Any) -> bool:
     configured = os.environ.get("POCKETLAB_HARNESS_PROVISIONING_TOKEN", "").strip()
     supplied = request.headers.get(HARNESS_PROVISIONING_TOKEN_HEADER, "").strip()
     return bool(configured and supplied and hmac.compare_digest(supplied, configured))
+
+
+def _runtime_revision() -> str:
+    """Resolve the exact checked-out revision without accepting caller input."""
+    git = shutil.which("git")
+    if not git:
+        raise HarnessError(
+            "harness_revision_unavailable",
+            "The qualification runtime revision could not be verified.",
+            status_code=503,
+        )
+    repository_root = Path(__file__).resolve().parents[4]
+    try:
+        result = subprocess.run(
+            [str(Path(git).resolve()), "rev-parse", "HEAD"],
+            cwd=str(repository_root),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise HarnessError(
+            "harness_revision_unavailable",
+            "The qualification runtime revision could not be verified.",
+            status_code=503,
+        ) from None
+    revision = result.stdout.strip().casefold()
+    if result.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise HarnessError(
+            "harness_revision_unavailable",
+            "The qualification runtime revision could not be verified.",
+            status_code=503,
+        )
+    return revision
+
+
+def _bootstrap_approval_configured(
+    *, principal_id: str, public_key_fingerprint: str, profile: str = HARNESS_BOOTSTRAP_PROFILE
+) -> bool:
+    """Check the operator-owned process approval, never a caller bearer token."""
+    try:
+        configured = validate_startup_configuration()
+    except HarnessError:
+        return False
+    if not configured.get("enabled") or not _flag(HARNESS_BOOTSTRAP_APPROVAL_ENV):
+        return False
+    if str(profile).casefold() != HARNESS_BOOTSTRAP_PROFILE:
+        return False
+    expected_principal = os.environ.get(HARNESS_BOOTSTRAP_PRINCIPAL_ENV, "").strip().casefold()
+    expected_fingerprint = os.environ.get(HARNESS_BOOTSTRAP_FINGERPRINT_ENV, "").strip().casefold()
+    return bool(
+        expected_principal
+        and expected_fingerprint
+        and hmac.compare_digest(expected_principal, str(principal_id).casefold())
+        and hmac.compare_digest(expected_fingerprint, str(public_key_fingerprint).casefold())
+        and str(os.environ.get(HARNESS_BOOTSTRAP_PROFILE_ENV, "")).strip().casefold()
+        == HARNESS_BOOTSTRAP_PROFILE
+        and not destructive_enabled()
+        and not qualification_owner_enabled()
+        and not _flag("POCKETLAB_TEST_AUTH_BYPASS")
+    )
+
+
+def bootstrap_approval_allowed(
+    request: Any, *, principal_id: str, public_key_fingerprint: str
+) -> bool:
+    """Require direct loopback plus the process-level operator approval."""
+    if not is_direct_local_request(request) or harness_headers_present(request):
+        return False
+    return _bootstrap_approval_configured(
+        principal_id=principal_id,
+        public_key_fingerprint=public_key_fingerprint,
+    )
+
+
+def _cleanup_bootstrap_state(now: datetime | None = None) -> None:
+    current = now or _now()
+    with _BOOTSTRAP_LOCK:
+        for grant_id, grant in list(_BOOTSTRAP_GRANTS.items()):
+            expires = _parse_iso(grant.expires_at)
+            consumed = _parse_iso(grant.consumed_at)
+            if (
+                (expires and expires + timedelta(seconds=HARNESS_BOOTSTRAP_STATE_RETENTION_SECONDS) <= current)
+                or (consumed and consumed + timedelta(seconds=HARNESS_BOOTSTRAP_STATE_RETENTION_SECONDS) <= current)
+            ):
+                _BOOTSTRAP_GRANTS.pop(grant_id, None)
+        for challenge_id, challenge in list(_BOOTSTRAP_CHALLENGES.items()):
+            expires = _parse_iso(challenge.expires_at)
+            consumed = _parse_iso(challenge.consumed_at)
+            if (
+                (expires and expires + timedelta(seconds=HARNESS_BOOTSTRAP_STATE_RETENTION_SECONDS) <= current)
+                or (consumed and consumed + timedelta(seconds=HARNESS_BOOTSTRAP_STATE_RETENTION_SECONDS) <= current)
+            ):
+                _BOOTSTRAP_CHALLENGES.pop(challenge_id, None)
+
+
+def _safe_bootstrap_grant(grant: _BootstrapGrant) -> dict[str, Any]:
+    return {
+        "grant_id": grant.grant_id,
+        "principal_id": grant.principal_id,
+        "public_key_fingerprint": grant.public_key_fingerprint,
+        "profile": grant.profile,
+        "purpose": grant.purpose,
+        "target_scope": grant.target_scope,
+        "runtime_id": grant.runtime_id,
+        "revision_sha": grant.revision_sha,
+        "issued_at": grant.issued_at,
+        "expires_at": grant.expires_at,
+        "max_uses": grant.max_uses,
+        "consumed": bool(grant.consumed_at),
+        "sanitized": True,
+    }
+
+
+def _safe_bootstrap_challenge(
+    challenge: _BootstrapChallenge, grant: _BootstrapGrant
+) -> dict[str, Any]:
+    return {
+        "challenge_id": challenge.challenge_id,
+        "grant_id": grant.grant_id,
+        "principal_id": grant.principal_id,
+        "public_key_fingerprint": grant.public_key_fingerprint,
+        "profile": grant.profile,
+        "purpose": grant.purpose,
+        "target_scope": grant.target_scope,
+        "runtime_id": grant.runtime_id,
+        "revision_sha": grant.revision_sha,
+        "issued_at": challenge.issued_at,
+        "expires_at": challenge.expires_at,
+        "algorithm": "ed25519",
+        "signing_payload": challenge.signing_payload,
+        "sanitized": True,
+    }
+
+
+def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, Any]:
+    """Create one ephemeral grant from an explicitly started qualification runtime."""
+    _require_enabled()
+    identifier = _safe_principal_id(principal_id)
+    if not _bootstrap_approval_configured(
+        principal_id=identifier,
+        public_key_fingerprint="",
+    ):
+        # The fingerprint is filled after key validation; this early check
+        # prevents malformed input from becoming an approval oracle.
+        expected_principal = os.environ.get(HARNESS_BOOTSTRAP_PRINCIPAL_ENV, "").strip().casefold()
+        if expected_principal != identifier:
+            raise HarnessError(
+                "bootstrap_approval_required",
+                "The operator has not approved this qualification public key.",
+                status_code=401,
+            )
+    try:
+        public_bytes = _b64u_decode(public_key, expected_lengths={32})
+        Ed25519PublicKey.from_public_bytes(public_bytes)
+    except ValueError:
+        raise HarnessError(
+            "bootstrap_public_key_invalid",
+            "The qualification public key is invalid.",
+            status_code=422,
+        ) from None
+    fingerprint = "sha256:" + hashlib.sha256(public_bytes).hexdigest()
+    if not _bootstrap_approval_configured(
+        principal_id=identifier,
+        public_key_fingerprint=fingerprint,
+    ):
+        raise HarnessError(
+            "bootstrap_approval_required",
+            "The operator has not approved this qualification public key.",
+            status_code=401,
+        )
+    revision = _runtime_revision()
+    now = _now()
+    expires = now + timedelta(
+        seconds=_bounded_int(
+            "POCKETLAB_HARNESS_BOOTSTRAP_TTL_SECONDS",
+            HARNESS_BOOTSTRAP_TTL_SECONDS,
+            60,
+            HARNESS_BOOTSTRAP_TTL_SECONDS,
+        )
+    )
+    grant = _BootstrapGrant(
+        grant_id="hbg-" + uuid.uuid4().hex,
+        principal_id=identifier,
+        public_key=_b64u_encode(public_bytes),
+        public_key_fingerprint=fingerprint,
+        profile=HARNESS_BOOTSTRAP_PROFILE,
+        purpose=HARNESS_BOOTSTRAP_PURPOSE,
+        target_scope=HARNESS_TARGET_SCOPE,
+        runtime_id=_runtime_id(),
+        revision_sha=revision,
+        issued_at=_iso(now),
+        expires_at=_iso(expires),
+    )
+    apply_migrations()
+    with _BOOTSTRAP_LOCK:
+        _cleanup_bootstrap_state(now)
+        for existing in _BOOTSTRAP_GRANTS.values():
+            existing_expiry = _parse_iso(existing.expires_at)
+            if (
+                existing.principal_id == identifier
+                and existing.public_key_fingerprint == fingerprint
+                and existing.runtime_id == _runtime_id()
+                and existing.revision_sha == revision
+                and not existing.consumed_at
+                and existing_expiry is not None
+                and existing_expiry > now
+            ):
+                # A lost client response must be safe to retry without
+                # creating a second grant or forcing a second proof path.
+                return {**_safe_bootstrap_grant(existing), "idempotent_reuse": True}
+        with connection() as conn, begin_immediate(conn) as tx:
+            existing = tx.execute(
+                "SELECT 1 FROM synthetic_principals WHERE principal_id=? OR public_key_fingerprint=? LIMIT 1",
+                (identifier, fingerprint),
+            ).fetchone()
+            if existing:
+                raise HarnessError(
+                    "bootstrap_principal_exists",
+                    "The disposable qualification principal already exists.",
+                    status_code=409,
+                )
+            _insert_audit(
+                tx,
+                event_type="bootstrap_grant_created",
+                reason_code="bootstrap_grant_created",
+                target_scope=HARNESS_TARGET_SCOPE,
+                operation_id=grant.grant_id,
+                result="accepted",
+                summary="An ephemeral key-bound assurance bootstrap grant was created.",
+                correlation_id=grant.grant_id,
+            )
+        _BOOTSTRAP_GRANTS[grant.grant_id] = grant
+    return _safe_bootstrap_grant(grant)
+
+
+def issue_bootstrap_challenge(*, grant_id: str) -> dict[str, Any]:
+    """Issue a single short-lived possession-proof challenge for a grant."""
+    _require_enabled()
+    safe_grant_id = str(grant_id or "").strip()
+    if not re.fullmatch(r"^hbg-[0-9a-f]{32}$", safe_grant_id):
+        raise HarnessError("bootstrap_grant_invalid", "The bootstrap grant is invalid.", status_code=401)
+    now = _now()
+    with _BOOTSTRAP_LOCK:
+        _cleanup_bootstrap_state(now)
+        grant = _BOOTSTRAP_GRANTS.get(safe_grant_id)
+        if grant is None:
+            raise HarnessError("bootstrap_grant_not_found", "The bootstrap grant is no longer available.", status_code=401)
+        if grant.consumed_at:
+            raise HarnessError("bootstrap_grant_replayed", "The bootstrap grant has already been consumed.", status_code=401)
+        grant_expiry = _parse_iso(grant.expires_at)
+        if grant_expiry is None or grant_expiry <= now:
+            _bootstrap_rejection_audit("bootstrap_grant_expired", grant)
+            raise HarnessError("bootstrap_grant_expired", "The bootstrap grant has expired.", status_code=401)
+        if _runtime_id() != grant.runtime_id or _runtime_revision() != grant.revision_sha:
+            raise HarnessError("bootstrap_binding_mismatch", "The bootstrap grant is bound to a different runtime revision.", status_code=401)
+        if not _bootstrap_approval_configured(
+            principal_id=grant.principal_id,
+            public_key_fingerprint=grant.public_key_fingerprint,
+        ):
+            raise HarnessError("bootstrap_approval_required", "The qualification bootstrap approval is no longer active.", status_code=401)
+        with connection() as conn:
+            if conn.execute(
+                "SELECT 1 FROM synthetic_principals WHERE principal_id=? OR public_key_fingerprint=? LIMIT 1",
+                (grant.principal_id, grant.public_key_fingerprint),
+            ).fetchone():
+                raise HarnessError("bootstrap_principal_exists", "The disposable qualification principal already exists.", status_code=409)
+        for existing in _BOOTSTRAP_CHALLENGES.values():
+            existing_expiry = _parse_iso(existing.expires_at)
+            if (
+                existing.grant_id == grant.grant_id
+                and not existing.consumed_at
+                and existing_expiry is not None
+                and existing_expiry > now
+            ):
+                return _safe_bootstrap_challenge(existing, grant)
+        challenge_id = "hbc-" + uuid.uuid4().hex
+        challenge_expires = min(
+            grant_expiry,
+            now
+            + timedelta(
+                seconds=_bounded_int(
+                    "POCKETLAB_HARNESS_BOOTSTRAP_CHALLENGE_TTL_SECONDS",
+                    120,
+                    30,
+                    300,
+                )
+            ),
+        )
+        nonce = _b64u_encode(secrets.token_bytes(32))
+        payload = {
+            "v": 1,
+            "grant_id": grant.grant_id,
+            "challenge_id": challenge_id,
+            "principal_id": grant.principal_id,
+            "public_key_fingerprint": grant.public_key_fingerprint,
+            "profile": grant.profile,
+            "purpose": grant.purpose,
+            "target_scope": grant.target_scope,
+            "runtime_id": grant.runtime_id,
+            "revision_sha": grant.revision_sha,
+            "nonce": nonce,
+            "issued_at": _iso(now),
+            "expires_at": _iso(challenge_expires),
+        }
+        signing_payload = _canonical(payload)
+        challenge = _BootstrapChallenge(
+            challenge_id=challenge_id,
+            grant_id=grant.grant_id,
+            signing_payload=signing_payload,
+            issued_at=payload["issued_at"],
+            expires_at=payload["expires_at"],
+        )
+        _BOOTSTRAP_CHALLENGES[challenge_id] = challenge
+    return _safe_bootstrap_challenge(challenge, grant)
+
+
+def complete_bootstrap(
+    *,
+    challenge_id: str,
+    grant_id: str,
+    principal_id: str,
+    public_key: str,
+    signature: str,
+) -> dict[str, Any]:
+    """Atomically turn a signed ephemeral grant into a normal harness session."""
+    _require_enabled()
+    safe_challenge_id = str(challenge_id or "").strip()
+    safe_grant_id = str(grant_id or "").strip()
+    identifier = _safe_principal_id(principal_id)
+    if not re.fullmatch(r"^hbc-[0-9a-f]{32}$", safe_challenge_id) or not re.fullmatch(r"^hbg-[0-9a-f]{32}$", safe_grant_id):
+        raise HarnessError("bootstrap_proof_invalid", "The bootstrap possession proof is invalid.", status_code=401)
+    try:
+        public_bytes = _b64u_decode(public_key, expected_lengths={32})
+        signature_bytes = _b64u_decode(signature, expected_lengths={64})
+    except ValueError:
+        raise HarnessError("bootstrap_proof_invalid", "The bootstrap possession proof is invalid.", status_code=401) from None
+    fingerprint = "sha256:" + hashlib.sha256(public_bytes).hexdigest()
+    now = _now()
+    with _BOOTSTRAP_LOCK:
+        _cleanup_bootstrap_state(now)
+        grant = _BOOTSTRAP_GRANTS.get(safe_grant_id)
+        challenge = _BOOTSTRAP_CHALLENGES.get(safe_challenge_id)
+        if grant is None or challenge is None or challenge.grant_id != safe_grant_id:
+            raise HarnessError("bootstrap_proof_invalid", "The bootstrap possession proof is invalid.", status_code=401)
+        if grant.consumed_at:
+            raise HarnessError("bootstrap_grant_replayed", "The bootstrap grant has already been consumed.", status_code=401)
+        if challenge.consumed_at:
+            raise HarnessError("bootstrap_challenge_replayed", "The bootstrap challenge has already been consumed.", status_code=401)
+        challenge_expiry = _parse_iso(challenge.expires_at)
+        grant_expiry = _parse_iso(grant.expires_at)
+        if challenge_expiry is None or grant_expiry is None or challenge_expiry <= now or grant_expiry <= now:
+            _bootstrap_rejection_audit("bootstrap_grant_expired", grant)
+            raise HarnessError("bootstrap_grant_expired", "The bootstrap grant or challenge has expired.", status_code=401)
+        if _runtime_id() != grant.runtime_id or _runtime_revision() != grant.revision_sha:
+            raise HarnessError("bootstrap_binding_mismatch", "The bootstrap proof is bound to a different runtime revision.", status_code=401)
+        if not _bootstrap_approval_configured(
+            principal_id=grant.principal_id,
+            public_key_fingerprint=grant.public_key_fingerprint,
+        ):
+            raise HarnessError("bootstrap_approval_required", "The qualification bootstrap approval is no longer active.", status_code=401)
+        if (
+            grant.principal_id != identifier
+            or grant.public_key_fingerprint != fingerprint
+            or not hmac.compare_digest(grant.public_key, _b64u_encode(public_bytes))
+        ):
+            challenge.failed_attempts += 1
+            exhausted = challenge.failed_attempts >= HARNESS_BOOTSTRAP_MAX_PROOF_ATTEMPTS
+            if exhausted:
+                challenge.consumed_at = _iso(now)
+                grant.consumed_at = _iso(now)
+            _bootstrap_rejection_audit("bootstrap_grant_rejected", grant)
+            raise HarnessError(
+                "bootstrap_attempt_limit" if exhausted else "bootstrap_binding_mismatch",
+                "The bootstrap possession proof is invalid.",
+                status_code=401,
+            ) from None
+        try:
+            Ed25519PublicKey.from_public_bytes(public_bytes).verify(
+                signature_bytes,
+                challenge.signing_payload.encode("utf-8"),
+            )
+        except (InvalidSignature, ValueError, TypeError):
+            challenge.failed_attempts += 1
+            exhausted = challenge.failed_attempts >= HARNESS_BOOTSTRAP_MAX_PROOF_ATTEMPTS
+            if exhausted:
+                challenge.consumed_at = _iso(now)
+                grant.consumed_at = _iso(now)
+            _bootstrap_rejection_audit("bootstrap_grant_rejected", grant)
+            raise HarnessError(
+                "bootstrap_attempt_limit" if exhausted else "bootstrap_signature_invalid",
+                "The bootstrap possession proof is invalid.",
+                status_code=401,
+            ) from None
+        profile = PROFILE_DATA[HARNESS_BOOTSTRAP_PROFILE]
+        principal_ttl = _bounded_int(
+            "POCKETLAB_HARNESS_PRINCIPAL_TTL_SECONDS",
+            HARNESS_PRINCIPAL_TTL_SECONDS,
+            HARNESS_PRINCIPAL_TTL_MIN_SECONDS,
+            HARNESS_PRINCIPAL_TTL_MAX_SECONDS,
+        )
+        session_ttl = _bounded_int("POCKETLAB_HARNESS_SESSION_TTL_SECONDS", 20 * 60, 60, 60 * 60)
+        principal_expires = now + timedelta(seconds=principal_ttl)
+        session_expires = now + timedelta(seconds=session_ttl)
+        session_token = secrets.token_urlsafe(32)
+        session_id = "hs-" + uuid.uuid4().hex
+        capabilities = list(profile["capabilities"])
+        with connection() as conn, begin_immediate(conn) as tx:
+            _cleanup_expired(tx, now=_iso(now))
+            if tx.execute(
+                "SELECT 1 FROM synthetic_principals WHERE principal_id=? OR public_key_fingerprint=? LIMIT 1",
+                (identifier, fingerprint),
+            ).fetchone():
+                raise HarnessError("bootstrap_principal_exists", "The disposable qualification principal already exists.", status_code=409)
+            active_principal = tx.execute(
+                "SELECT COUNT(*) AS count FROM harness_sessions WHERE principal_id=? AND status='active'",
+                (identifier,),
+            ).fetchone()
+            active_global = tx.execute("SELECT COUNT(*) AS count FROM harness_sessions WHERE status='active'").fetchone()
+            if int(active_principal["count"] or 0) >= 3 or int(active_global["count"] or 0) >= 8:
+                raise HarnessError("harness_session_limit", "The qualification runtime has reached its active session limit.", status_code=429)
+            tx.execute(
+                """INSERT INTO synthetic_principals(
+                       principal_id,principal_type,principal_class,display_name,enabled,
+                       environment_scope,target_scope,allowed_profiles_json,default_profile,
+                       algorithm,public_key,public_key_fingerprint,created_at,expires_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    identifier,
+                    "synthetic_machine",
+                    "qualification",
+                    "Ephemeral runtime security assurance runner",
+                    1,
+                    environment(),
+                    HARNESS_TARGET_SCOPE,
+                    _canonical([HARNESS_BOOTSTRAP_PROFILE]),
+                    HARNESS_BOOTSTRAP_PROFILE,
+                    "ed25519",
+                    _b64u_encode(public_bytes),
+                    fingerprint,
+                    _iso(now),
+                    _iso(principal_expires),
+                ),
+            )
+            tx.execute(
+                """INSERT INTO harness_sessions(
+                       harness_session_id,principal_id,principal_class,purpose,
+                       capability_profile,capabilities_json,target_scope,runtime_id,
+                       token_hash,started_at,expires_at,last_used_at,destructive_allowed,status
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    session_id,
+                    identifier,
+                    "qualification",
+                    HARNESS_BOOTSTRAP_PURPOSE,
+                    HARNESS_BOOTSTRAP_PROFILE,
+                    _canonical(capabilities),
+                    HARNESS_TARGET_SCOPE,
+                    grant.runtime_id,
+                    _hash_opaque(session_token),
+                    _iso(now),
+                    _iso(session_expires),
+                    _iso(now),
+                    0,
+                    "active",
+                ),
+            )
+            tx.execute("UPDATE synthetic_principals SET last_used_at=? WHERE principal_id=?", (_iso(now), identifier))
+            _insert_audit(
+                tx,
+                event_type="bootstrap_principal_created",
+                reason_code="bootstrap_principal_created",
+                principal_id=identifier,
+                principal_class="qualification",
+                target_scope=HARNESS_TARGET_SCOPE,
+                operation_id=grant.grant_id,
+                result="accepted",
+                summary="A disposable assurance principal was created from a verified machine key.",
+                correlation_id=grant.grant_id,
+            )
+            _insert_audit(
+                tx,
+                event_type="bootstrap_grant_consumed",
+                reason_code="bootstrap_grant_consumed",
+                principal_id=identifier,
+                principal_class="qualification",
+                purpose=HARNESS_BOOTSTRAP_PURPOSE,
+                capability=HARNESS_BOOTSTRAP_PROFILE,
+                target_scope=HARNESS_TARGET_SCOPE,
+                operation_id=grant.grant_id,
+                result="accepted",
+                summary="The one-use assurance bootstrap grant was consumed.",
+                correlation_id=grant.grant_id,
+            )
+            _insert_audit(
+                tx,
+                event_type="authentication_succeeded",
+                reason_code="bootstrap_signature_verified",
+                principal_id=identifier,
+                principal_class="qualification",
+                harness_session_id=session_id,
+                purpose=HARNESS_BOOTSTRAP_PURPOSE,
+                capability=HARNESS_BOOTSTRAP_PROFILE,
+                target_scope=HARNESS_TARGET_SCOPE,
+                result="accepted",
+                summary="The bootstrap machine-key proof was verified.",
+                correlation_id=session_id,
+            )
+            _insert_audit(
+                tx,
+                event_type="session_created",
+                reason_code="session_created",
+                principal_id=identifier,
+                principal_class="qualification",
+                harness_session_id=session_id,
+                purpose=HARNESS_BOOTSTRAP_PURPOSE,
+                capability=HARNESS_BOOTSTRAP_PROFILE,
+                target_scope=HARNESS_TARGET_SCOPE,
+                result="accepted",
+                summary="Short-lived harness session created from the bootstrap proof.",
+                correlation_id=session_id,
+            )
+            row = tx.execute(
+                """SELECT s.*,p.display_name FROM harness_sessions s
+                   JOIN synthetic_principals p ON p.principal_id=s.principal_id
+                   WHERE s.harness_session_id=?""",
+                (session_id,),
+            ).fetchone()
+        grant.consumed_at = _iso(now)
+        challenge.consumed_at = _iso(now)
+    return {
+        "bootstrap": {
+            "grant_id": grant.grant_id,
+            "consumed": True,
+            "consumed_at": grant.consumed_at,
+            "profile": grant.profile,
+            "purpose": grant.purpose,
+            "target_scope": grant.target_scope,
+            "runtime_id": grant.runtime_id,
+            "revision_sha": grant.revision_sha,
+            "sanitized": True,
+        },
+        "principal": _safe_principal({
+            "principal_id": identifier,
+            "principal_type": "synthetic_machine",
+            "principal_class": "qualification",
+            "display_name": "Ephemeral runtime security assurance runner",
+            "enabled": 1,
+            "environment_scope": environment(),
+            "target_scope": HARNESS_TARGET_SCOPE,
+            "allowed_profiles_json": _canonical([HARNESS_BOOTSTRAP_PROFILE]),
+            "default_profile": HARNESS_BOOTSTRAP_PROFILE,
+            "algorithm": "ed25519",
+            "public_key_fingerprint": fingerprint,
+            "created_at": _iso(now),
+            "expires_at": _iso(principal_expires),
+            "revoked_at": None,
+        }),
+        "session": _safe_session(dict(row)),
+        "session_token": session_token,
+        "sanitized": True,
+    }
+
+
+def _bootstrap_rejection_audit(event_type: str, grant: _BootstrapGrant) -> None:
+    """Best-effort bounded audit for proof rejection; never stores proof bytes."""
+    try:
+        apply_migrations()
+        with connection() as conn, begin_immediate(conn) as tx:
+            principal = tx.execute(
+                "SELECT principal_class FROM synthetic_principals WHERE principal_id=?",
+                (grant.principal_id,),
+            ).fetchone()
+            _insert_audit(
+                tx,
+                event_type=event_type,
+                reason_code=event_type,
+                principal_id=grant.principal_id if principal else None,
+                principal_class=str(principal["principal_class"]) if principal else None,
+                purpose=grant.purpose,
+                capability=grant.profile,
+                target_scope=grant.target_scope,
+                operation_id=grant.grant_id,
+                result="rejected",
+                summary="A bootstrap possession proof was rejected.",
+                correlation_id=grant.grant_id,
+            )
+    except (OSError, sqlite3.Error):
+        return
 
 
 def _safe_principal_id(value: str) -> str:
@@ -586,15 +1266,88 @@ def revoke_principal(principal_id: str, *, reason_code: str = "principal_revoked
                 "UPDATE harness_sessions SET status='revoked',revoked_at=?,revoke_reason=? WHERE principal_id=? AND status='active'",
                 (now, str(reason_code)[:80], identifier),
             )
+            cancelled_runs = 0
+            try:
+                cancelled_runs = int(
+                    tx.execute(
+                        """UPDATE assurance_runs
+                           SET cancel_requested=1,updated_at=?
+                         WHERE principal_id=? AND status IN ('QUEUED','RUNNING')
+                           AND cancel_requested=0""",
+                        (now, identifier),
+                    ).rowcount
+                    or 0
+                )
+            except sqlite3.OperationalError:
+                # The legacy harness can still be used against a database that
+                # predates the optional assurance migration. Principal
+                # revocation remains authoritative in that case.
+                cancelled_runs = 0
             _insert_audit(
                 tx, event_type="principal_revoked", reason_code=str(reason_code),
                 principal_id=identifier, principal_class=str(row["principal_class"]),
                 target_scope=str(row["target_scope"]), result="accepted",
                 summary="Synthetic machine principal revoked.",
-            )
+                )
+            if str(row["default_profile"] or "") == HARNESS_BOOTSTRAP_PROFILE:
+                _insert_audit(
+                    tx,
+                    event_type="bootstrap_principal_revoked",
+                    reason_code=str(reason_code),
+                    principal_id=identifier,
+                    principal_class=str(row["principal_class"]),
+                    target_scope=str(row["target_scope"]),
+                    result="accepted",
+                    summary="Bootstrap-created assurance principal revoked during bounded cleanup.",
+                    correlation_id=identifier,
+                )
+            if cancelled_runs:
+                _insert_audit(
+                    tx,
+                    event_type="assurance_runs_cancel_requested",
+                    reason_code="principal_revoked",
+                    principal_id=identifier,
+                    principal_class=str(row["principal_class"]),
+                    purpose=HARNESS_BOOTSTRAP_PURPOSE,
+                    capability="security.assurance.cancel",
+                    target_scope=str(row["target_scope"]),
+                    result="accepted",
+                    summary="Active assurance runs were marked for safe cancellation after principal revocation.",
+                    correlation_id=identifier,
+                )
             result = dict(row)
             result.update({"enabled": 0, "revoked_at": now, "revoke_reason": str(reason_code)[:80]})
-    return _safe_principal(result)
+    safe_result = _safe_principal(result)
+    safe_result["active_assurance_runs_cancelled"] = cancelled_runs
+    return safe_result
+
+
+def revoke_authenticated_principal(
+    auth_context: Mapping[str, Any],
+    *,
+    reason_code: str = "qualification_cleanup",
+) -> dict[str, Any]:
+    """Revoke only the currently authenticated assurance principal.
+
+    Bootstrap-created principals must be cleanable without reintroducing the
+    long-lived provisioning bearer token.  The caller is still required to
+    hold the server-issued cleanup capability; this function only enforces the
+    identity/profile binding and delegates the authoritative state transition
+    to ``revoke_principal``.
+    """
+    harness = auth_context.get("harness") if isinstance(auth_context, Mapping) else None
+    if not isinstance(harness, Mapping):
+        raise HarnessError("harness_session_required", "A signed assurance session is required for principal cleanup.", status_code=401)
+    if (
+        str(harness.get("profile") or "") != HARNESS_BOOTSTRAP_PROFILE
+        or str(harness.get("purpose") or "") != HARNESS_BOOTSTRAP_PURPOSE
+        or str(harness.get("principal_class") or "") != "qualification"
+        or str(harness.get("target_scope") or "") != HARNESS_TARGET_SCOPE
+        or not bool(harness.get("qualification_environment"))
+    ):
+        raise HarnessError("harness_cleanup_binding_mismatch", "Only the bound assurance principal may perform this cleanup.", status_code=403)
+    principal_id = _safe_principal_id(str(harness.get("principal_id") or ""))
+    return revoke_principal(principal_id, reason_code=reason_code)
 
 
 def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_scope: str = HARNESS_TARGET_SCOPE, ttl_seconds: int | None = None) -> dict[str, Any]:

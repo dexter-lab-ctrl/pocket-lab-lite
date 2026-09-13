@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 8a1411c7015d7d562869d25d5cb1d8dd27e2425d834ac33e1af78a58e7eb537b
+source_fingerprint: 17c44a9016c9d3100d2e207d7742dc11fc7d7f00b9068fc9ac63dbc8c5e45a56
 schema_revision: 1
 validation_status: generated
 ---
@@ -43,6 +43,7 @@ validation_status: generated
 | `authenticated_confirmed_device_removal` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `authentication_required` | identity | A protected write requires an authenticated human session or configured service credential. | yes | no | 401 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `battery_policy_threshold` | security | A reliable battery reading was at or below the explicitly configured device threshold while discharging. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `bootstrap_transport_rejected` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `checkpoint_ineligible` | security | An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `claim_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `cold_start_validation` | validation | Cold-start validation is in progress. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |

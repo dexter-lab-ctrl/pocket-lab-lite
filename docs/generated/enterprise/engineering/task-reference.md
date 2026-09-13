@@ -15,11 +15,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 56 |
+| Development loop | 58 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 24 |
-| Security-analysis loop | 17 |
+| Security-analysis loop | 19 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
@@ -3946,6 +3946,74 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:har:sanitize`
 
+## `lite:harness:bootstrap`
+
+**Purpose:** Complete the one-use key-bound assurance bootstrap without printing the session token
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py bootstrap --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:bootstrap`
+
+## `lite:harness:keygen`
+
+**Purpose:** Create disposable 0600 Ed25519 qualification key material outside the repository
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py keygen --key-file "{{.KEY_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:keygen`
+
 ## `lite:harness:principal:create`
 
 **Purpose:** Register public Ed25519 material with a server-owned profile
@@ -4184,6 +4252,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:qualification:start`
 
+## `lite:qualification:start:key-bound`
+
+**Purpose:** Explicitly start qualification with operator-approved security-assurance public-key bootstrap
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound`
+
 ## `lite:security:assurance:adversarial`
 
 **Purpose:** Run the qualification-only fixed adversarial assurance suite
@@ -4353,6 +4455,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:security:assurance:preflight`
+
+## `lite:security:assurance:qualify`
+
+**Purpose:** Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:qualify`
 
 ## `lite:security:assurance:report`
 

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: caf8851d91ff2bb2ff4a0d8ab98da96d6eb90382f821c5efb810868d74e6f313
+source_fingerprint: 965483c1f241e760033f89eef5e5e74715411b755c6a198432f6277141d517f0
 schema_revision: 1
 validation_status: generated
 ---
@@ -265,10 +265,18 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_GRAFANA_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py, pocket-lab-final-structure/runtime/tests/test_observability_status.py |
 | `POCKETLAB_HARNESS_API_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/harness.py |
 | `POCKETLAB_HARNESS_AUDIT_RETENTION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
+| `POCKETLAB_HARNESS_BOOTSTRAP_APPROVED` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_HARNESS_BOOTSTRAP_CHALLENGE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
+| `POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_HARNESS_BOOTSTRAP_PROFILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_HARNESS_BOOTSTRAP_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HARNESS_CHALLENGE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HARNESS_CLI_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/harness.py |
+| `POCKETLAB_HARNESS_CONTINUITY_FILE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/security_assurance.py |
 | `POCKETLAB_HARNESS_DESTRUCTIVE` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_HARNESS_ENABLED` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_HARNESS_PRINCIPAL_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/harness.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_HARNESS_RUNTIME_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HARNESS_SESSION` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/harness.py, scripts/dev/lite/security_assurance.py |

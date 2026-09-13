@@ -136,12 +136,12 @@
       "reason_codes": [
         "assurance_session_binding_mismatch",
         "battery_policy_threshold",
+        "bootstrap_transport_rejected",
         "checkpoint_ineligible",
         "configured_target_budget",
         "connection_failed",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired"
+        "elapsed_budget_exhausted"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -538,13 +538,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "assurance_session_binding_mismatch",
+        "bootstrap_transport_rejected",
         "connection_failed",
         "enterprise_connect_links_retired",
         "git_unavailable",
         "harness_session_invalid",
         "harness_session_not_found",
-        "harness_session_required",
-        "opa_status_unknown"
+        "harness_session_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
