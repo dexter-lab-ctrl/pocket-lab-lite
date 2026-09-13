@@ -711,7 +711,7 @@
     ]
   },
   "runtime_baseline_binding": "lite-2026.08.12.2",
-  "sbom_digest": "35b3cb1d4a5aaedc06cd2533caa56dde1a5eae833b105d36ec036fcbe02bacbc",
+  "sbom_digest": "303f8caf7e9eb0111ad567e46cc93290d92838c994ea235a218a2111985ca83e",
   "security_scan_digest": "406f5afb2b4ff848a2b1cde0e0a6ace49473a1cbf2848a93bd3caeb2117656ba",
   "signatures": {
     "keyless_preferred": true,

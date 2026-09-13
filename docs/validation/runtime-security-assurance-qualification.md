@@ -19,6 +19,7 @@ performed.
 | Base main | `6d7e34920ceaecf773f8dbae36265cc282a199ed` (`VERIFIED`) |
 | Feature branch | `feat/runtime-security-assurance-harness` (`VERIFIED`) |
 | Feature source at the prior phone qualification | `3f4f277de5fc8c99d01b0d07baa7376b608d1bd7` (`VERIFIED`) |
+| Latest published DEV-PC supply-chain capture | `6d257ff9fceef8069d9c83a23b7725321a18399b` (`VERIFIED`) |
 | PR | #576, open and draft at the prior observed head (`VERIFIED`; recheck after final push) |
 | Provisioning token | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` absent from the approved client environment (`VERIFIED` boolean-only check) |
 | Qualification authentication | Key-bound operator bootstrap; no bearer provisioning token, test-auth bypass, qualification-owner, or human Owner identity (`RUNTIME-VALIDATED`) |
@@ -147,7 +148,7 @@ targets, flags, templates, and environments are not accepted.
 | npm audit | 11.13.0 / package-lock mode | Node 24.16.0, DEV PC | `VALIDATED` production dependency audit; 0 vulnerabilities |
 | OPA CLI | 1.19.0 | `/usr/local/bin/opa`, DEV PC | `VALIDATED` `opa check --strict` and `opa test --fail-on-empty`; both exit 0 |
 | Schemathesis | 4.23.0 | pinned parity venv, DEV PC | `VALIDATED` installed/versioned compatibility lane; live phone execution requires the fixed tunnel procedure and is not claimed here |
-| Syft | 1.50.0 | Anchore release binary, checksum receipt | `VALIDATED` bounded source/release CycloneDX capture; 54 components in promoted DEV SBOM |
+| Syft | 1.50.0 | Anchore release binary, checksum receipt | `VALIDATED` bounded source/release CycloneDX capture; 54 normalized components in promoted DEV SBOM |
 | Trivy | 0.73.0 | Aqua Security release binary, checksum receipt | `VALIDATED` source and SBOM scans; 0 vulnerability/misconfiguration/secret findings after the docs dependency update, 26 license observations |
 | OSV-Scanner | 2.5.0 | Google release binary, checksum receipt | `VALIDATED` source and SBOM corroboration; SBOM path clean, source path returned 139 unranked dev-dependency candidates which remain visible |
 | Grype | 0.116.1 | Anchore release binary, checksum receipt | `VALIDATED` against the fixed Syft SBOM; no matching vulnerabilities in the executed SBOM |
@@ -402,6 +403,8 @@ secret-bearing environment values and raw outputs are intentionally omitted.
 | 25 | 2026-09-14, approved client → Server Phone | Existing `security_assurance.py qualify` with in-memory session | Authenticated Smoke and cleanup | PASS or truthful terminal state | `PASS` Smoke; Standard blocked | Run IDs and correlations above |
 | 26 | 2026-09-14, approved client → Server Phone | Client monitor termination followed by fresh signed session and `GET /runs/<same-id>` | Reattach without duplicate admission | Same run ID continues | `PASS` | Same worker operation/correlation; no duplicate scan |
 | 27 | 2026-09-14, Server Phone sandbox | Bounded shell script using disposable source/DB/NATS copies, fixed local ports, SQLite backup API, health/readiness polling | Model A schema rollback rehearsal | Old/new/old runtime healthy with 34→36→34 schema states | `PASS` | No production state touched; exact sanitized JSON in section 3 |
+| 28 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-published-20260913T234446Z-813731` | Reproducible final supply-chain capture after publishing the exact source SHA | Complete valid evidence | `PASS`; source commit `6d257ff9...`; 11 steps, max one scanner | Syft 1.573s; Trivy 27.342s; OSV source valid findings exit 1/25.778s; Grype 1.277s; Gitleaks 1.928s; Semgrep 9.845s; Scorecard 9.791s |
+| 29 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py promote --run-dir <final-published-run>`; `supply_chain_automation.py check` | Promote only reviewed sanitized artifacts | Canonical CycloneDX/security/provenance evidence passes checks | `PASS`, both commands exit 0 | Scorecard observed Dangerous-Workflow 10, Pinned-Dependencies 2, Token-Permissions 0; no raw output canonicalized |
 
 The earlier failed Syft attempt used invalid patterns without the required
 `./` prefix and returned a validation error. It was corrected in the
@@ -520,7 +523,8 @@ fault-recovery, and complete native toolchain evidence are not proven. The
 isolated schema rollback blocker is closed safely under Model A; it does not
 close the separate OPA policy synchronization gate.
 
-The final feature SHA, exact-head CI URL, and any post-commit phone retest are
-to be appended by the release qualification record after the final DEV-PC
-commit/push. No claim in this dossier should be read as evidence for a later
-SHA until that exact SHA is recorded by Git and CI.
+The latest complete static/supply-chain evidence in this dossier is bound to
+`6d257ff9fceef8069d9c83a23b7725321a18399b`. The final projection commit and
+any post-commit phone retest must be recorded by Git, CI, and the final PR
+metadata; no claim here is evidence for a later SHA until that exact SHA is
+recorded.

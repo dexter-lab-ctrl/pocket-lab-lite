@@ -16,8 +16,8 @@ Current promoted evidence and historical change are intentionally separate autho
 | Signal | Value |
 | --- | --- |
 | Capture status | complete |
-| Run ID | runtime-assurance-fixed-20260914T0010Z-776566 |
-| Source commit | 3f4f277de5fc8c99d01b0d07baa7376b608d1bd7 |
+| Run ID | runtime-assurance-final-published-20260913T234446Z-813731 |
+| Source commit | 6d257ff9fceef8069d9c83a23b7725321a18399b |
 | Qualification surface | local-or-ci-diagnostic |
 | Development SBOM components | 54 |
 | Release SBOM components | 0 |
@@ -35,17 +35,17 @@ Current promoted evidence and historical change are intentionally separate autho
 
 | Step | Status | Exit | Duration (s) |
 | --- | --- | --- | --- |
-| gitleaks-release | completed | 0 | 0.673 |
-| gitleaks-worktree | findings-or-tool-nonzero | 1 | 2.129 |
-| grype-sbom-dev | completed | 0 | 1.773 |
-| osv-sbom-dev | completed | 0 | 0.67 |
-| osv-source | findings-or-tool-nonzero | 1 | 25.878 |
-| scorecard | completed | 0 | 9.092 |
-| semgrep | completed | 0 | 18.815 |
-| syft-dev | completed | 0 | 1.774 |
-| syft-release | completed | 0 | 1.172 |
-| trivy-sbom-dev | completed | 0 | 0.068 |
-| trivy-source | completed | 0 | 23.487 |
+| gitleaks-release | completed | 0 | 0.619 |
+| gitleaks-worktree | findings-or-tool-nonzero | 1 | 1.928 |
+| grype-sbom-dev | completed | 0 | 1.277 |
+| osv-sbom-dev | completed | 0 | 0.669 |
+| osv-source | findings-or-tool-nonzero | 1 | 25.778 |
+| scorecard | completed | 0 | 9.791 |
+| semgrep | completed | 0 | 9.845 |
+| syft-dev | completed | 0 | 1.573 |
+| syft-release | completed | 0 | 1.171 |
+| trivy-sbom-dev | completed | 0 | 0.067 |
+| trivy-source | completed | 0 | 27.342 |
 
 ### Repository posture
 
