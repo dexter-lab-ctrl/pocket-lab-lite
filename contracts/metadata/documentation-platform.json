@@ -2214,5 +2214,8 @@
     "internal_noncontractual": [
       "approval_approved", "approval_cancelled", "approval_consumed", "approval_rejected", "enterprise_disabled", "enterprise_enabled", "enterprise_membership_changed", "owner_confirmed", "owner_revoke_others", "password_verified", "recovery_code_consumed", "temporary_exception_created", "temporary_exception_revoked"
     ]
-  }
+  },
+  "security_assurance_reason_codes": [
+    "assurance_session_binding_mismatch", "connection_failed", "git_unavailable", "harness_session_invalid", "harness_session_not_found", "harness_session_required", "opa_status_unknown", "ownership_source_unavailable", "pm2_inventory_failed", "pm2_inventory_invalid", "pm2_unavailable", "preflight_exception", "process_start_failed", "registered_tool_result_missing", "report_write_failed", "run_not_found", "security_load_unknown", "security_scan_conflict", "security_scanner_execution_failed", "source_inventory_failed"
+  ]
 }

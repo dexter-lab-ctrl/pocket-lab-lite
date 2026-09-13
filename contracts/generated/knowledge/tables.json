@@ -68,6 +68,118 @@
     {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:assurance_findings",
+      "indexes": [
+        "idx_assurance_findings_scenario",
+        "idx_assurance_findings_stable_key",
+        "idx_assurance_findings_run_severity",
+        "sqlite_autoindex_assurance_findings_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "name": "assurance_findings",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "attack_paths_json",
+        "evidence_refs_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:assurance_runs",
+      "indexes": [
+        "idx_assurance_runs_history",
+        "idx_assurance_one_active",
+        "sqlite_autoindex_assurance_runs_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "name": "assurance_runs",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:assurance_scenarios",
+      "indexes": [
+        "idx_assurance_scenarios_status",
+        "sqlite_autoindex_assurance_scenarios_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "name": "assurance_scenarios",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "attack_paths_json",
+        "evidence_refs_json",
+        "observed_evidence"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:assurance_tool_results",
+      "indexes": [
+        "idx_assurance_tool_results_run",
+        "sqlite_autoindex_assurance_tool_results_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "name": "assurance_tool_results",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_ref"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
       "description": "Source-derived audit persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "audit",
       "id": "table:audit_evidence_index",
@@ -1996,7 +2108,8 @@
         "sqlite_autoindex_synthetic_principals_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
       ],
       "name": "synthetic_principals",
       "owner": "not a prepared projection",
@@ -2005,7 +2118,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2178,6 +2292,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "39fc1a068ddf558002bd1f875ec870244f35e6250f7919baa25fd7e4b8be5992"
+    "source_fingerprint": "1a4dfdd955d25b7a73e1571877c6d8610ab7fa762ec8f90923f41c1336720595"
   }
 }

@@ -115,6 +115,59 @@ tasks:
     cmds:
       - bash scripts/dev/lite/start-qualification.sh
 
+  lite:security:assurance:check:
+    desc: Show the server-owned Runtime Security Assurance registry without starting a run
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py check'
+
+  lite:security:assurance:preflight:
+    desc: Run fixed local admission checks for one registered assurance suite
+    vars:
+      SUITE: '{{default "smoke" .SUITE}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py preflight "{{.SUITE}}"'
+
+  lite:security:assurance:smoke:
+    desc: Run the bounded Smoke runtime security assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run smoke'
+
+  lite:security:assurance:standard:
+    desc: Run the bounded Standard runtime security assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run standard'
+
+  lite:security:assurance:deep:
+    desc: Run the explicit manual-only Deep runtime security assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run deep'
+
+  lite:security:assurance:adversarial:
+    desc: Run the qualification-only fixed adversarial assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial'
+
+  lite:security:assurance:scenario:
+    desc: Run one registered scenario through the Standard assurance profile
+    requires:
+      vars: [ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py scenario "{{.ID}}"'
+
+  lite:security:assurance:report:
+    desc: Read one sanitized runtime security assurance report
+    requires:
+      vars: [RUN_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py report "{{.RUN_ID}}"'
+
+  lite:security:assurance:compare:
+    desc: Read one normalized runtime security assurance baseline delta
+    requires:
+      vars: [RUN_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py compare "{{.RUN_ID}}"'
+
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'
     deps: [lite:dev:scratch:prepare]

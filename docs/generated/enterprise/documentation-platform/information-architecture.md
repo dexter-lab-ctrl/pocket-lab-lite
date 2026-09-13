@@ -15,7 +15,7 @@ confidence: generated
 
 ## Inventory
 
-- Pages: **434**
+- Pages: **435**
 - Top-level hubs: **9**
 - Feature Journeys: **8**
 - Cross-links: **894**

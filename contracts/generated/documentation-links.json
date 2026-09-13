@@ -281,6 +281,34 @@
         "title": "GET /api/lite/harness/capabilities",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-capabilities"
       },
+      "endpoint:GET:/api/lite/harness/security-assurance/capabilities": {
+        "title": "GET /api/lite/harness/security-assurance/capabilities",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-capabilities"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/preflight": {
+        "title": "GET /api/lite/harness/security-assurance/preflight",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-preflight"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/runs": {
+        "title": "GET /api/lite/harness/security-assurance/runs",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/runs/{run_id}": {
+        "title": "GET /api/lite/harness/security-assurance/runs/{run_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs-run-id"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/runs/{run_id}/findings": {
+        "title": "GET /api/lite/harness/security-assurance/runs/{run_id}/findings",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs-run-id-findings"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/runs/{run_id}/report": {
+        "title": "GET /api/lite/harness/security-assurance/runs/{run_id}/report",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-runs-run-id-report"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/suites": {
+        "title": "GET /api/lite/harness/security-assurance/suites",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-suites"
+      },
       "endpoint:GET:/api/lite/harness/session/{session_id}": {
         "title": "GET /api/lite/harness/session/{session_id}",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-session-session-id"
@@ -661,6 +689,14 @@
         "title": "POST /api/lite/harness/principals/{principal_id}/revoke",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals-principal-id-revoke"
       },
+      "endpoint:POST:/api/lite/harness/security-assurance/runs": {
+        "title": "POST /api/lite/harness/security-assurance/runs",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-runs"
+      },
+      "endpoint:POST:/api/lite/harness/security-assurance/runs/{run_id}/cancel": {
+        "title": "POST /api/lite/harness/security-assurance/runs/{run_id}/cancel",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-runs-run-id-cancel"
+      },
       "endpoint:POST:/api/lite/harness/session": {
         "title": "POST /api/lite/harness/session",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-session"
@@ -984,6 +1020,10 @@
       "event:pocketlab.commands.lite.security.app_scan": {
         "title": "pocketlab.commands.lite.security.app_scan",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-security-app-scan"
+      },
+      "event:pocketlab.commands.lite.security.assurance": {
+        "title": "pocketlab.commands.lite.security.assurance",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-security-assurance"
       },
       "event:pocketlab.commands.lite.security.scan": {
         "title": "pocketlab.commands.lite.security.scan",
@@ -1417,6 +1457,14 @@
         "title": "pocketlab.events.lite.restore.started",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-started"
       },
+      "event:pocketlab.events.lite.security.assurance.completed": {
+        "title": "pocketlab.events.lite.security.assurance.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-assurance-completed"
+      },
+      "event:pocketlab.events.lite.security.assurance.started": {
+        "title": "pocketlab.events.lite.security.assurance.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-assurance-started"
+      },
       "event:pocketlab.events.lite.security.critical_found": {
         "title": "pocketlab.events.lite.security.critical_found",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-critical-found"
@@ -1761,6 +1809,10 @@
         "title": "approval_unusable",
         "url": "../../docs/generated/development/reason-codes.md#approval-unusable"
       },
+      "reason:assurance_session_binding_mismatch": {
+        "title": "assurance_session_binding_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#assurance-session-binding-mismatch"
+      },
       "reason:authenticated_app_install": {
         "title": "authenticated_app_install",
         "url": "../../docs/generated/development/reason-codes.md#authenticated-app-install"
@@ -1800,6 +1852,10 @@
       "reason:configured_target_budget": {
         "title": "configured_target_budget",
         "url": "../../docs/generated/development/reason-codes.md#configured-target-budget"
+      },
+      "reason:connection_failed": {
+        "title": "connection_failed",
+        "url": "../../docs/generated/development/reason-codes.md#connection-failed"
       },
       "reason:csrf_required": {
         "title": "csrf_required",
@@ -1908,6 +1964,22 @@
       "reason:generic_policy_toggle_retired": {
         "title": "generic_policy_toggle_retired",
         "url": "../../docs/generated/development/reason-codes.md#generic-policy-toggle-retired"
+      },
+      "reason:git_unavailable": {
+        "title": "git_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#git-unavailable"
+      },
+      "reason:harness_session_invalid": {
+        "title": "harness_session_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#harness-session-invalid"
+      },
+      "reason:harness_session_not_found": {
+        "title": "harness_session_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#harness-session-not-found"
+      },
+      "reason:harness_session_required": {
+        "title": "harness_session_required",
+        "url": "../../docs/generated/development/reason-codes.md#harness-session-required"
       },
       "reason:harness_transport_rejected": {
         "title": "harness_transport_rejected",
@@ -2033,6 +2105,10 @@
         "title": "not_found_in_restored_snapshot",
         "url": "../../docs/generated/development/reason-codes.md#not-found-in-restored-snapshot"
       },
+      "reason:opa_status_unknown": {
+        "title": "opa_status_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#opa-status-unknown"
+      },
       "reason:owner_approval_policy_inconsistent": {
         "title": "owner_approval_policy_inconsistent",
         "url": "../../docs/generated/development/reason-codes.md#owner-approval-policy-inconsistent"
@@ -2072,6 +2148,10 @@
       "reason:owner_request": {
         "title": "owner_request",
         "url": "../../docs/generated/development/reason-codes.md#owner-request"
+      },
+      "reason:ownership_source_unavailable": {
+        "title": "ownership_source_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#ownership-source-unavailable"
       },
       "reason:passkey_already_registered": {
         "title": "passkey_already_registered",
@@ -2120,6 +2200,18 @@
       "reason:payload_too_large": {
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
+      },
+      "reason:pm2_inventory_failed": {
+        "title": "pm2_inventory_failed",
+        "url": "../../docs/generated/development/reason-codes.md#pm2-inventory-failed"
+      },
+      "reason:pm2_inventory_invalid": {
+        "title": "pm2_inventory_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#pm2-inventory-invalid"
+      },
+      "reason:pm2_unavailable": {
+        "title": "pm2_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#pm2-unavailable"
       },
       "reason:policy_action_not_registered": {
         "title": "policy_action_not_registered",
@@ -2257,6 +2349,14 @@
         "title": "policy_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#policy-unavailable"
       },
+      "reason:preflight_exception": {
+        "title": "preflight_exception",
+        "url": "../../docs/generated/development/reason-codes.md#preflight-exception"
+      },
+      "reason:process_start_failed": {
+        "title": "process_start_failed",
+        "url": "../../docs/generated/development/reason-codes.md#process-start-failed"
+      },
       "reason:projection_too_old": {
         "title": "projection_too_old",
         "url": "../../docs/generated/development/reason-codes.md#projection-too-old"
@@ -2281,6 +2381,10 @@
         "title": "read_degraded",
         "url": "../../docs/generated/development/reason-codes.md#read-degraded"
       },
+      "reason:registered_tool_result_missing": {
+        "title": "registered_tool_result_missing",
+        "url": "../../docs/generated/development/reason-codes.md#registered-tool-result-missing"
+      },
       "reason:release_projection_unavailable": {
         "title": "release_projection_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#release-projection-unavailable"
@@ -2288,6 +2392,10 @@
       "reason:remote_access_not_ready": {
         "title": "remote_access_not_ready",
         "url": "../../docs/generated/development/reason-codes.md#remote-access-not-ready"
+      },
+      "reason:report_write_failed": {
+        "title": "report_write_failed",
+        "url": "../../docs/generated/development/reason-codes.md#report-write-failed"
       },
       "reason:rollback_pointer_failed": {
         "title": "rollback_pointer_failed",
@@ -2297,9 +2405,25 @@
         "title": "rollback_unproved",
         "url": "../../docs/generated/development/reason-codes.md#rollback-unproved"
       },
+      "reason:run_not_found": {
+        "title": "run_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#run-not-found"
+      },
       "reason:scanner_intelligence_hard_expired": {
         "title": "scanner_intelligence_hard_expired",
         "url": "../../docs/generated/development/reason-codes.md#scanner-intelligence-hard-expired"
+      },
+      "reason:security_load_unknown": {
+        "title": "security_load_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#security-load-unknown"
+      },
+      "reason:security_scan_conflict": {
+        "title": "security_scan_conflict",
+        "url": "../../docs/generated/development/reason-codes.md#security-scan-conflict"
+      },
+      "reason:security_scanner_execution_failed": {
+        "title": "security_scanner_execution_failed",
+        "url": "../../docs/generated/development/reason-codes.md#security-scanner-execution-failed"
       },
       "reason:service_unavailable": {
         "title": "service_unavailable",
@@ -2316,6 +2440,10 @@
       "reason:shutdown_during_mailbox_backpressure": {
         "title": "shutdown_during_mailbox_backpressure",
         "url": "../../docs/generated/development/reason-codes.md#shutdown-during-mailbox-backpressure"
+      },
+      "reason:source_inventory_failed": {
+        "title": "source_inventory_failed",
+        "url": "../../docs/generated/development/reason-codes.md#source-inventory-failed"
       },
       "reason:storage_pressure": {
         "title": "storage_pressure",
@@ -2510,6 +2638,26 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#app-current-state",
         "schema_url": "../../docs/generated/schemaspy/tables/app_current_state.html",
         "title": "app_current_state"
+      },
+      "table:assurance_findings": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#assurance-findings",
+        "schema_url": "../../docs/generated/schemaspy/tables/assurance_findings.html",
+        "title": "assurance_findings"
+      },
+      "table:assurance_runs": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#assurance-runs",
+        "schema_url": "../../docs/generated/schemaspy/tables/assurance_runs.html",
+        "title": "assurance_runs"
+      },
+      "table:assurance_scenarios": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#assurance-scenarios",
+        "schema_url": "../../docs/generated/schemaspy/tables/assurance_scenarios.html",
+        "title": "assurance_scenarios"
+      },
+      "table:assurance_tool_results": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#assurance-tool-results",
+        "schema_url": "../../docs/generated/schemaspy/tables/assurance_tool_results.html",
+        "title": "assurance_tool_results"
       },
       "table:audit_evidence_index": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#audit-evidence-index",
@@ -2869,7 +3017,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "85fe5f03d8c86910eb1001cde127419fa3fad686ca50a23649afafcbede0ff2a",
+    "aggregate_fingerprint": "d220b2bc390d93fd691c7395a1dbbf685b2885c564f04fe0611e9aa670924fe0",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2879,8 +3027,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "b1cbb5ce85ec130066bac6484aa65176e6e2f135ec25a7119eae25e3b32bb2e7",
-      "contracts/metadata/documentation-platform.json": "7ab5313f8b29380f3223d5e9ea121051937dd6790a8f8e8b36e3d010548bab69",
+      "contracts/generated/lite-openapi.json": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
+      "contracts/metadata/documentation-platform.json": "1f7d6faaa24097b4e4a454894b8c80dccc5ffa968b6b96dbfeecdbbaab57584e",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -2916,7 +3064,8 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql": "5df12b0987a752160dda4f2970aa28fe1e127be8ee65359bbfaf736127c181e1",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
-      "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
+      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"
   }

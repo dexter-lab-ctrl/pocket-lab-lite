@@ -31,6 +31,7 @@ def _rules() -> tuple[RequestLimitRule, ...]:
     kib = 1024
     return (
         RequestLimitRule("security_check", re.compile(r"^/api/lite/security(?:/check|/scan|/apps/[^/]+/check)$"), _bounded_int("POCKETLAB_REQUEST_LIMIT_SECURITY_BYTES", 4 * kib, 512, 64 * kib)),
+        RequestLimitRule("security_assurance", re.compile(r"^/api/lite/harness/security-assurance/runs(?:/[^/]+/cancel)?$"), _bounded_int("POCKETLAB_REQUEST_LIMIT_SECURITY_ASSURANCE_BYTES", 8 * kib, 512, 64 * kib)),
         RequestLimitRule("device_invite", re.compile(r"^/api/lite/fleet/add-device$"), _bounded_int("POCKETLAB_REQUEST_LIMIT_DEVICE_INVITE_BYTES", 4 * kib, 512, 64 * kib)),
         RequestLimitRule("device_restart", re.compile(r"^/api/lite/fleet/devices/[^/]+/restart-agent$"), _bounded_int("POCKETLAB_REQUEST_LIMIT_DEVICE_RESTART_BYTES", 4 * kib, 512, 64 * kib)),
         RequestLimitRule("device_remove", re.compile(r"^/api/lite/fleet/remove-device$"), _bounded_int("POCKETLAB_REQUEST_LIMIT_DEVICE_REMOVE_BYTES", 4 * kib, 512, 64 * kib)),

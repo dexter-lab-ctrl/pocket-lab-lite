@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: bc8e567931ea667402f06e377f5d6845ebe3667f7213c535e5b7efac2742d879
+source_fingerprint: 2a7f39a6eec7bbda2428b9004c53a118338583b434c20e79e353a6fe13a2ebec
 schema_revision: 1
 validation_status: generated
 ---
@@ -30,6 +30,10 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `app_action_lifecycle` | table | 10 | 0 | 4 | apps | App Catalog lifecycle and action services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql |
 | `app_current_state` | table | 20 | 0 | 3 | apps | App Catalog lifecycle and action services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0007_app_current_subprojections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0008_app_current_hot_subprojections.sql |
+| `assurance_findings` | table | 29 | 1 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
+| `assurance_runs` | table | 21 | 2 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
+| `assurance_scenarios` | table | 15 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
+| `assurance_tool_results` | table | 13 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
 | `audit_evidence_index` | table | 10 | 0 | 4 | audit | audit evidence indexing services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql |
 | `auth_session_assurance` | table | 7 | 2 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `auth_sessions` | table | 12 | 1 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
@@ -94,7 +98,7 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `security_scan_runs` | table | 47 | 0 | 10 | security | Security API/worker store | sanitized operational metadata | verified | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0005_security_read_performance.sql |
 | `security_scan_tool_runs` | table | 11 | 1 | 2 | security | Security store and scanner completion services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql |
 | `security_store_metadata` | table | 3 | 0 | 1 | security | Security store and scanner completion services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql |
-| `synthetic_principals` | table | 17 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql |
+| `synthetic_principals` | table | 17 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
 | `webauthn_challenges` | table | 11 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `webauthn_credentials` | table | 12 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `webauthn_users` | table | 3 | 1 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
@@ -147,6 +151,116 @@ Source-derived apps persistence object; detailed ownership is conservatively inf
 | `projection_version` | INTEGER | no | 1 | 0 |
 | `security_profile_json` | TEXT | no | '{}' | 0 |
 | `backup_targets_json` | TEXT | no | '{}' | 0 |
+
+<a id="assurance-findings"></a>
+## `assurance_findings`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `finding_id` | TEXT | yes | — | 1 |
+| `run_id` | TEXT | no | — | 0 |
+| `stable_key` | TEXT | no | — | 0 |
+| `suite` | TEXT | no | — | 0 |
+| `scenario_id` | TEXT | yes | — | 0 |
+| `tool` | TEXT | no | — | 0 |
+| `tool_version` | TEXT | yes | — | 0 |
+| `category` | TEXT | no | — | 0 |
+| `severity` | TEXT | no | — | 0 |
+| `confidence` | TEXT | no | — | 0 |
+| `title` | TEXT | no | — | 0 |
+| `safe_summary` | TEXT | no | '' | 0 |
+| `component` | TEXT | no | '' | 0 |
+| `asset` | TEXT | no | '' | 0 |
+| `trust_boundary` | TEXT | no | '' | 0 |
+| `stride_json` | TEXT | no | '[]' | 0 |
+| `owasp_json` | TEXT | no | '[]' | 0 |
+| `attack_paths_json` | TEXT | no | '[]' | 0 |
+| `controls_json` | TEXT | no | '[]' | 0 |
+| `cwe_json` | TEXT | no | '[]' | 0 |
+| `cve_json` | TEXT | no | '[]' | 0 |
+| `sanitized_file_reference` | TEXT | yes | — | 0 |
+| `runtime_target` | TEXT | no | 'local_server_host_only' | 0 |
+| `first_seen_at` | TEXT | no | — | 0 |
+| `last_seen_at` | TEXT | no | — | 0 |
+| `baseline_state` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `remediation` | TEXT | no | '' | 0 |
+| `evidence_refs_json` | TEXT | no | '[]' | 0 |
+
+<a id="assurance-runs"></a>
+## `assurance_runs`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `run_id` | TEXT | yes | — | 1 |
+| `suite_id` | TEXT | no | — | 0 |
+| `profile` | TEXT | no | — | 0 |
+| `scenario_id` | TEXT | yes | — | 0 |
+| `baseline_run_id` | TEXT | yes | — | 0 |
+| `principal_id` | TEXT | no | — | 0 |
+| `harness_session_id` | TEXT | no | — | 0 |
+| `purpose` | TEXT | no | — | 0 |
+| `target_scope` | TEXT | no | — | 0 |
+| `runtime_id` | TEXT | no | — | 0 |
+| `revision_sha` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `cancel_requested` | INTEGER | no | 0 | 0 |
+| `preflight_json` | TEXT | no | '{}' | 0 |
+| `summary_json` | TEXT | no | '{}' | 0 |
+| `report_json` | TEXT | no | '{}' | 0 |
+| `failure_code` | TEXT | yes | — | 0 |
+| `requested_at` | TEXT | no | — | 0 |
+| `started_at` | TEXT | yes | — | 0 |
+| `completed_at` | TEXT | yes | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+
+<a id="assurance-scenarios"></a>
+## `assurance_scenarios`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `scenario_row_id` | INTEGER | yes | — | 1 |
+| `run_id` | TEXT | no | — | 0 |
+| `scenario_id` | TEXT | no | — | 0 |
+| `safety_class` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `expected_invariant` | TEXT | no | — | 0 |
+| `observed_evidence` | TEXT | no | '' | 0 |
+| `stride_json` | TEXT | no | '[]' | 0 |
+| `owasp_json` | TEXT | no | '[]' | 0 |
+| `attack_paths_json` | TEXT | no | '[]' | 0 |
+| `controls_json` | TEXT | no | '[]' | 0 |
+| `evidence_refs_json` | TEXT | no | '[]' | 0 |
+| `failure_code` | TEXT | yes | — | 0 |
+| `started_at` | TEXT | yes | — | 0 |
+| `completed_at` | TEXT | yes | — | 0 |
+
+<a id="assurance-tool-results"></a>
+## `assurance_tool_results`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `tool_result_id` | INTEGER | yes | — | 1 |
+| `run_id` | TEXT | no | — | 0 |
+| `tool_id` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `tool_version` | TEXT | yes | — | 0 |
+| `native_status` | TEXT | yes | — | 0 |
+| `resource_class` | TEXT | yes | — | 0 |
+| `execution_owner` | TEXT | no | 'worker' | 0 |
+| `finding_count` | INTEGER | no | 0 | 0 |
+| `duration_ms` | INTEGER | yes | — | 0 |
+| `failure_code` | TEXT | yes | — | 0 |
+| `evidence_ref` | TEXT | yes | — | 0 |
+| `metadata_json` | TEXT | no | '{}' | 0 |
 
 <a id="audit-evidence-index"></a>
 ## `audit_evidence_index`

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 7fe21cdab9dafb6add94b73e5bb03f1a18536ecb732d2e2ec7f1561747bbb4aa
+source_fingerprint: 61db5804c4c34d3b55e7f546ec7df5743034dc66db8e51217695356bde65a77f
 schema_revision: 1
 validation_status: generated
 ---
@@ -267,11 +267,11 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_HARNESS_AUDIT_RETENTION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HARNESS_CHALLENGE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HARNESS_CLI_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/harness.py |
-| `POCKETLAB_HARNESS_DESTRUCTIVE` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_HARNESS_DESTRUCTIVE` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_HARNESS_ENABLED` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/harness.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_HARNESS_RUNTIME_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
-| `POCKETLAB_HARNESS_SESSION` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/harness.py |
+| `POCKETLAB_HARNESS_SESSION` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/harness.py, scripts/dev/lite/security_assurance.py |
 | `POCKETLAB_HARNESS_SESSION_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
 | `POCKETLAB_HEALTH_IDLE_SECONDS` | configuration | 300 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py |
 | `POCKETLAB_HEALTH_SAMPLE_SECONDS` | configuration | 60 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py |
@@ -655,7 +655,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PROXY_BASE` | configuration | http://127.0.0.1:8443 | yes | component-dependent | scripts/dev/check-lite-control-plane-cold-projections.sh, scripts/dev/check-lite-phase3b-projections.sh, scripts/dev/check-lite-phase3c-projections.sh |
 | `POCKETLAB_PUBLIC_NATS_PORT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py |
 | `POCKETLAB_PUBLIC_NATS_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
-| `POCKETLAB_QUALIFICATION_OWNER` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_QUALIFICATION_OWNER` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_READY_ATTEMPTS` | configuration | 60 | yes | component-dependent | scripts/dev/check-lite-control-plane-cold-projections.sh |
 | `POCKETLAB_READY_CONNECT_TIMEOUT` | configuration | 2 | yes | component-dependent | scripts/dev/check-lite-control-plane-cold-projections.sh |
 | `POCKETLAB_READY_MAX_TIME` | configuration | 3 | yes | component-dependent | scripts/dev/check-lite-control-plane-cold-projections.sh |
@@ -713,6 +713,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_REQUEST_LIMIT_DEVICE_REMOVE_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/request_limits.py |
 | `POCKETLAB_REQUEST_LIMIT_DEVICE_RESTART_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/request_limits.py |
 | `POCKETLAB_REQUEST_LIMIT_RECOVERY_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/request_limits.py |
+| `POCKETLAB_REQUEST_LIMIT_SECURITY_ASSURANCE_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/request_limits.py |
 | `POCKETLAB_REQUEST_LIMIT_SECURITY_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/request_limits.py |
 | `POCKETLAB_REQUIRE_PROOT_OBSERVABILITY` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh |
 | `POCKETLAB_RESOURCE_PROFILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py |
@@ -814,7 +815,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_TERMUX_SSH_IDENTITY` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
 | `POCKETLAB_TERMUX_SSH_PORT` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
 | `POCKETLAB_TERMUX_SSH_USER` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
-| `POCKETLAB_TEST_AUTH_BYPASS` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py, pocket-lab-final-structure/runtime/tests/test_observability_status.py, scripts/dev/lite/start-qualification.sh |
+| `POCKETLAB_TEST_AUTH_BYPASS` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py, pocket-lab-final-structure/runtime/tests/test_observability_status.py, scripts/dev/lite/start-qualification.sh |
 | `POCKETLAB_TEST_MODE` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/export_openapi.py |
 | `POCKETLAB_TEST_NATS_CURL_CONNECT_TIMEOUT` | configuration | 5 | yes | component-dependent | scripts/dev/test-nats-stack.sh |
 | `POCKETLAB_TEST_NATS_CURL_MAX_TIME` | configuration | 20 | yes | component-dependent | scripts/dev/test-nats-stack.sh |

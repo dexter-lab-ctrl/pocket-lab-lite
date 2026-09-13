@@ -1,6 +1,6 @@
 # Lite Validation
 
-Pocket Lab Lite keeps the core Pocket Lab control-plane model while reducing the default runtime footprint. Validation should prove that the Lite API, Lite UI, Lite bootstrap profile, and documentation build remain healthy without starting the heavyweight observability stack by default. For the separate backend-only machine qualification surface, see [Qualification & maintenance harness](qualification-maintenance-harness.md).
+Pocket Lab Lite keeps the core Pocket Lab control-plane model while reducing the default runtime footprint. Validation should prove that the Lite API, Lite UI, Lite bootstrap profile, and documentation build remain healthy without starting the heavyweight observability stack by default. For the separate backend-only machine qualification surface, see [Qualification & maintenance harness](qualification-maintenance-harness.md) and the [Runtime Security Assurance Harness](runtime-security-assurance-harness.md).
 
 ## What is validated
 

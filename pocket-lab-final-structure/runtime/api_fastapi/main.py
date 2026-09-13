@@ -41,6 +41,7 @@ from .routers import (
     release,
     runbooks,
     security,
+    security_assurance,
     settings,
     telemetry,
     websocket,
@@ -61,6 +62,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services.operation_events import install_operation_event_publisher
     from .services.live_status import LIVE_STATUS
     from .services import lite_security
+    from .services import lite_security_assurance
     from .services import lite_database_recovery
     from .services import fleet_registry
     from .services import lite_identity_auth
@@ -102,6 +104,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             "security.runtime.initialize",
             lite_security.initialize_security_sqlite_runtime,
         )
+        # Do not leave an interrupted assurance run as a durable active lock
+        # after an API/device restart. Reconciliation is bounded and records
+        # PARTIAL; it never infers PASS from missing worker evidence.
+        await asyncio.to_thread(lite_security_assurance.reconcile_stale_runs)
         security_retention_task = asyncio.create_task(
             lite_security.security_progress_retention_loop(),
             name="pocketlab-security-progress-retention",
@@ -248,6 +254,7 @@ for router in (
     release.router,
     drift.router,
     security.router,
+    security_assurance.router,
     settings.router,
     operations.router,
     runbooks.router,

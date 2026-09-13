@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 34,
+    "migration_count": 35,
     "objects": [
       {
         "checks": [],
@@ -342,6 +342,833 @@
         "sql": "CREATE TABLE app_current_state (\n    app_id TEXT PRIMARY KEY,\n    app_name TEXT NOT NULL,\n    status TEXT NOT NULL DEFAULT 'unknown',\n    installed INTEGER NOT NULL DEFAULT 0 CHECK (installed IN (0, 1)),\n    health_state TEXT NOT NULL DEFAULT 'unknown',\n    latest_action_id TEXT,\n    latest_action_status TEXT,\n    latest_backup_id TEXT,\n    source_revision INTEGER NOT NULL DEFAULT 0,\n    updated_at TEXT NOT NULL,\n    updated_at_epoch_ms INTEGER NOT NULL,\n    summary TEXT NOT NULL DEFAULT ''\n, catalog_state_json TEXT NOT NULL DEFAULT '{}', media_state_json TEXT NOT NULL DEFAULT '{}', operation_state_json TEXT NOT NULL DEFAULT '{}', update_state_json TEXT NOT NULL DEFAULT '{}', backup_profile_json TEXT NOT NULL DEFAULT '{}', projection_version INTEGER NOT NULL DEFAULT 1, security_profile_json TEXT NOT NULL DEFAULT '{}', backup_targets_json TEXT NOT NULL DEFAULT '{}')",
         "type": "table",
         "writer": "App Catalog lifecycle and action services"
+      },
+      {
+        "checks": [
+          "severity IN ('critical', 'high', 'medium', 'low', 'info'",
+          "confidence IN ('high', 'medium', 'low', 'unknown'",
+          "baseline_state IN ('NEW', 'EXISTING', 'RESOLVED', 'REGRESSED', 'UNCHANGED'",
+          "status IN ('open', 'resolved', 'review', 'blocked'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "finding_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "run_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "stable_key",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "suite",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scenario_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "tool",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "tool_version",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "category",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "severity",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "confidence",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "title",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "safe_summary",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "component",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "asset",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "trust_boundary",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "stride_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "owasp_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "attack_paths_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "controls_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "cwe_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "cve_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "sanitized_file_reference",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'local_server_host_only'",
+            "name": "runtime_target",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "first_seen_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_seen_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "baseline_state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "remediation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "evidence_refs_json",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "run_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "assurance_runs",
+            "sequence": 0,
+            "to": "run_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "run_id",
+              "scenario_id",
+              "tool"
+            ],
+            "name": "idx_assurance_findings_scenario",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "stable_key",
+              "last_seen_at"
+            ],
+            "name": "idx_assurance_findings_stable_key",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "run_id",
+              "severity",
+              "baseline_state"
+            ],
+            "name": "idx_assurance_findings_run_severity",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "finding_id"
+            ],
+            "name": "sqlite_autoindex_assurance_findings_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        ],
+        "name": "assurance_findings",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "attack_paths_json",
+          "evidence_refs_json"
+        ],
+        "sql": "CREATE TABLE assurance_findings (\n    finding_id TEXT PRIMARY KEY,\n    run_id TEXT NOT NULL,\n    stable_key TEXT NOT NULL,\n    suite TEXT NOT NULL,\n    scenario_id TEXT,\n    tool TEXT NOT NULL,\n    tool_version TEXT,\n    category TEXT NOT NULL,\n    severity TEXT NOT NULL CHECK (severity IN ('critical', 'high', 'medium', 'low', 'info')),\n    confidence TEXT NOT NULL CHECK (confidence IN ('high', 'medium', 'low', 'unknown')),\n    title TEXT NOT NULL,\n    safe_summary TEXT NOT NULL DEFAULT '',\n    component TEXT NOT NULL DEFAULT '',\n    asset TEXT NOT NULL DEFAULT '',\n    trust_boundary TEXT NOT NULL DEFAULT '',\n    stride_json TEXT NOT NULL DEFAULT '[]',\n    owasp_json TEXT NOT NULL DEFAULT '[]',\n    attack_paths_json TEXT NOT NULL DEFAULT '[]',\n    controls_json TEXT NOT NULL DEFAULT '[]',\n    cwe_json TEXT NOT NULL DEFAULT '[]',\n    cve_json TEXT NOT NULL DEFAULT '[]',\n    sanitized_file_reference TEXT,\n    runtime_target TEXT NOT NULL DEFAULT 'local_server_host_only',\n    first_seen_at TEXT NOT NULL,\n    last_seen_at TEXT NOT NULL,\n    baseline_state TEXT NOT NULL CHECK (baseline_state IN ('NEW', 'EXISTING', 'RESOLVED', 'REGRESSED', 'UNCHANGED')),\n    status TEXT NOT NULL CHECK (status IN ('open', 'resolved', 'review', 'blocked')),\n    remediation TEXT NOT NULL DEFAULT '',\n    evidence_refs_json TEXT NOT NULL DEFAULT '[]',\n    FOREIGN KEY (run_id) REFERENCES assurance_runs(run_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "run_id GLOB 'assurance-*'",
+          "suite_id IN ('smoke', 'standard', 'deep', 'adversarial'",
+          "profile = 'security-assurance-runner'",
+          "purpose = 'security.assurance'",
+          "target_scope = 'local_server_host_only'",
+          "status IN ('QUEUED', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED'",
+          "cancel_requested IN (0, 1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "run_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "suite_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "profile",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scenario_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "baseline_run_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "principal_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "harness_session_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_scope",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "runtime_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revision_sha",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "cancel_requested",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "preflight_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "summary_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "report_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "failure_code",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "started_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "principal_id",
+            "id": 0,
+            "on_delete": "RESTRICT",
+            "on_update": "NO ACTION",
+            "parent_table": "synthetic_principals",
+            "sequence": 0,
+            "to": "principal_id"
+          },
+          {
+            "from": "baseline_run_id",
+            "id": 1,
+            "on_delete": "SET NULL",
+            "on_update": "NO ACTION",
+            "parent_table": "assurance_runs",
+            "sequence": 0,
+            "to": "run_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "suite_id",
+              "status",
+              "updated_at"
+            ],
+            "name": "idx_assurance_runs_history",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "status"
+            ],
+            "name": "idx_assurance_one_active",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "run_id"
+            ],
+            "name": "sqlite_autoindex_assurance_runs_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        ],
+        "name": "assurance_runs",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE assurance_runs (\n    run_id TEXT PRIMARY KEY CHECK (run_id GLOB 'assurance-*'),\n    suite_id TEXT NOT NULL CHECK (suite_id IN ('smoke', 'standard', 'deep', 'adversarial')),\n    profile TEXT NOT NULL CHECK (profile = 'security-assurance-runner'),\n    scenario_id TEXT,\n    baseline_run_id TEXT,\n    principal_id TEXT NOT NULL,\n    harness_session_id TEXT NOT NULL,\n    purpose TEXT NOT NULL CHECK (purpose = 'security.assurance'),\n    target_scope TEXT NOT NULL CHECK (target_scope = 'local_server_host_only'),\n    runtime_id TEXT NOT NULL,\n    revision_sha TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('QUEUED', 'RUNNING', 'PASS', 'FAIL', 'PARTIAL', 'BLOCKED')),\n    cancel_requested INTEGER NOT NULL DEFAULT 0 CHECK (cancel_requested IN (0, 1)),\n    preflight_json TEXT NOT NULL DEFAULT '{}',\n    summary_json TEXT NOT NULL DEFAULT '{}',\n    report_json TEXT NOT NULL DEFAULT '{}',\n    failure_code TEXT,\n    requested_at TEXT NOT NULL,\n    started_at TEXT,\n    completed_at TEXT,\n    updated_at TEXT NOT NULL,\n    FOREIGN KEY (baseline_run_id) REFERENCES assurance_runs(run_id) ON DELETE SET NULL,\n    FOREIGN KEY (principal_id) REFERENCES synthetic_principals(principal_id) ON DELETE RESTRICT\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "safety_class IN ('PASSIVE', 'SAFE_ACTIVE', 'CONTROLLED_MUTATION', 'DESTRUCTIVE_QUALIFICATION'",
+          "status IN ('PASS', 'FAIL', 'PARTIAL', 'BLOCKED'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "scenario_row_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "run_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scenario_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "safety_class",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expected_invariant",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "observed_evidence",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "stride_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "owasp_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "attack_paths_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "controls_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "evidence_refs_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "failure_code",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "started_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "run_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "assurance_runs",
+            "sequence": 0,
+            "to": "run_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "run_id",
+              "status",
+              "scenario_id"
+            ],
+            "name": "idx_assurance_scenarios_status",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "run_id",
+              "scenario_id"
+            ],
+            "name": "sqlite_autoindex_assurance_scenarios_1",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        ],
+        "name": "assurance_scenarios",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "attack_paths_json",
+          "evidence_refs_json",
+          "observed_evidence"
+        ],
+        "sql": "CREATE TABLE assurance_scenarios (\n    scenario_row_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    run_id TEXT NOT NULL,\n    scenario_id TEXT NOT NULL,\n    safety_class TEXT NOT NULL CHECK (safety_class IN ('PASSIVE', 'SAFE_ACTIVE', 'CONTROLLED_MUTATION', 'DESTRUCTIVE_QUALIFICATION')),\n    status TEXT NOT NULL CHECK (status IN ('PASS', 'FAIL', 'PARTIAL', 'BLOCKED')),\n    expected_invariant TEXT NOT NULL,\n    observed_evidence TEXT NOT NULL DEFAULT '',\n    stride_json TEXT NOT NULL DEFAULT '[]',\n    owasp_json TEXT NOT NULL DEFAULT '[]',\n    attack_paths_json TEXT NOT NULL DEFAULT '[]',\n    controls_json TEXT NOT NULL DEFAULT '[]',\n    evidence_refs_json TEXT NOT NULL DEFAULT '[]',\n    failure_code TEXT,\n    started_at TEXT,\n    completed_at TEXT,\n    FOREIGN KEY (run_id) REFERENCES assurance_runs(run_id) ON DELETE CASCADE,\n    UNIQUE (run_id, scenario_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "status IN ('PASS', 'FAIL', 'PARTIAL', 'BLOCKED', 'DEFERRED', 'MISSING', 'NOT_RUN'",
+          "finding_count >= 0"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "tool_result_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "run_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "tool_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "tool_version",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "native_status",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "resource_class",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'worker'",
+            "name": "execution_owner",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "finding_count",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "duration_ms",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "failure_code",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "evidence_ref",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "metadata_json",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "run_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "assurance_runs",
+            "sequence": 0,
+            "to": "run_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "run_id",
+              "status",
+              "tool_id"
+            ],
+            "name": "idx_assurance_tool_results_run",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "run_id",
+              "tool_id"
+            ],
+            "name": "sqlite_autoindex_assurance_tool_results_1",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        ],
+        "name": "assurance_tool_results",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_ref"
+        ],
+        "sql": "CREATE TABLE assurance_tool_results (\n    tool_result_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    run_id TEXT NOT NULL,\n    tool_id TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('PASS', 'FAIL', 'PARTIAL', 'BLOCKED', 'DEFERRED', 'MISSING', 'NOT_RUN')),\n    tool_version TEXT,\n    native_status TEXT,\n    resource_class TEXT,\n    execution_owner TEXT NOT NULL DEFAULT 'worker',\n    finding_count INTEGER NOT NULL DEFAULT 0 CHECK (finding_count >= 0),\n    duration_ms INTEGER,\n    failure_code TEXT,\n    evidence_ref TEXT,\n    metadata_json TEXT NOT NULL DEFAULT '{}',\n    FOREIGN KEY (run_id) REFERENCES assurance_runs(run_id) ON DELETE CASCADE,\n    UNIQUE (run_id, tool_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
       },
       {
         "checks": [],
@@ -10882,7 +11709,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
         ],
         "name": "synthetic_principals",
         "projection_owner": "not a prepared projection",
@@ -11622,7 +12450,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "b65049be9080c7c99bcd201486b40c56ee394c6c6c62f566fa71d8cebfa7e7f5",
+    "aggregate_fingerprint": "0fd12f9de868d7eab9f1356bd07c1e62831b25aca20261925a92baedce72683a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11632,7 +12460,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "7ab5313f8b29380f3223d5e9ea121051937dd6790a8f8e8b36e3d010548bab69",
+      "contracts/metadata/documentation-platform.json": "1f7d6faaa24097b4e4a454894b8c80dccc5ffa968b6b96dbfeecdbbaab57584e",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -11668,7 +12496,8 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql": "5df12b0987a752160dda4f2970aa28fe1e127be8ee65359bbfaf736127c181e1",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
-      "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1"
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
+      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"
   }

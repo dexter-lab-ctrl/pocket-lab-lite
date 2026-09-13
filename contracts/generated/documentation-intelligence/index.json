@@ -2035,6 +2035,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "assurance_session_binding_mismatch",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
         "code": "authenticated_app_install",
         "domain": "rules",
         "http_status": 403,
@@ -2153,6 +2165,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "The remaining safety targets can resume in a later Full check."
+      },
+      {
+        "code": "connection_failed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "csrf_required",
@@ -2477,6 +2501,54 @@
         "severity": "info",
         "terminal": true,
         "user_message": "This legacy Rules action is no longer available."
+      },
+      {
+        "code": "git_unavailable",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "harness_session_invalid",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "harness_session_not_found",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "harness_session_required",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "harness_transport_rejected",
@@ -2851,6 +2923,18 @@
         "user_message": "The record is not present in the restored snapshot."
       },
       {
+        "code": "opa_status_unknown",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
         "code": "owner_approval_policy_inconsistent",
         "domain": "rules",
         "http_status": 503,
@@ -2969,6 +3053,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "The requested Identity or Rules action could not continue."
+      },
+      {
+        "code": "ownership_source_unavailable",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "passkey_already_registered",
@@ -3113,6 +3209,42 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "The bounded payload limit was exceeded."
+      },
+      {
+        "code": "pm2_inventory_failed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "pm2_inventory_invalid",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "pm2_unavailable",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "policy_action_not_registered",
@@ -3523,6 +3655,30 @@
         "user_message": "Safety Rules are not ready, so this protected action was not started."
       },
       {
+        "code": "preflight_exception",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "process_start_failed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
         "code": "projection_too_old",
         "domain": "projections",
         "http_status": 200,
@@ -3599,6 +3755,18 @@
         "user_message": "A safe last-known read is shown while refresh is unavailable."
       },
       {
+        "code": "registered_tool_result_missing",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
         "code": "release_projection_unavailable",
         "domain": "release",
         "http_status": 503,
@@ -3621,6 +3789,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Private remote access is not ready."
+      },
+      {
+        "code": "report_write_failed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "rollback_pointer_failed",
@@ -3647,6 +3827,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "run_not_found",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
         "code": "scanner_intelligence_hard_expired",
         "domain": "security",
         "http_status": 200,
@@ -3657,6 +3849,42 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Scanner intelligence needs a successful refresh before this target can be checked."
+      },
+      {
+        "code": "security_load_unknown",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "security_scan_conflict",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "security_scanner_execution_failed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "service_unavailable",
@@ -3705,6 +3933,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
+      },
+      {
+        "code": "source_inventory_failed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
         "code": "storage_pressure",
@@ -6766,5 +7006,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "7b4f046eda1e8908300a385f391602bf34b487a8a6e458ac909364844d70a953"
+  "source_fingerprint": "fabe22571bc832844f57403d85999364044841e67a4691c9114fdfce8874d5bd"
 }

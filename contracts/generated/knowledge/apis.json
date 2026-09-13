@@ -1732,6 +1732,161 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Capabilities",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/capabilities",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/capabilities",
+      "operation_id": "capabilities_api_lite_harness_security_assurance_capabilities_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/capabilities",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Preflight",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/preflight",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/preflight",
+      "operation_id": "preflight_api_lite_harness_security_assurance_preflight_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/preflight",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Runs",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/runs",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/runs",
+      "operation_id": "runs_api_lite_harness_security_assurance_runs_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Run Status",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/runs/{run_id}",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/runs/{run_id}",
+      "operation_id": "run_status_api_lite_harness_security_assurance_runs__run_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs/{run_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Findings",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/findings",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/runs/{run_id}/findings",
+      "operation_id": "findings_api_lite_harness_security_assurance_runs__run_id__findings_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs/{run_id}/findings",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Report",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/report",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/runs/{run_id}/report",
+      "operation_id": "report_api_lite_harness_security_assurance_runs__run_id__report_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs/{run_id}/report",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Suites",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/suites",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/suites",
+      "operation_id": "suites_api_lite_harness_security_assurance_suites_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/suites",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Session Status",
       "domain": "harness",
       "id": "api:get:/api/lite/harness/session/{session_id}",
@@ -4485,6 +4640,52 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Create Run",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/runs",
+      "method": "POST",
+      "name": "POST /api/lite/harness/security-assurance/runs",
+      "operation_id": "create_run_api_lite_harness_security_assurance_runs_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Cancel",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+      "method": "POST",
+      "name": "POST /api/lite/harness/security-assurance/runs/{run_id}/cancel",
+      "operation_id": "cancel_api_lite_harness_security_assurance_runs__run_id__cancel_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/runs/{run_id}/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Session",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/session",
@@ -6104,6 +6305,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "39fc1a068ddf558002bd1f875ec870244f35e6250f7919baa25fd7e4b8be5992"
+    "source_fingerprint": "1a4dfdd955d25b7a73e1571877c6d8610ab7fa762ec8f90923f41c1336720595"
   }
 }

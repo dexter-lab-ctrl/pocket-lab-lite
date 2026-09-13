@@ -1113,17 +1113,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:apps:3841e926f0b4a5bc",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:apps:3910eefd37be07ca",
       "relation_type": "publishes",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1832,6 +1821,17 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "table:app_action_lifecycle",
       "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:e5867fe95e477628",
+      "relation_type": "related_to",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "subject:pocketlab.commands.lite.security.assurance",
+      "target_type": "subject"
     },
     {
       "depth": 2,

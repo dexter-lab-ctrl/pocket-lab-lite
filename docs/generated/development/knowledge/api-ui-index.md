@@ -74,6 +74,13 @@ generator_version: 3
 | `GET /api/lite/fleet/health-summary` | devices | — | get_lite_fleet_health_summary_api_lite_fleet_health_summary_get | contract-derived |
 | `GET /api/lite/fleet/invites/latest` | devices | — | get_latest_lite_fleet_invite_api_lite_fleet_invites_latest_get | contract-derived |
 | `GET /api/lite/harness/capabilities` | harness | — | capabilities_api_lite_harness_capabilities_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/capabilities` | harness | — | capabilities_api_lite_harness_security_assurance_capabilities_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/preflight` | harness | — | preflight_api_lite_harness_security_assurance_preflight_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/runs` | harness | — | runs_api_lite_harness_security_assurance_runs_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/runs/{run_id}` | harness | — | run_status_api_lite_harness_security_assurance_runs__run_id__get | contract-derived |
+| `GET /api/lite/harness/security-assurance/runs/{run_id}/findings` | harness | — | findings_api_lite_harness_security_assurance_runs__run_id__findings_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/runs/{run_id}/report` | harness | — | report_api_lite_harness_security_assurance_runs__run_id__report_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/suites` | harness | — | suites_api_lite_harness_security_assurance_suites_get | contract-derived |
 | `GET /api/lite/harness/session/{session_id}` | harness | — | session_status_api_lite_harness_session__session_id__get | contract-derived |
 | `GET /api/lite/harness/status` | harness | — | status_api_lite_harness_status_get | contract-derived |
 | `GET /api/lite/identity` | identity | — | get_lite_identity_api_lite_identity_get | contract-derived |
@@ -169,6 +176,8 @@ generator_version: 3
 | `POST /api/lite/harness/challenge` | harness | — | challenge_api_lite_harness_challenge_post | contract-derived |
 | `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
 | `POST /api/lite/harness/principals/{principal_id}/revoke` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__revoke_post | contract-derived |
+| `POST /api/lite/harness/security-assurance/runs` | harness | — | create_run_api_lite_harness_security_assurance_runs_post | contract-derived |
+| `POST /api/lite/harness/security-assurance/runs/{run_id}/cancel` | harness | — | cancel_api_lite_harness_security_assurance_runs__run_id__cancel_post | contract-derived |
 | `POST /api/lite/harness/session` | harness | — | session_api_lite_harness_session_post | contract-derived |
 | `POST /api/lite/identity/login` | identity | LiteIdentity | login_lite_identity_api_lite_identity_login_post | contract-derived |
 | `POST /api/lite/identity/logout` | identity | LiteIdentity | logout_lite_identity_api_lite_identity_logout_post | contract-derived |

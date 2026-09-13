@@ -386,8 +386,11 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
         result_status = str(result.get("status") or "success").strip().lower()
         terminal_failure = result_status in {
             "failed",
+            "fail",
             "error",
             "degraded",
+            "partial",
+            "blocked",
             "failed_with_rollback",
             "failed_rollback_required",
             "rollback_failed",
@@ -555,6 +558,32 @@ async def command_callback(msg: Any) -> None:
                     subject=subject,
                     command_id=command_id,
                     reason="terminal_security_run",
+                )
+                return
+        if subject == "pocketlab.commands.lite.security.assurance":
+            from api_fastapi.services import lite_security_assurance  # type: ignore
+
+            run_id = str(command.get("run_id") or command_id)
+            if run_id and await asyncio.to_thread(lite_security_assurance.is_terminal, run_id):
+                await publish(
+                    "pocketlab.events.worker.ignored",
+                    "worker.ignored",
+                    {
+                        "command_subject": subject,
+                        "command_id": command_id,
+                        "run_id": run_id,
+                        "reason": "assurance run is already terminal",
+                        "attempt": attempt,
+                        "sanitized": True,
+                    },
+                    trace_id=command_id or None,
+                )
+                await BUS.ack_message(msg)
+                _worker_log(
+                    "worker.command_ignored",
+                    subject=subject,
+                    command_id=command_id,
+                    reason="terminal_assurance_run",
                 )
                 return
         if subject.startswith("pocketlab.commands.node."):
@@ -1320,10 +1349,14 @@ async def main_async() -> int:
             pass
 
     from api_fastapi.services import lite_database_recovery  # type: ignore
+    from api_fastapi.services import lite_security_assurance  # type: ignore
 
     # Recover or block on any durable restore journal before this process can
     # execute a normal or one-shot writer command.
     await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "worker")
+    # A worker restart must not strand a previously running assurance row as
+    # an apparent success or an eternal active lock.
+    await asyncio.to_thread(lite_security_assurance.reconcile_stale_runs)
 
     # Workers require real NATS/JetStream for durable production execution.
     # POCKETLAB_WORKER_RUN_ONCE_JSON remains available only as an explicit

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: db973c6304d67a70aad3390cbc931edc9dadd7a2badfb6438f86b892c8a30272
+source_fingerprint: ff2aa8130074258e7f97b45599ec7556fdf401c00c1319caf0d2ef935cb5d8cf
 schema_revision: 1
 validation_status: generated
 ---
@@ -282,6 +282,15 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:runtime:termux:inspect`
 - `lite:runtime:termux:promote`
 - `lite:runtime:termux:validate`
+- `lite:security:assurance:adversarial`
+- `lite:security:assurance:check`
+- `lite:security:assurance:compare`
+- `lite:security:assurance:deep`
+- `lite:security:assurance:preflight`
+- `lite:security:assurance:report`
+- `lite:security:assurance:scenario`
+- `lite:security:assurance:smoke`
+- `lite:security:assurance:standard`
 - `lite:setup`
 - `lite:setup:check`
 - `lite:setup:system`

@@ -81,6 +81,169 @@
             <column ascending="true" name="app_id"/>
          </index>
       </table>
+      <table name="assurance_findings" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="finding_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="stable_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="suite" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="scenario_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="tool" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="tool_version" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="category" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="severity" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="confidence" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="title" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="safe_summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="component" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="asset" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="trust_boundary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="15" name="stride_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="16" name="owasp_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="17" name="attack_paths_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="18" name="controls_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="19" name="cwe_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="20" name="cve_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="sanitized_file_reference" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'local_server_host_only'" digits="0" id="22" name="runtime_target" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="first_seen_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="last_seen_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="baseline_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="27" name="remediation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="28" name="evidence_refs_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="finding_id" sequenceNumberInPK="1"/>
+         <index name="assurance_findings_s_pk" unique="true">
+            <column ascending="true" name="finding_id"/>
+         </index>
+         <index name="idx_assurance_findings_run_severity" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="severity"/>
+            <column ascending="true" name="baseline_state"/>
+         </index>
+         <index name="idx_assurance_findings_scenario" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="scenario_id"/>
+            <column ascending="true" name="tool"/>
+         </index>
+         <index name="idx_assurance_findings_stable_key" unique="false">
+            <column ascending="true" name="stable_key"/>
+            <column ascending="true" name="last_seen_at"/>
+         </index>
+         <index name="sqlite_autoindex_assurance_findings_1" unique="true">
+            <column ascending="true" name="finding_id"/>
+         </index>
+      </table>
+      <table name="assurance_runs" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="run_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_findings"/>
+            <child column="baseline_run_id" foreignKey="" implied="false" onDeleteCascade="false" table="assurance_runs"/>
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_scenarios"/>
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_tool_results"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suite_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="profile" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="scenario_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="baseline_run_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="false" table="assurance_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="harness_session_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="target_scope" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="runtime_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="revision_sha" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="cancel_requested" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="13" name="preflight_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="14" name="summary_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="15" name="report_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="failure_code" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="requested_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="run_id" sequenceNumberInPK="1"/>
+         <index name="assurance_runs_s_pk" unique="true">
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="idx_assurance_one_active" unique="true">
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="idx_assurance_runs_history" unique="false">
+            <column ascending="true" name="suite_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="sqlite_autoindex_assurance_runs_1" unique="true">
+            <column ascending="true" name="run_id"/>
+         </index>
+      </table>
+      <table name="assurance_scenarios" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="scenario_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="scenario_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="safety_class" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="expected_invariant" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="observed_evidence" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="7" name="stride_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="8" name="owasp_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="9" name="attack_paths_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="10" name="controls_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="11" name="evidence_refs_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="failure_code" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="scenario_row_id" sequenceNumberInPK="1"/>
+         <index name="assurance_scenarios_s_pk" unique="true">
+            <column ascending="true" name="scenario_row_id"/>
+         </index>
+         <index name="idx_assurance_scenarios_status" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="scenario_id"/>
+         </index>
+         <index name="sqlite_autoindex_assurance_scenarios_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="scenario_id"/>
+         </index>
+      </table>
+      <table name="assurance_tool_results" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="tool_result_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="assurance_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="tool_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="tool_version" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="native_status" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="resource_class" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'worker'" digits="0" id="7" name="execution_owner" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="finding_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="duration_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="failure_code" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="evidence_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="12" name="metadata_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="tool_result_id" sequenceNumberInPK="1"/>
+         <index name="assurance_tool_results_s_pk" unique="true">
+            <column ascending="true" name="tool_result_id"/>
+         </index>
+         <index name="idx_assurance_tool_results_run" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="tool_id"/>
+         </index>
+         <index name="sqlite_autoindex_assurance_tool_results_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="tool_id"/>
+         </index>
+      </table>
       <table name="audit_evidence_index" remarks="" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="evidence_index_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -2287,6 +2450,7 @@
       </table>
       <table name="synthetic_principals" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="principal_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="assurance_runs"/>
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_audit_events"/>
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_challenges"/>
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_sessions"/>

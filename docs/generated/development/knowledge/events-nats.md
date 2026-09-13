@@ -16,7 +16,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 
 | Subject | Domain | Publishers | Consumers | Delivery | Durability | Retry |
 | --- | --- | --- | --- | --- | --- | --- |
-| `pocketlab.commands` | unknown | workflow_engine.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands` | unknown | lite_security_assurance.py, workflow_engine.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.catalog.refresh` | apps | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.drift.apply` | drift | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.drift.approve` | drift | — | — | incomplete | incomplete | incomplete |
@@ -51,6 +51,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.lite.restore.apply` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.restore.preview` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.app_scan` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.security.assurance` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.scan` | security | FastAPI | pocket-worker | JetStream durable pull | pocketlab_command_worker_v1 | bounded max-deliver and stale-run recovery |
 | `pocketlab.commands.node` | node | pocketlab_worker.py | pocketlab_worker.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all` | node | — | pocketlab_node_agent.py | incomplete | incomplete | incomplete |
@@ -159,6 +160,8 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.lite.restore.preview_started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.restore.service_restart_checked` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.restore.started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.security.assurance.completed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.security.assurance.started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.security.critical_found` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.security.scan.completed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.security.scan.started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |

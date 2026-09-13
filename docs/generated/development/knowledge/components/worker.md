@@ -113,6 +113,7 @@ Consumes durable commands and owns backend execution for apps, security, recover
 - recovers_with: `NATS or JetStream unavailable`
 - recovers_with: `Security scan failure`
 - recovers_with: `Worker stopped`
+- related_to: `pocketlab.commands.lite.security.assurance`
 - related_to: `pocketlab.events.operation.succeeded`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_projection_semantic_hardening.py`

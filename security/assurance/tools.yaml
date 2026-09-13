@@ -1,0 +1,236 @@
+schema_version: "1.0.0"
+name: pocketlab-runtime-security-assurance-tools
+description: >-
+  Server-owned tool inventory for bounded runtime assurance. Callers select a
+  suite; they never select an executable, argv, path, URL, environment, or
+  scanner option.
+execution_defaults:
+  shell: false
+  cwd: repository_root
+  allowed_target: local_server_host_only
+  allowed_target_scope: local_server_host_only
+  timeout_seconds: 5
+  max_output_bytes: 32768
+  process_group_cleanup: true
+  concurrency: exclusive_for_heavy_tools
+  output_parser: first_version_line_only
+  finding_normalizer: normalized_sanitized_assurance_finding
+  sanitization_policy: lite_security_policy.redact_value
+  failure_classification: [missing, failed, timed_out, output_limited]
+toolchain:
+  - id: pocketlab-security
+    purpose: Existing worker-owned Quick/Full/App Security lifecycle, scanner fusion, cache, SBOM, and sanitized evidence.
+    execution: existing_worker_security_path
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native
+    resource_class: heavy
+    allowed_mode: registered_security_profile
+    required_capability: security.assurance.sca
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: repository_service
+    version_command: existing_security_tool_result
+    version_source: repository_revision
+  - id: trivy
+    purpose: Existing bounded vulnerability, misconfiguration, secret-mode, and SBOM execution.
+    execution: existing_worker_security_path
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when discovered by existing Security path
+    resource_class: heavy
+    allowed_mode: existing_profile_only
+    required_capability: security.assurance.sca
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: existing_security_tool_result
+    version_source: registered_security_tool_result
+  - id: lynis
+    purpose: Existing bounded host posture checks.
+    execution: existing_worker_security_path
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when discovered by existing Security path
+    resource_class: heavy
+    allowed_mode: existing_profile_only
+    required_capability: security.assurance.passive
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: existing_security_tool_result
+    version_source: registered_security_tool_result
+  - id: bandit
+    purpose: Python SAST candidate; no runtime assurance invocation is enabled until a repository-owned parser and exclusion contract exists.
+    execution: deferred_static_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: medium
+    allowed_mode: version_inventory_only
+    required_capability: security.assurance.sast
+    suite_membership: [standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: gitleaks
+    purpose: Secret detection candidate; raw matches remain excluded from runtime evidence.
+    execution: deferred_static_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: medium
+    allowed_mode: version_inventory_only
+    required_capability: security.assurance.sast
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: pip-audit
+    purpose: Python dependency audit candidate; existing Trivy/lockfile path remains authoritative for this increment.
+    execution: deferred_static_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: small
+    allowed_mode: version_inventory_only
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: npm-audit
+    purpose: npm dependency audit candidate; no network refresh is performed during a reproducible runtime run.
+    execution: deferred_static_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: medium
+    allowed_mode: version_inventory_only
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: package_manager_inventory
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: opa
+    purpose: Loopback policy readiness, revision consistency, and fail-closed posture.
+    execution: existing_loopback_policy_service
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when policy service is ready
+    resource_class: small
+    allowed_mode: fixed_local_health_and_revision
+    required_capability: security.assurance.runtime
+    suite_membership: [smoke, standard, adversarial]
+    binary_discovery: existing_policy_service
+    version_command: policy_status
+    version_source: policy_status
+  - id: schemathesis
+    purpose: Bounded API contract probing candidate; not run until a fixed route allowlist and result parser are promoted.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: heavy
+    allowed_mode: inventory_only
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep, adversarial]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: cosign
+    purpose: Release/SBOM signature verification candidate; runtime assurance does not download or sign artifacts.
+    execution: existing_release_workflow_only
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED for Server Phone runtime
+    resource_class: small
+    allowed_mode: inventory_only
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: release_tool_registry
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: semgrep
+    purpose: Community SAST candidate; compatibility lane requires a reviewed fixed ruleset and bounded output parser.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: heavy
+    allowed_mode: inventory_only
+    required_capability: security.assurance.sast
+    suite_membership: [standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: osv-scanner
+    purpose: Lockfile/SBOM corroboration candidate; Trivy cache identity remains the current reusable source.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: medium
+    allowed_mode: inventory_only
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: syft
+    purpose: CycloneDX SBOM candidate; existing Trivy SBOM reuse is preferred on low-power runtime.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED for Server Phone runtime
+    resource_class: heavy
+    allowed_mode: inventory_only
+    required_capability: security.assurance.sca
+    suite_membership: [deep]
+    binary_discovery: documentation_security_tool_registry
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: grype
+    purpose: Secondary SBOM vulnerability corroboration candidate.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED for Server Phone runtime
+    resource_class: heavy
+    allowed_mode: inventory_only
+    required_capability: security.assurance.sca
+    suite_membership: [deep]
+    binary_discovery: documentation_security_tool_registry
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: testssl.sh
+    purpose: Fixed local Caddy TLS posture candidate; only a bounded local listener probe is currently executed.
+    execution: deferred_static_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: medium
+    allowed_mode: inventory_only
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: nuclei
+    purpose: Curated local HTTP probe candidate; no arbitrary templates or targets are accepted.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: heavy
+    allowed_mode: inventory_only
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep, adversarial]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: nmap
+    purpose: Listener inventory candidate; runtime assurance uses a fixed localhost socket inventory instead.
+    execution: deferred_native_lane
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: heavy
+    allowed_mode: inventory_only
+    required_capability: security.assurance.passive
+    suite_membership: [standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only
+  - id: owasp-zap
+    purpose: API baseline candidate; manual Deep only after a fixed route and resource contract is available.
+    execution: deferred_compatibility_lane
+    supported_platforms: [ubuntu-wsl2]
+    native_status: DEFERRED
+    resource_class: unbounded_without_profile
+    allowed_mode: inventory_only
+    required_capability: security.assurance.api
+    suite_membership: [deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: fixed_binary_version_probe
+    version_source: runtime_inventory_only

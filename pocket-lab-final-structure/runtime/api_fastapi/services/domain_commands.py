@@ -1266,6 +1266,44 @@ async def handle_lite_app_operation(command: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+async def handle_lite_security_assurance(command: Dict[str, Any]) -> Dict[str, Any]:
+    """Run one admitted assurance envelope inside the normal worker lane."""
+    command_id = _command_id(command)
+    run_id = str(command.get("run_id") or command_id)
+    await _publish(
+        "pocketlab.events.lite.security.assurance.started",
+        "lite.security.assurance.started",
+        {"command_id": command_id, "run_id": run_id, "sanitized": True},
+        trace_id=command_id,
+    )
+    from . import lite_security_assurance
+
+    try:
+        result = await asyncio.to_thread(lite_security_assurance.execute_run, command)
+    except Exception as exc:
+        result = await asyncio.to_thread(lite_security_assurance.fail_run_exception, run_id, exc)
+    summary = result.get("summary") if isinstance(result.get("summary"), dict) else {}
+    status_value = str(result.get("status") or summary.get("status") or "PARTIAL").upper()
+    report = result.get("report") if isinstance(result.get("report"), dict) else {}
+    await _publish(
+        "pocketlab.events.lite.security.assurance.completed",
+        "lite.security.assurance.completed",
+        {
+            "command_id": command_id,
+            "run_id": run_id,
+            "status": status_value,
+            "suite_id": result.get("suite_id"),
+            "finding_count": summary.get("finding_count", 0),
+            "scenario_count": summary.get("scenario_count", 0),
+            "report_available": bool(report.get("available")),
+            "failure_code": result.get("failure_code"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
 async def handle_lite_app_media(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     app_id = str(command.get("app_id") or "photoprism")
@@ -1556,6 +1594,7 @@ HANDLERS = {
     "pocketlab.commands.health.check": handle_health_check,
     "pocketlab.commands.security.scan": handle_security_scan,
     "pocketlab.commands.lite.security.scan": handle_lite_security_scan,
+    "pocketlab.commands.lite.security.assurance": handle_lite_security_assurance,
     "pocketlab.commands.security.configure_opa": handle_security_configure_opa,
     "pocketlab.commands.vault.rotate": handle_vault_rotate,
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,

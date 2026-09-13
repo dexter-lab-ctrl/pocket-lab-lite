@@ -14,7 +14,7 @@
     "scenario": "devices-capability-verified",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "9b5befdeb26084ef6fe3738cc3f54a9e60d70ce39e1195ebb28b3f6e5fb8f68b",
+    "source_fingerprint": "bf8ad8a1c0dbc8cb2412ea557b99ee9b342a039e2e69c4113878077a0db7cfff",
     "validation_status": "generated"
   }
 }

@@ -216,6 +216,7 @@ def test_capability_manifest_and_maintenance_deferral(harness_runtime):
     assert set(payload["profiles"]) == {
         "debug-observer", "test-runner", "security-qualifier", "recovery-qualifier",
         "release-qualifier", "maintenance-runner", "qualification-owner",
+        "security-assurance-runner",
     }
     assert payload["profiles"]["recovery-qualifier"]["capabilities"] == [
         "recovery.read", "backup.create", "backup.verify", "restore.preview",
