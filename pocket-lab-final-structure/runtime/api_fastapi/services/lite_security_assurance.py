@@ -1366,7 +1366,15 @@ def create_run(
             "The requested assurance scenario is not registered for this suite.",
             status_code=400,
         )
-    canonical_scenario_id = str(selected_scenarios[0].get("id") or "") or None
+    # ``None`` means the caller admitted the complete registered suite.  Do
+    # not collapse that request to the first scenario: the worker uses the
+    # persisted value to distinguish a full-suite run from a single-scenario
+    # run, and collapsing it would silently skip the rest of the suite.
+    canonical_scenario_id = (
+        str(selected_scenarios[0].get("id") or "") or None
+        if scenario_id
+        else None
+    )
     safe_status = str(status or "QUEUED").upper()
     if safe_status not in OUTCOMES | {"QUEUED", "RUNNING"}:
         raise AssuranceError("assurance_status_invalid", "The assurance run status is invalid.", status_code=503)

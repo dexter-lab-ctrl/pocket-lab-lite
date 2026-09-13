@@ -499,6 +499,30 @@ def test_idempotent_admission_returns_the_existing_active_run(assurance_runtime)
     assert second["status"] == "QUEUED"
 
 
+def test_full_suite_admission_preserves_all_registered_scenarios(assurance_runtime):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    _insert_synthetic_session()
+    run = assurance.create_run(
+        suite_id="smoke",
+        scenario_id=None,
+        baseline_run_id=None,
+        principal_id="assurance-test-principal",
+        session_id="assurance-test-session",
+        revision_sha="e" * 40,
+        preflight_result={"status": "ready", "sanitized": True},
+    )
+
+    assert run["scenario_id"] is None
+    selected = assurance._scenario_items_for_suite(assurance.suite_def("smoke"), None)
+    assert len(selected) == 8
+    assert {str(item["id"]) for item in selected} >= {
+        "harness-default-off",
+        "security-projection",
+        "threat-model-integrity",
+    }
+
+
 def test_assurance_router_publishes_one_fixed_command_for_duplicate_admission(assurance_runtime, monkeypatch):
     from api_fastapi.routers import security_assurance as router
     from api_fastapi.services import lite_security_assurance as assurance
