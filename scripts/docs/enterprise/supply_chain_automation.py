@@ -82,6 +82,36 @@ SCORECARD_PROVIDER_UNAVAILABLE_CHECKS = (
     "Maintained",
 )
 SCORECARD_PROVIDER_UNAVAILABLE_REASON = "scorecard-provider-unsupported-request-type"
+# Generated/dependency/cache material is not Pocket Lab source or a release
+# input. Keep this list fixed and shared by the source SBOM and secret scans so
+# local evidence cannot recursively become a scan target. User media is never
+# below the repository root and is not a valid target for this script.
+SOURCE_SCAN_EXCLUDES = (
+    "./.git/**",
+    "./.pocketlab-dev/**",
+    "./.venv/**",
+    "./node_modules/**",
+    "./site/**",
+    "./storybook-static/**",
+    "./dist/**",
+    "./docs/generated/**",
+    "./contracts/generated/**",
+)
+# OSV-Scanner uses a different exclusion grammar from Syft. Keep the same
+# repository-owned boundaries as exact directory names so recursive dependency
+# discovery cannot descend into local caches, generated projections, or bundled
+# dependencies.
+OSV_SOURCE_EXCLUDE_DIRS = (
+    ".git",
+    ".pocketlab-dev",
+    ".venv",
+    "node_modules",
+    "site",
+    "storybook-static",
+    "dist",
+    "docs/generated",
+    "contracts/generated",
+)
 SCORECARD_TOKEN_ENV_KEYS = (
     "GITHUB_AUTH_TOKEN",
     "GITHUB_TOKEN",
@@ -1073,7 +1103,11 @@ def capture(
 
     # Keep execution sequential by design. These tools are CPU/memory/filesystem heavy;
     # max_parallel_scanners=1 is the bounded default for WSL2 and CI reliability.
-    run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="syft-dev", tool="syft", argv=["dir:.", "-o", "cyclonedx-json"], stdout_output=raw / "syft-dev.cdx.json", allow_nonzero=False)
+    syft_source_argv = ["dir:."]
+    for excluded in SOURCE_SCAN_EXCLUDES:
+        syft_source_argv.extend(["--exclude", excluded])
+    syft_source_argv.extend(["-o", "cyclonedx-json"])
+    run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="syft-dev", tool="syft", argv=syft_source_argv, stdout_output=raw / "syft-dev.cdx.json", allow_nonzero=False)
 
     release_holder: tempfile.TemporaryDirectory[str] | None = None
     release_staging: Path | None = None
@@ -1085,15 +1119,25 @@ def capture(
 
         run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="trivy-source", tool="trivy", argv=["fs", "--format", "json", "--scanners", "vuln,misconfig,secret,license", "--skip-dirs", ".git", "--skip-dirs", "node_modules", "--skip-dirs", ".venv", "--skip-dirs", ".pocketlab-dev", "--skip-dirs", "docs/generated", "--skip-dirs", "contracts/generated", "."], stdout_output=raw / "trivy-source.json")
         run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="trivy-sbom-dev", tool="trivy", argv=["sbom", "--format", "json", str(raw / "syft-dev.cdx.json")], stdout_output=raw / "trivy-sbom-dev.json")
-        run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="osv-source", tool="osv-scanner", argv=["scan", "source", "--format", "json", "--recursive", "."], stdout_output=raw / "osv-source.json")
+        osv_source_argv = ["scan", "source", "--format", "json", "--recursive"]
+        for excluded in OSV_SOURCE_EXCLUDE_DIRS:
+            osv_source_argv.extend(["--experimental-exclude", excluded])
+        osv_source_argv.append(".")
+        run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="osv-source", tool="osv-scanner", argv=osv_source_argv, stdout_output=raw / "osv-source.json")
         run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="osv-sbom-dev", tool="osv-scanner", argv=["scan", "source", "--format", "json", "--lockfile", str(raw / "syft-dev.cdx.json")], stdout_output=raw / "osv-sbom-dev.json")
         run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="grype-sbom-dev", tool="grype", argv=[f"sbom:{raw / 'syft-dev.cdx.json'}", "-o", "json"], stdout_output=raw / "grype-sbom-dev.json")
 
         worktree_report = raw / "gitleaks-worktree.json"
-        run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="gitleaks-worktree", tool="gitleaks", argv=["dir", "--redact=100", "--report-format", "json", "--report-path", str(worktree_report), "."], stdout_output=None, expected_output=worktree_report)
+        gitleaks_source_argv = [
+            "dir", "--no-banner", "--no-color", "--redact=100",
+            "--max-target-megabytes", "5",
+            "--config", str(ROOT / "security/static-analysis/gitleaks.toml"),
+            "--report-format", "json", "--report-path", str(worktree_report), ".",
+        ]
+        run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="gitleaks-worktree", tool="gitleaks", argv=gitleaks_source_argv, stdout_output=None, expected_output=worktree_report)
         if include_history:
             history_report = raw / "gitleaks-history.json"
-            run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="gitleaks-history", tool="gitleaks", argv=["git", "--redact=100", "--report-format", "json", "--report-path", str(history_report), "."], stdout_output=None, expected_output=history_report)
+            run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="gitleaks-history", tool="gitleaks", argv=["git", "--no-banner", "--no-color", "--redact=100", "--max-target-megabytes", "5", "--config", str(ROOT / "security/static-analysis/gitleaks.toml"), "--report-format", "json", "--report-path", str(history_report), "."], stdout_output=None, expected_output=history_report)
         if release_staging is not None:
             release_report = raw / "gitleaks-release.json"
             run_capture_step(run_dir, manifest, resume=resume, selected=selected, step_id="gitleaks-release", tool="gitleaks", argv=["dir", "--redact=100", "--report-format", "json", "--report-path", str(release_report), str(release_staging)], stdout_output=None, expected_output=release_report)

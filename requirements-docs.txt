@@ -1,8 +1,8 @@
 # Exact compatibility target verified on the Ubuntu/WSL2 Development PC.
 # These packages are development-only and are excluded from dist.zip.
 mkdocs==1.6.1
-mkdocs-material==9.7.6
-pymdown-extensions==10.21.3
+mkdocs-material==9.7.7
+pymdown-extensions==11.0.1
 jsonschema==4.26.0
 PyYAML==6.0.3
 Jinja2==3.1.6

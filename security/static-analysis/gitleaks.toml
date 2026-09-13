@@ -1,0 +1,16 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Pocket Lab generated, dependency, and local-cache exclusions"
+paths = [
+  '''^\.git/''',
+  '''^\.pocketlab-dev/''',
+  '''^\.venv/''',
+  '''^node_modules/''',
+  '''^site/''',
+  '''^storybook-static/''',
+  '''^dist/''',
+  '''^docs/generated/''',
+  '''^contracts/generated/''',
+]

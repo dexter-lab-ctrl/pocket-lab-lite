@@ -909,6 +909,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `SOURCE_REAL` | configuration | source-defined or empty | no | component-dependent | scripts/dev/sync-wsl-to-windows.sh |
 | `SOURCE_RELEASE_BADGE` | configuration | source-defined or empty | no | component-dependent | scripts/docs/knowledge/generate_knowledge.py |
 | `SOURCE_ROOT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/setup-wsl-ubuntu-dev.sh |
+| `SOURCE_SCAN_EXCLUDES` | configuration | source-defined or empty | no | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
 | `SOURCE_SYNC_SUMMARY` | configuration | source-defined or empty | no | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py |
 | `SOURCE_TREE_HASH` | configuration | source-defined or empty | no | component-dependent | scripts/docs/enterprise/enterprise_completion.py, scripts/docs/enterprise/generate_enterprise_documentation.py |
 | `SOURCE_TYPE_LABELS` | configuration | source-defined or empty | no | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_storage.py |

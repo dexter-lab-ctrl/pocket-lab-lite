@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 435,
+  "page_count": 436,
   "page_types": [
     "overview",
     "guide",
@@ -16263,10 +16263,33 @@
       "source_or_generator": "validation/runtime-security-assurance-harness.md",
       "title": "Runtime Security Assurance Harness",
       "url": "/validation/runtime-security-assurance-harness/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/runtime-security-assurance-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/runtime-security-assurance-qualification",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "validation/runtime-security-assurance-qualification.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "validation/runtime-security-assurance-qualification.md",
+      "title": "Runtime Security Assurance Qualification Dossier",
+      "url": "/validation/runtime-security-assurance-qualification/"
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ecba4221a07c894da95078a44699e72cec70a58af9c7647acc8552d53e4d61ed",
+  "source_fingerprint": "930f613d7f79b2285e908420b094282130a306e6df0340b5806a9a8251db71c1",
   "top_level": [
     "start-here",
     "use",

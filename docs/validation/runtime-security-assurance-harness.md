@@ -1,9 +1,12 @@
 # Runtime Security Assurance Harness
 
-Status: `IMPLEMENTED` for the bounded server-owned assurance foundation;
-runtime qualification is `RUNTIME-VALIDATED` only when a sanitized report from
-the target revision says so. Deep scanners, destructive recovery scenarios,
-and human identity ceremonies remain `DEFERRED` or `HUMAN_REVIEW_REQUIRED`.
+Status: `IMPLEMENTED` for the bounded server-owned assurance foundation and
+the fixed DEV-PC supply-chain lane; runtime qualification is
+`RUNTIME-VALIDATED` only when a sanitized report from the target revision
+says so. The command-by-command qualification record is in
+[`runtime-security-assurance-qualification.md`](runtime-security-assurance-qualification.md).
+Deep scanners, destructive recovery scenarios, and human identity ceremonies
+remain `DEFERRED` or `HUMAN_REVIEW_REQUIRED`.
 
 > The Runtime Security Assurance Harness is not a generic remote shell.
 >
@@ -167,33 +170,104 @@ peer scans, password attacks, or user-media scans.
 
 The harness reuses the existing worker-owned Quick/Full/App Security path and
 its cache, SBOM, exclusion, resource, checkpoint, and evidence contracts.
-The status below describes this repository’s supported integration, not proof
-that a particular Server Phone has every binary installed.
+The runtime registry and the DEV-PC/CI supply-chain lane are deliberately
+separate. The runtime status below describes the fixed tools that the worker
+can execute on a Server Phone; the static/supply-chain status describes the
+fixed, sanitized capture performed on the DEV PC. Neither lane accepts caller
+arguments or arbitrary targets.
 
 | Tool or path | Runtime status | Resource / suite |
 | --- | --- | --- |
 | `pocketlab-security` | `VERIFIED` existing worker-owned path | Heavy; Smoke, Standard, Deep |
 | Lynis | `VERIFIED` native when discovered by existing Security | Heavy; Smoke, Standard, Deep |
 | Trivy | `VERIFIED` native when discovered by existing Security | Heavy; Smoke, Standard, Deep |
-| Bandit | `DEFERRED` version inventory only | Medium; Standard, Deep |
-| Gitleaks | `DEFERRED` version inventory only; raw matches never persisted | Medium; Smoke, Standard, Deep |
-| pip-audit | `DEFERRED` | Small; Standard, Deep |
-| npm audit | `DEFERRED`; no network refresh in a reproducible run | Medium; Standard, Deep |
+| Bandit | `IMPLEMENTED` fixed DEV-PC/CI Python SAST capture; not a phone worker tool | Medium; Standard, Deep static lane |
+| Gitleaks | `IMPLEMENTED` fixed bounded DEV-PC/CI current-tree capture; raw matches never persisted | Medium; Standard, Deep static lane |
+| pip-audit | `IMPLEMENTED` fixed DEV-PC/CI dependency corroboration | Small; Standard, Deep static lane |
+| npm audit | `IMPLEMENTED` fixed production package-lock audit; no network refresh in a reproducible run | Medium; Standard, Deep static lane |
 | OPA | `VERIFIED` fixed loopback readiness/revision posture | Small; Standard and selected adversarial checks |
-| Schemathesis | `DEFERRED` compatibility lane; no promoted route allowlist | Heavy; Standard, Deep, Adversarial |
-| Cosign | `DEFERRED` release workflow inventory only | Small; Standard, Deep |
-| Semgrep CE | `DEFERRED` compatibility lane | Heavy; Standard, Deep |
-| OSV-Scanner | `DEFERRED`; existing Trivy identity remains authoritative | Medium; Standard, Deep |
-| Syft | `DEFERRED`; Trivy SBOM reuse is preferred | Heavy; Deep |
-| Grype | `DEFERRED` secondary SBOM corroboration | Heavy; Deep |
+| Schemathesis | `IMPLEMENTED` fixed parity/compatibility lane; live runtime requires the approved loopback tunnel | Heavy; Standard, Deep, Adversarial static/runtime lane |
+| Cosign | `IMPLEMENTED` release-only provenance/version check; no signed artifact is invented when absent | Small; Standard, Deep release lane |
+| Semgrep CE | `IMPLEMENTED` fixed checked-in architecture rules on DEV PC/CI; not phone-native | Heavy; Standard, Deep static lane |
+| OSV-Scanner | `IMPLEMENTED` fixed source/lockfile corroboration; unranked dev candidates remain visible | Medium; Standard, Deep static lane |
+| Syft | `IMPLEMENTED` fixed bounded source/release SBOM capture; phone prefers Trivy SBOM reuse | Heavy; Deep static lane |
+| Grype | `IMPLEMENTED` fixed Syft-SBOM vulnerability corroboration | Heavy; Deep static lane |
 | testssl.sh | `DEFERRED` until a fixed local TLS parser is promoted | Medium; Standard, Deep |
 | Nuclei | `DEFERRED`; no arbitrary templates or targets | Heavy; Standard, Deep, Adversarial |
-| nmap | `DEFERRED`; fixed local listener evidence is used instead | Heavy; Standard, Deep |
+| nmap | `UNSUPPORTED` on the current qualification target; fixed local listener evidence is retained instead | Heavy; Standard, Deep |
 | OWASP ZAP | `DEFERRED` manual Deep-only candidate | Unbounded without a reviewed profile; Deep |
 
 Deferred tools may be inventoried with a fixed version probe when their
 registered suite includes them. That probe is not an assurance scan and does
 not download binaries, update databases, or accept caller-supplied arguments.
+
+The DEV-PC capture records installation origin, pinned version, checksum or
+signature posture, fixed argv, bounded output, parser status, and sanitized
+findings. A tool is not described as native Server Phone execution merely
+because its DEV-PC binary exists. Missing Android/Termux binaries are
+reported as `MISSING` or `UNSUPPORTED` with the exact reason in the
+qualification dossier.
+
+## Current qualification evidence
+
+The continuation qualification record is intentionally split between
+source/toolchain evidence and live Android/Termux evidence:
+
+| Area | Current status | Evidence boundary |
+| --- | --- | --- |
+| Schema 35/36 rollback | `RUNTIME-VALIDATED` — `VERIFIED SAFE` | Disposable local-port Android/Termux-class sandbox only; no live database or Recovery API was touched |
+| Key-bound bootstrap, session renewal, and reattachment | `RUNTIME-VALIDATED` — `PASS` | Disposable principal, signed sessions, same run ID, and sanitized worker correlation |
+| Smoke | `RUNTIME-VALIDATED` — `PASS` | Actual FastAPI → NATS/JetStream → pocket-worker → Security path |
+| Standard | `BLOCKED` | OPA correctly held the active policy revision at `policy_source_update_pending`; Owner-confirmed source synchronization is required |
+| Safe Adversarial | `NOT_RUN` as a suite | Standard admission gate remained blocked; unit coverage and safe Smoke boundary probes remain separate evidence |
+| Worker restart/resume | `UNVALIDATED` on the phone | Durable heartbeat/checkpoint behavior is covered by focused tests; no supported bounded phone fault procedure was available |
+| NATS interruption/recovery | `UNVALIDATED` on the phone | No supported bounded outage procedure was available without inventing infrastructure mutation |
+| OPA interruption/fail-closed | `UNVALIDATED` on the phone | Healthy OPA posture was observed; no supported bounded outage procedure was available |
+
+The detailed command/output ledger, sanitized tool results, exact runtime
+identities, coverage matrices, and cleanup evidence are maintained in
+[`runtime-security-assurance-qualification.md`](runtime-security-assurance-qualification.md).
+
+## OPA revision gate
+
+The Standard blocker is an intentional policy-integrity gate, not a scanner
+failure. The durable active and known-good policy revision on the Server Phone
+was `plr-57572c06b39bbecb75cd9dddeee620c7`, while the published feature source
+prepared a different candidate revision. The active stage also did not contain
+the feature’s `harness_test.rego`. OPA was healthy and served the active
+revision, but the policy consistency check therefore returned
+`policy_source_update_pending` and blocked Standard.
+
+The supported source-sync path requires the existing human/Owner assurance
+operation and supervisor reconciliation. No Owner credential was available
+for this qualification, so no policy state was bypassed or rewritten and no
+test-auth or qualification-owner gate was enabled. Standard remains
+`BLOCKED` until an operator performs that approved synchronization and the
+active revision is reverified.
+
+## Non-destructive schema rollback rehearsal
+
+The forward-only migration contract was rehearsed in an isolated disposable
+sandbox on the Android/Termux-class target. A compatible old-main database
+with migrations 1–34 was integrity-checked and copied immutably. The feature
+runtime applied migrations 35 and 36, producing migrations 1–36 with clean
+`integrity_check`, `quick_check`, and foreign-key checks. After the feature
+runtime stopped, only the sandbox database was replaced by the preserved
+pre-upgrade copy; the old runtime then started on the restored database and
+passed health/readiness with migrations 1–34 intact.
+
+This proves the repository-supported Model A contract:
+
+```text
+forward-only application/database upgrade
+    -> verified compatible pre-upgrade database copy
+    -> prior application revision
+    -> healthy/readiness/integrity checks
+```
+
+It is `RUNTIME-VALIDATED` and `VERIFIED SAFE` for the isolated rehearsal, not
+permission to roll back production state. No production database, Recovery
+repository, user media, or destructive Recovery API was used.
 
 ## Admission and run lifecycle
 
@@ -409,9 +483,15 @@ The current safe increment intentionally does not automatically execute
 Recovery replacement/restore mutation, OPA outage injection, worker-kill
 fault injection, Tailnet/LAN scans, browser WebAuthn ceremonies, Enterprise
 membership/final-Owner scenarios, arbitrary API fuzzing, ZAP, Nuclei,
-Semgrep, Syft, Grype, or history-wide Gitleaks. These remain
-`DEFERRED`, `STATIC_EVIDENCE_ONLY`, or `HUMAN_REVIEW_REQUIRED` until each has
-a reviewed fixed target/parser/resource/cleanup contract.
+testssl.sh, or history-wide Gitleaks. Fixed DEV-PC/CI captures now execute
+Bandit, Gitleaks, pip-audit, npm audit, Semgrep CE, OSV-Scanner, Syft, Grype,
+OPA checks/tests, and release provenance checks where the required artifact
+exists. Those captures do not prove native phone execution. Phone runtime
+qualification remains limited to the installed worker-owned Security,
+Trivy/Lynis, OPA posture, and fixed harness boundary checks; the remaining
+items are `DEFERRED`, `STATIC_EVIDENCE_ONLY`, `UNSUPPORTED`, or
+`HUMAN_REVIEW_REQUIRED` until a reviewed fixed target/parser/resource/cleanup
+contract and supported runtime procedure exist.
 
 Use these local checks without enabling qualification or changing runtime
 state:

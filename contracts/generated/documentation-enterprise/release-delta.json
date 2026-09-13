@@ -343,6 +343,20 @@
             },
             {
               "classification": "dependency-updated",
+              "ecosystem": "PyPI",
+              "from": "9.7.6",
+              "name": "mkdocs-material",
+              "to": "9.7.7"
+            },
+            {
+              "classification": "dependency-updated",
+              "ecosystem": "PyPI",
+              "from": "10.21.3",
+              "name": "pymdown-extensions",
+              "to": "11.0.1"
+            },
+            {
+              "classification": "dependency-updated",
               "ecosystem": "npm",
               "from": "5.1.0",
               "name": "@asyncapi/specs",
@@ -1442,83 +1456,47 @@
           "new_vulnerabilities": [
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-15806"
+              "id": "GHSA-2883-xcg3-v3hh"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-17084"
+              "id": "GHSA-2xp9-vwfh-vxw4"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-18503"
+              "id": "GHSA-4mjr-xmp4-gh2g"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-19672"
+              "id": "GHSA-6w3j-5fw6-r9vr"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-33818"
+              "id": "GHSA-73wf-gq98-2v4g"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-56853"
+              "id": "GHSA-7pqw-9j4j-h8q3"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-56854"
+              "id": "GHSA-82fw-gwwq-j7x9"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-56858"
+              "id": "GHSA-c83g-rgw3-j3cx"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-56859"
+              "id": "GHSA-f65p-4m7j-42xc"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-56860"
+              "id": "GHSA-fph4-wmhf-6fwf"
             },
             {
               "classification": "new-vulnerability",
-              "id": "CVE-2026-56862"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-56864"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-56865"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-61711"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-61712"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-73502"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-76905"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "CVE-2026-77354"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GHSA-7236-3392-c5c6"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GHSA-72x6-4j93-7w86"
+              "id": "GHSA-gg4h-3hg2-grpc"
             },
             {
               "classification": "new-vulnerability",
@@ -1526,11 +1504,15 @@
             },
             {
               "classification": "new-vulnerability",
-              "id": "GHSA-m42h-3232-vpv3"
+              "id": "GHSA-jqff-g426-hqxp"
             },
             {
               "classification": "new-vulnerability",
-              "id": "GHSA-mmfr-pmjx-hw9w"
+              "id": "GHSA-p293-qw3h-jr36"
+            },
+            {
+              "classification": "new-vulnerability",
+              "id": "GHSA-qxc2-j82w-r537"
             },
             {
               "classification": "new-vulnerability",
@@ -1538,97 +1520,661 @@
             },
             {
               "classification": "new-vulnerability",
-              "id": "GHSA-xhj3-7xw9-vr34"
+              "id": "GHSA-w5vr-8v7q-w6rv"
             },
             {
               "classification": "new-vulnerability",
-              "id": "GO-2026-5972"
+              "id": "GHSA-w9m9-85wc-3x92"
             },
             {
               "classification": "new-vulnerability",
-              "id": "GO-2026-6088"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6089"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6090"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6091"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6095"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6112"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6179"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6180"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6213"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6214"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6218"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6225"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6255"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6256"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6274"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6275"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "GO-2026-6303"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "PYSEC-2026-3721"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "PYSEC-2026-3722"
-            },
-            {
-              "classification": "new-vulnerability",
-              "id": "PYSEC-2026-3723"
+              "id": "GHSA-x5fp-wj9c-mxmx"
             }
           ],
           "resolved_vulnerabilities": [
             {
               "classification": "resolved-vulnerability",
+              "id": "CVE-2023-39318"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-39319"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-39325"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-39326"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-45283"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-45284"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-45288"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-45289"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2023-45290"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-24783"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-24784"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-24785"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-24789"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-24790"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-24791"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-34155"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-34156"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-34158"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-45336"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2024-45341"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-0913"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-11579"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-12781"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-13462"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-15366"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-15367"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-22866"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-22870"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-22871"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-22873"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-4673"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-47906"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-47907"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-47912"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-47913"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-47914"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58058"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58181"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58183"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58185"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58186"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58187"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58188"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-58189"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-6075"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61723"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61724"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61725"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61726"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61727"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61728"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61729"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-61730"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-68121"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-8291"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2025-8869"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-0864"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-11332"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-11940"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-11972"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-12061"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-12072"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-12074"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-12075"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-1299"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-1502"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-15308"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-1703"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-2297"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-25679"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-25680"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-25681"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-27136"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-27139"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-27141"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-27142"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-27145"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-3219"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-32280"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-32281"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-32282"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-32283"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-32288"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-32289"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-3276"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-33747"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-33748"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-33811"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-33814"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-33997"
+            },
+            {
+              "classification": "resolved-vulnerability",
               "id": "CVE-2026-34040"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-3446"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-3644"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39820"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39821"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39822"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39823"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39824"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39825"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39826"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39827"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39828"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39829"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39830"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39831"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39832"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39833"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39834"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39835"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-39836"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-41567"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-41568"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-4224"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42306"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42499"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42502"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42504"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42505"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42506"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42507"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-42508"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-4360"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-44740"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-44973"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-45022"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-4519"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-45570"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-45571"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-46595"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-46597"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-46598"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-46600"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-46680"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-47262"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-4786"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-50163"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-52869"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-52870"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-53488"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-53508"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-54293"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-56852"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-5713"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-59890"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-59950"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-6019"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-6100"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-61632"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-6357"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-67422"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-6879"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-69247"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-71556"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-71557"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-7210"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-7774"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-8328"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-8643"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "CVE-2026-9669"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-2f96-g7mh-g2hx"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-2jcc-mxv7-p3f9"
             },
             {
               "classification": "resolved-vulnerability",
@@ -1636,7 +2182,71 @@
             },
             {
               "classification": "resolved-vulnerability",
+              "id": "GHSA-389r-gv7p-r3rp"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-3f7w-8rr8-f37f"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-3rp5-jjmw-4wv2"
+            },
+            {
+              "classification": "resolved-vulnerability",
               "id": "GHSA-3rrr-jr9j-h3q3"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-45gg-vh54-h5m9"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-4c29-8rgm-jvjj"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-4gmw-gg2m-w46p"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-4vrq-3vrq-g6gg"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-4xh5-x5gv-qwph"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-539m-9xh6-q6rr"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-58qw-9mgm-455v"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-5cgq-3rg8-m6cv"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-5cv4-jp36-h3mw"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-6hm5-jgcp-p838"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-6p8h-3wgx-97gf"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-6v7p-g79w-8964"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-6vgw-5pg2-w6jp"
             },
             {
               "classification": "resolved-vulnerability",
@@ -1644,7 +2254,179 @@
             },
             {
               "classification": "resolved-vulnerability",
+              "id": "GHSA-78mq-xcr3-xm33"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-89gr-r52h-f8rx"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-94p4-4cq8-9g67"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-956x-8gvw-wg5v"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-9m57-25v3-79x9"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-9rj7-rf2p-w77r"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-9xwg-3r6f-jcx2"
+            },
+            {
+              "classification": "resolved-vulnerability",
               "id": "GHSA-c4c3-pg64-4m4v"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-crhj-59gh-8x96"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-f5wc-c3c7-36mc"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-f6x5-jh6r-wrfv"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-fg7f-2386-8897"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-fjr4-x663-mwxc"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-fqw6-gf59-qr4w"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-fxhp-mv3v-67qp"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-g6cj-pr64-35w5"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-gm37-52c6-37mw"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-h35f-9h28-mq5c"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-hc8v-wwc9-vgxm"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-hh9p-6wh2-4mfc"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-hmq2-w58f-27jc"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-hrxh-6v49-42gf"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-hvrp-rf83-w775"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-j5w8-q4qc-rx2x"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jc7w-c686-c4v9"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jm78-9fvv-mhgr"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jp4c-xjxw-mgf9"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jpcc-p29g-p8mq"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jpcw-4wr7-c3vq"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jppx-rxg9-jmrx"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-jpw9-pfvf-9f58"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-m3xc-h892-ggx6"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-m7cr-m3pv-hgrp"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-p4gq-832x-fm9v"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-p538-c434-8v24"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-pxq6-2prw-chj9"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-q4h4-gmj2-qvw2"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-qgq7-7hm3-q39j"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-qpw4-5x99-6vjp"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-qvv7-cg9c-w4x3"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-qw64-3x98-g7q2"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-r277-6w6q-xmqw"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-r9mr-m37c-5fr3"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-rg2x-37c3-w2rh"
             },
             {
               "classification": "resolved-vulnerability",
@@ -1652,7 +2434,935 @@
             },
             {
               "classification": "resolved-vulnerability",
+              "id": "GHSA-rm3j-f69w-wqmq"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-rwj8-pgh3-r573"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-rwvp-r38j-9rgg"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-v396-v7q4-x2qj"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-vgwf-h737-ff37"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-vj7q-gjh5-988w"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-vp62-88p7-qqf5"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-w5pp-99ch-qj29"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-w879-237q-wc7r"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-w8p5-mx5w-cpqj"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-wf93-45jw-7689"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-wvpp-8hx9-p66j"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-x527-x647-q7gg"
+            },
+            {
+              "classification": "resolved-vulnerability",
               "id": "GHSA-x744-4wpc-v9h2"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-x86f-5xw2-fm2r"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-xh95-f55m-82fw"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GHSA-xhf5-7wjv-pqxp"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0142"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0159"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0163"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0172"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0223"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0224"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0226"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0234"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0235"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0239"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0240"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0241"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0242"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0243"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0245"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0263"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0264"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0317"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0319"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2021-0347"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0166"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0171"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0191"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0211"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0212"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0213"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0217"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0220"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0229"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0236"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0273"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0288"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0289"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0433"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0435"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0477"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0493"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0515"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0520"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0521"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0522"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0523"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0524"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0525"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0526"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0527"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0531"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0532"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0533"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0535"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0536"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0537"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0761"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-0969"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-1037"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-1038"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-1039"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-1095"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-1143"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2022-1144"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1568"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1569"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1570"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1571"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1621"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1702"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1703"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1704"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1705"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1751"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1752"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1753"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1840"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1878"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-1987"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2041"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2043"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2102"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2185"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2186"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2375"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2023-2382"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2598"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2599"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2600"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2609"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2610"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2687"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2887"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2888"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-2963"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-3105"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-3106"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2024-3107"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3373"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3420"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3447"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3503"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3563"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3750"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3751"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3849"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3922"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-3956"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4006"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4007"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4008"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4009"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4010"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4011"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4012"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4013"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4014"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4015"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4020"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4116"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4134"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4135"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4155"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2025-4175"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4337"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4340"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4341"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4342"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4403"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4559"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4601"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4602"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4603"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4858"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4859"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4864"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4865"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4869"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4870"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4883"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4887"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4918"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4919"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4946"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4947"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4970"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4971"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4976"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4977"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4980"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4981"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4982"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-4986"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5005"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5006"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5013"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5014"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5015"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5016"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5017"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5018"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5019"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5020"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5021"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5023"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5024"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5025"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5026"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5027"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5028"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5029"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5030"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5033"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5037"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5038"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5039"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5064"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5074"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5158"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5336"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5338"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5378"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5475"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5490"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5496"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5597"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5617"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5622"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5668"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5693"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5746"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5758"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5841"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5856"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5880"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5932"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5937"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5942"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-5970"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "GO-2026-6061"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-1795"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-1796"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-196"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-2078"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-2875"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-2876"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3447"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3458"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3481"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3482"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3483"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3552"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3581"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3582"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3583"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3584"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3609"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3625"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-3654"
+            },
+            {
+              "classification": "resolved-vulnerability",
+              "id": "PYSEC-2026-597"
             }
           ],
           "scanner_history_comparable": true
@@ -1674,7 +3384,104 @@
         "supply_chain_change": {
           "license_classification_changes": [],
           "new_licenses": [],
-          "removed_licenses": []
+          "removed_licenses": [
+            {
+              "license": "0BSD"
+            },
+            {
+              "license": "3-Clause BSD License"
+            },
+            {
+              "license": "Apache 2.0"
+            },
+            {
+              "license": "Apache License, Version 2.0"
+            },
+            {
+              "license": "Apache Software License"
+            },
+            {
+              "license": "Artistic License"
+            },
+            {
+              "license": "BSD"
+            },
+            {
+              "license": "BSD License"
+            },
+            {
+              "license": "BSD-2-Clause"
+            },
+            {
+              "license": "BSD-2-Clause or Apache-2.0"
+            },
+            {
+              "license": "BSD-3-Clause"
+            },
+            {
+              "license": "BSD-3-Clause and Public-Domain"
+            },
+            {
+              "license": "Dual License"
+            },
+            {
+              "license": "GPL-3.0-or-later"
+            },
+            {
+              "license": "ISC License"
+            },
+            {
+              "license": "LGPL-2.1-or-later"
+            },
+            {
+              "license": "LGPL-3.0-or-later"
+            },
+            {
+              "license": "LGPLv3"
+            },
+            {
+              "license": "MIT License"
+            },
+            {
+              "license": "MIT and MPL-2.0"
+            },
+            {
+              "license": "MIT license"
+            },
+            {
+              "license": "MIT-0"
+            },
+            {
+              "license": "MPL 2.0"
+            },
+            {
+              "license": "MPL-2.0"
+            },
+            {
+              "license": "PSF-2.0"
+            },
+            {
+              "license": "PSFL"
+            },
+            {
+              "license": "UNKNOWN"
+            },
+            {
+              "license": "apache-2.0 AND bsd-simplified"
+            },
+            {
+              "license": "apache-2.0 AND bsd-simplified-darwin AND (bsd-simplified AND public-domain AND bsd-new AND isc AND (bsd-new OR gpl-1.0-plus) AND bsd-original)"
+            },
+            {
+              "license": "apache-2.0 AND lgpl-2.1 and unrar and brian-gladman-3-clause"
+            },
+            {
+              "license": "sha256:6e5070d765031e0ad403a1cbf90ae6d19a0228f802e320b7acff460aa72ed47c"
+            },
+            {
+              "license": "sha256:9049f9f2fca9ff13140af12a552d015fda6d4db09ae38e5a0323d73f69874691"
+            }
+          ]
         }
       },
       "dimension": "licenses",
@@ -1892,11 +3699,11 @@
             "trivy"
           ],
           "status": "observed",
-          "syft_component_count": 2379,
+          "syft_component_count": 54,
           "trivy_license_finding_count": 26,
           "trivy_license_scanner": "executed-standard"
         },
-        "package_rows": 2379,
+        "package_rows": 54,
         "trivy_license_rows": 26
       },
       "live_capture_performed": false,
@@ -1952,19 +3759,19 @@
         "provider_unavailable_count": 3,
         "status": "observed-with-provider-limitations"
       },
-      "run_id": "local-20260829T193652Z-2392471",
+      "run_id": "runtime-assurance-fixed-20260914T0010Z-776566",
       "sbom": {
-        "dev_components": 2379,
+        "dev_components": 54,
         "release_components": 0,
         "runtime_components": 0
       },
       "schema_version": "1.0.0",
       "security": {
-        "gitleaks_finding_count": 7068,
+        "gitleaks_finding_count": 3,
         "semgrep_finding_count": 0,
         "trivy_counts": {}
       },
-      "source_commit": "9cf5e2fcff9179d3c97199ff04f48c0031375e67",
+      "source_commit": "3f4f277de5fc8c99d01b0d07baa7376b608d1bd7",
       "source_refs": [
         "contracts/generated/supply-chain/automation-summary.json",
         "contracts/generated/supply-chain/sbom-dev.cdx.json",
@@ -1977,77 +3784,77 @@
       ],
       "tool_coverage": [
         {
-          "duration_seconds": 0.724,
+          "duration_seconds": 0.673,
           "exit_code": 0,
           "status": "completed",
           "step_id": "gitleaks-release",
           "tool": "gitleaks"
         },
         {
-          "duration_seconds": 472.482,
+          "duration_seconds": 2.129,
           "exit_code": 1,
           "status": "findings-or-tool-nonzero",
           "step_id": "gitleaks-worktree",
           "tool": "gitleaks"
         },
         {
-          "duration_seconds": 84.639,
+          "duration_seconds": 1.773,
           "exit_code": 0,
           "status": "completed",
           "step_id": "grype-sbom-dev",
           "tool": "grype"
         },
         {
-          "duration_seconds": 4.33,
-          "exit_code": 1,
-          "status": "findings-or-tool-nonzero",
+          "duration_seconds": 0.67,
+          "exit_code": 0,
+          "status": "completed",
           "step_id": "osv-sbom-dev",
           "tool": "osv-scanner"
         },
         {
-          "duration_seconds": 28.184,
+          "duration_seconds": 25.878,
           "exit_code": 1,
           "status": "findings-or-tool-nonzero",
           "step_id": "osv-source",
           "tool": "osv-scanner"
         },
         {
-          "duration_seconds": 7.538,
+          "duration_seconds": 9.092,
           "exit_code": 0,
           "status": "completed",
           "step_id": "scorecard",
           "tool": "scorecard"
         },
         {
-          "duration_seconds": 20.575,
+          "duration_seconds": 18.815,
           "exit_code": 0,
           "status": "completed",
           "step_id": "semgrep",
           "tool": "semgrep"
         },
         {
-          "duration_seconds": 327.535,
+          "duration_seconds": 1.774,
           "exit_code": 0,
           "status": "completed",
           "step_id": "syft-dev",
           "tool": "syft"
         },
         {
-          "duration_seconds": 1.571,
+          "duration_seconds": 1.172,
           "exit_code": 0,
           "status": "completed",
           "step_id": "syft-release",
           "tool": "syft"
         },
         {
-          "duration_seconds": 0.419,
+          "duration_seconds": 0.068,
           "exit_code": 0,
           "status": "completed",
           "step_id": "trivy-sbom-dev",
           "tool": "trivy"
         },
         {
-          "duration_seconds": 30.893,
+          "duration_seconds": 23.487,
           "exit_code": 0,
           "status": "completed",
           "step_id": "trivy-source",
@@ -2056,7 +3863,7 @@
       ],
       "vulnerabilities": {
         "evidence_status": "observed",
-        "finding_count": 622,
+        "finding_count": 139,
         "scanner_disagreement_is_failure": false
       }
     },
@@ -2090,83 +3897,47 @@
     "new_vulnerabilities": [
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-15806"
+        "id": "GHSA-2883-xcg3-v3hh"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-17084"
+        "id": "GHSA-2xp9-vwfh-vxw4"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-18503"
+        "id": "GHSA-4mjr-xmp4-gh2g"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-19672"
+        "id": "GHSA-6w3j-5fw6-r9vr"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-33818"
+        "id": "GHSA-73wf-gq98-2v4g"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-56853"
+        "id": "GHSA-7pqw-9j4j-h8q3"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-56854"
+        "id": "GHSA-82fw-gwwq-j7x9"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-56858"
+        "id": "GHSA-c83g-rgw3-j3cx"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-56859"
+        "id": "GHSA-f65p-4m7j-42xc"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-56860"
+        "id": "GHSA-fph4-wmhf-6fwf"
       },
       {
         "classification": "new-vulnerability",
-        "id": "CVE-2026-56862"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-56864"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-56865"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-61711"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-61712"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-73502"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-76905"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "CVE-2026-77354"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GHSA-7236-3392-c5c6"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GHSA-72x6-4j93-7w86"
+        "id": "GHSA-gg4h-3hg2-grpc"
       },
       {
         "classification": "new-vulnerability",
@@ -2174,11 +3945,15 @@
       },
       {
         "classification": "new-vulnerability",
-        "id": "GHSA-m42h-3232-vpv3"
+        "id": "GHSA-jqff-g426-hqxp"
       },
       {
         "classification": "new-vulnerability",
-        "id": "GHSA-mmfr-pmjx-hw9w"
+        "id": "GHSA-p293-qw3h-jr36"
+      },
+      {
+        "classification": "new-vulnerability",
+        "id": "GHSA-qxc2-j82w-r537"
       },
       {
         "classification": "new-vulnerability",
@@ -2186,98 +3961,759 @@
       },
       {
         "classification": "new-vulnerability",
-        "id": "GHSA-xhj3-7xw9-vr34"
+        "id": "GHSA-w5vr-8v7q-w6rv"
       },
       {
         "classification": "new-vulnerability",
-        "id": "GO-2026-5972"
+        "id": "GHSA-w9m9-85wc-3x92"
       },
       {
         "classification": "new-vulnerability",
-        "id": "GO-2026-6088"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6089"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6090"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6091"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6095"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6112"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6179"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6180"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6213"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6214"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6218"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6225"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6255"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6256"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6274"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6275"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "GO-2026-6303"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "PYSEC-2026-3721"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "PYSEC-2026-3722"
-      },
-      {
-        "classification": "new-vulnerability",
-        "id": "PYSEC-2026-3723"
+        "id": "GHSA-x5fp-wj9c-mxmx"
       }
     ],
-    "removed_licenses": [],
+    "removed_licenses": [
+      {
+        "license": "0BSD"
+      },
+      {
+        "license": "3-Clause BSD License"
+      },
+      {
+        "license": "Apache 2.0"
+      },
+      {
+        "license": "Apache License, Version 2.0"
+      },
+      {
+        "license": "Apache Software License"
+      },
+      {
+        "license": "Artistic License"
+      },
+      {
+        "license": "BSD"
+      },
+      {
+        "license": "BSD License"
+      },
+      {
+        "license": "BSD-2-Clause"
+      },
+      {
+        "license": "BSD-2-Clause or Apache-2.0"
+      },
+      {
+        "license": "BSD-3-Clause"
+      },
+      {
+        "license": "BSD-3-Clause and Public-Domain"
+      },
+      {
+        "license": "Dual License"
+      },
+      {
+        "license": "GPL-3.0-or-later"
+      },
+      {
+        "license": "ISC License"
+      },
+      {
+        "license": "LGPL-2.1-or-later"
+      },
+      {
+        "license": "LGPL-3.0-or-later"
+      },
+      {
+        "license": "LGPLv3"
+      },
+      {
+        "license": "MIT License"
+      },
+      {
+        "license": "MIT and MPL-2.0"
+      },
+      {
+        "license": "MIT license"
+      },
+      {
+        "license": "MIT-0"
+      },
+      {
+        "license": "MPL 2.0"
+      },
+      {
+        "license": "MPL-2.0"
+      },
+      {
+        "license": "PSF-2.0"
+      },
+      {
+        "license": "PSFL"
+      },
+      {
+        "license": "UNKNOWN"
+      },
+      {
+        "license": "apache-2.0 AND bsd-simplified"
+      },
+      {
+        "license": "apache-2.0 AND bsd-simplified-darwin AND (bsd-simplified AND public-domain AND bsd-new AND isc AND (bsd-new OR gpl-1.0-plus) AND bsd-original)"
+      },
+      {
+        "license": "apache-2.0 AND lgpl-2.1 and unrar and brian-gladman-3-clause"
+      },
+      {
+        "license": "sha256:6e5070d765031e0ad403a1cbf90ae6d19a0228f802e320b7acff460aa72ed47c"
+      },
+      {
+        "license": "sha256:9049f9f2fca9ff13140af12a552d015fda6d4db09ae38e5a0323d73f69874691"
+      }
+    ],
     "resolved_vulnerabilities": [
       {
         "classification": "resolved-vulnerability",
+        "id": "CVE-2023-39318"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-39319"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-39325"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-39326"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-45283"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-45284"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-45288"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-45289"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2023-45290"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-24783"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-24784"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-24785"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-24789"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-24790"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-24791"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-34155"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-34156"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-34158"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-45336"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2024-45341"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-0913"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-11579"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-12781"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-13462"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-15366"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-15367"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-22866"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-22870"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-22871"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-22873"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-4673"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-47906"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-47907"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-47912"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-47913"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-47914"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58058"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58181"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58183"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58185"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58186"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58187"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58188"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-58189"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-6075"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61723"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61724"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61725"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61726"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61727"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61728"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61729"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-61730"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-68121"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-8291"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2025-8869"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-0864"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-11332"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-11940"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-11972"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-12061"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-12072"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-12074"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-12075"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-1299"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-1502"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-15308"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-1703"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-2297"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-25679"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-25680"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-25681"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-27136"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-27139"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-27141"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-27142"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-27145"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-3219"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-32280"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-32281"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-32282"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-32283"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-32288"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-32289"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-3276"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-33747"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-33748"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-33811"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-33814"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-33997"
+      },
+      {
+        "classification": "resolved-vulnerability",
         "id": "CVE-2026-34040"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-3446"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-3644"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39820"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39821"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39822"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39823"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39824"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39825"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39826"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39827"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39828"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39829"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39830"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39831"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39832"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39833"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39834"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39835"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-39836"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-41567"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-41568"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-4224"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42306"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42499"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42502"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42504"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42505"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42506"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42507"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-42508"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-4360"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-44740"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-44973"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-45022"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-4519"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-45570"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-45571"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-46595"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-46597"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-46598"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-46600"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-46680"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-47262"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-4786"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-50163"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-52869"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-52870"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-53488"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-53508"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-54293"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-56852"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-5713"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-59890"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-59950"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-6019"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-6100"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-61632"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-6357"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-67422"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-6879"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-69247"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-71556"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-71557"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-7210"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-7774"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-8328"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-8643"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "CVE-2026-9669"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-2f96-g7mh-g2hx"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-2jcc-mxv7-p3f9"
       },
       {
         "classification": "resolved-vulnerability",
@@ -2285,7 +4721,71 @@
       },
       {
         "classification": "resolved-vulnerability",
+        "id": "GHSA-389r-gv7p-r3rp"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-3f7w-8rr8-f37f"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-3rp5-jjmw-4wv2"
+      },
+      {
+        "classification": "resolved-vulnerability",
         "id": "GHSA-3rrr-jr9j-h3q3"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-45gg-vh54-h5m9"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-4c29-8rgm-jvjj"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-4gmw-gg2m-w46p"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-4vrq-3vrq-g6gg"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-4xh5-x5gv-qwph"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-539m-9xh6-q6rr"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-58qw-9mgm-455v"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-5cgq-3rg8-m6cv"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-5cv4-jp36-h3mw"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-6hm5-jgcp-p838"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-6p8h-3wgx-97gf"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-6v7p-g79w-8964"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-6vgw-5pg2-w6jp"
       },
       {
         "classification": "resolved-vulnerability",
@@ -2293,7 +4793,179 @@
       },
       {
         "classification": "resolved-vulnerability",
+        "id": "GHSA-78mq-xcr3-xm33"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-89gr-r52h-f8rx"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-94p4-4cq8-9g67"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-956x-8gvw-wg5v"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-9m57-25v3-79x9"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-9rj7-rf2p-w77r"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-9xwg-3r6f-jcx2"
+      },
+      {
+        "classification": "resolved-vulnerability",
         "id": "GHSA-c4c3-pg64-4m4v"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-crhj-59gh-8x96"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-f5wc-c3c7-36mc"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-f6x5-jh6r-wrfv"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-fg7f-2386-8897"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-fjr4-x663-mwxc"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-fqw6-gf59-qr4w"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-fxhp-mv3v-67qp"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-g6cj-pr64-35w5"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-gm37-52c6-37mw"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-h35f-9h28-mq5c"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-hc8v-wwc9-vgxm"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-hh9p-6wh2-4mfc"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-hmq2-w58f-27jc"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-hrxh-6v49-42gf"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-hvrp-rf83-w775"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-j5w8-q4qc-rx2x"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jc7w-c686-c4v9"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jm78-9fvv-mhgr"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jp4c-xjxw-mgf9"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jpcc-p29g-p8mq"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jpcw-4wr7-c3vq"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jppx-rxg9-jmrx"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-jpw9-pfvf-9f58"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-m3xc-h892-ggx6"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-m7cr-m3pv-hgrp"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-p4gq-832x-fm9v"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-p538-c434-8v24"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-pxq6-2prw-chj9"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-q4h4-gmj2-qvw2"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-qgq7-7hm3-q39j"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-qpw4-5x99-6vjp"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-qvv7-cg9c-w4x3"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-qw64-3x98-g7q2"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-r277-6w6q-xmqw"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-r9mr-m37c-5fr3"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-rg2x-37c3-w2rh"
       },
       {
         "classification": "resolved-vulnerability",
@@ -2301,7 +4973,935 @@
       },
       {
         "classification": "resolved-vulnerability",
+        "id": "GHSA-rm3j-f69w-wqmq"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-rwj8-pgh3-r573"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-rwvp-r38j-9rgg"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-v396-v7q4-x2qj"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-vgwf-h737-ff37"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-vj7q-gjh5-988w"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-vp62-88p7-qqf5"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-w5pp-99ch-qj29"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-w879-237q-wc7r"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-w8p5-mx5w-cpqj"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-wf93-45jw-7689"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-wvpp-8hx9-p66j"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-x527-x647-q7gg"
+      },
+      {
+        "classification": "resolved-vulnerability",
         "id": "GHSA-x744-4wpc-v9h2"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-x86f-5xw2-fm2r"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-xh95-f55m-82fw"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GHSA-xhf5-7wjv-pqxp"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0142"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0159"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0163"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0172"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0223"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0224"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0226"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0234"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0235"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0239"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0240"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0241"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0242"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0243"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0245"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0263"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0264"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0317"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0319"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2021-0347"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0166"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0171"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0191"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0211"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0212"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0213"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0217"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0220"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0229"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0236"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0273"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0288"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0289"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0433"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0435"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0477"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0493"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0515"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0520"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0521"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0522"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0523"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0524"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0525"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0526"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0527"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0531"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0532"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0533"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0535"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0536"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0537"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0761"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-0969"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-1037"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-1038"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-1039"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-1095"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-1143"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2022-1144"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1568"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1569"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1570"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1571"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1621"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1702"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1703"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1704"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1705"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1751"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1752"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1753"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1840"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1878"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-1987"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2041"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2043"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2102"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2185"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2186"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2375"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2023-2382"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2598"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2599"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2600"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2609"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2610"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2687"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2887"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2888"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-2963"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-3105"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-3106"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2024-3107"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3373"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3420"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3447"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3503"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3563"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3750"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3751"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3849"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3922"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-3956"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4006"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4007"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4008"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4009"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4010"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4011"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4012"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4013"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4014"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4015"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4020"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4116"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4134"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4135"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4155"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2025-4175"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4337"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4340"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4341"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4342"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4403"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4559"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4601"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4602"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4603"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4858"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4859"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4864"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4865"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4869"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4870"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4883"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4887"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4918"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4919"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4946"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4947"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4970"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4971"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4976"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4977"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4980"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4981"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4982"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-4986"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5005"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5006"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5013"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5014"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5015"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5016"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5017"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5018"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5019"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5020"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5021"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5023"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5024"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5025"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5026"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5027"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5028"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5029"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5030"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5033"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5037"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5038"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5039"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5064"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5074"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5158"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5336"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5338"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5378"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5475"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5490"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5496"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5597"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5617"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5622"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5668"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5693"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5746"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5758"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5841"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5856"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5880"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5932"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5937"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5942"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-5970"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "GO-2026-6061"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-1795"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-1796"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-196"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-2078"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-2875"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-2876"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3447"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3458"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3481"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3482"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3483"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3552"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3581"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3582"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3583"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3584"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3609"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3625"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-3654"
+      },
+      {
+        "classification": "resolved-vulnerability",
+        "id": "PYSEC-2026-597"
       }
     ],
     "rule": "scanner disagreement is represented, never converted automatically into a release failure; historical deltas require verified canonical evidence",
@@ -2317,6 +5917,20 @@
         "from": "6.0.1",
         "name": "PyYAML",
         "to": "6.0.3"
+      },
+      {
+        "classification": "dependency-updated",
+        "ecosystem": "PyPI",
+        "from": "9.7.6",
+        "name": "mkdocs-material",
+        "to": "9.7.7"
+      },
+      {
+        "classification": "dependency-updated",
+        "ecosystem": "PyPI",
+        "from": "10.21.3",
+        "name": "pymdown-extensions",
+        "to": "11.0.1"
       },
       {
         "classification": "dependency-updated",

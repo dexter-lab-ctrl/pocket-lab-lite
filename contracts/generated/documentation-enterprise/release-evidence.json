@@ -403,7 +403,7 @@
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
     "asyncapi": "c11f6d596f5ac3988e9109d921f85db7d147970e941b6f9d83f9ce220530e016",
-    "documentation": "112b0c00f5b238b3b3002ea595bc38b599531c2bf856598ac5004304b005f404",
+    "documentation": "5962e163ea8810357255766a884635f91eaba3b7d245f191ca4da13336141dc0",
     "openapi": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
     "operational_health": "713eb51a197ca51307428efa585736a19600ba3bdd8c891f0be5bd764aa65857"
   },
@@ -711,8 +711,8 @@
     ]
   },
   "runtime_baseline_binding": "lite-2026.08.12.2",
-  "sbom_digest": "dde6c4d6e92a29845c88080cfb585deaec0b5c7f017620b9236d5796bb890fad",
-  "security_scan_digest": "e451fb8fe3329c8e94a189966b41fc36046b99df66a1147a93b091c2ef92b692",
+  "sbom_digest": "35b3cb1d4a5aaedc06cd2533caa56dde1a5eae833b105d36ec036fcbe02bacbc",
+  "security_scan_digest": "406f5afb2b4ff848a2b1cde0e0a6ace49473a1cbf2848a93bd3caeb2117656ba",
   "signatures": {
     "keyless_preferred": true,
     "status": "unobserved-until-explicit-sign-command",
