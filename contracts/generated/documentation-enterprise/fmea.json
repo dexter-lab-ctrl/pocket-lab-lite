@@ -134,14 +134,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "assurance_deadline_exceeded",
         "assurance_session_binding_mismatch",
         "battery_policy_threshold",
         "bootstrap_transport_rejected",
         "checkpoint_ineligible",
         "configured_target_budget",
         "connection_failed",
-        "deferred_resource_pressure",
-        "elapsed_budget_exhausted"
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -537,14 +537,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "assurance_deadline_exceeded",
         "assurance_session_binding_mismatch",
         "bootstrap_transport_rejected",
         "connection_failed",
         "enterprise_connect_links_retired",
         "git_unavailable",
         "harness_session_invalid",
-        "harness_session_not_found",
-        "harness_session_required"
+        "harness_session_not_found"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",

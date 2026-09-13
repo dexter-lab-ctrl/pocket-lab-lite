@@ -181,6 +181,18 @@
       "user_message": "The requested Identity or Rules action could not continue."
     },
     {
+      "code": "assurance_deadline_exceeded",
+      "domain": "validation",
+      "http_status": 409,
+      "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Runtime Security Assurance could not continue safely."
+    },
+    {
       "code": "assurance_session_binding_mismatch",
       "domain": "validation",
       "http_status": 409,
@@ -2598,5 +2610,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "a6b2e4446084412814a1cbd7ed345b00aa6bd476679fc65f0863012bf73894aa"
+  "source_fingerprint": "6aad4701ef273d639b0f9b8f786adf3847ad93bf080e0bac49ce5cd630ae4401"
 }

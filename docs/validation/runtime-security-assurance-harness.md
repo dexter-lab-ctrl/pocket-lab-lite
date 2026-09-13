@@ -222,6 +222,14 @@ registered runner. Redelivered terminal commands are acknowledged without
 re-execution. A worker, NATS, API, timeout, or resource interruption cannot be
 silently converted to `PASS`.
 
+When an assurance run invokes the existing Quick Security path, the worker
+passes the persisted assurance deadline to that path. Each scanner child is
+bounded by the remaining run lease and uses the existing process-group cleanup;
+post-deadline scanner work is recorded as partial and is not allowed to turn a
+late result into `PASS`. The ownership probe also requires a live NATS,
+JetStream, and durable worker-consumer posture; a configuration flag alone is
+not treated as execution proof.
+
 Each admitted run has a durable admission key, deadline, worker identity,
 heartbeat, progress sequence, and checkpoint generation. Repeated admission of
 the same principal/suite/scenario/runtime/revision returns the existing active

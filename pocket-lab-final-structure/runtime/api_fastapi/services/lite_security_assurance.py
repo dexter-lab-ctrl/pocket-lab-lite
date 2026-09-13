@@ -2640,15 +2640,36 @@ def _control_plane_ownership() -> dict[str, Any]:
         worker_text = worker_path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return {"status": "PARTIAL", "failure_code": "ownership_source_unavailable", "sanitized": True}
+    raw_bus = BUS.status()
+    durable = raw_bus.get("durable_consumer_health") if isinstance(raw_bus.get("durable_consumer_health"), Mapping) else {}
     checks = {
         "fixed_subject": ASSURANCE_SUBJECT in domain_text and ASSURANCE_SUBJECT in worker_text,
         "domain_handler": "handle_lite_security_assurance" in domain_text,
         "worker_route": "execute_domain_command(subject, command)" in worker_text,
-        "nats_required": bool(BUS.status().get("nats_required")),
+        "message_bus_connected": bool(raw_bus.get("connected")),
+        "message_bus_jetstream": bool(raw_bus.get("jetstream_enabled")),
+        "durable_worker_consumer": bool(
+            (durable.get("pocketlab_command_worker_v1") or {}).get("healthy")
+        ),
         "browser_surface": False,
         "arbitrary_command_surface": False,
     }
-    return _redact({"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks, "execution_path": ["FastAPI admission", "NATS/JetStream", "worker", "registered assurance runner", "sanitized evidence"], "sanitized": True})
+    positive_checks = (
+        "fixed_subject",
+        "domain_handler",
+        "worker_route",
+        "message_bus_connected",
+        "message_bus_jetstream",
+        "durable_worker_consumer",
+    )
+    status = (
+        "PASS"
+        if all(checks[name] for name in positive_checks)
+        and not checks["browser_surface"]
+        and not checks["arbitrary_command_surface"]
+        else "FAIL"
+    )
+    return _redact({"status": status, "checks": checks, "execution_path": ["FastAPI admission", "NATS/JetStream", "worker", "registered assurance runner", "sanitized evidence"], "sanitized": True})
 
 
 def _policy_readiness() -> dict[str, Any]:
@@ -2748,7 +2769,9 @@ def _tool_retry_policy(tool_id: str) -> dict[str, Any]:
     return {"retry_safe": False, "resume_supported": False, "checkpoint_supported": False, "max_attempts": 1}
 
 
-def _run_existing_security_scan(suite_id: str) -> dict[str, Any]:
+def _run_existing_security_scan(
+    suite_id: str, *, assurance_deadline_epoch: float | None = None
+) -> dict[str, Any]:
     """Reuse the authoritative worker-owned Quick/Full Security lifecycle."""
     profile = str(suite_def(suite_id).get("existing_security_profile") or "")
     if profile not in {policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL}:
@@ -2765,6 +2788,8 @@ def _run_existing_security_scan(suite_id: str) -> dict[str, Any]:
         "reason": "registered runtime security assurance scanner",
         "requested_at": _now(),
     }
+    if assurance_deadline_epoch is not None:
+        command["assurance_deadline_epoch"] = float(assurance_deadline_epoch)
     started = time.monotonic()
     try:
         reservation = lite_security.build_and_reserve_scan_request(
@@ -3395,6 +3420,11 @@ def execute_run(
     scanner_summary: Mapping[str, Any] | None = None
     cancelled = False
     deadline_expired = False
+    assurance_deadline_epoch = (
+        _parse_timestamp(row.get("run_deadline")).timestamp()
+        if _parse_timestamp(row.get("run_deadline")) is not None
+        else None
+    )
     for definition in selected:
         scenario_started = _now()
         scenario_id = str(definition.get("id") or "")
@@ -3551,7 +3581,10 @@ def execute_run(
                         resume_supported=bool(tool_policy["resume_supported"]),
                         worker_instance_id=worker_id,
                     )
-                scanner_summary = _run_existing_security_scan(str(suite["id"]))
+                scanner_summary = _run_existing_security_scan(
+                    str(suite["id"]),
+                    assurance_deadline_epoch=assurance_deadline_epoch,
+                )
                 raw_records = scanner_summary.get("tool_records") if isinstance(scanner_summary.get("tool_records"), Mapping) else {}
                 scanner_records = {
                     str(key): value

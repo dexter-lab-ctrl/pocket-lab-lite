@@ -4748,6 +4748,18 @@
       "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
+      "id": "reason:assurance_deadline_exceeded",
+      "name": "assurance_deadline_exceeded",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
       "id": "reason:assurance_session_binding_mismatch",
       "name": "assurance_session_binding_mismatch",
       "source_refs": [
@@ -30980,6 +30992,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:524d2a28bdb6ca8a",
+      "source": "reason:assurance_deadline_exceeded",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:524e5266e77fd6da",
@@ -33470,6 +33496,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:5fca89547cc47bef",
+      "source": "reason:assurance_deadline_exceeded",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:5fd912c78028874d",
@@ -34909,6 +34949,20 @@
       "source": "domain:validation",
       "target": "reason:pm2_inventory_invalid",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:684670b0d06211ab",
+      "source": "reason:assurance_deadline_exceeded",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -49087,6 +49141,20 @@
       "source": "api:get:/api/lite/diagnostics/runtime",
       "target": "table:projection_dirty_signals",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:b32e397d8aa81eb6",
+      "source": "domain:validation",
+      "target": "reason:assurance_deadline_exceeded",
+      "type": "owns"
     },
     {
       "derivation": {

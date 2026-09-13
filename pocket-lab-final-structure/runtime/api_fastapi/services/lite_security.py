@@ -7,6 +7,7 @@ import fnmatch
 import hashlib
 import json
 import logging
+import math
 import sqlite3
 import threading
 import os
@@ -6144,18 +6145,74 @@ def _write_sbom(
     trivy: str,
     root: Path,
     intelligence: Mapping[str, Any] | None = None,
+    assurance_deadline_epoch: float | None = None,
 ) -> str | None:
     out = evidence.evidence_dir(run_id) / "sbom.cdx.json"
     args = [trivy, "fs", "--format", "cyclonedx", "--output", str(out)]
     args.extend(_trivy_intelligence_args(intelligence))
     args.extend(policy.source_trivy_skip_args(root))
     args.append(str(root))
-    result = _run_command(args, cwd=root, timeout=_command_timeout("trivy_sbom"))
+    timeout = _assurance_command_timeout(
+        assurance_deadline_epoch, _command_timeout("trivy_sbom")
+    )
+    if timeout <= 0:
+        return None
+    result = _run_command(args, cwd=root, timeout=timeout)
     if result.get("ok") and out.exists():
         existing = evidence.read_json(out, {})
         evidence.write_json(out, existing if existing else {"status": "created"})
         return f"security/evidence/{run_id}/sbom.cdx.json"
+    try:
+        out.unlink(missing_ok=True)
+    except OSError:
+        pass
     return None
+
+
+def _assurance_deadline_epoch(command: Mapping[str, Any] | None) -> float | None:
+    """Read the worker-supplied assurance lease without trusting callers.
+
+    The field is injected by ``lite_security_assurance`` after the durable run
+    has been admitted.  Normal Security scans do not carry it and retain their
+    existing policy timeouts.
+    """
+    if not isinstance(command, Mapping):
+        return None
+    try:
+        value = float(command.get("assurance_deadline_epoch"))
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) and value > 0 else None
+
+
+def _assurance_deadline_expired(deadline_epoch: float | None) -> bool:
+    return deadline_epoch is not None and deadline_epoch <= time.time()
+
+
+def _assurance_command_timeout(
+    deadline_epoch: float | None, configured_seconds: int
+) -> int:
+    """Bound a scanner child timeout by the durable assurance lease."""
+    configured = max(1, int(configured_seconds))
+    if deadline_epoch is None:
+        return configured
+    remaining = deadline_epoch - time.time()
+    if remaining <= 0:
+        return 0
+    return max(1, min(configured, int(remaining)))
+
+
+def _assurance_timeout_result() -> dict[str, Any]:
+    """Return the same bounded shape as the process runtime timeout result."""
+    return {
+        "ok": False,
+        "returncode": None,
+        "stdout": "",
+        "stderr": "Assurance execution deadline reached before scanner start.",
+        "timed_out": True,
+        "deadline_exceeded": True,
+        "process_cleanup": "not_started",
+    }
 
 
 def _run_quick_trivy_target_job(
@@ -6166,11 +6223,34 @@ def _run_quick_trivy_target_job(
     scanners: str,
     secret_mode: bool,
     intelligence: Mapping[str, Any] | None = None,
+    assurance_deadline_epoch: float | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any] | None]:
     """Run or safely reuse Quick's combined repository Trivy target."""
     target_id = "pocketlab_source"
     target_label = "Pocket Lab Lite"
     evidence_name = "target-pocketlab-quick-trivy.json"
+    if _assurance_deadline_expired(assurance_deadline_epoch):
+        ref = _write_target_json(
+            run_id,
+            evidence_name,
+            {
+                "target_id": target_id,
+                "target_label": target_label,
+                "tool": "trivy",
+                "scanners": scanners,
+                "status": "partial",
+                "reason": "assurance_deadline_exceeded",
+            },
+        )
+        return [], {
+            "status": "partial",
+            "available": True,
+            "scanners": scanners,
+            "finding_count": 0,
+            "sbom_saved": False,
+            "cache": {"status": "not_run", "reason": "assurance_deadline_exceeded"},
+            "evidence_ref": ref,
+        }, None
     cache_identity = _quick_trivy_cache_identity(
         root=root,
         trivy=trivy,
@@ -6253,6 +6333,29 @@ def _run_quick_trivy_target_job(
         _command_timeout("trivy_vuln_misconfig"),
         _command_timeout("trivy_secret"),
     )
+    timeout = _assurance_command_timeout(assurance_deadline_epoch, timeout)
+    if timeout <= 0:
+        ref = _write_target_json(
+            run_id,
+            evidence_name,
+            {
+                "target_id": target_id,
+                "target_label": target_label,
+                "tool": "trivy",
+                "scanners": scanners,
+                "status": "partial",
+                "reason": "assurance_deadline_exceeded",
+            },
+        )
+        return [], {
+            "status": "partial",
+            "available": True,
+            "scanners": scanners,
+            "finding_count": 0,
+            "sbom_saved": False,
+            "cache": {"status": "not_run", "reason": "assurance_deadline_exceeded"},
+            "evidence_ref": ref,
+        }, None
     result = _run_command(args, cwd=root, timeout=timeout)
     payload, payload_valid = _load_json_object_text(result.get("stdout") or "")
     trivy_findings = normalize_trivy_json(
@@ -6588,6 +6691,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run = mark_running(command)
     run_id = str(run["run_id"])
     started = time.monotonic()
+    assurance_deadline_epoch = _assurance_deadline_epoch(command)
     resource_start = optimization.resource_snapshot()
     root = policy.allowed_scan_root(command.get("scope") or command.get("scan_root"))
     plan = policy.build_quick_scan_plan(root)
@@ -6606,7 +6710,18 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         findings.append(missing)
         tool_results["lynis"] = {"status": "missing_tool", "available": False}
     else:
-        result = _run_command([lynis, "audit", "system", "--quick", "--no-colors", "--quiet"], cwd=root, timeout=_command_timeout("lynis"))
+        timeout = _assurance_command_timeout(
+            assurance_deadline_epoch, _command_timeout("lynis")
+        )
+        result = (
+            _assurance_timeout_result()
+            if timeout <= 0
+            else _run_command(
+                [lynis, "audit", "system", "--quick", "--no-colors", "--quiet"],
+                cwd=root,
+                timeout=timeout,
+            )
+        )
         normalized = normalize_lynis_output(result, run_id)
         findings.extend(normalized)
         partial = partial or bool(result.get("timed_out"))
@@ -6621,9 +6736,15 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "trivy_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    if time.monotonic() - started > policy.TIMEOUTS["overall"]:
+    if _assurance_deadline_expired(assurance_deadline_epoch) or time.monotonic() - started > policy.TIMEOUTS["overall"]:
         partial = True
-        tool_results["trivy"] = {"status": "skipped_overall_budget", "available": bool(shutil.which("trivy")), "finding_count": 0, "sbom_saved": False}
+        tool_results["trivy"] = {
+            "status": "skipped_overall_budget",
+            "available": bool(shutil.which("trivy")),
+            "finding_count": 0,
+            "sbom_saved": False,
+            "failure_code": "assurance_deadline_exceeded" if _assurance_deadline_expired(assurance_deadline_epoch) else None,
+        }
     else:
         trivy = shutil.which("trivy")
         if not trivy:
@@ -6642,6 +6763,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 scanners=scanners,
                 secret_mode=True,
                 intelligence=trivy_intelligence,
+                assurance_deadline_epoch=assurance_deadline_epoch,
             )
             findings.extend(trivy_findings)
             trivy_partial = trivy_result.get("status") == "partial"
@@ -6650,7 +6772,13 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             sbom_ref = _write_cached_sbom(run_id, cache_entry) if cache_entry else None
             sbom_cache_hit = bool(sbom_ref)
             if not sbom_ref:
-                sbom_ref = _write_sbom(run_id, trivy, root, trivy_intelligence)
+                sbom_ref = _write_sbom(
+                    run_id,
+                    trivy,
+                    root,
+                    trivy_intelligence,
+                    assurance_deadline_epoch,
+                )
             if sbom_ref:
                 evidence_refs.append(sbom_ref)
             trivy_result["sbom_saved"] = bool(sbom_ref)
@@ -6687,7 +6815,11 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "posture_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    posture = runtime_config_posture(root)
+    posture = (
+        {"status": "partial", "summary": "Runtime posture was skipped after the assurance deadline."}
+        if _assurance_deadline_expired(assurance_deadline_epoch)
+        else runtime_config_posture(root)
+    )
     tool_results["config_posture"] = {
         "status": posture.get("status") or "completed",
         "available": True,

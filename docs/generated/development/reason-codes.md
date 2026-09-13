@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: cbf17f225badd4f1ce385ff854c65e3bcce38f7e82ad8faff81b2ba305e9135b
+source_fingerprint: 5970867db905008160dae500838c55461d4f9ee7c23c9df392197190af72344e
 schema_revision: 1
 validation_status: generated
 ---
@@ -37,6 +37,7 @@ validation_status: generated
 | `approval_step_up_required` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `approval_transition_invalid` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `approval_unusable` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `assurance_deadline_exceeded` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `assurance_session_binding_mismatch` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `authenticated_app_install` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `authenticated_app_install_exception_scoped` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

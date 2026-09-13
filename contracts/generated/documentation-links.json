@@ -1833,6 +1833,10 @@
         "title": "approval_unusable",
         "url": "../../docs/generated/development/reason-codes.md#approval-unusable"
       },
+      "reason:assurance_deadline_exceeded": {
+        "title": "assurance_deadline_exceeded",
+        "url": "../../docs/generated/development/reason-codes.md#assurance-deadline-exceeded"
+      },
       "reason:assurance_session_binding_mismatch": {
         "title": "assurance_session_binding_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#assurance-session-binding-mismatch"
@@ -3058,7 +3062,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "00ad7787c31ef1e5818381a11c5d13376813c8f264a23050faef003300765100",
+    "aggregate_fingerprint": "cb994e8064a913e0da4e904e51e3c9fbcdb1467a8bb93b0e073020fa52e168d2",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3069,7 +3073,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
-      "contracts/metadata/documentation-platform.json": "1a2814f6afd6543c0d09cf7eafdbfee4b02c2a5fe6824fd5fbe8725771a8ffc7",
+      "contracts/metadata/documentation-platform.json": "991048190b92998a077dcc91ce474c95c1802d7a31841d5f3d7e7c26a74c3418",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

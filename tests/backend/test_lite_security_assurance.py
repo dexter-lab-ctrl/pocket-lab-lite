@@ -323,6 +323,85 @@ def test_redaction_source_boundaries_and_attack_path_mapping(assurance_runtime):
     assert controls["controls"][0]["control_id"] == "CTRL-API-CONTROL"
 
 
+def test_control_plane_ownership_requires_live_jetstream_worker_path(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    monkeypatch.setattr(
+        assurance.BUS,
+        "status",
+        lambda: {
+            "connected": True,
+            "jetstream_enabled": True,
+            "durable_consumer_health": {
+                "pocketlab_command_worker_v1": {"healthy": True}
+            },
+        },
+    )
+    result = assurance._control_plane_ownership()
+    assert result["status"] == "PASS"
+    assert result["checks"]["message_bus_connected"] is True
+    assert result["checks"]["message_bus_jetstream"] is True
+    assert result["checks"]["durable_worker_consumer"] is True
+
+    monkeypatch.setattr(
+        assurance.BUS,
+        "status",
+        lambda: {
+            "connected": False,
+            "jetstream_enabled": False,
+            "durable_consumer_health": {},
+        },
+    )
+    assert assurance._control_plane_ownership()["status"] == "FAIL"
+
+
+def test_existing_security_deadline_bounds_child_timeout(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security
+
+    monkeypatch.setattr(lite_security.time, "time", lambda: 100.0)
+    assert lite_security._assurance_command_timeout(105.0, 420) == 5
+    assert lite_security._assurance_command_timeout(99.0, 420) == 0
+    assert lite_security._assurance_command_timeout(None, 420) == 420
+
+
+def test_existing_security_scan_receives_server_derived_deadline(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    monkeypatch.setattr(
+        assurance,
+        "suite_def",
+        lambda _suite_id: {"existing_security_profile": "quick"},
+    )
+    monkeypatch.setattr(assurance, "_security_conflict", lambda _profile: None)
+    monkeypatch.setattr(
+        assurance.lite_security,
+        "build_and_reserve_scan_request",
+        lambda **_kwargs: {"reservation": {"reserved": True}},
+    )
+    captured = {}
+
+    def fake_scan(command):
+        captured.update(command)
+        return {
+            "run": {
+                "run_id": "security-" + "a" * 32,
+                "status": "succeeded",
+                "tool_results": {},
+                "findings": [],
+            },
+            "findings": [],
+            "evidence_refs": [],
+        }
+
+    monkeypatch.setattr(assurance.lite_security, "run_security_scan", fake_scan)
+    result = assurance._run_existing_security_scan(
+        "smoke", assurance_deadline_epoch=123.5
+    )
+
+    assert result["status"] == "PASS"
+    assert captured["assurance_deadline_epoch"] == 123.5
+
+
 def test_preflight_distinguishes_pm2_online_from_api_readiness(assurance_runtime, monkeypatch):
     from api_fastapi.services import lite_security_assurance as assurance
 
