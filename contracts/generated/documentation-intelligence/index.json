@@ -3247,6 +3247,30 @@
         "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
+        "code": "pm2_worker_missing",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "pm2_worker_status_unparsed",
+        "domain": "validation",
+        "http_status": 409,
+        "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
         "code": "policy_action_not_registered",
         "domain": "rules",
         "http_status": 403,
@@ -7006,5 +7030,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "d53a27dd192771b9d0079a5558a6f901bb2c1b84729ad57d1b7acefc8f59cbfe"
+  "source_fingerprint": "699b908d5926662f25d32a518d2128ab5e1da1edaa8de608f6c95c497494d8a0"
 }

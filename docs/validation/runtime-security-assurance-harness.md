@@ -164,6 +164,11 @@ NATS, JetStream, worker process, resource facts, OPA when required, scanner
 conflicts, and the fixed existing Security profile. PM2 `online` is recorded
 separately and is never treated as API readiness.
 
+The PM2 admission probe uses a fixed status-only query. It does not call
+`pm2 jlist`, because that command includes process environments. Long-lived
+Security SSE responses are admitted through a bounded header probe so a stream
+that remains open is not mistaken for an unhealthy endpoint.
+
 An unsatisfied precondition produces `BLOCKED`; it is not converted into a
 security finding or a false pass. A run is `PASS`, `FAIL`, `PARTIAL`, or
 `BLOCKED` based on scenario invariants, active tool status, finding policy,

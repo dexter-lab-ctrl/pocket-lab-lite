@@ -104,6 +104,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],
@@ -391,6 +393,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],
@@ -660,6 +664,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],
@@ -983,6 +989,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],

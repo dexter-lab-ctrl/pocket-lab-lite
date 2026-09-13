@@ -27583,7 +27583,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:1897",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:1972",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -35568,6 +35568,8 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "pm2_worker_missing",
+          "pm2_worker_status_unparsed",
           "worker_failed",
           "worker_start_timeout"
         ],
@@ -35855,6 +35857,8 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "pm2_worker_missing",
+          "pm2_worker_status_unparsed",
           "worker_failed",
           "worker_start_timeout"
         ],
@@ -36124,6 +36128,8 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "pm2_worker_missing",
+          "pm2_worker_status_unparsed",
           "worker_failed",
           "worker_start_timeout"
         ],
@@ -36447,6 +36453,8 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "pm2_worker_missing",
+          "pm2_worker_status_unparsed",
           "worker_failed",
           "worker_start_timeout"
         ],
@@ -40751,10 +40759,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "456e770462684df40a2c77ff3ec3de908f450cc32fac49783370273c97970bce",
-        "documentation": "2088dc2dbee0f62717c81575e5a11c985d5560e13955eec55e7e2a68d224786f",
+        "asyncapi": "9284bb9bd2a0a88e71ac35647818f614ecc623824c02fefb0422bbd473f985c2",
+        "documentation": "21873333c636d32d51d450ef3fbfb68850b5ce52a58a0a84788e3271719e869e",
         "openapi": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
-        "operational_health": "2551769d655498cd8daa8d1df3c2c310ef97d6c3dd2181597d32603fad5f43aa"
+        "operational_health": "02cfc3caddd70e7eefe00763b6b05a6b90c4e2e9d65730e01df860919cbfc527"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -108118,5 +108126,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "d72e754b147ce93efaa84301d29b88dadeffa22ff311ce03ad1dc11701a6c359"
+  "source_fingerprint": "1148298812ed08d25e3ddc8e4100333f7b8cfde5697e2745bde9da33aa3fc2e3"
 }

@@ -234,6 +234,61 @@ def test_websocket_probe_uses_fixed_upgrade_and_bounded_response(assurance_runti
     assert result["response_harness_marker_echoed"] is False
 
 
+def test_stream_probe_reads_only_fixed_sse_headers(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    class FakeStreamSocket:
+        def __init__(self):
+            self.sent = b""
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def settimeout(self, _timeout):
+            return None
+
+        def sendall(self, value):
+            self.sent = value
+
+        def recv(self, _maximum):
+            return b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\n\r\n"
+
+    fake = FakeStreamSocket()
+    monkeypatch.setattr(assurance.socket, "create_connection", lambda *_args, **_kwargs: fake)
+    result = assurance._stream_probe(
+        port=8443,
+        path="/api/lite/security/events",
+        headers={"X-Pocket-Lab-Qualification": "forged"},
+    )
+    assert "GET /api/lite/security/events HTTP/1.1" in fake.sent.decode("ascii")
+    assert result["status_code"] == 200
+    assert result["response_harness_marker_echoed"] is False
+
+
+def test_pm2_summary_uses_status_only_command(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    captured = {}
+    monkeypatch.setattr(assurance, "_verified_executable", lambda _name: Path("/usr/bin/pm2"))
+
+    def bounded(argv, **kwargs):
+        captured["argv"] = argv
+        captured["kwargs"] = kwargs
+        return {
+            "status": "completed",
+            "stdout": "id name status\n1 pocket-worker online\n",
+        }
+
+    monkeypatch.setattr(assurance, "_bounded_argv", bounded)
+    result = assurance._pm2_summary()
+    assert captured["argv"] == ["/usr/bin/pm2", "status", "pocket-worker", "--no-color"]
+    assert result["worker_online"] is True
+    assert result["worker_status"] == "online"
+
+
 def test_redaction_source_boundaries_and_attack_path_mapping(assurance_runtime):
     from api_fastapi.services import lite_security_assurance as assurance
 

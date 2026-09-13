@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 52a8a60bc6a7bf93a8a10826658cf5d676f3e72028972c455777720c56cf46fc
+source_fingerprint: 6314cd0881b496a4e21c19c0fd9c286cf0142e4cdc61006110af1a73fbf5fc0c
 schema_revision: 1
 validation_status: generated
 ---

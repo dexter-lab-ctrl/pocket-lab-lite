@@ -813,6 +813,54 @@ def _http_probe(
         return _redact({"status_code": None, "body_bytes": 0, "body": {}, "duration_ms": int((time.monotonic() - started) * 1000), "transport": "loopback", "failure_code": "connection_failed", "error_type": type(exc).__name__})
 
 
+def _stream_probe(*, port: int, path: str, headers: Mapping[str, str]) -> dict[str, Any]:
+    """Read only the bounded HTTP header block from a fixed SSE route."""
+    if path != "/api/lite/security/events":
+        raise AssuranceError("assurance_target_unregistered", "The assurance stream target is not registered.", status_code=503)
+    request_headers = {
+        "Host": f"127.0.0.1:{port}",
+        "Accept": "text/event-stream",
+        "Connection": "keep-alive",
+        **{str(key): str(value) for key, value in headers.items()},
+    }
+    request = "GET /api/lite/security/events HTTP/1.1\r\n" + "\r\n".join(
+        [f"{key}: {value}" for key, value in request_headers.items()]
+    ) + "\r\n\r\n"
+    started = time.monotonic()
+    raw = bytearray()
+    try:
+        with socket.create_connection(("127.0.0.1", int(port)), timeout=2.0) as connection_socket:
+            connection_socket.settimeout(2.0)
+            connection_socket.sendall(request.encode("ascii"))
+            while len(raw) < 16 * 1024 and b"\r\n\r\n" not in raw:
+                chunk = connection_socket.recv(min(4096, 16 * 1024 - len(raw)))
+                if not chunk:
+                    break
+                raw.extend(chunk)
+    except (OSError, TimeoutError) as exc:
+        return _redact({
+            "status_code": None,
+            "transport": "loopback-stream",
+            "response_bytes": len(raw),
+            "response_harness_marker_echoed": False,
+            "duration_ms": int((time.monotonic() - started) * 1000),
+            "failure_code": "connection_failed",
+            "error_type": type(exc).__name__,
+        })
+    first_line = bytes(raw).split(b"\r\n", 1)[0].decode("ascii", "replace")
+    match = re.match(r"^HTTP/\d(?:\.\d)?\s+(\d{3})\b", first_line)
+    status_code = int(match.group(1)) if match else None
+    response_text = bytes(raw).decode("ascii", "replace").lower()
+    return _redact({
+        "status_code": status_code,
+        "transport": "loopback-stream",
+        "response_bytes": len(raw),
+        "response_harness_marker_echoed": "x-pocket-lab-harness" in response_text or "x-pocket-lab-qualification" in response_text,
+        "duration_ms": int((time.monotonic() - started) * 1000),
+        "response_sha256": _sha256_bytes(bytes(raw)),
+    })
+
+
 def _websocket_probe(*, port: int, path: str, headers: Mapping[str, str]) -> dict[str, Any]:
     """Perform one fixed local WebSocket upgrade without sending a frame."""
     if path != "/ws/events":
@@ -875,26 +923,32 @@ def _pm2_summary() -> dict[str, Any]:
     binary = _verified_executable("pm2")
     if binary is None:
         return {"available": False, "status": "unknown", "failure_code": "pm2_unavailable", "worker_online": None}
-    result = _bounded_argv([str(binary), "jlist"], cwd=REPOSITORY_ROOT, timeout_seconds=5, max_output_bytes=128 * 1024)
+    # ``pm2 jlist`` contains every managed process environment, which is both
+    # unnecessary for admission and too close to a secret-bearing output
+    # channel.  The fixed status table contains only process posture.
+    result = _bounded_argv(
+        [str(binary), "status", "pocket-worker", "--no-color"],
+        cwd=REPOSITORY_ROOT,
+        timeout_seconds=5,
+        max_output_bytes=32 * 1024,
+    )
     if result.get("status") != "completed":
         return _redact({"available": True, "status": "unknown", "failure_code": "pm2_inventory_failed", "worker_online": None, "command_status": result.get("status")})
-    try:
-        payload = json.loads(str(result.get("stdout") or ""))
-    except (TypeError, ValueError, json.JSONDecodeError):
-        payload = None
-    if not isinstance(payload, list):
-        return {"available": True, "status": "unknown", "failure_code": "pm2_inventory_invalid", "worker_online": None}
-    processes = []
-    for item in payload[:64]:
-        if not isinstance(item, Mapping):
-            continue
-        name = str(item.get("name") or "")[:80]
-        state = item.get("pm2_env") if isinstance(item.get("pm2_env"), Mapping) else {}
-        status = str(state.get("status") or "unknown")[:24]
-        if name:
-            processes.append({"name": name, "status": status})
-    worker = next((item for item in processes if item.get("name") == "pocket-worker"), None)
-    return _redact({"available": True, "status": "checked", "processes": processes, "worker_online": bool(worker and worker.get("status") == "online"), "worker_status": worker.get("status") if worker else "missing"})
+    table = str(result.get("stdout") or "")
+    worker_lines = [line for line in table.splitlines() if re.search(r"\bpocket-worker\b", line, flags=re.IGNORECASE)]
+    if not worker_lines:
+        return {"available": True, "status": "unknown", "failure_code": "pm2_worker_missing", "worker_online": False, "worker_status": "missing"}
+    worker_line = worker_lines[0]
+    status_match = re.search(r"\b(online|stopped|errored|stopping|launching|one-launch-status|waiting)\b", worker_line, flags=re.IGNORECASE)
+    worker_status = status_match.group(1).lower() if status_match else "unknown"
+    return _redact({
+        "available": True,
+        "status": "checked" if worker_status != "unknown" else "unknown",
+        "failure_code": None if worker_status != "unknown" else "pm2_worker_status_unparsed",
+        "worker_online": worker_status == "online",
+        "worker_status": worker_status,
+        "process_count": len([line for line in table.splitlines() if line.strip()]),
+    })
 
 
 def _bus_summary() -> dict[str, Any]:
@@ -1778,10 +1832,28 @@ def _caddy_probe() -> dict[str, Any]:
     )
     route_results = []
     for path in paths:
-        probe = _http_probe(port=_caddy_port(), path=path, headers=forged_headers)
+        probe = (
+            _stream_probe(port=_caddy_port(), path=path, headers=forged_headers)
+            if path == "/api/lite/security/events"
+            else _http_probe(port=_caddy_port(), path=path, headers=forged_headers)
+        )
         route_results.append({
             "path": path,
-            **{key: value for key, value in probe.items() if key in {"status_code", "body_bytes", "duration_ms", "transport", "failure_code", "http_error", "body"}},
+            **{
+                key: value
+                for key, value in probe.items()
+                if key in {
+                    "status_code",
+                    "body_bytes",
+                    "response_bytes",
+                    "duration_ms",
+                    "transport",
+                    "failure_code",
+                    "http_error",
+                    "body",
+                    "response_harness_marker_echoed",
+                }
+            },
         })
     websocket = _websocket_probe(port=_caddy_port(), path="/ws/events", headers=forged_headers)
     body = _canonical({"suite_id": "smoke"})
@@ -1799,11 +1871,14 @@ def _caddy_probe() -> dict[str, Any]:
     route_registered = assurance_status not in {None, 404, 405}
     marker_not_authorized = reason not in {"harness_session_invalid", "harness_proof_fields_rejected", "harness_role_field_rejected"}
     route_failures = [item for item in route_results if item.get("status_code") is None or int(item.get("status_code") or 0) >= 500]
+    stream_result = next((item for item in route_results if item.get("path") == "/api/lite/security/events"), {})
     passed = (
         authority_not_accepted
         and route_registered
         and marker_not_authorized
         and not route_failures
+        and stream_result.get("status_code") == 200
+        and stream_result.get("response_harness_marker_echoed") is False
         and websocket.get("handshake_accepted") is True
         and websocket.get("response_harness_marker_echoed") is False
     )

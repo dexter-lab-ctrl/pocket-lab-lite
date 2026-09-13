@@ -110,11 +110,11 @@ generator_version: 3
 | GET /api/lite/release | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/remote-access/readiness | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/revisions | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
-| GET /api/lite/security | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_security_assurance.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/security/apps | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/security/apps/{app_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/security/details/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
-| GET /api/lite/security/events | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/security/events | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_security_assurance.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/security/evidence/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/security/evidence/{run_id}/summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/security/freshness | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |

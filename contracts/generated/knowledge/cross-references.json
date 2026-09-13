@@ -3991,6 +3991,18 @@
           "type": "owns"
         }
       ],
+      "reason:pm2_worker_missing": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:pm2_worker_status_unparsed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:policy_action_not_registered": [
         {
           "source": "domain:rules",
@@ -8197,6 +8209,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:pm2_worker_missing",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:pm2_worker_status_unparsed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_action_not_registered",
           "type": "verified_by"
         },
@@ -10458,6 +10478,14 @@
         }
       ],
       "test:tests/backend/test_lite_security_assurance.py": [
+        {
+          "source": "api:get:/api/lite/security",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/security/events",
+          "type": "verified_by"
+        },
         {
           "source": "domain:validation",
           "type": "verified_by"
@@ -12819,6 +12847,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:pm2_worker_missing",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:pm2_worker_status_unparsed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_action_not_registered",
           "type": "verified_by"
         },
@@ -13750,6 +13786,14 @@
         },
         {
           "source": "reason:pm2_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:pm2_worker_missing",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:pm2_worker_status_unparsed",
           "type": "verified_by"
         },
         {
@@ -17035,6 +17079,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/parity/test_api_contract_fences.py",
           "type": "verified_by"
         }
@@ -17072,6 +17120,10 @@
       "api:get:/api/lite/security/events": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
           "type": "verified_by"
         },
         {
@@ -25567,6 +25619,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:pm2_worker_missing",
+          "type": "owns"
+        },
+        {
+          "target": "reason:pm2_worker_status_unparsed",
+          "type": "owns"
+        },
+        {
           "target": "reason:preflight_exception",
           "type": "owns"
         },
@@ -28755,6 +28815,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:pm2_worker_missing": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:pm2_worker_status_unparsed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:policy_action_not_registered": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -30853,6 +30941,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "be0ebde333bed3e0a10cc8a96fae92bbb7eda636d9908a9dbecb5efb04113585"
+    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
   }
 }

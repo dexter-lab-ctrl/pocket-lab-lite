@@ -2213,6 +2213,14 @@
         "title": "pm2_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#pm2-unavailable"
       },
+      "reason:pm2_worker_missing": {
+        "title": "pm2_worker_missing",
+        "url": "../../docs/generated/development/reason-codes.md#pm2-worker-missing"
+      },
+      "reason:pm2_worker_status_unparsed": {
+        "title": "pm2_worker_status_unparsed",
+        "url": "../../docs/generated/development/reason-codes.md#pm2-worker-status-unparsed"
+      },
       "reason:policy_action_not_registered": {
         "title": "policy_action_not_registered",
         "url": "../../docs/generated/development/reason-codes.md#policy-action-not-registered"
@@ -3017,7 +3025,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "d220b2bc390d93fd691c7395a1dbbf685b2885c564f04fe0611e9aa670924fe0",
+    "aggregate_fingerprint": "238f3256c7e15c0fc80cfdb0b8d2a262dca0dd84e4e24773af32a3cee98fe72a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3028,7 +3036,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
-      "contracts/metadata/documentation-platform.json": "1f7d6faaa24097b4e4a454894b8c80dccc5ffa968b6b96dbfeecdbbaab57584e",
+      "contracts/metadata/documentation-platform.json": "f2b9650aab9e6b0ada0fa86c8de6af7fa59967b88f07ef60bf683fa9b5a65bd5",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

@@ -1,7 +1,7 @@
 {
   "items": {
     "adr_count": 6,
-    "ai_knowledge_export_freshness": "be0ebde333bed3e0a10cc8a96fae92bbb7eda636d9908a9dbecb5efb04113585",
+    "ai_knowledge_export_freshness": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13",
     "api_drift": "owned-by-existing-openapi-gates",
     "architecture_source": "architecture/metadata/pocket-lab-architecture.json",
     "current_repository_commit": "uncommitted",
@@ -13,7 +13,7 @@
       "home",
       "recovery"
     ],
-    "operational_health_source_fingerprint": "04e854349375dd3fb2298c6060c97e28457135388d3b8e05bfedc2d4d43d0b04",
+    "operational_health_source_fingerprint": "e97e6793ac46c01068ffd67b319d1cc170ae1dc84e236cebab26739985a245b1",
     "partial_parity_domains": [
       "identity",
       "rules"
@@ -26,7 +26,7 @@
     "runtime_evidence_sanitized": true,
     "runtime_topology_freshness": "2026-08-12T16:00:40Z",
     "schema_drift": "checked-by-knowledge-schema-validation",
-    "source_fingerprint": "be0ebde333bed3e0a10cc8a96fae92bbb7eda636d9908a9dbecb5efb04113585",
+    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13",
     "sqlite_source": "contracts/generated/lite-sqlite-schema.json",
     "unresolved_incidents_count": 0
   },
@@ -36,6 +36,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "be0ebde333bed3e0a10cc8a96fae92bbb7eda636d9908a9dbecb5efb04113585"
+    "source_fingerprint": "d9137b2b738438b1538a7de95764b659d0fc6db266bc529af886ecaafc116b13"
   }
 }
