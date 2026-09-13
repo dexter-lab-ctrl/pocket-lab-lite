@@ -31,6 +31,51 @@
         "title": "ApprovalTransitionRequest",
         "type": "object"
       },
+      "AssuranceRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "baseline_run_id": {
+            "anyOf": [
+              {
+                "maxLength": 42,
+                "minLength": 42,
+                "pattern": "^assurance-[0-9a-f]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Run Id"
+          },
+          "scenario_id": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 1,
+                "pattern": "^[A-Za-z][A-Za-z0-9._-]{0,79}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Id"
+          },
+          "suite_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9._-]{0,79}$",
+            "title": "Suite Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "suite_id"
+        ],
+        "title": "AssuranceRunRequest",
+        "type": "object"
+      },
       "ChallengeRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8548,6 +8593,594 @@
         "summary": "Revoke Principal",
         "tags": [
           "lite-harness"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/capabilities": {
+      "get": {
+        "operationId": "capabilities_api_lite_harness_security_assurance_capabilities_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Capabilities Api Lite Harness Security Assurance Capabilities Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Capabilities",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/preflight": {
+      "get": {
+        "operationId": "preflight_api_lite_harness_security_assurance_preflight_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "suite_id",
+            "required": false,
+            "schema": {
+              "default": "smoke",
+              "maxLength": 80,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9._-]{0,79}$",
+              "title": "Suite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Preflight Api Lite Harness Security Assurance Preflight Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Preflight",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/runs": {
+      "get": {
+        "operationId": "runs_api_lite_harness_security_assurance_runs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Runs Api Lite Harness Security Assurance Runs Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Runs",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      },
+      "post": {
+        "operationId": "create_run_api_lite_harness_security_assurance_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssuranceRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Run Api Lite Harness Security Assurance Runs Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create Run",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/runs/{run_id}": {
+      "get": {
+        "operationId": "run_status_api_lite_harness_security_assurance_runs__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Status Api Lite Harness Security Assurance Runs  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Run Status",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/runs/{run_id}/cancel": {
+      "post": {
+        "operationId": "cancel_api_lite_harness_security_assurance_runs__run_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Cancel Api Lite Harness Security Assurance Runs  Run Id  Cancel Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancel",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/runs/{run_id}/findings": {
+      "get": {
+        "operationId": "findings_api_lite_harness_security_assurance_runs__run_id__findings_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Findings Api Lite Harness Security Assurance Runs  Run Id  Findings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Findings",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/runs/{run_id}/report": {
+      "get": {
+        "operationId": "report_api_lite_harness_security_assurance_runs__run_id__report_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Report Api Lite Harness Security Assurance Runs  Run Id  Report Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Report",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/suites": {
+      "get": {
+        "operationId": "suites_api_lite_harness_security_assurance_suites_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Suites Api Lite Harness Security Assurance Suites Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Suites",
+        "tags": [
+          "lite-security-assurance"
         ]
       }
     },
