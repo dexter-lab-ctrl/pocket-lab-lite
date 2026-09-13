@@ -7361,7 +7361,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:1836",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:1897",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -7822,7 +7822,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1597",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:52",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:53",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:563"
       ],
       "type": "subject"

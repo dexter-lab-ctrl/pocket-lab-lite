@@ -196,6 +196,44 @@ def test_bounded_process_path_uses_absolute_argv_and_cleans_up(assurance_runtime
         assert timed["timed_out"] is True
 
 
+def test_websocket_probe_uses_fixed_upgrade_and_bounded_response(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    class FakeSocket:
+        def __init__(self):
+            self.sent = b""
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def settimeout(self, _timeout):
+            return None
+
+        def sendall(self, value):
+            self.sent = value
+
+        def recv(self, _maximum):
+            return b"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\n\r\n"
+
+    fake = FakeSocket()
+    monkeypatch.setattr(assurance.socket, "create_connection", lambda *_args, **_kwargs: fake)
+    result = assurance._websocket_probe(
+        port=8443,
+        path="/ws/events",
+        headers={"X-Pocket-Lab-Qualification": "forged"},
+    )
+    request = fake.sent.decode("ascii")
+    assert "GET /ws/events HTTP/1.1" in request
+    assert "Upgrade: websocket" in request
+    assert "X-Pocket-Lab-Qualification: forged" in request
+    assert result["status_code"] == 101
+    assert result["handshake_accepted"] is True
+    assert result["response_harness_marker_echoed"] is False
+
+
 def test_redaction_source_boundaries_and_attack_path_mapping(assurance_runtime):
     from api_fastapi.services import lite_security_assurance as assurance
 

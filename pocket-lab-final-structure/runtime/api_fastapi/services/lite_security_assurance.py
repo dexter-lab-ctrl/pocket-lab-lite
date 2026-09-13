@@ -21,6 +21,7 @@ import re
 import selectors
 import shutil
 import signal
+import socket
 import sqlite3
 import subprocess
 import tempfile
@@ -810,6 +811,58 @@ def _http_probe(
         return _redact({"status_code": int(exc.code), "body_bytes": len(raw), "body": _safe_http_body(raw), "duration_ms": int((time.monotonic() - started) * 1000), "transport": "loopback", "http_error": True})
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         return _redact({"status_code": None, "body_bytes": 0, "body": {}, "duration_ms": int((time.monotonic() - started) * 1000), "transport": "loopback", "failure_code": "connection_failed", "error_type": type(exc).__name__})
+
+
+def _websocket_probe(*, port: int, path: str, headers: Mapping[str, str]) -> dict[str, Any]:
+    """Perform one fixed local WebSocket upgrade without sending a frame."""
+    if path != "/ws/events":
+        raise AssuranceError("assurance_target_unregistered", "The assurance WebSocket target is not registered.", status_code=503)
+    request_headers = {
+        "Host": f"127.0.0.1:{port}",
+        "Connection": "Upgrade",
+        "Upgrade": "websocket",
+        "Sec-WebSocket-Version": "13",
+        # Fixed test material; this is a handshake nonce, not a credential.
+        "Sec-WebSocket-Key": "dGhlIHNhbXBsZSBub25jZQ==",
+        **{str(key): str(value) for key, value in headers.items()},
+    }
+    request = "GET /ws/events HTTP/1.1\r\n" + "\r\n".join(
+        [f"{key}: {value}" for key, value in request_headers.items()]
+    ) + "\r\n\r\n"
+    started = time.monotonic()
+    raw = bytearray()
+    try:
+        with socket.create_connection(("127.0.0.1", int(port)), timeout=2.0) as connection_socket:
+            connection_socket.settimeout(2.0)
+            connection_socket.sendall(request.encode("ascii"))
+            while len(raw) < 16 * 1024 and b"\r\n\r\n" not in raw:
+                chunk = connection_socket.recv(min(4096, 16 * 1024 - len(raw)))
+                if not chunk:
+                    break
+                raw.extend(chunk)
+    except (OSError, TimeoutError) as exc:
+        return _redact({
+            "status_code": None,
+            "transport": "loopback-websocket",
+            "handshake_accepted": False,
+            "response_bytes": len(raw),
+            "duration_ms": int((time.monotonic() - started) * 1000),
+            "failure_code": "connection_failed",
+            "error_type": type(exc).__name__,
+        })
+    first_line = bytes(raw).split(b"\r\n", 1)[0].decode("ascii", "replace")
+    match = re.match(r"^HTTP/\d(?:\.\d)?\s+(\d{3})\b", first_line)
+    status_code = int(match.group(1)) if match else None
+    response_text = bytes(raw).decode("ascii", "replace").lower()
+    return _redact({
+        "status_code": status_code,
+        "transport": "loopback-websocket",
+        "handshake_accepted": status_code == 101,
+        "response_bytes": len(raw),
+        "response_sha256": _sha256_bytes(bytes(raw)),
+        "response_harness_marker_echoed": "x-pocket-lab-harness" in response_text or "x-pocket-lab-qualification" in response_text,
+        "duration_ms": int((time.monotonic() - started) * 1000),
+    })
 
 
 def _health_summary() -> dict[str, Any]:
@@ -1722,7 +1775,6 @@ def _caddy_probe() -> dict[str, Any]:
         "/openapi.json",
         "/docs",
         "/redoc",
-        "/ws/events",
     )
     route_results = []
     for path in paths:
@@ -1731,6 +1783,7 @@ def _caddy_probe() -> dict[str, Any]:
             "path": path,
             **{key: value for key, value in probe.items() if key in {"status_code", "body_bytes", "duration_ms", "transport", "failure_code", "http_error", "body"}},
         })
+    websocket = _websocket_probe(port=_caddy_port(), path="/ws/events", headers=forged_headers)
     body = _canonical({"suite_id": "smoke"})
     assurance = _http_probe(
         port=_caddy_port(),
@@ -1746,12 +1799,20 @@ def _caddy_probe() -> dict[str, Any]:
     route_registered = assurance_status not in {None, 404, 405}
     marker_not_authorized = reason not in {"harness_session_invalid", "harness_proof_fields_rejected", "harness_role_field_rejected"}
     route_failures = [item for item in route_results if item.get("status_code") is None or int(item.get("status_code") or 0) >= 500]
-    passed = authority_not_accepted and route_registered and marker_not_authorized and not route_failures
+    passed = (
+        authority_not_accepted
+        and route_registered
+        and marker_not_authorized
+        and not route_failures
+        and websocket.get("handshake_accepted") is True
+        and websocket.get("response_harness_marker_echoed") is False
+    )
     return _redact({
         "status": "PASS" if passed else "FAIL",
         "target_scope": ASSURANCE_TARGET_SCOPE,
-        "routes_tested": [item["path"] for item in route_results] + ["/api/lite/harness/security-assurance/runs"],
+        "routes_tested": [item["path"] for item in route_results] + ["/ws/events (websocket upgrade)", "/api/lite/harness/security-assurance/runs"],
         "route_results": route_results,
+        "websocket_result": websocket,
         "assurance_request": {
             "status_code": assurance.get("status_code"),
             "body": assurance_body,

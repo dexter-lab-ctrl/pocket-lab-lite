@@ -27583,7 +27583,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:1836",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:1897",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -28923,7 +28923,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1597",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:52",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:53",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:563"
         ],
         "tests": [],
@@ -40751,10 +40751,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "4e8288ae54ae9031356152bdd72c34d2e7a7ef4f21aab6f1884d685df45f9d73",
-        "documentation": "95c77659ce6bbd329ee3c56433620bb6bdd6362c5eaafe8b7b50230b6bfb8e48",
+        "asyncapi": "456e770462684df40a2c77ff3ec3de908f450cc32fac49783370273c97970bce",
+        "documentation": "2088dc2dbee0f62717c81575e5a11c985d5560e13955eec55e7e2a68d224786f",
         "openapi": "4326988400fac4897722007cf93285fe9f2d56488d04c46617a92458d94a65f8",
-        "operational_health": "c13f3fff19038157c0d8fcd6c97d9e04c5f0b70fe7c324e6980a327ebe786d02"
+        "operational_health": "2551769d655498cd8daa8d1df3c2c310ef97d6c3dd2181597d32603fad5f43aa"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -108118,5 +108118,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "88a9ccbfdc134e0539d48a28e2fd7efd972e8cfc07dbf98a7dd66cc6f32d33cc"
+  "source_fingerprint": "d72e754b147ce93efaa84301d29b88dadeffa22ff311ce03ad1dc11701a6c359"
 }
