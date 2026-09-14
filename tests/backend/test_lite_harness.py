@@ -287,6 +287,48 @@ def test_key_bound_bootstrap_is_one_use_and_hash_only(harness_runtime, monkeypat
     }.issubset(audit_types)
 
 
+def test_key_bound_bootstrap_applies_bounded_requested_session_ttl(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    principal_id = "codex-assurance-bootstrap-ttl"
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "security-assurance-runner")
+
+    grant = client.post(
+        "/api/lite/harness/bootstrap/grants",
+        json={"principal_id": principal_id, "public_key": _b64u(public)},
+    ).json()
+    challenge = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+    ).json()
+    response = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": _b64u(public),
+            "signature": _b64u(private.sign(challenge["signing_payload"].encode("utf-8"))),
+            "ttl_seconds": 60,
+        },
+    )
+    assert response.status_code == 201, response.text
+    session = response.json()["session"]
+    started = datetime.fromisoformat(session["started_at"].replace("Z", "+00:00"))
+    expires = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+    assert 59 <= (expires - started).total_seconds() <= 61
+
+    cleanup = client.post(
+        "/api/lite/harness/principal/revoke",
+        headers={HARNESS_HEADER: response.json()["session_token"]},
+    )
+    assert cleanup.status_code == 200, cleanup.text
+
+
 def test_bootstrap_rejects_wrong_key_and_forwarded_transport(harness_runtime, monkeypatch):
     client = _client()
     private, public = _key()
@@ -432,6 +474,45 @@ def test_harness_client_forwards_bounded_session_ttl_without_persisting_token(tm
 
     assert requests[0][2]["ttl_seconds"] == 60
     assert requests[1][2]["ttl_seconds"] == 60
+
+
+def test_harness_client_forwards_bounded_bootstrap_session_ttl(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/harness.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_harness_client_bootstrap_ttl", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    class FakeKey:
+        def sign(self, payload):
+            assert payload == b"canonical-bootstrap-challenge"
+            return b"s" * 64
+
+        def public_key(self):
+            return self
+
+        def public_bytes(self, *_args):
+            return b"p" * 32
+
+    requests = []
+
+    def fake_request(method, path, payload=None, headers=None):
+        requests.append((method, path, payload, headers))
+        if path.endswith("/grants"):
+            return {"grant_id": "hbg-" + "a" * 32}
+        if path.endswith("/bootstrap/challenge"):
+            return {"challenge_id": "hbc-" + "b" * 32, "signing_payload": "canonical-bootstrap-challenge"}
+        return {"session_token": "memory-only-bootstrap-token", "session": {"harness_session_id": "hs-test"}}
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    monkeypatch.setattr(client, "_private_key", lambda _path: FakeKey())
+    client.bootstrap_session(
+        principal_id="ttl-bootstrap-runner",
+        key_file=str(tmp_path / "machine.key"),
+        ttl_seconds=60,
+    )
+
+    assert requests[2][2]["ttl_seconds"] == 60
 
 
 def test_bootstrap_configuration_cannot_be_enabled_in_production(harness_runtime, monkeypatch):

@@ -619,7 +619,11 @@ def _establish_lease(
         # "principal absent".
         if active_run_id or str(exc).split(":", 1)[0].strip() != "principal_not_found":
             raise
-    session = harness_client.bootstrap_session(principal_id=principal_id, key_file=key_file)
+    session = harness_client.bootstrap_session(
+        principal_id=principal_id,
+        key_file=key_file,
+        ttl_seconds=session_ttl_seconds,
+    )
     return _session_lease(session), True
 
 

@@ -70,6 +70,7 @@ class BootstrapCompleteRequest(BaseModel):
     principal_id: str = Field(min_length=3, max_length=80, pattern=r"^[a-z][a-z0-9._-]{2,79}$")
     public_key: str = Field(min_length=40, max_length=64)
     signature: str = Field(min_length=80, max_length=100)
+    ttl_seconds: int | None = Field(default=None, ge=60, le=3600)
 
 
 def _require_direct(request: Request) -> None:
@@ -155,6 +156,7 @@ def bootstrap_complete(
             principal_id=payload.principal_id,
             public_key=payload.public_key,
             signature=payload.signature,
+            ttl_seconds=payload.ttl_seconds,
         )
     except lite_harness.HarnessError as exc:
         _raise(exc)

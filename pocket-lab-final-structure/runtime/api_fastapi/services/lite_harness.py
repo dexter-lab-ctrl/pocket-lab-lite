@@ -743,6 +743,7 @@ def complete_bootstrap(
     principal_id: str,
     public_key: str,
     signature: str,
+    ttl_seconds: int | None = None,
 ) -> dict[str, Any]:
     """Atomically turn a signed ephemeral grant into a normal harness session."""
     _require_enabled()
@@ -820,7 +821,11 @@ def complete_bootstrap(
             HARNESS_PRINCIPAL_TTL_MIN_SECONDS,
             HARNESS_PRINCIPAL_TTL_MAX_SECONDS,
         )
-        session_ttl = _bounded_int("POCKETLAB_HARNESS_SESSION_TTL_SECONDS", 20 * 60, 60, 60 * 60)
+        session_ttl = (
+            _bounded_int("POCKETLAB_HARNESS_SESSION_TTL_SECONDS", 20 * 60, 60, 60 * 60)
+            if ttl_seconds is None
+            else max(60, min(int(ttl_seconds), 60 * 60))
+        )
         principal_expires = now + timedelta(seconds=principal_ttl)
         session_expires = now + timedelta(seconds=session_ttl)
         session_token = secrets.token_urlsafe(32)

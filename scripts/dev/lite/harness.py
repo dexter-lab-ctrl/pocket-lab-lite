@@ -256,7 +256,7 @@ def cmd_session_start(args: argparse.Namespace) -> dict:
     )
 
 
-def bootstrap_session(*, principal_id: str, key_file: str) -> dict:
+def bootstrap_session(*, principal_id: str, key_file: str, ttl_seconds: int | None = None) -> dict:
     """Complete the key-bound bootstrap entirely in process memory.
 
     The returned session token is intentionally available only to the caller's
@@ -285,12 +285,17 @@ def bootstrap_session(*, principal_id: str, key_file: str) -> dict:
             "principal_id": principal_id,
             "public_key": encoded_public,
             "signature": signature,
+            **({"ttl_seconds": ttl_seconds} if ttl_seconds is not None else {}),
         },
     )
 
 
 def cmd_bootstrap(args: argparse.Namespace) -> dict:
-    return bootstrap_session(principal_id=args.principal_id, key_file=args.key_file)
+    return bootstrap_session(
+        principal_id=args.principal_id,
+        key_file=args.key_file,
+        ttl_seconds=args.ttl_seconds,
+    )
 
 
 def _sanitize_output(value: object) -> object:
@@ -363,6 +368,7 @@ def _parser() -> argparse.ArgumentParser:
     bootstrap = commands.add_parser("bootstrap", help="complete the operator-approved assurance bootstrap")
     bootstrap.add_argument("--principal-id", required=True)
     bootstrap.add_argument("--key-file", required=True)
+    bootstrap.add_argument("--ttl-seconds", type=int, choices=range(60, 3601))
     bootstrap.set_defaults(handler=cmd_bootstrap)
     for name, handler in (("session-status", cmd_session_status), ("session-stop", cmd_session_stop)):
         command = commands.add_parser(name)
