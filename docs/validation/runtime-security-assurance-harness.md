@@ -216,8 +216,8 @@ source/toolchain evidence and live Android/Termux evidence:
 | Area | Current status | Evidence boundary |
 | --- | --- | --- |
 | Schema 35/36 rollback | `RUNTIME-VALIDATED` — `VERIFIED SAFE` | Disposable local-port Android/Termux-class sandbox only; no live database or Recovery API was touched |
-| Key-bound bootstrap, session renewal, and reattachment | `RUNTIME-VALIDATED` — `PASS` | Disposable principal, signed sessions, same run ID, and sanitized worker correlation |
-| Smoke | `RUNTIME-VALIDATED` — `PASS` | Actual FastAPI → NATS/JetStream → pocket-worker → Security path |
+| Key-bound bootstrap, session renewal, and reattachment | `RUNTIME-VALIDATED` — `PASS` | Disposable principal, signed sessions, same run ID, 8 final-run renewals, and sanitized worker correlation |
+| Smoke | `RUNTIME-VALIDATED` — `PASS` | Final run `assurance-6a0fe6b1960f488fb83cfdba95ad57e4` at `a0937b30…`: FastAPI → NATS/JetStream → pocket-worker → Security path |
 | Standard | `BLOCKED` | OPA correctly held the active policy revision at `policy_source_update_pending`; Owner-confirmed source synchronization is required |
 | Safe Adversarial | `NOT_RUN` as a suite | Standard admission gate remained blocked; unit coverage and safe Smoke boundary probes remain separate evidence |
 | Worker restart/resume | `UNVALIDATED` on the phone | Durable heartbeat/checkpoint behavior is covered by focused tests; no supported bounded phone fault procedure was available |

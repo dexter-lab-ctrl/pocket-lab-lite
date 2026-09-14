@@ -1,6 +1,6 @@
 # Runtime Security Assurance Qualification Dossier
 
-Status: `PARTIAL` / `KEEP DRAFT` at the continuation evidence point. This
+Status: `PARTIAL` / `KEEP DRAFT` at the final continuation evidence point. This
 dossier records the bounded qualification and supply-chain work performed for
 PR #576. It intentionally separates `RUNTIME-VALIDATED` Android/Termux
 observations from `VALIDATED` DEV-PC/CI tool evidence and from
@@ -18,9 +18,10 @@ performed.
 | Repository | `dexter-lab-ctrl/pocket-lab-lite` |
 | Base main | `6d7e34920ceaecf773f8dbae36265cc282a199ed` (`VERIFIED`) |
 | Feature branch | `feat/runtime-security-assurance-harness` (`VERIFIED`) |
-| Feature source at the prior phone qualification | `3f4f277de5fc8c99d01b0d07baa7376b608d1bd7` (`VERIFIED`) |
+| Feature source at the final phone Smoke qualification | `a0937b30a2a8fa0bdf4b4ab8d718e0762ad21c6a` (`VERIFIED`) |
+| Feature source at the isolated rollback rehearsal | `3f4f277de5fc8c99d01b0d07baa7376b608d1bd7` (`VERIFIED`; migration/runtime path unchanged by later client/test-only fixes) |
 | Latest published DEV-PC supply-chain capture | `6d257ff9fceef8069d9c83a23b7725321a18399b` (`VERIFIED`) |
-| PR | #576, open and draft at the prior observed head (`VERIFIED`; recheck after final push) |
+| PR | #576, open, draft, and mergeable at `a0937b30…` (`VERIFIED`; recheck after any documentation commit) |
 | Provisioning token | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` absent from the approved client environment (`VERIFIED` boolean-only check) |
 | Qualification authentication | Key-bound operator bootstrap; no bearer provisioning token, test-auth bypass, qualification-owner, or human Owner identity (`RUNTIME-VALIDATED`) |
 | Network target | Pocket Lab-owned local/loopback surfaces only (`VERIFIED`) |
@@ -78,6 +79,13 @@ separate local NATS port, alternate API ports, disposable SQLite copies, and
 separate source copies of published `origin/main` and the feature revision.
 It did not call Recovery APIs and did not touch the live database, Recovery
 repository, media, or user data.
+
+The rehearsal source revision predates the final client TTL-forwarding test and
+the hermetic Trivy-cache test fix. Those later changes do not alter migration
+files, startup migration policy, or the application runtime rollback path;
+the exact migration-path source used by the rehearsal is therefore still the
+feature implementation being qualified (`INFERRED`, based on the final diff).
+The final runtime Smoke was separately consumed at `a0937b30…`.
 
 Sanitized rehearsal result:
 
@@ -168,7 +176,8 @@ executed.
 
 ### 5.2 Server Phone inventory
 
-Observed during the prior exact-feature qualification (`3f4f277...`):
+Observed during the exact-feature qualification sequence, with the final
+authenticated Smoke consumed at `a0937b30…`:
 
 | Component | Phone evidence |
 | --- | --- |
@@ -179,6 +188,11 @@ Observed during the prior exact-feature qualification (`3f4f277...`):
 | Python | 3.14.6 (`RUNTIME-VALIDATED`) |
 | npm | 11.18.0 (`RUNTIME-VALIDATED`) |
 | Bandit, Gitleaks, pip-audit, Schemathesis, Cosign, Semgrep, OSV-Scanner, Syft, Grype, testssl.sh, Nuclei, nmap, ZAP | Not installed/discovered on the phone (`RUNTIME-VALIDATED` `MISSING`/`UNSUPPORTED`; no installation was performed without a published bounded installer contract) |
+
+The final assurance report intentionally reports a tool version only when the
+worker-owned runtime result exposed one. The phone-side Pocket Lab Security
+and Trivy records did not expose a release version in that report; no DEV-PC
+version was substituted (`VERIFIED`).
 
 ### 5.3 Dependency remediation
 
@@ -201,7 +215,7 @@ exploitable runtime findings. Further triage is `DEFERRED`.
 
 ### 6.1 Key-bound bootstrap and authenticated Smoke
 
-Result: `RUNTIME-VALIDATED` — `PASS`.
+Result: `RUNTIME-VALIDATED` — `PASS` at the final runtime source revision.
 
 The approved client generated a disposable Ed25519 key outside the repository,
 mode 0600, and exposed only the public fingerprint to the operator. The
@@ -210,30 +224,35 @@ The client signed the challenge, received a normal short-lived session, and
 used the fixed assurance API. The provisioning token was absent and was not
 requested, printed, logged, or substituted.
 
-Smoke run:
+Final Smoke run:
 
 | Field | Sanitized observation |
 | --- | --- |
-| Run ID | `assurance-093f64a0edcc40eeaf2b3a438331c2a8` |
+| Runtime revision | `a0937b30a2a8fa0bdf4b4ab8d718e0762ad21c6a` |
+| Run ID | `assurance-6a0fe6b1960f488fb83cfdba95ad57e4` |
 | Suite | Smoke |
 | Scenarios | 8 |
-| Tool results | 5 |
-| Worker | `pocketlab-worker-28489` |
-| Worker operation | Same correlation as the run; caller did not choose the NATS subject |
+| Tool results | 5 (Pocket Lab Security, Trivy, Lynis, OPA posture, plus fixed registry state) |
+| Worker | `pocketlab-worker-2824` |
+| Worker operation | Same run correlation; caller did not choose the NATS subject |
 | Checkpoint generation | 24 |
 | Result | `PASS` |
 | Findings | 1 normalized low finding, no raw secret |
-| Session renewal | 11 automatic renewals under a 60-second test TTL |
+| Session renewal | 8 automatic renewals; 9 session IDs under a 60-second qualification TTL |
+| Duration | 341796 ms total; existing Security/Trivy unit 298318 ms |
 | Sanitization | pass; secret-shaped values omitted |
 
 The run traversed FastAPI admission, the fixed
 `pocketlab.commands.lite.security.assurance` subject/JetStream path, the
 durable worker consumer, the existing Security runner, and the SQLite/report
 materialization path. This is `RUNTIME-VALIDATED` proof of the central path.
+The client-side TTL forwarding correction was committed before this run and
+the renewal count demonstrates that the requested bounded TTL was honored.
 
 ### 6.2 Client disconnect and reattachment
 
-Result: `RUNTIME-VALIDATED` — `PASS`.
+Result: `RUNTIME-VALIDATED` — `PASS` (earlier feature-head reattachment run;
+the final `a0937b30…` run separately proves renewal through session expiry).
 
 Run `assurance-d9ce31d17f044ce788ed41d7e5d1fb32` was started, the first
 monitor was disconnected, and a new client process loaded only non-secret
@@ -301,8 +320,11 @@ One normalized runtime finding was observed by the phone Security path:
 
 The DEV PC did not patch this because the path is not tracked source and the
 qualification evidence did not establish an exposure through frontend,
-reports, logs, or backup. Ownership/mode and runtime exposure require an
-operator-side configuration review. No secret value was printed.
+reports, logs, or backup. On the final phone cleanup check the file was
+untracked, mode `0600`, and its containing directory was mode `0700`; a bounded
+source-reference search found no frontend/runtime reference. Ownership/mode
+and rotation policy remain an operator-side configuration review. No secret
+value was printed.
 
 ### Info / known-safe tooling observations
 
@@ -405,6 +427,8 @@ secret-bearing environment values and raw outputs are intentionally omitted.
 | 27 | 2026-09-14, Server Phone sandbox | Bounded shell script using disposable source/DB/NATS copies, fixed local ports, SQLite backup API, health/readiness polling | Model A schema rollback rehearsal | Old/new/old runtime healthy with 34→36→34 schema states | `PASS` | No production state touched; exact sanitized JSON in section 3 |
 | 28 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-published-20260913T234446Z-813731` | Reproducible final supply-chain capture after publishing the exact source SHA | Complete valid evidence | `PASS`; source commit `6d257ff9...`; 11 steps, max one scanner | Syft 1.573s; Trivy 27.342s; OSV source valid findings exit 1/25.778s; Grype 1.277s; Gitleaks 1.928s; Semgrep 9.845s; Scorecard 9.791s |
 | 29 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py promote --run-dir <final-published-run>`; `supply_chain_automation.py check` | Promote only reviewed sanitized artifacts | Canonical CycloneDX/security/provenance evidence passes checks | `PASS`, both commands exit 0 | Scorecard observed Dangerous-Workflow 10, Pinned-Dependencies 2, Token-Permissions 0; no raw output canonicalized |
+| 30 | 2026-09-14T01:01–01:07Z, approved client → Server Phone | Operator-approved public-key launcher; signed bootstrap; `security_assurance.py qualify --session-ttl-seconds 60` | Final exact-feature authenticated Smoke with automatic renewal and worker-owned execution | Smoke PASS; no duplicate run; sanitized report | Bootstrap `PASS`; Smoke `PASS`; Standard `BLOCKED` by OPA source drift; client exit 12 truthfully reflected blocked Standard | Run `assurance-6a0fe6b1960f488fb83cfdba95ad57e4`; worker `pocketlab-worker-2824`; 8 renewals / 9 sessions; checkpoint 24; total 341796 ms |
+| 31 | 2026-09-14T01:16–01:18Z, Server Phone | Production-owned `start-dashboard.sh --profile lite` with explicit safe flags; bounded `/health`, `/ready`, harness status, NATS monitor, OPA revision, PM2 | Stop qualification and prove default-off cleanup | Disabled harness, healthy runtime, clean checkout | `PASS` | Harness disabled/production; active sessions 0; active principals 0; NATS health `ok`; JetStream enabled; OPA healthy; PM2 services online; phone HEAD unchanged |
 
 The earlier failed Syft attempt used invalid patterns without the required
 `./` prefix and returned a validation error. It was corrected in the
@@ -416,7 +440,8 @@ evidence and were not promoted.
 
 ## 12. Automated harness coverage
 
-At the prior feature head, the focused backend command completed:
+At the final source/test head `a0937b30…`, the focused backend command
+completed:
 
 ```text
 PYTHONPATH=tests:pocket-lab-final-structure/runtime \
@@ -424,7 +449,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q \
   tests/backend/test_lite_security_assurance.py \
   tests/backend/test_lite_harness.py \
   tests/backend/test_lite_worker_recovery.py
-58 passed, 1 warning
+119 passed, 1 warning
 ```
 
 The tests cover bootstrap grant hash-only storage and one-use behavior, wrong
@@ -441,18 +466,19 @@ phone results or prove unsupported phone fault-injection procedures.
 
 ## 13. Resource evidence
 
-Measured phone values from the authenticated Smoke/reattachment evidence:
+Measured phone values from the final authenticated Smoke evidence (the
+reattachment run supplies the worker RSS range):
 
 | Metric | Observation |
 | --- | --- |
-| Available memory | Approximately 2.96–3.19 GB, 39.98–43.02% (`RUNTIME-VALIDATED`) |
-| Free storage | Approximately 136.75–136.78 GB (`RUNTIME-VALIDATED`) |
-| Battery | 85–87%, not charging (`RUNTIME-VALIDATED`) |
-| Temperature | 32.1 °C (`RUNTIME-VALIDATED`) |
+| Available memory | 3,293,765,632 bytes / 44.41% at final Smoke admission (`RUNTIME-VALIDATED`) |
+| Free storage | 136,815,144,960 bytes at final Smoke admission (`RUNTIME-VALIDATED`) |
+| Battery | 59%, not charging at final Smoke admission (`RUNTIME-VALIDATED`) |
+| Temperature | 32.3 °C at final Smoke admission (`RUNTIME-VALIDATED`) |
 | Worker RSS | Approximately 245–255 MB (`RUNTIME-VALIDATED`) |
 | Aggregate CPU/load | `UNAVAILABLE`; Android `/proc` fallback was not represented as measured data |
 | Heavy scanner admission | One-heavy-scanner policy accepted (`RUNTIME-VALIDATED`) |
-| Per-tool phone CPU, disk delta, thermal delta | `UNAVAILABLE` in the safe report |
+| Per-tool phone CPU, disk delta, thermal delta | `UNAVAILABLE` in the safe report; total Smoke duration 341796 ms |
 
 DEV-PC fixed capture durations are recorded per step in the command ledger.
 Syft’s earlier unbounded root scan reached approximately 1.4 GiB RSS and was
@@ -460,22 +486,28 @@ not promoted; fixed exclusions reduced the final source capture to 1.774s.
 
 ## 14. Cleanup and consumer-only proof
 
-Prior phone qualification cleanup was `RUNTIME-VALIDATED`:
+Final phone qualification cleanup was `RUNTIME-VALIDATED`:
 
 - the short-lived sessions were expired or revoked and active sessions reported
   zero;
 - the disposable principal was revoked/cleaned through the supported flow;
 - the bootstrap public-key staging files and client temporary qualification
   directory were removed; private key bytes never entered the phone checkout;
-- qualification-only runtime state was stopped and normal startup restored;
+- qualification-only runtime state was stopped by rerunning the repository-owned
+  production Lite launcher after qualification; the final harness status was
+  `disabled` in `production`;
 - `POCKETLAB_HARNESS_ENABLED=0`, `POCKETLAB_HARNESS_DESTRUCTIVE=0`,
   `POCKETLAB_QUALIFICATION_OWNER=0`, and `POCKETLAB_TEST_AUTH_BYPASS=0` (or
   equivalent disabled status) were verified without printing environment
   values;
-- API health/readiness, NATS/JetStream, durable consumer, worker, and normal
-  PM2 state were healthy;
-- the phone checkout was detached at the published feature SHA and clean both
-  before and after qualification.
+- API health/readiness, NATS/JetStream, durable consumer, worker, OPA, and
+  normal PM2 state were healthy; NATS monitor health was `ok`, JetStream was
+  enabled, and OPA served the durable known-good revision;
+- the phone checkout was detached at the published feature SHA `a0937b30…`
+  and clean both before and after qualification;
+- the exact disposable client keys and phone-side public-key staging files were
+  removed after the final run; the fixed `.harness-demo.sh` untracked file on
+  the DEV PC was preserved as pre-existing user-owned state.
 
 No source, tracked file, branch, commit, tag, reset, patch, or development Git
 operation occurred on the Server Phone. All implementation changes and Git
@@ -487,6 +519,8 @@ operations were performed on the DEV PC.
 | --- | --- | --- | --- |
 | Documentation dependency CVEs (CVE-2026-73295, CVE-2026-67422, CVE-2026-61632) | Pinned `requirements-docs.txt` to mkdocs-material 9.7.7 and pymdown-extensions 11.0.1 | Trivy SBOM retest: 0 vulnerabilities; docs pip-audit: 0 vulnerabilities; docs generation/check required at final head | `VALIDATED` for DEV-PC documentation lane |
 | Recursive local evidence/cache contamination of source SBOM/OSV/Gitleaks | Added fixed source exclusions, OSV exact-dir exclusions, checked-in Gitleaks allowlist, and regression tests | Fixed Syft/OSV/Gitleaks capture and 29 hardening tests | `IMPLEMENTED` / `VALIDATED`; no phone source change |
+| Trivy cache-identity regression fixture | Isolated the unknown-database test from any locally installed Trivy cache by stubbing both database identity and status | Focused security-assurance/security tests and final full-gate rerun | `IMPLEMENTED` / `VALIDATED`; test-only correction |
+| Qualification client discarded the requested renewal TTL on the session request | Forwarded the bounded `ttl_seconds` value to both the signed challenge and normal session endpoints | New harness client regression test; final phone Smoke used a 60-second session TTL and completed with 8 renewals | `IMPLEMENTED` / `RUNTIME-VALIDATED` |
 | Runtime `gitea/conf/app.runtime.ini` low finding | No source patch: tracked-source and runtime exposure were not established; content remains redacted | Requires operator ownership/mode/exposure review; no secret printed | `PARTIAL` / `UNVALIDATED` configuration follow-up |
 | OPA `policy_source_update_pending` | No bypass or policy mutation; supported Owner-confirmed source-sync remains required | Healthy OPA/revision evidence captured; Standard still blocked | `BLOCKED` by authorized operational gate |
 
@@ -505,9 +539,10 @@ rollback rehearsal.
 sync activates the feature revision and `policy_source_update_pending` clears.
 
 `UNVALIDATED`: live phone worker restart/resume, NATS interruption/recovery,
-OPA interruption/fail-closed/recovery, and a live phone session-expiry test
-longer than the bounded Smoke run. Backend tests cover their durable state
-semantics.
+and OPA interruption/fail-closed/recovery. The final Smoke ran longer than its
+60-second qualification session TTL and completed through automatic renewal;
+this is `RUNTIME-VALIDATED` session-expiry continuity, while backend tests
+cover the broader durable state semantics.
 
 `DEFERRED`/`UNSUPPORTED`: native phone execution of Bandit, Gitleaks,
 pip-audit, Schemathesis, Cosign, Semgrep, OSV-Scanner, Syft, Grype, testssl.sh,
@@ -524,7 +559,8 @@ isolated schema rollback blocker is closed safely under Model A; it does not
 close the separate OPA policy synchronization gate.
 
 The latest complete static/supply-chain evidence in this dossier is bound to
-`6d257ff9fceef8069d9c83a23b7725321a18399b`. The final projection commit and
-any post-commit phone retest must be recorded by Git, CI, and the final PR
-metadata; no claim here is evidence for a later SHA until that exact SHA is
-recorded.
+`6d257ff9fceef8069d9c83a23b7725321a18399b`; it is a prior published source
+capture and is not substituted for the final client/test head. The final phone
+runtime report is bound to `a0937b30…`. Any later documentation-only commit
+must keep those evidence identities separate and must not be presented as a
+new phone runtime execution without an exact-SHA retest.
