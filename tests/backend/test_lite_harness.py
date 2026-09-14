@@ -473,6 +473,49 @@ def test_assurance_client_ensure_lease_renews_with_keyword_arguments(tmp_path, m
     assert calls[0][1:] == ("assurance-runner", str(tmp_path / "runner.key"), 60)
 
 
+def test_assurance_client_recovers_lost_admission_response_without_duplicate_run(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_admission_recovery", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    calls = []
+
+    def fake_request(method, path, payload=None, **kwargs):
+        calls.append((method, path, payload, kwargs))
+        if method == "POST":
+            raise RuntimeError("assurance_transport_unavailable: TimeoutError")
+        return {
+            "runs": [{
+                "run_id": "assurance-" + "c" * 32,
+                "suite_id": "standard",
+                "status": "QUEUED",
+                "runtime_id": "runtime-test",
+                "revision_sha": "a" * 40,
+            }],
+            "sanitized": True,
+        }
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    monkeypatch.setattr(client, "_ensure_lease", lambda *args, **kwargs: None)
+    result = client._admit_qualified_run(
+        suite_id="standard",
+        lease={"session_token": "memory-only-token"},
+        principal_id="assurance-runner",
+        key_file=str(tmp_path / "runner.key"),
+        preflight={"runtime_id": "runtime-test", "revision": "a" * 40},
+        session_ttl_seconds=180,
+    )
+
+    assert result["run_id"] == "assurance-" + "c" * 32
+    assert result["transport_recovered"] is True
+    assert [call[0] for call in calls] == ["POST", "POST", "GET"]
+    assert calls[0][1].endswith("/runs")
+    assert calls[2][1].endswith("/runs?limit=100")
+    assert all(call[3].get("timeout_seconds") in {30.0, 60.0} for call in calls)
+
+
 def test_harness_client_forwards_bounded_session_ttl_without_persisting_token(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/harness.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_harness_client_ttl", script)

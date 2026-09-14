@@ -520,12 +520,13 @@ def _run_qualified_suite(
     )
     if str(preflight.get("status") or "").casefold() != "ready":
         return {"status": "BLOCKED", "preflight": preflight, "suite_id": suite_id, "sanitized": True}
-    queued = _request(
-        "POST",
-        "/api/lite/harness/security-assurance/runs",
-        {"suite_id": suite_id},
-        authenticated=True,
-        session_token=lease["session_token"],
+    queued = _admit_qualified_run(
+        suite_id=suite_id,
+        lease=lease,
+        principal_id=principal_id,
+        key_file=key_file,
+        preflight=preflight,
+        session_ttl_seconds=session_ttl_seconds,
     )
     run_id = _safe_run_id(str(queued.get("run_id") or ""))
     _record_run(continuity_path, continuity_state, queued, suite_id=suite_id)
@@ -567,6 +568,111 @@ def _run_qualified_suite(
         "fault": fault_result or {"status": "NOT_RUN", "sanitized": True},
         "sanitized": True,
     }
+
+
+def _recover_active_run_after_admission_timeout(
+    *,
+    suite_id: str,
+    lease: dict,
+    preflight: dict,
+) -> dict:
+    """Recover an admitted run when the POST response was lost.
+
+    Admission is server-idempotent, but a slow phone/API response can still
+    leave the client without the returned run identifier.  The recovery lookup
+    is deliberately narrower than a general run listing: the API already
+    filters to the authenticated principal, and this client additionally
+    requires the fixed suite, current runtime binding, current revision, and an
+    active server status.  An ambiguous or absent result fails closed rather
+    than guessing or submitting a second operation.
+    """
+    listed = _request(
+        "GET",
+        "/api/lite/harness/security-assurance/runs?limit=100",
+        authenticated=True,
+        session_token=lease["session_token"],
+        timeout_seconds=30.0,
+    )
+    expected_runtime = str(preflight.get("runtime_id") or "")
+    expected_revision = str(preflight.get("revision") or "")
+    candidates = [
+        item
+        for item in (listed.get("runs") if isinstance(listed.get("runs"), list) else [])
+        if isinstance(item, dict)
+        and str(item.get("suite_id") or "") == suite_id
+        and str(item.get("runtime_id") or "") == expected_runtime
+        and str(item.get("revision_sha") or "") == expected_revision
+        and str(item.get("status") or "").upper() in {"QUEUED", "RUNNING"}
+    ]
+    if len(candidates) != 1:
+        raise RuntimeError("assurance_admission_unconfirmed: no unique active run matched the fixed admission")
+    recovered = dict(candidates[0])
+    recovered["idempotent_reuse"] = True
+    recovered["transport_recovered"] = True
+    recovered["sanitized"] = True
+    return recovered
+
+
+def _admit_qualified_run(
+    *,
+    suite_id: str,
+    lease: dict,
+    principal_id: str,
+    key_file: str,
+    preflight: dict,
+    session_ttl_seconds: int | None,
+) -> dict:
+    """Admit one fixed suite and recover safely from a lost response."""
+    payload = {"suite_id": suite_id}
+    try:
+        return _request(
+            "POST",
+            "/api/lite/harness/security-assurance/runs",
+            payload,
+            authenticated=True,
+            session_token=lease["session_token"],
+            timeout_seconds=60.0,
+        )
+    except RuntimeError as first_error:
+        if not _should_reauthenticate(first_error):
+            raise
+        _ensure_lease(
+            lease,
+            principal_id=principal_id,
+            key_file=key_file,
+            ttl_seconds=session_ttl_seconds,
+        )
+        try:
+            # The server's admission key makes this retry return the existing
+            # active run when the first request was accepted but its response
+            # was lost.  It cannot create a duplicate scanner operation.
+            return _request(
+                "POST",
+                "/api/lite/harness/security-assurance/runs",
+                payload,
+                authenticated=True,
+                session_token=lease["session_token"],
+                timeout_seconds=60.0,
+            )
+        except RuntimeError as second_error:
+            if not _should_reauthenticate(second_error):
+                raise
+            _ensure_lease(
+                lease,
+                principal_id=principal_id,
+                key_file=key_file,
+                ttl_seconds=session_ttl_seconds,
+            )
+            try:
+                return _recover_active_run_after_admission_timeout(
+                    suite_id=suite_id,
+                    lease=lease,
+                    preflight=preflight,
+                )
+            except RuntimeError:
+                # Preserve the original admission failure as the primary
+                # diagnostic while refusing to claim that a run was admitted.
+                raise first_error
 
 
 def _reattach_or_resume(
