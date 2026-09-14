@@ -471,6 +471,17 @@ def test_existing_security_scan_restarts_only_the_owned_child(assurance_runtime,
     assert result["recovery"]["owned_child_interrupted"] is True
 
 
+def test_suite_listing_exposes_registered_external_tool_contracts(assurance_runtime):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    result = assurance.list_suites()
+    by_id = {item["id"]: item for item in result["suites"]}
+    assert "bandit" in by_id["standard"]["registered_tools"]
+    assert "schemathesis" in by_id["standard"]["external_tools"]
+    assert "owasp-zap" in by_id["deep"]["external_tools"]
+    assert "pocketlab-security" in by_id["smoke"]["active_tools"]
+
+
 def test_terminal_security_result_cannot_be_overwritten_by_late_worker(assurance_runtime):
     from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
 
@@ -538,6 +549,7 @@ def test_preflight_distinguishes_pm2_online_from_api_readiness(assurance_runtime
     assert ready["status"] == "ready"
     assert ready["pm2_online_is_not_api_ready"] is True
     assert ready["checks"]["worker_process"]["ok"] is True
+    assert set(ready["registry_hashes"]) >= {"tools", "suites", "scenarios", "faults"}
 
     monkeypatch.setattr(
         assurance,

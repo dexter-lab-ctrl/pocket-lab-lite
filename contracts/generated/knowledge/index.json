@@ -14298,6 +14298,26 @@
       "domain": "validation",
       "event_mapping": [],
       "http_status": 409,
+      "id": "reason:external_lane_owned_by_qualification_client",
+      "name": "external_lane_owned_by_qualification_client",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
       "id": "reason:fault_already_used",
       "name": "fault_already_used",
       "projection_mapping": [],
@@ -14380,6 +14400,26 @@
       "http_status": 409,
       "id": "reason:fault_control_execution_failed",
       "name": "fault_control_execution_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_pause_not_acted",
+      "name": "fault_pause_not_acted",
       "projection_mapping": [],
       "retryable": true,
       "severity": "warning",
@@ -14500,6 +14540,26 @@
       "http_status": 409,
       "id": "reason:fault_restarted",
       "name": "fault_restarted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_restore_not_acted",
+      "name": "fault_restore_not_acted",
       "projection_mapping": [],
       "retryable": true,
       "severity": "warning",
@@ -15240,6 +15300,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:nats_fault_requires_active_assurance_run",
+      "name": "nats_fault_requires_active_assurance_run",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:nats_probe_failed",
+      "name": "nats_probe_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is no active generation.",
       "domain": "projections",
       "event_mapping": [],
@@ -15286,6 +15386,46 @@
       "http_status": 409,
       "id": "reason:opa_status_unknown",
       "name": "opa_status_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:outage_observation_failed",
+      "name": "outage_observation_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:outage_window_not_observed",
+      "name": "outage_window_not_observed",
       "projection_mapping": [],
       "retryable": true,
       "severity": "warning",
@@ -16180,6 +16320,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:policy_probe_failed",
+      "name": "policy_probe_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "event_mapping": [],
@@ -16786,6 +16946,26 @@
       "http_status": 409,
       "id": "reason:report_write_failed",
       "name": "report_write_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:restore_not_attempted",
+      "name": "restore_not_attempted",
       "projection_mapping": [],
       "retryable": true,
       "severity": "warning",
@@ -19107,7 +19287,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2728",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2834",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -26818,6 +26998,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_toolchain.py",
+      "name": "tests/backend/test_lite_security_assurance_toolchain.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_toolchain.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_f11_events_contract.py",
       "name": "tests/backend/test_lite_security_f11_events_contract.py",
       "source_refs": [
@@ -31033,6 +31223,7 @@
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
         "test:tests/backend/test_lite_security_assurance_controls.py",
+        "test:tests/backend/test_lite_security_assurance_toolchain.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -31180,17 +31371,20 @@
         "reason:cold_start_validation",
         "reason:connection_failed",
         "reason:diagnostics_not_active",
+        "reason:external_lane_owned_by_qualification_client",
         "reason:fault_already_used",
         "reason:fault_confirmation_required",
         "reason:fault_control_denied",
         "reason:fault_control_disabled",
         "reason:fault_control_execution_failed",
+        "reason:fault_pause_not_acted",
         "reason:fault_recovery_observation_failed",
         "reason:fault_recovery_timeout",
         "reason:fault_registry_invalid",
         "reason:fault_registry_unavailable",
         "reason:fault_restart_not_acted",
         "reason:fault_restarted",
+        "reason:fault_restore_not_acted",
         "reason:fault_unknown",
         "reason:git_unavailable",
         "reason:harness_session_invalid",
@@ -31198,7 +31392,11 @@
         "reason:harness_session_required",
         "reason:harness_transport_rejected",
         "reason:metadata_only",
+        "reason:nats_fault_requires_active_assurance_run",
+        "reason:nats_probe_failed",
         "reason:opa_status_unknown",
+        "reason:outage_observation_failed",
+        "reason:outage_window_not_observed",
         "reason:owned_security_run_missing",
         "reason:ownership_source_unavailable",
         "reason:payload_too_large",
@@ -31207,10 +31405,12 @@
         "reason:pm2_unavailable",
         "reason:pm2_worker_missing",
         "reason:pm2_worker_status_unparsed",
+        "reason:policy_probe_failed",
         "reason:preflight_exception",
         "reason:process_start_failed",
         "reason:registered_tool_result_missing",
         "reason:report_write_failed",
+        "reason:restore_not_attempted",
         "reason:run_not_found",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -31757,17 +31957,20 @@
         "reason:exception_not_found",
         "reason:exception_scope_invalid",
         "reason:exception_unusable",
+        "reason:external_lane_owned_by_qualification_client",
         "reason:fault_already_used",
         "reason:fault_confirmation_required",
         "reason:fault_control_denied",
         "reason:fault_control_disabled",
         "reason:fault_control_execution_failed",
+        "reason:fault_pause_not_acted",
         "reason:fault_recovery_observation_failed",
         "reason:fault_recovery_timeout",
         "reason:fault_registry_invalid",
         "reason:fault_registry_unavailable",
         "reason:fault_restart_not_acted",
         "reason:fault_restarted",
+        "reason:fault_restore_not_acted",
         "reason:fault_unknown",
         "reason:generation_changed",
         "reason:generic_policy_toggle_retired",
@@ -31804,9 +32007,13 @@
         "reason:location_not_registered",
         "reason:memory_pressure",
         "reason:metadata_only",
+        "reason:nats_fault_requires_active_assurance_run",
+        "reason:nats_probe_failed",
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
         "reason:opa_status_unknown",
+        "reason:outage_observation_failed",
+        "reason:outage_window_not_observed",
         "reason:owned_security_run_missing",
         "reason:owner_approval_policy_inconsistent",
         "reason:owner_claim_authority_expired",
@@ -31851,6 +32058,7 @@
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
+        "reason:policy_probe_failed",
         "reason:policy_recovery_not_rollback",
         "reason:policy_recovery_pointer_mismatch",
         "reason:policy_recovery_revision_mismatch",
@@ -31882,6 +32090,7 @@
         "reason:release_projection_unavailable",
         "reason:remote_access_not_ready",
         "reason:report_write_failed",
+        "reason:restore_not_attempted",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:run_not_found",
@@ -32361,6 +32570,7 @@
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
         "test:tests/backend/test_lite_security_assurance_controls.py",
+        "test:tests/backend/test_lite_security_assurance_toolchain.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -36282,6 +36492,12 @@
           "type": "owns"
         }
       ],
+      "reason:external_lane_owned_by_qualification_client": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:fault_already_used": [
         {
           "source": "domain:validation",
@@ -36307,6 +36523,12 @@
         }
       ],
       "reason:fault_control_execution_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_pause_not_acted": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -36343,6 +36565,12 @@
         }
       ],
       "reason:fault_restarted": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_restore_not_acted": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -36564,6 +36792,18 @@
           "type": "owns"
         }
       ],
+      "reason:nats_fault_requires_active_assurance_run": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:nats_probe_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:no_active_generation": [
         {
           "source": "domain:projections",
@@ -36577,6 +36817,18 @@
         }
       ],
       "reason:opa_status_unknown": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:outage_observation_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:outage_window_not_observed": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -36846,6 +37098,12 @@
           "type": "owns"
         }
       ],
+      "reason:policy_probe_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:policy_recovery_not_rollback": [
         {
           "source": "domain:rules",
@@ -37027,6 +37285,12 @@
         }
       ],
       "reason:report_write_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:restore_not_attempted": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -40728,6 +40992,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:external_lane_owned_by_qualification_client",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:fault_already_used",
           "type": "verified_by"
         },
@@ -40745,6 +41013,10 @@
         },
         {
           "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_pause_not_acted",
           "type": "verified_by"
         },
         {
@@ -40769,6 +41041,10 @@
         },
         {
           "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restore_not_acted",
           "type": "verified_by"
         },
         {
@@ -40916,6 +41192,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:nats_fault_requires_active_assurance_run",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:nats_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:no_active_generation",
           "type": "verified_by"
         },
@@ -40925,6 +41209,14 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_window_not_observed",
           "type": "verified_by"
         },
         {
@@ -41104,6 +41396,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_recovery_not_rollback",
           "type": "verified_by"
         },
@@ -41225,6 +41521,10 @@
         },
         {
           "source": "reason:report_write_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:restore_not_attempted",
           "type": "verified_by"
         },
         {
@@ -45528,6 +45828,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:external_lane_owned_by_qualification_client",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:fault_already_used",
           "type": "verified_by"
         },
@@ -45545,6 +45849,10 @@
         },
         {
           "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_pause_not_acted",
           "type": "verified_by"
         },
         {
@@ -45569,6 +45877,10 @@
         },
         {
           "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restore_not_acted",
           "type": "verified_by"
         },
         {
@@ -45716,6 +46028,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:nats_fault_requires_active_assurance_run",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:nats_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:no_active_generation",
           "type": "verified_by"
         },
@@ -45725,6 +46045,14 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_window_not_observed",
           "type": "verified_by"
         },
         {
@@ -45904,6 +46232,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_recovery_not_rollback",
           "type": "verified_by"
         },
@@ -46025,6 +46357,10 @@
         },
         {
           "source": "reason:report_write_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:restore_not_attempted",
           "type": "verified_by"
         },
         {
@@ -46538,6 +46874,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:external_lane_owned_by_qualification_client",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:fault_already_used",
           "type": "verified_by"
         },
@@ -46555,6 +46895,10 @@
         },
         {
           "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_pause_not_acted",
           "type": "verified_by"
         },
         {
@@ -46579,6 +46923,10 @@
         },
         {
           "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restore_not_acted",
           "type": "verified_by"
         },
         {
@@ -46726,6 +47074,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:nats_fault_requires_active_assurance_run",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:nats_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:no_active_generation",
           "type": "verified_by"
         },
@@ -46735,6 +47091,14 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_window_not_observed",
           "type": "verified_by"
         },
         {
@@ -46914,6 +47278,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_recovery_not_rollback",
           "type": "verified_by"
         },
@@ -47035,6 +47403,10 @@
         },
         {
           "source": "reason:report_write_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:restore_not_attempted",
           "type": "verified_by"
         },
         {
@@ -58832,6 +59204,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:external_lane_owned_by_qualification_client",
+          "type": "owns"
+        },
+        {
           "target": "reason:fault_already_used",
           "type": "owns"
         },
@@ -58849,6 +59225,10 @@
         },
         {
           "target": "reason:fault_control_execution_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_pause_not_acted",
           "type": "owns"
         },
         {
@@ -58873,6 +59253,10 @@
         },
         {
           "target": "reason:fault_restarted",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_restore_not_acted",
           "type": "owns"
         },
         {
@@ -58904,7 +59288,23 @@
           "type": "owns"
         },
         {
+          "target": "reason:nats_fault_requires_active_assurance_run",
+          "type": "owns"
+        },
+        {
+          "target": "reason:nats_probe_failed",
+          "type": "owns"
+        },
+        {
           "target": "reason:opa_status_unknown",
+          "type": "owns"
+        },
+        {
+          "target": "reason:outage_observation_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:outage_window_not_observed",
           "type": "owns"
         },
         {
@@ -58940,6 +59340,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:policy_probe_failed",
+          "type": "owns"
+        },
+        {
           "target": "reason:preflight_exception",
           "type": "owns"
         },
@@ -58953,6 +59357,10 @@
         },
         {
           "target": "reason:report_write_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:restore_not_attempted",
           "type": "owns"
         },
         {
@@ -61156,6 +61564,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:external_lane_owned_by_qualification_client": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:fault_already_used": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -61225,6 +61647,20 @@
         }
       ],
       "reason:fault_control_execution_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_pause_not_acted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -61309,6 +61745,20 @@
         }
       ],
       "reason:fault_restarted": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_restore_not_acted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -61946,6 +62396,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:nats_fault_requires_active_assurance_run": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:nats_probe_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:no_active_generation": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -61975,6 +62453,34 @@
         }
       ],
       "reason:opa_status_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:outage_observation_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:outage_window_not_observed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -62672,6 +63178,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:policy_probe_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:policy_recovery_not_rollback": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -63265,6 +63785,20 @@
         }
       ],
       "reason:report_write_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:restore_not_attempted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -65654,6 +66188,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0888f5133a25ed8f",
+      "source": "reason:nats_probe_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:089c6470ec24565d",
@@ -67035,6 +67578,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:130bc41d394e6679",
+      "source": "reason:outage_window_not_observed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:130d4cb5549904f5",
@@ -67899,6 +68451,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:195292704e21cd41",
+      "source": "reason:nats_fault_requires_active_assurance_run",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_docs_runtime_network_fence.py"
       ],
       "id": "rel:195c157e76c3206d",
@@ -68357,6 +68918,15 @@
       "source": "reason:owner_claim_passkey",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:1c7703c4d85f9dcd",
+      "source": "domain:validation",
+      "target": "reason:fault_restore_not_acted",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -68910,6 +69480,15 @@
       "id": "rel:2140c0037b7f895d",
       "source": "reason:storage_pressure",
       "target": "test:tests/backend/test_lite_recovery.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:21577cd435d34700",
+      "source": "reason:outage_observation_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -69717,6 +70296,15 @@
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.security.critical_found",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:275d0bfbc6937855",
+      "source": "reason:policy_probe_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -71223,6 +71811,15 @@
       "id": "rel:32ee0922a8c20746",
       "source": "reason:owner_claim_origin_mismatch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:330549570135c0cf",
+      "source": "reason:restore_not_attempted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -72987,6 +73584,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:3f765917f57d6701",
+      "source": "reason:nats_fault_requires_active_assurance_run",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:3fa1d96bd282666e",
@@ -73805,6 +74411,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:451ba27f23ae8803",
+      "source": "reason:outage_observation_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:4528fd6a3e0e1297",
@@ -74079,6 +74694,15 @@
       "source": "domain:apps",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:47cbd84b11b590e8",
+      "source": "domain:validation",
+      "target": "reason:nats_probe_failed",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -75475,6 +76099,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:528627edbc462549",
+      "source": "domain:validation",
+      "target": "reason:external_lane_owned_by_qualification_client",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:52abecfb8634db2f",
@@ -75526,6 +76159,15 @@
       "source": "domain:rules",
       "target": "reason:approval_step_up_required",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5344b9d5c6209f96",
+      "source": "reason:fault_pause_not_acted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -75597,6 +76239,15 @@
       "id": "rel:541847133e32e5ef",
       "source": "reason:policy_endpoint_not_loopback",
       "target": "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:541a74974ad896ef",
+      "source": "reason:nats_fault_requires_active_assurance_run",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -76011,12 +76662,30 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:5762718a3cb1e967",
+      "source": "reason:external_lane_owned_by_qualification_client",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_system_profile.py"
       ],
       "id": "rel:577960ed7d1436bf",
       "source": "component:agent-command-executor",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5790630977234cd4",
+      "source": "domain:validation",
+      "target": "reason:policy_probe_failed",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -76781,6 +77450,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5d11feabfe6bdc9e",
+      "source": "reason:fault_restore_not_acted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
         "src/lite/LiteIdentity.jsx"
@@ -77131,6 +77809,15 @@
       "source": "domain:recovery",
       "target": "limitation:recovery:accepted-3",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:5ffdc4769e4186dc",
+      "source": "reason:nats_probe_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77513,6 +78200,15 @@
       "source": "reason:webauthn_challenge_scope_mismatch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:63d4782fe3ebfcab",
+      "source": "domain:validation",
+      "target": "reason:restore_not_attempted",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -78108,6 +78804,15 @@
       "source": "component:app-lifecycle-worker",
       "target": "table:app_current_state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:68877fd9060b3a07",
+      "source": "reason:fault_pause_not_acted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -79855,6 +80560,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:750ac2c2e4dbd5fe",
+      "source": "reason:outage_window_not_observed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:750bf1fabb671a62",
@@ -80086,6 +80800,15 @@
       "source": "domain:security",
       "target": "test:tests/docs/test_documentation_ia.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:773abf07735ac834",
+      "source": "domain:validation",
+      "target": "reason:nats_fault_requires_active_assurance_run",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -80374,6 +81097,15 @@
       "source": "component:nats-listeners",
       "target": "boundary:server-host",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:7a1ad6344c7f7f29",
+      "source": "reason:restore_not_attempted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -81682,6 +82414,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:84b9fc7b6aab6287",
+      "source": "reason:external_lane_owned_by_qualification_client",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:84c379a4cf527078",
@@ -82523,6 +83264,15 @@
       "id": "rel:8b2ef72eb2abbc13",
       "source": "domain:identity",
       "target": "reason:local_owner_required",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:8b30ce57c18e0a2d",
+      "source": "domain:validation",
+      "target": "reason:outage_observation_failed",
       "type": "owns"
     },
     {
@@ -85639,6 +86389,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a4787e82b7e7f408",
+      "source": "reason:fault_restore_not_acted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:a492411fbde644d1",
@@ -86267,6 +87026,15 @@
       "source": "component:command-lifecycle",
       "target": "subject:pocketlab.events.runbook.approval_queued",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a9f290d4c35aa7ea",
+      "source": "reason:fault_restore_not_acted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -87191,6 +87959,15 @@
       "source": "component:completion-evidence",
       "target": "table:audit_evidence_index",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b10f444ff44c000d",
+      "source": "reason:outage_window_not_observed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -88302,6 +89079,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:ba6f94c2f17c030c",
+      "source": "reason:outage_observation_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:ba78170920a209fd",
@@ -89307,6 +90093,15 @@
       "source": "component:post-switch-health",
       "target": "component:release-state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c2e4e395e0eecce9",
+      "source": "domain:validation",
+      "target": "reason:outage_window_not_observed",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -90740,6 +91535,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ce7f786b40bdf2bc",
+      "source": "domain:validation",
+      "target": "reason:fault_pause_not_acted",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-rules-activation-progress.spec.ts"
       ],
       "id": "rel:ce8d5928e1578cc1",
@@ -90763,6 +91567,15 @@
       "id": "rel:ceca29dba2549aaa",
       "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:cecb85ed7f48de91",
+      "source": "reason:policy_probe_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -90898,6 +91711,15 @@
       "id": "rel:cfacfb49030b67ed",
       "source": "component:frontend-state",
       "target": "test:tests/backend/test_lite_device_health_d4.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:cfcf34d8fb436b1f",
+      "source": "reason:policy_probe_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -91299,6 +92121,15 @@
       "source": "component:backup-engine",
       "target": "subject:pocketlab.events.lite.restore.health_validated",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d351d4e90f6bedc1",
+      "source": "reason:nats_probe_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -91732,6 +92563,15 @@
       "source": "component:release-staging",
       "target": "subject:pocketlab.events.release.current",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d651a010bd819de4",
+      "source": "reason:restore_not_attempted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -94916,6 +95756,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:ee07a2388f2bf2c0",
+      "source": "reason:fault_pause_not_acted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
       ],
       "id": "rel:ee0ce923205ece74",
@@ -96665,6 +97514,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:fb1f50795f693b4c",
+      "source": "reason:external_lane_owned_by_qualification_client",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:fb39b54cf54992a3",
@@ -97097,9 +97955,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "fb0b682b510dbe2666d8f412de1e0931f4ac800f3a6df1a8672546d15ba0d412",
+  "source_fingerprint": "9715d5f30cbd6ff76182153386ab85053c41d5f373b040f1eadf027d26ab189e",
   "statistics": {
-    "entity_count": 1257,
+    "entity_count": 1267,
     "entity_type_counts": {
       "adr": 6,
       "api": 218,
@@ -97109,21 +97967,21 @@
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 232,
+      "reason-code": 241,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 223,
+      "test": 224,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3587,
-    "source_count": 260
+    "relation_count": 3623,
+    "source_count": 261
   }
 }

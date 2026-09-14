@@ -1,12 +1,13 @@
 # Runtime Security Assurance Harness
 
-Status: `IMPLEMENTED` for the bounded server-owned assurance foundation and
-the fixed DEV-PC supply-chain lane; runtime qualification is
-`RUNTIME-VALIDATED` only when a sanitized report from the target revision
-says so. The command-by-command qualification record is in
+Status: `IMPLEMENTED` for the bounded server-owned assurance foundation, the
+fixed DEV-PC toolchain, the approved live-runtime lane, and the explicit Deep
+orchestrator; runtime qualification is `RUNTIME-VALIDATED` only when a
+sanitized report from the target revision says so. The command-by-command
+qualification record is in
 [`runtime-security-assurance-qualification.md`](runtime-security-assurance-qualification.md).
-Deep scanners, destructive recovery scenarios, and human identity ceremonies
-remain `DEFERRED` or `HUMAN_REVIEW_REQUIRED`.
+Deep is explicit and resource-governed. Destructive recovery scenarios and
+human identity ceremonies remain `OUT_OF_SCOPE` or `HUMAN_REVIEW_REQUIRED`.
 
 > The Runtime Security Assurance Harness is not a generic remote shell.
 >
@@ -133,7 +134,7 @@ These canonical registries are the only selectable assurance vocabulary:
 
 | File | Ownership |
 | --- | --- |
-| `security/assurance/tools.yaml` | Tool inventory, platform classification, version discovery, bounded execution defaults, resource class, capability, and deferred status |
+| `security/assurance/tools.yaml` | Tool inventory, platform classification, version discovery, bounded execution defaults, resource class, capability, and fixed execution contracts |
 | `security/assurance/suites.yaml` | Smoke, Standard, Deep, and Adversarial admission and resource budgets |
 | `security/assurance/scenarios.yaml` | Executable invariant definitions and STRIDE/OWASP/control/AP relationships |
 | `security/threat-model-scenarios.json` | Canonical STRIDE model and every current `AP-*` entry |
@@ -192,14 +193,27 @@ arguments or arbitrary targets.
 | OSV-Scanner | `IMPLEMENTED` fixed source/lockfile corroboration; unranked dev candidates remain visible | Medium; Standard, Deep static lane |
 | Syft | `IMPLEMENTED` fixed bounded source/release SBOM capture; phone prefers Trivy SBOM reuse | Heavy; Deep static lane |
 | Grype | `IMPLEMENTED` fixed Syft-SBOM vulnerability corroboration | Heavy; Deep static lane |
-| testssl.sh | `DEFERRED` until a fixed local TLS parser is promoted | Medium; Standard, Deep |
-| Nuclei | `DEFERRED`; no arbitrary templates or targets | Heavy; Standard, Deep, Adversarial |
-| nmap | `UNSUPPORTED` on the current qualification target; fixed local listener evidence is retained instead | Heavy; Standard, Deep |
-| OWASP ZAP | `DEFERRED` manual Deep-only candidate | Unbounded without a reviewed profile; Deep |
+| testssl.sh | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with the approved Caddy SNI/loopback target | Medium; Standard, Deep |
+| Nuclei | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with one checked-in safe template and no external interaction | Heavy; Standard, Deep |
+| nmap | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with the Pocket Lab-owned forwarded listener set only | Medium; Standard, Deep |
+| OWASP ZAP | `IMPLEMENTED` bounded Deep-only API baseline adapter with fixed route/target and output cap | Heavy; Deep |
 
-Deferred tools may be inventoried with a fixed version probe when their
-registered suite includes them. That probe is not an assurance scan and does
-not download binaries, update databases, or accept caller-supplied arguments.
+The operator-owned DEV-PC tool manager promotes the external tools into a
+fixed receipt-backed directory outside Git. `tools:install` uses only
+source-owned package/release recipes, verifies pinned checksums where the
+recipe provides them, rejects archive traversal, removes temporary archives,
+and records the execution lane and provenance. `tools:check` reports every
+registered tool as `READY`, `NOT_APPLICABLE`, or `FAILED`; Cosign is
+`NOT_APPLICABLE` when this revision has no registered signed artifact. The
+tool manager executes tools sequentially, runs Syft before its Grype consumer,
+and never accepts caller-supplied commands, targets, templates, rules, or
+environment values.
+
+The live-runtime adapters are DEV-PC tools testing only the approved
+Server-Phone tunnel. They are not phone-native execution and do not broaden
+the target beyond the fixed Pocket Lab API, Caddy TLS identity, safe Nuclei
+template, or loopback listener ports. Raw tool output is parsed in memory or
+kept in bounded disposable files and is not promoted to canonical evidence.
 
 The DEV-PC capture records installation origin, pinned version, checksum or
 signature posture, fixed argv, bounded output, parser status, and sanitized
@@ -223,7 +237,7 @@ source/toolchain evidence and live Android/Termux evidence:
 | Worker restart/resume | `RUNTIME-VALIDATED` — `PASS` | Fixed `worker_restart_once` recovered the same run/operation and advanced durable checkpoints without duplicate admission |
 | NATS restart/recovery | `RUNTIME-VALIDATED` — `PASS` | Fixed `nats_restart_once` recovered NATS/JetStream/worker state; no stream or consumer mutation |
 | OPA restart/recovery | `RUNTIME-VALIDATED` — `PASS` | Fixed `opa_restart_once` recovered OPA readiness and the same run correlation |
-| Direct outage-window fail-closed probes | `PARTIAL` / `UNVALIDATED` | Fixed controls prove restart/recovery, not a caller-controlled outage interval; source/unit tests retain fail-closed coverage |
+| Direct outage-window fail-closed probes | `IMPLEMENTED`; runtime status is established only by the exact final-head fault evidence | Fixed one-use OPA/NATS pause→probe→restore controls; automatic restoration and readiness/revision proof are required |
 
 The detailed command/output ledger, sanitized tool results, exact runtime
 identities, coverage matrices, and cleanup evidence are maintained in
@@ -479,19 +493,49 @@ Assurance run. Explicit principal revocation is stronger: it marks active runs
 for safe cancellation and prevents new sessions/runs.
 
 The current safe increment intentionally does not automatically execute
-Recovery replacement/restore mutation, direct OPA/NATS outage-window
-injection, Tailnet/LAN scans, browser WebAuthn ceremonies, Enterprise
-membership/final-Owner scenarios, arbitrary API fuzzing, ZAP, Nuclei,
-testssl.sh, or history-wide Gitleaks. Fixed DEV-PC/CI captures now execute
-Bandit, Gitleaks, pip-audit, npm audit, Semgrep CE, OSV-Scanner, Syft, Grype,
-OPA checks/tests, and release provenance checks where the required artifact
-exists. Those captures do not prove native phone execution. Phone runtime
-qualification executes the installed worker-owned Security, Trivy/Lynis, OPA
-posture, fixed harness boundary checks, and the three bounded service-restart
-controls; the remaining
-items are `DEFERRED`, `STATIC_EVIDENCE_ONLY`, `UNSUPPORTED`, or
-`HUMAN_REVIEW_REQUIRED` until a reviewed fixed target/parser/resource/cleanup
-contract and supported runtime procedure exist.
+Recovery replacement/restore mutation, Tailnet/LAN scans, browser WebAuthn
+ceremonies, Enterprise membership/final-Owner scenarios, arbitrary API fuzzing,
+or history-wide Gitleaks. The fixed DEV-PC/CI manager now executes Bandit,
+Gitleaks, pip-audit, npm audit, Semgrep CE, OSV-Scanner, Syft, Grype,
+testssl.sh, Nuclei, nmap, and bounded ZAP through fixed contracts; Cosign is
+reported `NOT_APPLICABLE` when no signed artifact is registered. Those captures
+do not prove native phone execution. Phone runtime qualification continues to
+execute the installed worker-owned Security, Trivy/Lynis, OPA posture, fixed
+harness boundary checks, and registered fault controls. Direct OPA/NATS outage
+proof is provided only by the one-use pause→probe→restore controls and is
+`RUNTIME-VALIDATED` only when the exact target revision report records it.
+
+Human-only coverage is complete when the harness records
+`HUMAN_REVIEW_REQUIRED`; that is not a deferred implementation. Each such
+scenario must document the following review template:
+
+| Required field | Content |
+| --- | --- |
+| Scenario / threat | The modeled human-governance action and threat |
+| STRIDE / OWASP / AP | Applicable mappings from the canonical registries |
+| Automation boundary | Why a synthetic machine must not perform the ceremony |
+| Reviewer / evidence | Human reviewer role and bounded records to inspect |
+| Pass / fail criteria | Explicit acceptance and rejection conditions |
+| Residual risk | What remains after the manual review |
+
+WebAuthn ceremonies, Enterprise membership/final-Owner governance, human
+exception acceptance, and destructive Recovery authorization therefore remain
+`HUMAN_REVIEW_REQUIRED` or `OUT_OF_SCOPE_FOR_PR_576`, without requiring unsafe
+automation or blocking the assurance-harness implementation.
+
+The current human-review-only AP scenarios have the following complete review
+contracts. They are coverage classifications, not missing harness features:
+
+| Scenario | Threat / mapping | Why automation is inappropriate | Human reviewer and bounded evidence | Pass / fail criteria | Residual risk |
+| --- | --- | --- | --- | --- | --- |
+| AP-09 — human identity and WebAuthn assurance misuse | Spoofing, Tampering, Elevation of Privilege; OWASP A01/A07 | A synthetic machine must not impersonate a physical user or complete a passkey ceremony | Identity/security reviewer inspects origin/RP binding, challenge purpose, signer counter, session audit, and step-up expiry | PASS only when the intended user completes the origin-bound ceremony and all bindings/audit records agree; FAIL on replay, wrong purpose/origin, counter regression, or unexplained authority | Human ceremony/social-engineering and authenticator recovery remain operational risks |
+| AP-10 — Enterprise membership/final-Owner escalation | Tampering, Repudiation, Elevation of Privilege; OWASP A01/A07/A09 | Final-Owner and membership governance require an accountable human decision and cannot be delegated to the assurance principal | Enterprise Owner/security reviewer inspects membership history, independent approval, final-Owner invariant, authorization invalidation, and audit correlation | PASS when role changes are independently authorized, exact-scope, auditable, and final-Owner protection holds; FAIL on self-approval, stale membership, or role escalation | Governance/operator compromise remains outside synthetic qualification |
+| AP-13 — approval and continuation integrity | Spoofing, Tampering, Repudiation, Elevation of Privilege; OWASP A01/A07/A08/A09 | Approval is a human control and the machine harness must not manufacture an approver or continuation consent | Rules reviewer inspects exact action/target/revision binding, approver eligibility, passkey step-up, one-use continuation, and retry audit | PASS when an eligible independent approver authorizes the exact request once and requester retry consumes only that continuation; FAIL on self-approval, replay, mismatch, or double-use | Human decision quality and availability remain residual risks |
+| AP-14 — temporary-exception scope and expiry bypass | Tampering, Elevation of Privilege; OWASP A01/A08 | Exception acceptance changes operational policy and requires explicit human accountability | Security/Owner reviewer inspects catalog-only scope, exact app/device/human/policy revision, ≤60-minute expiry, revocation, and matching audit | PASS when scope is exact, bounded, unexpired, revocable, and independently accepted; FAIL on wildcard/global scope, expiry bypass, or reuse | Exception misuse remains a governed operational risk |
+
+AP-08 Recovery replacement/restore mutation is separately classified
+`OUT_OF_SCOPE_FOR_PR_576` for destructive qualification; its non-destructive
+schema rollback rehearsal remains covered by the release-safety evidence.
 
 Use these local checks without enabling qualification or changing runtime
 state:

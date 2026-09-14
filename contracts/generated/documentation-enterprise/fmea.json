@@ -78,7 +78,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -201,7 +204,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -367,7 +373,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -544,7 +553,7 @@
         "bootstrap_transport_rejected",
         "connection_failed",
         "enterprise_connect_links_retired",
-        "fault_already_used"
+        "external_lane_owned_by_qualification_client"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -638,7 +647,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -963,7 +975,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",

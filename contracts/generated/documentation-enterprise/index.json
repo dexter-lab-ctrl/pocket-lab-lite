@@ -27826,7 +27826,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2728",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2834",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -35787,7 +35787,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "nats_fault_requires_active_assurance_run",
+          "nats_probe_failed"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -35910,7 +35913,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "nats_fault_requires_active_assurance_run",
+          "nats_probe_failed"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -36076,7 +36082,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "nats_fault_requires_active_assurance_run",
+          "nats_probe_failed"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -36253,7 +36262,7 @@
           "bootstrap_transport_rejected",
           "connection_failed",
           "enterprise_connect_links_retired",
-          "fault_already_used"
+          "external_lane_owned_by_qualification_client"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -36347,7 +36356,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "nats_fault_requires_active_assurance_run",
+          "nats_probe_failed"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -36672,7 +36684,10 @@
         ],
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
-        "reason_codes": [],
+        "reason_codes": [
+          "nats_fault_requires_active_assurance_run",
+          "nats_probe_failed"
+        ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
         "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -44650,10 +44665,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "f65bc1358fda421adcfd6e559b238a25fbd682e0b26e6ea9242ecd3170a0c1f0",
-        "documentation": "f3d9b23abc2d953c772d81e89b91e03371435b7e60d6cf5faca8b5cf321e2bf5",
+        "asyncapi": "3f6e55d0d55b276e52bd1545b922ac1103a69421a579fa5b5dbd8fbbec7b6388",
+        "documentation": "fc8aff56382b13a87a81845254f473e6a6617be06c215c1ed5e2c6f693a7967e",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-        "operational_health": "bf03e4c79eed2c58b0f5bcf71bb33b34a25f646e629972247110d8d7ac02609f"
+        "operational_health": "0a6d923aefd74ed4f8aed6b2ae3d6e21613c9b17b2ae06fe4b8306b770ecae76"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -86881,10 +86896,14 @@
         "lite:security:assurance:policy-sync",
         "lite:security:assurance:preflight",
         "lite:security:assurance:qualify",
+        "lite:security:assurance:qualify:full",
         "lite:security:assurance:report",
         "lite:security:assurance:scenario",
         "lite:security:assurance:smoke",
         "lite:security:assurance:standard",
+        "lite:security:assurance:tools:check",
+        "lite:security:assurance:tools:install",
+        "lite:security:assurance:tools:run",
         "lite:test:redaction"
       ]
     },
@@ -92361,6 +92380,46 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\" --sync-policy --policy-sync-wait-seconds \"{{.POLICY_SYNC_WAIT_SECONDS}}\" --full"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:qualify:full",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance.py"
+        ],
+        "name": "lite:security:assurance:qualify:full",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "{{.PYTHON}} scripts/dev/lite/security_assurance.py report \"{{.RUN_ID}}\""
         ],
         "dependencies": [],
@@ -92501,6 +92560,126 @@
         "outputs": [],
         "promotes_evidence": false,
         "purpose": "Run the bounded Standard runtime security assurance suite",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py check"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:tools:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_toolchain.py"
+        ],
+        "name": "lite:security:assurance:tools:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Check every registered assurance tool as READY, NOT_APPLICABLE, or FAILED",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py install"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:tools:install",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_toolchain.py"
+        ],
+        "name": "lite:security:assurance:tools:install",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": true,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": true
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py run \"{{.SUITE}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:tools:run",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_toolchain.py"
+        ],
+        "name": "lite:security:assurance:tools:run",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run one fixed DEV-PC assurance tool lane for a registered suite",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -114153,5 +114332,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "7d11dd843eba3f7d0feba744c8d0d366898bca6292ed6cab8d38ad816a32452a"
+  "source_fingerprint": "20a557d10348a2bac0f383ac3baecfd05b664b8c345ee3eae740b10952703a2e"
 }

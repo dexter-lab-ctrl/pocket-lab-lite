@@ -532,6 +532,42 @@ def test_qualification_keeps_safe_adversarial_lane_independent_of_standard(tmp_p
     ) is False
 
 
+def test_assurance_fault_requests_use_a_bounded_recovery_timeout(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_fault_timeout", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    observed = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, _limit):
+            return b'{"status":"PASS"}'
+
+    def fake_urlopen(_request, timeout):
+        observed["timeout"] = timeout
+        return FakeResponse()
+
+    monkeypatch.setattr(client.urllib.request, "urlopen", fake_urlopen)
+    result = client._request(
+        "POST",
+        "/api/lite/harness/security-assurance/faults/opa_pause_probe_restore",
+        {"confirm": True},
+        authenticated=True,
+        session_token="memory-only-session",
+        timeout_seconds=150.0,
+    )
+    assert result["status"] == "PASS"
+    assert observed["timeout"] == 150.0
+
+
 def test_harness_client_forwards_bounded_bootstrap_session_ttl(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/harness.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_harness_client_bootstrap_ttl", script)

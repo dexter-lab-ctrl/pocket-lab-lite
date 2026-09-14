@@ -3691,6 +3691,12 @@
           "type": "owns"
         }
       ],
+      "reason:external_lane_owned_by_qualification_client": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:fault_already_used": [
         {
           "source": "domain:validation",
@@ -3716,6 +3722,12 @@
         }
       ],
       "reason:fault_control_execution_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_pause_not_acted": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -3752,6 +3764,12 @@
         }
       ],
       "reason:fault_restarted": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_restore_not_acted": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -3973,6 +3991,18 @@
           "type": "owns"
         }
       ],
+      "reason:nats_fault_requires_active_assurance_run": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:nats_probe_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:no_active_generation": [
         {
           "source": "domain:projections",
@@ -3986,6 +4016,18 @@
         }
       ],
       "reason:opa_status_unknown": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:outage_observation_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:outage_window_not_observed": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -4255,6 +4297,12 @@
           "type": "owns"
         }
       ],
+      "reason:policy_probe_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:policy_recovery_not_rollback": [
         {
           "source": "domain:rules",
@@ -4436,6 +4484,12 @@
         }
       ],
       "reason:report_write_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:restore_not_attempted": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -8137,6 +8191,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:external_lane_owned_by_qualification_client",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:fault_already_used",
           "type": "verified_by"
         },
@@ -8154,6 +8212,10 @@
         },
         {
           "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_pause_not_acted",
           "type": "verified_by"
         },
         {
@@ -8178,6 +8240,10 @@
         },
         {
           "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restore_not_acted",
           "type": "verified_by"
         },
         {
@@ -8325,6 +8391,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:nats_fault_requires_active_assurance_run",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:nats_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:no_active_generation",
           "type": "verified_by"
         },
@@ -8334,6 +8408,14 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_window_not_observed",
           "type": "verified_by"
         },
         {
@@ -8513,6 +8595,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_recovery_not_rollback",
           "type": "verified_by"
         },
@@ -8634,6 +8720,10 @@
         },
         {
           "source": "reason:report_write_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:restore_not_attempted",
           "type": "verified_by"
         },
         {
@@ -12937,6 +13027,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:external_lane_owned_by_qualification_client",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:fault_already_used",
           "type": "verified_by"
         },
@@ -12954,6 +13048,10 @@
         },
         {
           "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_pause_not_acted",
           "type": "verified_by"
         },
         {
@@ -12978,6 +13076,10 @@
         },
         {
           "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restore_not_acted",
           "type": "verified_by"
         },
         {
@@ -13125,6 +13227,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:nats_fault_requires_active_assurance_run",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:nats_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:no_active_generation",
           "type": "verified_by"
         },
@@ -13134,6 +13244,14 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_window_not_observed",
           "type": "verified_by"
         },
         {
@@ -13313,6 +13431,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_recovery_not_rollback",
           "type": "verified_by"
         },
@@ -13434,6 +13556,10 @@
         },
         {
           "source": "reason:report_write_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:restore_not_attempted",
           "type": "verified_by"
         },
         {
@@ -13947,6 +14073,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:external_lane_owned_by_qualification_client",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:fault_already_used",
           "type": "verified_by"
         },
@@ -13964,6 +14094,10 @@
         },
         {
           "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_pause_not_acted",
           "type": "verified_by"
         },
         {
@@ -13988,6 +14122,10 @@
         },
         {
           "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restore_not_acted",
           "type": "verified_by"
         },
         {
@@ -14135,6 +14273,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:nats_fault_requires_active_assurance_run",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:nats_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:no_active_generation",
           "type": "verified_by"
         },
@@ -14144,6 +14290,14 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:outage_window_not_observed",
           "type": "verified_by"
         },
         {
@@ -14323,6 +14477,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_probe_failed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_recovery_not_rollback",
           "type": "verified_by"
         },
@@ -14444,6 +14602,10 @@
         },
         {
           "source": "reason:report_write_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:restore_not_attempted",
           "type": "verified_by"
         },
         {
@@ -26241,6 +26403,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:external_lane_owned_by_qualification_client",
+          "type": "owns"
+        },
+        {
           "target": "reason:fault_already_used",
           "type": "owns"
         },
@@ -26258,6 +26424,10 @@
         },
         {
           "target": "reason:fault_control_execution_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_pause_not_acted",
           "type": "owns"
         },
         {
@@ -26282,6 +26452,10 @@
         },
         {
           "target": "reason:fault_restarted",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_restore_not_acted",
           "type": "owns"
         },
         {
@@ -26313,7 +26487,23 @@
           "type": "owns"
         },
         {
+          "target": "reason:nats_fault_requires_active_assurance_run",
+          "type": "owns"
+        },
+        {
+          "target": "reason:nats_probe_failed",
+          "type": "owns"
+        },
+        {
           "target": "reason:opa_status_unknown",
+          "type": "owns"
+        },
+        {
+          "target": "reason:outage_observation_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:outage_window_not_observed",
           "type": "owns"
         },
         {
@@ -26349,6 +26539,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:policy_probe_failed",
+          "type": "owns"
+        },
+        {
           "target": "reason:preflight_exception",
           "type": "owns"
         },
@@ -26362,6 +26556,10 @@
         },
         {
           "target": "reason:report_write_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:restore_not_attempted",
           "type": "owns"
         },
         {
@@ -28565,6 +28763,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:external_lane_owned_by_qualification_client": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:fault_already_used": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28634,6 +28846,20 @@
         }
       ],
       "reason:fault_control_execution_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_pause_not_acted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -28718,6 +28944,20 @@
         }
       ],
       "reason:fault_restarted": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_restore_not_acted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -29355,6 +29595,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:nats_fault_requires_active_assurance_run": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:nats_probe_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:no_active_generation": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -29384,6 +29652,34 @@
         }
       ],
       "reason:opa_status_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:outage_observation_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:outage_window_not_observed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -30081,6 +30377,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:policy_probe_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:policy_recovery_not_rollback": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -30674,6 +30984,20 @@
         }
       ],
       "reason:report_write_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:restore_not_attempted": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -31949,6 +32273,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "fb0b682b510dbe2666d8f412de1e0931f4ac800f3a6df1a8672546d15ba0d412"
+    "source_fingerprint": "9715d5f30cbd6ff76182153386ab85053c41d5f373b040f1eadf027d26ab189e"
   }
 }

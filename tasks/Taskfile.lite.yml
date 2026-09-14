@@ -219,6 +219,23 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/security_assurance.py compare "{{.RUN_ID}}"'
 
+  lite:security:assurance:tools:install:
+    desc: Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py install'
+
+  lite:security:assurance:tools:check:
+    desc: Check every registered assurance tool as READY, NOT_APPLICABLE, or FAILED
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py check'
+
+  lite:security:assurance:tools:run:
+    desc: Run one fixed DEV-PC assurance tool lane for a registered suite
+    vars:
+      SUITE: '{{default "deep" .SUITE}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py run "{{.SUITE}}"'
+
   lite:security:assurance:qualify:
     desc: Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup
     vars:
@@ -232,6 +249,21 @@ tasks:
         --key-file "{{.KEY_FILE}}"
         --sync-policy
         --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"
+
+  lite:security:assurance:qualify:full:
+    desc: Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes
+    vars:
+      PRINCIPAL_ID: '{{default "codex-security-assurance" .PRINCIPAL_ID}}'
+      KEY_FILE: '{{default "~/.pocketlab-qualification/codex-security-assurance.key" .KEY_FILE}}'
+      POLICY_SYNC_WAIT_SECONDS: '{{default "120" .POLICY_SYNC_WAIT_SECONDS}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/security_assurance.py qualify
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --key-file "{{.KEY_FILE}}"
+        --sync-policy
+        --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"
+        --full
 
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'

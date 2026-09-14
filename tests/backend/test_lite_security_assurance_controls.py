@@ -130,6 +130,8 @@ def test_fault_registry_is_fixed_and_complete(controls_runtime):
         "worker_restart_once",
         "nats_restart_once",
         "opa_restart_once",
+        "nats_pause_probe_restore",
+        "opa_pause_probe_restore",
     }
     assert {item["service_name"] for item in result["faults"]} == {
         "pocket-worker",
@@ -139,6 +141,18 @@ def test_fault_registry_is_fixed_and_complete(controls_runtime):
     with pytest.raises(lite_assurance_faults.FaultControlError) as error:
         lite_assurance_faults.fault_def("shell_execute")
     assert error.value.reason_code == "fault_unknown"
+
+
+def test_outage_window_faults_are_fixed_and_bounded(controls_runtime):
+    from api_fastapi.services import lite_assurance_faults
+
+    faults = {item["id"]: item for item in lite_assurance_faults.validate_registry()["faults"]}
+    assert faults["opa_pause_probe_restore"]["operation"] == "pause_probe_restore"
+    assert faults["opa_pause_probe_restore"]["service_name"] == "pocket-opa"
+    assert faults["opa_pause_probe_restore"]["probe"] == "opa_unavailable_fail_closed"
+    assert faults["nats_pause_probe_restore"]["service_name"] == "pocket-nats"
+    assert faults["nats_pause_probe_restore"]["probe"] == "nats_unavailable_recovery"
+    assert all(1 <= int(item["pause_window_seconds"]) <= 15 for item in faults.values() if item["operation"] == "pause_probe_restore")
 
 
 def test_fault_control_requires_explicit_flag_and_confirmation(controls_runtime, monkeypatch):
@@ -201,6 +215,94 @@ def test_worker_fault_uses_supervisor_fixed_service_and_one_use(controls_runtime
             confirm=True,
         )
     assert replay.value.reason_code == "fault_already_used"
+
+
+def test_opa_outage_window_restores_service_and_requires_fail_closed_probe(controls_runtime, monkeypatch):
+    from supervisors import pocketlab_core_supervisor
+    from api_fastapi.services import lite_assurance_faults
+
+    calls = []
+
+    class FakeSupervisor:
+        def qualification_stop_pm2(self, service, reason):
+            calls.append(("stop", service, reason))
+            return {"acted": True, "returncode": 0}
+
+        def qualification_start_pm2(self, service, reason):
+            calls.append(("start", service, reason))
+            return {"acted": True, "returncode": 0}
+
+        def collect(self):
+            # First observation is the paused state, subsequent observations
+            # are the restored state. The service name is fixed by the registry.
+            if len([item for item in calls if item[0] == "start"]) == 0:
+                return {"services": {"pocket-opa": "stopped"}, "checks": {"nats_tcp_reachable": True, "api_nats_connected": True}}
+            return {"services": {"pocket-opa": "online"}, "checks": {"nats_tcp_reachable": True, "api_nats_connected": True}}
+
+        def _wait_for_opa_revision(self, *_args, **_kwargs):
+            return {"proved": True, "health_ready": True, "observed_revision": "policy-test"}
+
+    monkeypatch.setenv("POCKETLAB_HARNESS_FAULT_CONTROL", "1")
+    monkeypatch.setattr(pocketlab_core_supervisor, "LiteCoreSupervisor", FakeSupervisor)
+    monkeypatch.setattr(lite_assurance_faults, "_fixed_opa_governed_probe", lambda _ctx: {
+        "available": False if len(calls) < 2 else True,
+        "fail_closed": True,
+        "sanitized": True,
+    })
+    result = lite_assurance_faults.execute_fault(
+        fault_id="opa_pause_probe_restore",
+        auth_context=_assurance_context(),
+        confirm=True,
+    )
+    assert result["status"] == "PASS"
+    assert result["outage"]["observed"] is True
+    assert result["probe_during_outage"]["fail_closed"] is True
+    assert result["probe_after_restore"]["available"] is True
+    assert [item[0] for item in calls] == ["stop", "start"]
+
+
+def test_nats_outage_window_requires_and_preserves_an_active_run(controls_runtime, monkeypatch):
+    from supervisors import pocketlab_core_supervisor
+    from api_fastapi.services import lite_assurance_faults
+
+    calls = []
+    run = {
+        "run_id": "assurance-" + "a" * 32,
+        "status": "RUNNING",
+        "worker_operation_id": "assurance-" + "a" * 32,
+        "worker_instance_id": "worker-before",
+        "checkpoint_generation": 4,
+        "last_event_sequence": 8,
+        "current_tool": "pocketlab-security",
+    }
+
+    class FakeSupervisor:
+        def qualification_stop_pm2(self, service, reason):
+            calls.append(("stop", service, reason))
+            return {"acted": True, "returncode": 0}
+
+        def qualification_start_pm2(self, service, reason):
+            calls.append(("start", service, reason))
+            return {"acted": True, "returncode": 0}
+
+        def collect(self):
+            if len([item for item in calls if item[0] == "start"]) == 0:
+                return {"services": {"pocket-nats": "stopped"}, "checks": {"nats_tcp_reachable": False, "api_nats_connected": False}}
+            return {"services": {"pocket-nats": "online"}, "checks": {"nats_tcp_reachable": True, "api_nats_connected": True}}
+
+    monkeypatch.setenv("POCKETLAB_HARNESS_FAULT_CONTROL", "1")
+    monkeypatch.setattr(pocketlab_core_supervisor, "LiteCoreSupervisor", FakeSupervisor)
+    monkeypatch.setattr(lite_assurance_faults, "_assurance_run_facts", lambda _ids=None, **_kwargs: [dict(run)])
+    result = lite_assurance_faults.execute_fault(
+        fault_id="nats_pause_probe_restore",
+        auth_context=_assurance_context(),
+        confirm=True,
+    )
+    assert result["status"] == "PASS"
+    assert result["run_continuity"]["same_run_ids"] is True
+    assert result["run_continuity"]["worker_operation_ids_preserved"] is True
+    assert result["run_continuity"]["duplicate_run_id_created"] is False
+    assert [item[0] for item in calls] == ["stop", "start"]
 
 
 def test_suppressed_fault_does_not_consume_one_use_slot(controls_runtime, monkeypatch):

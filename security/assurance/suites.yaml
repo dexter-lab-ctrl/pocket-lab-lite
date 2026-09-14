@@ -29,7 +29,7 @@ profiles:
     required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.sast, security.assurance.sca, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report, security.assurance.baseline]
     scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, policy-readiness, source-boundaries, threat-model-integrity, attack-path-inventory]
   deep:
-    purpose: Manual-only extended assurance profile; heavyweight optional tools remain inventory-only until separately promoted.
+    purpose: Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.
     target_seconds: 3600
     maximum_seconds: 7200
     explicit_only: true

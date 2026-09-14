@@ -2013,6 +2013,10 @@
         "title": "exception_unusable",
         "url": "../../docs/generated/development/reason-codes.md#exception-unusable"
       },
+      "reason:external_lane_owned_by_qualification_client": {
+        "title": "external_lane_owned_by_qualification_client",
+        "url": "../../docs/generated/development/reason-codes.md#external-lane-owned-by-qualification-client"
+      },
       "reason:fault_already_used": {
         "title": "fault_already_used",
         "url": "../../docs/generated/development/reason-codes.md#fault-already-used"
@@ -2032,6 +2036,10 @@
       "reason:fault_control_execution_failed": {
         "title": "fault_control_execution_failed",
         "url": "../../docs/generated/development/reason-codes.md#fault-control-execution-failed"
+      },
+      "reason:fault_pause_not_acted": {
+        "title": "fault_pause_not_acted",
+        "url": "../../docs/generated/development/reason-codes.md#fault-pause-not-acted"
       },
       "reason:fault_recovery_observation_failed": {
         "title": "fault_recovery_observation_failed",
@@ -2056,6 +2064,10 @@
       "reason:fault_restarted": {
         "title": "fault_restarted",
         "url": "../../docs/generated/development/reason-codes.md#fault-restarted"
+      },
+      "reason:fault_restore_not_acted": {
+        "title": "fault_restore_not_acted",
+        "url": "../../docs/generated/development/reason-codes.md#fault-restore-not-acted"
       },
       "reason:fault_unknown": {
         "title": "fault_unknown",
@@ -2201,6 +2213,14 @@
         "title": "metadata_only",
         "url": "../../docs/generated/development/reason-codes.md#metadata-only"
       },
+      "reason:nats_fault_requires_active_assurance_run": {
+        "title": "nats_fault_requires_active_assurance_run",
+        "url": "../../docs/generated/development/reason-codes.md#nats-fault-requires-active-assurance-run"
+      },
+      "reason:nats_probe_failed": {
+        "title": "nats_probe_failed",
+        "url": "../../docs/generated/development/reason-codes.md#nats-probe-failed"
+      },
       "reason:no_active_generation": {
         "title": "no_active_generation",
         "url": "../../docs/generated/development/reason-codes.md#no-active-generation"
@@ -2212,6 +2232,14 @@
       "reason:opa_status_unknown": {
         "title": "opa_status_unknown",
         "url": "../../docs/generated/development/reason-codes.md#opa-status-unknown"
+      },
+      "reason:outage_observation_failed": {
+        "title": "outage_observation_failed",
+        "url": "../../docs/generated/development/reason-codes.md#outage-observation-failed"
+      },
+      "reason:outage_window_not_observed": {
+        "title": "outage_window_not_observed",
+        "url": "../../docs/generated/development/reason-codes.md#outage-window-not-observed"
       },
       "reason:owned_security_run_missing": {
         "title": "owned_security_run_missing",
@@ -2389,6 +2417,10 @@
         "title": "policy_parameters_invalid",
         "url": "../../docs/generated/development/reason-codes.md#policy-parameters-invalid"
       },
+      "reason:policy_probe_failed": {
+        "title": "policy_probe_failed",
+        "url": "../../docs/generated/development/reason-codes.md#policy-probe-failed"
+      },
       "reason:policy_recovery_not_rollback": {
         "title": "policy_recovery_not_rollback",
         "url": "../../docs/generated/development/reason-codes.md#policy-recovery-not-rollback"
@@ -2512,6 +2544,10 @@
       "reason:report_write_failed": {
         "title": "report_write_failed",
         "url": "../../docs/generated/development/reason-codes.md#report-write-failed"
+      },
+      "reason:restore_not_attempted": {
+        "title": "restore_not_attempted",
+        "url": "../../docs/generated/development/reason-codes.md#restore-not-attempted"
       },
       "reason:rollback_pointer_failed": {
         "title": "rollback_pointer_failed",
@@ -3138,7 +3174,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "7d224707d281358f418afb0afc0a555f6f3d34c64f5c955e95dd57c9e727235b",
+    "aggregate_fingerprint": "c951d76c1d2e6f444194d4b94710e2377aa06996451a1834314b03d9bf3c0b37",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3149,7 +3185,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-      "contracts/metadata/documentation-platform.json": "49e37fa944c2d59f64af334e43de16299e178e0ec1056fcd3ee62bb7267655d8",
+      "contracts/metadata/documentation-platform.json": "6bac24782ae83e9f3cd9b935e5db796ac32e278799fe9f40c677fd903795c1b4",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

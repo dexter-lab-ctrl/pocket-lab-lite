@@ -1,0 +1,17 @@
+id: pocketlab-health-safe
+
+info:
+  name: Pocket Lab health endpoint is bounded and reachable
+  author: pocket-lab-lite
+  severity: info
+  description: Fixed non-destructive GET probe for the Pocket Lab health endpoint.
+  tags: pocketlab,safe,health
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/health"
+    matchers:
+      - type: status
+        status:
+          - 200

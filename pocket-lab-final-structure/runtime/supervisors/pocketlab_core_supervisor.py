@@ -189,6 +189,11 @@ def status_summary(
 
 
 class LiteCoreSupervisor:
+    # These controls are intentionally separate from the normal recovery
+    # reconciler.  They are called only by the qualification fault registry;
+    # keeping the allow-list here prevents a future caller from turning the
+    # outage-window primitive into a general PM2 control surface.
+    QUALIFICATION_PAUSE_SERVICES = frozenset({"pocket-nats", "pocket-opa"})
     def __init__(self) -> None:
         self.interval = max(10, int(os.environ.get("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", DEFAULT_INTERVAL_SECONDS)))
         self.cooldown = max(30, int(os.environ.get("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS)))
@@ -439,6 +444,54 @@ class LiteCoreSupervisor:
             }
             self._append_event(event)
             return event
+
+    def qualification_stop_pm2(self, service: str, reason: str) -> Dict[str, Any]:
+        """Stop one fixed qualification service for a bounded probe window."""
+        if service not in self.QUALIFICATION_PAUSE_SERVICES:
+            raise ValueError("qualification pause service is not registered")
+        try:
+            result = run_command(["pm2", "stop", service], timeout=30)
+            event = {
+                "event": "qualification_service_pause_attempted",
+                "service": service,
+                "reason": reason,
+                "returncode": result.returncode,
+                "acted": result.returncode == 0,
+            }
+        except Exception as exc:
+            event = {
+                "event": "qualification_service_pause_failed",
+                "service": service,
+                "reason": reason,
+                "error_type": type(exc).__name__,
+                "acted": False,
+            }
+        self._append_event(event)
+        return event
+
+    def qualification_start_pm2(self, service: str, reason: str) -> Dict[str, Any]:
+        """Restore one fixed qualification service after a pause-window probe."""
+        if service not in self.QUALIFICATION_PAUSE_SERVICES:
+            raise ValueError("qualification pause service is not registered")
+        try:
+            result = run_command(["pm2", "start", service, "--update-env"], timeout=30)
+            event = {
+                "event": "qualification_service_restore_attempted",
+                "service": service,
+                "reason": reason,
+                "returncode": result.returncode,
+                "acted": result.returncode == 0,
+            }
+        except Exception as exc:
+            event = {
+                "event": "qualification_service_restore_failed",
+                "service": service,
+                "reason": reason,
+                "error_type": type(exc).__name__,
+                "acted": False,
+            }
+        self._append_event(event)
+        return event
 
     def wait_for_nats_tcp(self, seconds: int = 20) -> bool:
         deadline = epoch() + seconds

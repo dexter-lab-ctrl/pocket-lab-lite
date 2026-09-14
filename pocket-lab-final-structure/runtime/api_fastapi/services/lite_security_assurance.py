@@ -124,6 +124,31 @@ FIXED_VERSION_ARGS = {
     "owasp-zap": ("--version",),
 }
 FIXED_BINARY_NAMES = {"npm-audit": "npm", "cosign": "cosign"}
+TOOL_EXECUTION_LANES = frozenset({
+    "server_phone_worker",
+    "dev_pc_static",
+    "dev_pc_live_runtime",
+})
+TOOL_HARNESS_STATUSES = frozenset({"ACTIVE"})
+TOOL_RESOURCE_CLASSES = frozenset({"small", "medium", "heavy"})
+TOOL_TARGETS = frozenset({
+    "server_runtime_local",
+    "repository_runtime_source",
+    "repository_current_tree",
+    "repository_python_requirements",
+    "repository_package_lock",
+    "loopback_opa_service",
+    "approved_server_phone_api_tunnel",
+    "registered_signed_artifact",
+    "repository_source_boundary",
+    "repository_lockfiles",
+    "repository_source_excluding_generated_caches",
+    "managed_syft_sbom",
+    "approved_server_phone_caddy_tls_tunnel",
+    "approved_loopback_listener_set",
+})
+TOOL_COMMAND_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
+TOOL_ARG_FORBIDDEN_RE = re.compile(r"[\x00\r\n;|&$`()<>]")
 
 
 class AssuranceError(RuntimeError):
@@ -303,6 +328,12 @@ def validate_registries() -> dict[str, Any]:
             status_code=503,
         )
     execution_defaults = tools.get("execution_defaults")
+    if str(tools.get("schema_version") or "") != "2.0.0":
+        raise AssuranceRegistryError(
+            "assurance_registry_invalid",
+            "The assurance tool registry version is unsupported.",
+            status_code=503,
+        )
     if not isinstance(execution_defaults, Mapping):
         raise AssuranceRegistryError(
             "assurance_registry_invalid",
@@ -343,6 +374,7 @@ def validate_registries() -> dict[str, Any]:
             status_code=503,
         )
     tool_map: dict[str, Mapping[str, Any]] = {}
+    expected_suites = {"smoke", "standard", "deep", "adversarial"}
     for item in tool_items:
         if not isinstance(item, Mapping):
             raise AssuranceRegistryError("assurance_registry_invalid", "A registered assurance tool is invalid.", status_code=503)
@@ -352,8 +384,21 @@ def validate_registries() -> dict[str, Any]:
         required = str(item.get("required_capability") or "")
         if not required.startswith("security.assurance."):
             raise AssuranceRegistryError("assurance_registry_invalid", "A tool capability is outside the assurance namespace.", status_code=503)
+        try:
+            tool_timeout = int(item.get("timeout_seconds") or 0)
+            tool_output_limit = int(item.get("max_output_bytes") or 0)
+        except (TypeError, ValueError):
+            tool_timeout = 0
+            tool_output_limit = 0
+        lane = str(item.get("execution_lane") or "")
+        harness_status = str(item.get("harness_status") or "")
+        fixed_target = str(item.get("fixed_target") or "")
+        command_id = str(item.get("command_id") or "")
+        fixed_argv = item.get("fixed_argv")
         if (
             not str(item.get("purpose") or "").strip()
+            or not str(item.get("version_pin") or "").strip()
+            or not str(item.get("installation_source") or "").strip()
             or not str(item.get("execution") or "").strip()
             or not isinstance(item.get("supported_platforms"), list)
             or not str(item.get("binary_discovery") or "").strip()
@@ -367,11 +412,27 @@ def validate_registries() -> dict[str, Any]:
             or not isinstance(item.get("checkpoint_supported", False), bool)
             or not isinstance(item.get("max_attempts", 1), int)
             or int(item.get("max_attempts", 1)) not in range(1, 4)
+            or lane not in TOOL_EXECUTION_LANES
+            or harness_status not in TOOL_HARNESS_STATUSES
+            or fixed_target not in TOOL_TARGETS
+            or not TOOL_COMMAND_RE.fullmatch(command_id)
+            or not isinstance(fixed_argv, list)
+            or not fixed_argv
+            or any(not isinstance(value, str) or not value.strip() or TOOL_ARG_FORBIDDEN_RE.search(value) for value in fixed_argv)
+            or not str(item.get("parser") or "").strip()
+            or not str(item.get("sanitizer") or "").strip()
+            or not str(item.get("ruleset") or "").strip()
+            or not str(item.get("template_allowlist") or "").strip()
+            or not str(item.get("checksum_policy") or "").strip()
+            or not str(item.get("signature_policy") or "").strip()
+            or tool_timeout not in range(1, 7201)
+            or tool_output_limit not in range(1024, 2 * 1024 * 1024 + 1)
+            or not isinstance(item.get("suite_membership"), list)
+            or not set(str(value) for value in item.get("suite_membership") or []).issubset(expected_suites)
         ):
             raise AssuranceRegistryError("assurance_registry_invalid", "A registered assurance tool is missing bounded metadata.", status_code=503)
         tool_map[identifier] = item
     suite_map: dict[str, Mapping[str, Any]] = {}
-    expected_suites = {"smoke", "standard", "deep", "adversarial"}
     if set(str(key) for key in suite_items) != expected_suites:
         raise AssuranceRegistryError("assurance_registry_invalid", "The assurance suite registry is incomplete.", status_code=503)
     profile_caps = set(lite_harness.PROFILE_DATA[ASSURANCE_PROFILE]["capabilities"])
@@ -443,6 +504,28 @@ def validate_registries() -> dict[str, Any]:
         "primary_framework": "STRIDE",
         "owasp_version": str(scenarios.get("owasp_version") or "2021"),
         "tools": sorted(tool_map),
+        "tool_contracts": [
+            _redact({
+                "id": identifier,
+                "version_pin": str(item.get("version_pin") or ""),
+                "installation_source": str(item.get("installation_source") or ""),
+                "execution": str(item.get("execution") or ""),
+                "execution_lane": str(item.get("execution_lane") or ""),
+                "harness_status": str(item.get("harness_status") or ""),
+                "fixed_target": str(item.get("fixed_target") or ""),
+                "command_id": str(item.get("command_id") or ""),
+                "fixed_argv": list(item.get("fixed_argv") or []),
+                "parser": str(item.get("parser") or ""),
+                "sanitizer": str(item.get("sanitizer") or ""),
+                "timeout_seconds": int(item.get("timeout_seconds") or 0),
+                "max_output_bytes": int(item.get("max_output_bytes") or 0),
+                "resource_class": str(item.get("resource_class") or ""),
+                "ruleset": str(item.get("ruleset") or ""),
+                "template_allowlist": str(item.get("template_allowlist") or ""),
+                "suite_membership": [str(value) for value in item.get("suite_membership") or []],
+            })
+            for identifier, item in sorted(tool_map.items())
+        ],
         "suites": sorted(suite_map),
         "scenarios": sorted(scenario_map),
         "attack_paths": sorted(current_ap_ids),
@@ -508,9 +591,24 @@ def scenario_def(scenario_id: Any) -> dict[str, Any]:
 
 def list_suites() -> dict[str, Any]:
     validation = validate_registries()
+    contracts = {
+        str(contract.get("id")): contract
+        for contract in validation.get("tool_contracts") or []
+        if isinstance(contract, Mapping) and str(contract.get("id") or "")
+    }
     suites = []
     for identifier in validation["suites"]:
         item = suite_def(identifier)
+        registered_tools = [
+            tool_id
+            for tool_id, contract in contracts.items()
+            if isinstance(contract, Mapping) and identifier in (contract.get("suite_membership") or [])
+        ]
+        external_tools = [
+            tool_id
+            for tool_id in registered_tools
+            if str((contracts.get(tool_id) or {}).get("execution_lane") or "") != "server_phone_worker"
+        ]
         suites.append(_redact({
             "id": identifier,
             "purpose": item.get("purpose"),
@@ -523,6 +621,8 @@ def list_suites() -> dict[str, Any]:
             "required_capabilities": item.get("required_capabilities") or [],
             "scenarios": item.get("scenarios") or [],
             "active_tools": list(ACTIVE_TOOLS_BY_SUITE.get(identifier, ())),
+            "registered_tools": registered_tools,
+            "external_tools": external_tools,
         }))
     return _redact({"schema_version": ASSURANCE_SCHEMA_VERSION, "target_scope": ASSURANCE_TARGET_SCOPE, "suites": suites, "registry": validation, "sanitized": True})
 
@@ -1171,6 +1271,12 @@ def preflight(suite_id: str, *, expected_revision: str | None = None) -> dict[st
         "captured_at": _now(),
         "revision": revision_result.get("revision"),
         "runtime_id": lite_harness._runtime_id(),
+        "registry_hashes": {
+            "tools": _registry_hash(TOOLS_REGISTRY_PATH),
+            "suites": _registry_hash(SUITES_REGISTRY_PATH),
+            "scenarios": _registry_hash(SCENARIOS_REGISTRY_PATH),
+            "faults": _registry_hash(lite_assurance_faults.FAULTS_REGISTRY_PATH),
+        },
         "checks": checks,
         "blockers": blockers,
         "scanner_admission": {"required": requires_scanner, "active_tools": list(ACTIVE_TOOLS_BY_SUITE.get(str(suite["id"]), ())), "capability_known": bool(scanner_capability.get("known")), "one_heavy_scanner": True, "target_scope": ASSURANCE_TARGET_SCOPE},
@@ -2899,6 +3005,10 @@ def _inventory_tools(
                     "tool_id": tool_id,
                     "purpose": str(item.get("purpose") or "")[:240],
                     "version_command": str(item.get("version_command") or "")[:80],
+                    "execution_lane": str(item.get("execution_lane") or ""),
+                    "harness_status": str(item.get("harness_status") or ""),
+                    "fixed_target": str(item.get("fixed_target") or ""),
+                    "command_id": str(item.get("command_id") or ""),
                 }
             ))
             continue
@@ -2910,22 +3020,39 @@ def _inventory_tools(
                 "version": None,
                 "native_status": item.get("native_status"),
                 "resource_class": item.get("resource_class"),
+                "execution_lane": item.get("execution_lane"),
+                "harness_status": item.get("harness_status"),
+                "fixed_target": item.get("fixed_target"),
+                "command_id": item.get("command_id"),
                 "version_command": item.get("version_command"),
                 "failure_code": None if bool(opa.get("ok")) else "policy_not_ready",
                 "metadata": {"loopback_only": True, "browser_exposed": False},
             }))
             continue
-        if str(item.get("allowed_mode") or "").endswith("inventory_only") or tool_id not in ACTIVE_TOOLS_BY_SUITE.get(suite_id, ()):
-            inventory = _tool_inventory(tool_id, execute_version=True)
-            inventory["status"] = "DEFERRED"
-            inventory["failure_code"] = "tool_not_promoted_for_runtime_suite"
-            results.append(_redact(inventory))
+        lane = str(item.get("execution_lane") or "")
+        if lane != "server_phone_worker":
+            results.append(_redact({
+                "tool_id": tool_id,
+                "status": "NOT_RUN",
+                "native_status": item.get("native_status"),
+                "harness_status": item.get("harness_status"),
+                "execution_lane": lane,
+                "resource_class": item.get("resource_class"),
+                "fixed_target": item.get("fixed_target"),
+                "command_id": item.get("command_id"),
+                "version_command": item.get("version_command"),
+                "failure_code": "external_lane_owned_by_qualification_client",
+            }))
             continue
         results.append(_redact({
             "tool_id": tool_id,
             "status": "MISSING",
             "native_status": item.get("native_status"),
+            "harness_status": item.get("harness_status"),
+            "execution_lane": lane,
             "resource_class": item.get("resource_class"),
+            "fixed_target": item.get("fixed_target"),
+            "command_id": item.get("command_id"),
             "version_command": item.get("version_command"),
             "failure_code": "registered_tool_result_missing",
         }))

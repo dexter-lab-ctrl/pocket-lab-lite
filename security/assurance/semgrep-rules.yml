@@ -1,0 +1,19 @@
+rules:
+  - id: pocketlab-no-shell-from-api
+    message: FastAPI control modules must not construct shell commands.
+    severity: ERROR
+    languages: [python]
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...):
+              ...
+      - pattern: os.system(...)
+  - id: pocketlab-no-direct-nats-from-frontend
+    message: Frontend code must not import NATS clients.
+    severity: ERROR
+    languages: [javascript, typescript]
+    pattern-either:
+      - pattern: import $MODULE from "nats"
+      - pattern: import * as $MODULE from "nats"
+      - pattern: import { $MODULE } from "nats"
+      - pattern: require("nats")

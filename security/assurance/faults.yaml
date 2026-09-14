@@ -30,3 +30,21 @@ faults:
     recovery_timeout_seconds: 90
     max_uses: 1
     probe: opa_health_and_revision
+  - id: opa_pause_probe_restore
+    service_role: policy
+    service_name: pocket-opa
+    operation: pause_probe_restore
+    safety_class: SAFE_ACTIVE
+    pause_window_seconds: 5
+    recovery_timeout_seconds: 90
+    max_uses: 1
+    probe: opa_unavailable_fail_closed
+  - id: nats_pause_probe_restore
+    service_role: nats
+    service_name: pocket-nats
+    operation: pause_probe_restore
+    safety_class: SAFE_ACTIVE
+    pause_window_seconds: 5
+    recovery_timeout_seconds: 90
+    max_uses: 1
+    probe: nats_unavailable_recovery

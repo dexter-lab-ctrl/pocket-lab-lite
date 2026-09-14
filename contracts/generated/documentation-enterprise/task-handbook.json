@@ -5472,6 +5472,46 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\" --sync-policy --policy-sync-wait-seconds \"{{.POLICY_SYNC_WAIT_SECONDS}}\" --full"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:qualify:full",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:qualify:full",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "{{.PYTHON}} scripts/dev/lite/security_assurance.py report \"{{.RUN_ID}}\""
       ],
       "dependencies": [],
@@ -5612,6 +5652,126 @@
       "outputs": [],
       "promotes_evidence": false,
       "purpose": "Run the bounded Standard runtime security assurance suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py check"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:tools:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "name": "lite:security:assurance:tools:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Check every registered assurance tool as READY, NOT_APPLICABLE, or FAILED",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py install"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:tools:install",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "name": "lite:security:assurance:tools:install",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py run \"{{.SUITE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:tools:run",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "name": "lite:security:assurance:tools:run",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run one fixed DEV-PC assurance tool lane for a registered suite",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,

@@ -33,6 +33,7 @@ POLL_SECONDS = 2.0
 MAX_POLL_SECONDS = 2 * 60 * 60
 DEFAULT_PRINCIPAL_ID = "codex-security-assurance"
 DEFAULT_KEY_FILE = Path.home() / ".pocketlab-qualification" / "codex-security-assurance.key"
+UNIFIED_EVIDENCE_ROOT = Path.home() / ".pocketlab-lite" / "evidence" / "runtime-security-assurance"
 CONTINUITY_ENV = "POCKETLAB_HARNESS_CONTINUITY_FILE"
 CONTINUITY_FILE = Path.home() / ".pocketlab-qualification" / "runtime-security-assurance.json"
 CONTINUITY_KEYS = frozenset({
@@ -64,6 +65,7 @@ def _request(
     *,
     authenticated: bool = False,
     session_token: str | None = None,
+    timeout_seconds: float = 15.0,
 ) -> dict:
     if not path.startswith("/api/lite/harness/security-assurance/") or ".." in path or "//" in path:
         raise ValueError("assurance API path is not registered")
@@ -79,7 +81,8 @@ def _request(
         headers["X-Pocket-Lab-Harness-Session"] = token
     request = urllib.request.Request(harness_client._api_url() + path, data=body, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(request, timeout=15) as response:
+        bounded_timeout = max(1.0, min(float(timeout_seconds), 180.0))
+        with urllib.request.urlopen(request, timeout=bounded_timeout) as response:
             raw = response.read(256 * 1024)
             result = json.loads(raw.decode("utf-8")) if raw else {}
             return result if isinstance(result, dict) else {"result": result}
@@ -310,6 +313,75 @@ def _remove_continuity(path: Path) -> None:
         return
 
 
+def _write_unified_manifest(*, qualification_id: str, started_at: str, principal_id: str, fingerprint: str, preflight: dict, runs: dict[str, dict], toolchain: dict, cleanup: dict) -> str:
+    """Write one sanitized cross-lane identity outside the repository."""
+    path = UNIFIED_EVIDENCE_ROOT / qualification_id / "manifest.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    phone_runs = {
+        name: {
+            "status": value.get("status"),
+            "run_id": value.get("run_id"),
+            "suite_id": value.get("suite_id"),
+            "worker_operation_id": (value.get("run") or {}).get("worker_operation_id") if isinstance(value.get("run"), dict) else None,
+            "revision_sha": (value.get("run") or {}).get("revision_sha") if isinstance(value.get("run"), dict) else None,
+            "fault": {
+                "status": (value.get("fault") or {}).get("status"),
+                "fault_id": (value.get("fault") or {}).get("fault_id"),
+            } if isinstance(value.get("fault"), dict) else {"status": "NOT_RUN"},
+        }
+        for name, value in runs.items()
+        if isinstance(value, dict)
+    }
+    tool_reports = {}
+    for name, value in (toolchain.get("suites") or {}).items() if isinstance(toolchain, dict) else ():
+        if isinstance(value, dict):
+            tool_reports[name] = {
+                "status": value.get("status"),
+                "qualification_id": value.get("qualification_id"),
+                "finding_count": value.get("finding_count"),
+                "evidence_dir": value.get("evidence_dir"),
+                "registry_sha256": value.get("registry_sha256"),
+            }
+    registry_hashes = preflight.get("registry_hashes") if isinstance(preflight.get("registry_hashes"), dict) else {}
+    payload = {
+        "schema_version": "1.0.0",
+        "qualification_id": qualification_id,
+        "source_sha": preflight.get("revision"),
+        "runtime_sha": preflight.get("revision"),
+        "registry_hashes": {
+            "tools": registry_hashes.get("tools") or (next(iter(tool_reports.values()), {}).get("registry_sha256") if tool_reports else None),
+            "suites": registry_hashes.get("suites"),
+            "scenarios": registry_hashes.get("scenarios"),
+            "faults": registry_hashes.get("faults"),
+        },
+        "started_at": started_at,
+        "completed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "identity": {"principal_id": principal_id, "public_key_fingerprint": fingerprint, "profile": FIXED_PROFILE, "purpose": FIXED_PURPOSE, "target_scope": FIXED_TARGET_SCOPE},
+        "runtime": {"runtime_id": preflight.get("runtime_id"), "revision_sha": preflight.get("revision"), "preflight_status": preflight.get("status")},
+        "dev_pc": {
+            "platform": f"{sys.platform}/{os.uname().machine if hasattr(os, 'uname') else 'unknown'}",
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+            "repository": "REPOSITORY_ROOT",
+        },
+        "phone_runs": phone_runs,
+        "toolchain_suites": tool_reports,
+        "cleanup": {"status": cleanup.get("status"), "session_count": len(cleanup.get("session_ids") or [])},
+        "raw_output_persisted": False,
+        "sanitized": True,
+    }
+    encoded = (json.dumps(payload, ensure_ascii=True, sort_keys=True, indent=2) + "\n").encode("utf-8")
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        os.write(fd, encoded)
+        os.fchmod(fd, 0o600)
+    finally:
+        os.close(fd)
+    os.replace(temporary, path)
+    os.chmod(path, 0o600)
+    return str(path)
+
+
 def _record_run(path: Path, state: dict, run: dict, *, suite_id: str, scenario_id: str | None = None) -> None:
     state.update({
         "active_run_id": str(run.get("run_id") or ""),
@@ -331,6 +403,7 @@ def _poll(
     continuity_path: Path | None = None,
     continuity_state: dict | None = None,
     session_ttl_seconds: int | None = None,
+    fault_id: str | None = None,
     max_poll_seconds: float = MAX_POLL_SECONDS,
 ) -> dict:
     deadline = time.monotonic() + MAX_POLL_SECONDS
@@ -338,6 +411,7 @@ def _poll(
     if max_poll_seconds <= 0 or max_poll_seconds > MAX_POLL_SECONDS:
         raise ValueError("assurance poll deadline is outside the bounded range")
     deadline = time.monotonic() + max_poll_seconds
+    qualification_fault: dict | None = None
     while time.monotonic() < deadline:
         if lease is not None and principal_id and key_file and _session_needs_renewal(lease):
             _renew_lease(lease, principal_id=principal_id, key_file=key_file, ttl_seconds=session_ttl_seconds)
@@ -367,7 +441,27 @@ def _poll(
         if continuity_path is not None and continuity_state is not None:
             continuity_state["last_event_sequence"] = int(result.get("last_event_sequence") or 0)
             _write_continuity(continuity_path, continuity_state)
+        if fault_id and qualification_fault is None and _terminal_status(result) == "RUNNING":
+            if lease is None:
+                raise RuntimeError("fault_control_requires_qualified_lease")
+            _ensure_lease(
+                lease,
+                principal_id=str(principal_id or ""),
+                key_file=str(key_file or ""),
+                ttl_seconds=session_ttl_seconds,
+            )
+            qualification_fault = _request(
+                "POST",
+                f"/api/lite/harness/security-assurance/faults/{fault_id}",
+                {"confirm": True},
+                authenticated=True,
+                session_token=lease["session_token"],
+                timeout_seconds=150.0,
+            )
         if _terminal_status(result) not in {"QUEUED", "RUNNING"}:
+            if qualification_fault is not None:
+                result = dict(result)
+                result["_qualification_fault"] = qualification_fault
             return result
         time.sleep(min(POLL_SECONDS, max(0.1, deadline - time.monotonic())))
     raise RuntimeError("assurance_poll_timeout: the run did not reach a terminal state")
@@ -415,6 +509,7 @@ def _run_qualified_suite(
     continuity_path: Path,
     continuity_state: dict,
     session_ttl_seconds: int | None,
+    fault_id: str | None = None,
     max_poll_seconds: float,
 ) -> dict:
     preflight = _request(
@@ -442,8 +537,10 @@ def _run_qualified_suite(
         continuity_path=continuity_path,
         continuity_state=continuity_state,
         session_ttl_seconds=session_ttl_seconds,
+        fault_id=fault_id,
         max_poll_seconds=max_poll_seconds,
     )
+    fault_result = result.pop("_qualification_fault", None)
     _ensure_lease(
         lease,
         principal_id=principal_id,
@@ -467,6 +564,7 @@ def _run_qualified_suite(
             "session_ids": list(lease.get("session_ids") or []),
         },
         "preflight": preflight,
+        "fault": fault_result or {"status": "NOT_RUN", "sanitized": True},
         "sanitized": True,
     }
 
@@ -702,7 +800,11 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         "smoke": {"status": "NOT_RUN", "sanitized": True},
         "standard": {"status": "NOT_RUN", "sanitized": True},
         "adversarial": {"status": "NOT_RUN", "sanitized": True},
+        "deep": {"status": "NOT_RUN", "sanitized": True},
     }
+    qualification_started_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    qualification_id = f"qualification-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{os.getpid()}"
+    toolchain: dict[str, object] = {"status": "NOT_RUN", "suites": {}, "sanitized": True}
     workflow_error: str | None = None
     workflow_phase: str | None = None
     active_suite: str | None = None
@@ -740,6 +842,7 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                 continuity_path=continuity_path,
                 continuity_state=state,
                 session_ttl_seconds=args.session_ttl_seconds,
+                fault_id=args.fault_id if args.fault_suite == "smoke" else None,
                 max_poll_seconds=args.max_poll_seconds,
             )
             if runs["smoke"]["status"] == "PASS" and not args.skip_standard:
@@ -753,6 +856,7 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     continuity_path=continuity_path,
                     continuity_state=state,
                     session_ttl_seconds=args.session_ttl_seconds,
+                    fault_id=args.fault_id if args.fault_suite == "standard" else None,
                     max_poll_seconds=args.max_poll_seconds,
                 )
             else:
@@ -773,10 +877,47 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     continuity_path=continuity_path,
                     continuity_state=state,
                     session_ttl_seconds=args.session_ttl_seconds,
+                    fault_id=args.fault_id if args.fault_suite == "adversarial" else None,
                     max_poll_seconds=args.max_poll_seconds,
                 )
             else:
                 runs["adversarial"] = {"status": "NOT_RUN", "reason": "Smoke did not pass or adversarial checks were skipped", "sanitized": True}
+            if args.full and runs["smoke"].get("status") == "PASS":
+                workflow_phase = "deep"
+                active_suite = "deep"
+                runs["deep"] = _run_qualified_suite(
+                    suite_id="deep",
+                    lease=lease,
+                    principal_id=principal_id,
+                    key_file=str(key_path),
+                    continuity_path=continuity_path,
+                    continuity_state=state,
+                    session_ttl_seconds=args.session_ttl_seconds,
+                    fault_id=args.fault_id if args.fault_suite == "deep" else None,
+                    max_poll_seconds=args.max_poll_seconds,
+                )
+            if args.full:
+                if runs["smoke"].get("status") == "PASS":
+                    toolchain["status"] = "PASS"
+                    toolchain_suites: dict[str, dict] = {}
+                    toolchain["suites"] = toolchain_suites
+                    try:
+                        import security_assurance_toolchain
+
+                        for tool_suite in ("standard", "deep"):
+                            workflow_phase = f"dev_pc_{tool_suite}"
+                            tool_result = security_assurance_toolchain.run_suite(tool_suite)
+                            toolchain_suites[tool_suite] = tool_result
+                            if tool_result.get("status") == "FAIL":
+                                toolchain["status"] = "FAIL"
+                            elif tool_result.get("status") == "PARTIAL" and toolchain.get("status") == "PASS":
+                                toolchain["status"] = "PARTIAL"
+                    except (OSError, RuntimeError, ValueError) as exc:
+                        toolchain["status"] = "PARTIAL"
+                        toolchain["error"] = str(exc)[:240]
+                else:
+                    toolchain["status"] = "BLOCKED"
+                    toolchain["reason"] = "DEV-PC lanes require an admitted phone Smoke run"
         else:
             runs["smoke"] = {"status": "BLOCKED", "preflight": preflight, "sanitized": True}
     except (OSError, RuntimeError, ValueError) as exc:
@@ -784,14 +925,13 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         if active_suite:
             runs[active_suite] = {"status": "PARTIAL", "reason": "qualification client lost a bounded workflow step", "error": workflow_error, "sanitized": True}
 
-    active_run = bool(state.get("active_run_id"))
     cleanup = _cleanup_lease(
         lease,
         continuity_path=continuity_path,
         principal_id=principal_id,
         key_file=str(key_path),
         ttl_seconds=args.session_ttl_seconds,
-    ) if (not active_run or workflow_error is None) and all(
+    ) if workflow_error is None and all(
         str(item.get("status") or "").upper() in TERMINAL_STATUSES | {"NOT_RUN"} for item in runs.values()
     ) else {
         "status": "DEFERRED",
@@ -812,6 +952,22 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         overall = "PARTIAL"
     else:
         overall = "PASS"
+    if args.full and toolchain.get("status") == "BLOCKED" and overall == "PASS":
+        overall = "BLOCKED"
+    elif args.full and toolchain.get("status") == "PARTIAL" and overall == "PASS":
+        overall = "PARTIAL"
+    elif args.full and toolchain.get("status") == "FAIL":
+        overall = "FAIL"
+    manifest_path = _write_unified_manifest(
+        qualification_id=qualification_id,
+        started_at=qualification_started_at,
+        principal_id=principal_id,
+        fingerprint=fingerprint,
+        preflight=preflight,
+        runs=runs,
+        toolchain=toolchain,
+        cleanup=cleanup,
+    )
     return {
         "status": overall,
         "identity": {"principal_id": principal_id, "public_key_fingerprint": fingerprint, "private_key_path": str(key_path)},
@@ -821,6 +977,9 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         "workflow_phase": workflow_phase,
         "workflow_error": workflow_error,
         "runs": runs,
+        "toolchain": toolchain,
+        "qualification_id": qualification_id,
+        "manifest_path": manifest_path,
         "cleanup": cleanup,
         "session": {
             "renewal_count": int(lease.get("renewal_count") or 0),
@@ -869,7 +1028,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     fault.add_argument(
         "fault_id",
-        choices=("worker_restart_once", "nats_restart_once", "opa_restart_once"),
+        choices=("worker_restart_once", "nats_restart_once", "opa_restart_once", "nats_pause_probe_restore", "opa_pause_probe_restore"),
     )
     fault.set_defaults(handler=cmd_fault, success_status=False)
 
@@ -897,6 +1056,19 @@ def _parser() -> argparse.ArgumentParser:
     qualify.add_argument("--max-poll-seconds", type=float, default=MAX_POLL_SECONDS)
     qualify.add_argument("--skip-standard", action="store_true")
     qualify.add_argument("--skip-adversarial", action="store_true")
+    qualify.add_argument("--full", action="store_true", help="run the fixed DEV-PC Standard and Deep tool lanes after phone Smoke")
+    qualify.add_argument(
+        "--fault-id",
+        choices=("worker_restart_once", "nats_restart_once", "opa_restart_once", "nats_pause_probe_restore", "opa_pause_probe_restore"),
+        default=None,
+        help="execute one fixed qualification fault while the selected suite is RUNNING",
+    )
+    qualify.add_argument(
+        "--fault-suite",
+        choices=("smoke", "standard", "adversarial", "deep"),
+        default="standard",
+        help="registered suite that receives --fault-id",
+    )
     qualify.add_argument("--sync-policy", action="store_true", help="request the fixed qualification policy-source sync before suites")
     qualify.add_argument("--policy-sync-wait-seconds", type=float, default=120.0)
     qualify.set_defaults(handler=cmd_qualify, success_status=False)
